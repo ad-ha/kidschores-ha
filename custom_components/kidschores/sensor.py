@@ -758,7 +758,8 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         highest_badge, highest_val = self._find_highest_badge()
 
         current_multiplier = 1.0
-        current_badge_labels = []
+        friendly_labels = []
+
         if highest_badge:
             badge_data = next(
                 (
@@ -773,6 +774,7 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
             friendly_labels = [
                 get_friendly_label(self.hass, label) for label in stored_labels
             ]
+
         return {
             ATTR_KID_NAME: self._kid_name,
             ATTR_ALL_EARNED_BADGES: kid_info.get("badges", []),
