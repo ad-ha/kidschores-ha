@@ -560,7 +560,9 @@ def async_setup_services(hass: HomeAssistant):
             LOGGER.warning("Apply Bonus: %s", MSG_NO_ENTRY_FOUND)
             return
 
-        coordinator: KidsChoresDataCoordinator = hass.data[DOMAIN][entry_id]["coordinator"]
+        coordinator: KidsChoresDataCoordinator = hass.data[DOMAIN][entry_id][
+            "coordinator"
+        ]
         parent_name = call.data[FIELD_PARENT_NAME]
         kid_name = call.data[FIELD_KID_NAME]
         bonus_name = call.data[FIELD_BONUS_NAME]
@@ -882,10 +884,7 @@ def async_setup_services(hass: HomeAssistant):
     )
 
     hass.services.async_register(
-        DOMAIN, 
-        SERVICE_APPLY_BONUS, 
-        handle_apply_bonus, 
-        schema=APPLY_BONUS_SCHEMA
+        DOMAIN, SERVICE_APPLY_BONUS, handle_apply_bonus, schema=APPLY_BONUS_SCHEMA
     )
 
     LOGGER.info("KidsChores services have been registered successfully")

@@ -19,6 +19,7 @@ LOGGER = logging.getLogger(__package__)
 # Supported Platforms
 PLATFORMS = [
     Platform.BUTTON,
+    Platform.CALENDAR,
     Platform.SELECT,
     Platform.SENSOR,
 ]
@@ -75,20 +76,24 @@ CONF_CHORE_NOTIFY_SERVICE = "chore_notify_service"
 NOTIFICATION_EVENT = "mobile_app_notification_action"
 
 # Achievement types
-ACHIEVEMENT_TYPE_STREAK = "chore_streak"  # e.g., “Make bed 20 days in a row”
-ACHIEVEMENT_TYPE_TOTAL = "chore_total"  # e.g., “Complete 100 chores overall”
+ACHIEVEMENT_TYPE_STREAK = "chore_streak"  # e.g., "Make bed 20 days in a row"
+ACHIEVEMENT_TYPE_TOTAL = "chore_total"  # e.g., "Complete 100 chores overall"
+ACHIEVEMENT_TYPE_DAILY_MIN = (
+    "daily_minimum"  # e.g., "Complete minimum 5 chores in one day"
+)
 
 # Challenge types
 CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW = (
-    "total_within_window"  # e.g., “Complete 50 chores in 30 days”
+    "total_within_window"  # e.g., "Complete 50 chores in 30 days"
 )
-CHALLENGE_TYPE_DAILY_MIN = "daily_minimum"  # e.g., “Do 2 chores each day for 14 days”
+CHALLENGE_TYPE_DAILY_MIN = "daily_minimum"  # e.g., "Do 2 chores each day for 14 days"
 
 
 # -------------------- Defaults --------------------
 # Default Icons
 DEFAULT_ACHIEVEMENTS_ICON = "mdi:trophy-award"  # Default icon for achievements
-DEFAULT_BADGE_ICON = "mdi:shield-star-outline"
+DEFAULT_BADGE_ICON = "mdi:shield-star-outline"  # Default icon for badges
+DEFAULT_CALENDAR_ICON = "mdi:calendar"  # Default icon for calendar sensors
 DEFAULT_CHALLENGES_ICON = "mdi:trophy"  # Default icon for achievements
 DEFAULT_CHORE_APPROVE_ICON = "mdi:checkbox-marked-circle-outline"
 DEFAULT_CHORE_BINARY_ICON = (
@@ -138,6 +143,8 @@ DEFAULT_NOTIFY_ON_APPROVAL = True
 DEFAULT_NOTIFY_ON_DISAPPROVAL = True
 
 # -------------------- Recurring Frequencies --------------------
+FREQUENCY_BIWEEKLY = "biweekly"
+FREQUENCY_CUSTOM = "custom"
 FREQUENCY_DAILY = "daily"
 FREQUENCY_MONTHLY = "monthly"
 FREQUENCY_NONE = "none"
@@ -156,6 +163,7 @@ DATA_PENDING_REWARD_APPROVALS = "pending_reward_approvals"  # Pending reward app
 DATA_PENALTIES = "penalties"  # Key for storing penalties data
 DATA_REWARDS = "rewards"  # Key for storing rewards data
 DATA_BONUSES = "bonuses"  # Key for storing bonuses data
+
 # -------------------- States --------------------
 # Badge Threshold Types
 BADGE_THRESHOLD_TYPE_CHORE_COUNT = (
@@ -209,12 +217,16 @@ ATTR_ASSOCIATED_CHORE = "associated_chore"
 ATTR_BADGES = "badges"
 ATTR_CHALLENGE_NAME = "challenge_name"
 ATTR_CHALLENGE_TYPE = "challenge_type"
+ATTR_CHORE_APPROVALS_COUNT = "chore_approvals_count"
+ATTR_CHORE_CLAIMS_COUNT = "chore_claims_count"
 ATTR_CHORE_CURRENT_STREAK = "chore_current_streak"
 ATTR_CHORE_HIGHEST_STREAK = "chore_highest_streak"
 ATTR_CHORE_NAME = "chore_name"
 ATTR_CLAIMED_ON = "Claimed on"
 ATTR_COST = "cost"
 ATTR_CRITERIA = "criteria"
+ATTR_CUSTOM_FREQUENCY_INTERVAL = "custom_frequency_interval"
+ATTR_CUSTOM_FREQUENCY_UNIT = "custom_frequency_unit"
 ATTR_DEFAULT_POINTS = "default_points"
 ATTR_DESCRIPTION = "description"
 ATTR_DUE_DATE = "due_date"
@@ -223,6 +235,7 @@ ATTR_GLOBAL_STATE = "global_state"
 ATTR_HIGHEST_BADGE_THRESHOLD_VALUE = "highest_badge_threshold_value"
 ATTR_KID_NAME = "kid_name"
 ATTR_KID_STATE = "kid_state"
+ATTR_LABELS = "labels"
 ATTR_KIDS_EARNED = "kids_earned"
 ATTR_LAST_DATE = "last_date"
 ATTR_PARTIAL_ALLOWED = "partial_allowed"
@@ -233,6 +246,8 @@ ATTR_RAW_PROGRESS = "raw_progress"
 ATTR_RAW_STREAK = "raw_streak"
 ATTR_RECURRING_FREQUENCY = "recurring_frequency"
 ATTR_REDEEMED_ON = "Redeemed on"
+ATTR_REWARD_APPROVALS_COUNT = "reward_approvals_count"
+ATTR_REWARD_CLAIMS_COUNT = "reward_claims_count"
 ATTR_REWARD_NAME = "reward_name"
 ATTR_REWARD_POINTS = "reward_points"
 ATTR_BONUS_NAME = "bonus_name"
@@ -243,6 +258,13 @@ ATTR_TARGET_VALUE = "target_value"
 ATTR_THRESHOLD_TYPE = "threshold_type"
 ATTR_TYPE = "type"
 
+# Calendar Attributes
+ATTR_CAL_SUMMARY = "summary"
+ATTR_CAL_START = "start"
+ATTR_CAL_END = "end"
+ATTR_CAL_ALL_DAY = "all_day"
+ATTR_CAL_DESCRIPTION = "description"
+ATTR_CAL_MANUFACTURER = "manufacturer"
 
 # Sensor Types
 SENSOR_TYPE_BADGES = "badges"  # Sensor tracking earned badges
@@ -336,9 +358,7 @@ ERROR_PENALTY_NOT_FOUND_FMT = (
 ERROR_REWARD_NOT_FOUND = "Reward not found."  # Error for missing reward
 ERROR_REWARD_NOT_FOUND_FMT = "Reward '{}' not found"  # Error format for missing reward
 ERROR_BONUS_NOT_FOUND = "Bonus not found."  # Error for missing bonus
-ERROR_BONUS_NOT_FOUND_FMT = (
-    "Bonus '{}' not found"  # Error format for missing bonus
-)
+ERROR_BONUS_NOT_FOUND_FMT = "Bonus '{}' not found"  # Error format for missing bonus
 ERROR_USER_NOT_AUTHORIZED = (
     "User is not authorized to perform this action."  # Auth error
 )

@@ -72,6 +72,7 @@
           "shared_chore": "Shared Chore?",
           "assigned_kids": "Assigned Kids",
           "chore_description": "Description (optional)",
+          "chore_labels": "Chore Labels",
           "icon": "Icon (mdi:xxx)",
           "recurring_frequency": "Recurring Frequency",
           "applicable_days": "Applicable Days",
@@ -98,7 +99,8 @@
           "threshold_value": "Threshold Value",
           "points_multiplier": "Points Multiplier",
           "icon": "Icon (mdi:xxx)",
-          "badge_description": "Description (optional)"
+          "badge_description": "Description (optional)",
+          "badge_labels": "Badge Labels"
         }
       },
       "reward_count": {
@@ -116,6 +118,7 @@
           "internal_id": "Internal ID",
           "reward_cost": "Reward Cost",
           "reward_description": "Description (optional)",
+          "reward_labels": "Reward Labels",
           "icon": "Icon (mdi:xxx)"
         }
       },
@@ -132,8 +135,28 @@
         "data": {
           "penalty_name": "Penalty Name",
           "penalty_description": "Description (optional)",
+          "penalty_labels": "Penalty Labels",
           "internal_id": "Internal ID",
           "penalty_points": "Penalty Points (negative)",
+          "icon": "Icon (mdi:xxx)"
+        }
+      },
+      "bonus_count": {
+        "title": "Number of Bonuses",
+        "description": "How many bonuses do you want to define?",
+        "data": {
+          "bonus_count": "Bonuses Count"
+        }
+      },
+      "bonuses": {
+        "title": "Define Bonus",
+        "description": "Enter details for each bonus.",
+        "data": {
+          "bonus_name": "Bonus Name",
+          "bonus_description": "Description (optional)",
+          "bonus_labels": "Bonus Labels",
+          "internal_id": "Internal ID",
+          "bonus_points": "Bonus Points",
           "icon": "Icon (mdi:xxx)"
         }
       },
@@ -150,6 +173,7 @@
         "data": {
           "name": "Achievement Name",
           "description": "Description (optional)",
+          "achievement_labels": "Achievement Labels",
           "icon": "Icon (mdi:xxx)",
           "assigned_kids": "Assigned Kids",
           "type": "Type of Achievement",
@@ -173,6 +197,7 @@
         "data": {
           "name": "Challenge Name",
           "description": "Description (optional)",
+          "challenge_labels": "Challenge Labels",
           "icon": "Icon (mdi:xxx)",
           "assigned_kids": "Assigned Kids",
           "type": "Type of Challenge",
@@ -302,8 +327,11 @@
           "shared_chore": "Shared Chore?",
           "assigned_kids": "Assigned Kids",
           "chore_description": "Description (optional)",
+          "chore_labels": "Chore Labels",
           "icon": "Icon (mdi:xxx)",
           "recurring_frequency": "Recurring Frequency",
+          "custom_interval": "Custom Recurring Frequency Interval (only use if Custom Recurring Frequency is set)",
+          "custom_interval_unit": "Custom Recurring Frequency Period",
           "applicable_days": "Applicable Days",
           "due_date": "Due Date",
           "notify_on_claim": "Notify on Claim",
@@ -321,7 +349,8 @@
           "threshold_value": "Threshold Value",
           "points_multiplier": "Points Multiplier",
           "icon": "Icon (mdi:xxx)",
-          "badge_description": "Description (optional)"
+          "badge_description": "Description (optional)",
+          "badge_labels": "Badge Labels"
         }
       },
       "add_reward": {
@@ -332,6 +361,7 @@
           "internal_id": "Internal ID",
           "reward_cost": "Reward Cost",
           "reward_description": "Description (optional)",
+          "reward_labels": "Reward Labels",
           "icon": "Icon (mdi:xxx)"
         }
       },
@@ -341,6 +371,7 @@
         "data": {
           "penalty_name": "Penalty Name",
           "penalty_description": "Description (optional)",
+          "penalty_labels": "Penalty Labels",
           "internal_id": "Internal ID",
           "penalty_points": "Penalty Points (negative)",
           "icon": "Icon (mdi:xxx)"
@@ -352,6 +383,7 @@
         "data": {
           "bonus_name": "Bonus Name",
           "bonus_description": "Description (optional)",
+          "bonus_labels": "Bonus Labels",
           "internal_id": "Internal ID",
           "bonus_points": "Bonus Points",
           "icon": "Icon (mdi:xxx)"
@@ -363,6 +395,7 @@
         "data": {
           "name": "Achievement Name",
           "description": "Description (optional)",
+          "achievement_labels": "Achievement Labels",
           "icon": "Icon (mdi:xxx)",
           "assigned_kids": "Assigned Kids",
           "type": "Type of Achievement",
@@ -379,6 +412,7 @@
         "data": {
           "name": "Challenge Name",
           "description": "Description (optional)",
+          "challenge_labels": "Challenge Labels",
           "icon": "Icon (mdi:xxx)",
           "assigned_kids": "Assigned Kids",
           "type": "Type of Challenge",
@@ -428,8 +462,11 @@
           "shared_chore": "Shared Chore?",
           "assigned_kids": "Assigned Kids",
           "chore_description": "Description (optional)",
+          "chore_labels": "Chore Labels",
           "icon": "Icon (mdi:xxx)",
           "recurring_frequency": "Recurring Frequency",
+          "custom_interval": "Custom Recurring Frequency Interval (only use if Custom Recurring Frequency is set)",
+          "custom_interval_unit": "Custom Recurring Frequency Period",
           "applicable_days": "Applicable Days",
           "due_date": "Due Date",
           "notify_on_claim": "Notify on Claim",
@@ -447,7 +484,8 @@
           "threshold_value": "Threshold Value",
           "points_multiplier": "Points Multiplier",
           "icon": "Icon (mdi:xxx)",
-          "badge_description": "Description (optional)"
+          "badge_description": "Description (optional)",
+          "badge_labels": "Badge Labels"
         }
       },
       "edit_reward": {
@@ -458,6 +496,7 @@
           "internal_id": "Internal ID",
           "reward_cost": "Reward Cost",
           "reward_description": "Description (optional)",
+          "reward_labels": "Reward Labels",
           "icon": "Icon (mdi:xxx)"
         }
       },
@@ -467,6 +506,7 @@
         "data": {
           "penalty_name": "Penalty Name",
           "penalty_description": "Description (optional)",
+          "penalty_labels": "Penalty Labels",
           "internal_id": "Internal ID",
           "penalty_points": "Penalty Points (negative)",
           "icon": "Icon (mdi:xxx)"
@@ -478,6 +518,7 @@
         "data": {
           "bonus_name": "Bonus Name",
           "bonus_description": "Description (optional)",
+          "bonus_labels": "Bonus Labels",
           "internal_id": "Internal ID",
           "bonus_points": "Bonus Points",
           "icon": "Icon (mdi:xxx)"
@@ -489,6 +530,7 @@
         "data": {
           "name": "Achievement Name",
           "description": "Description (optional)",
+          "achievement_labels": "Achievement Labels",
           "icon": "Icon (mdi:xxx)",
           "assigned_kids": "Assigned Kids",
           "type": "Type of Achievement",
@@ -505,6 +547,7 @@
         "data": {
           "name": "Challenge Name",
           "description": "Description (optional)",
+          "challenge_labels": "Challenge Labels",
           "icon": "Icon (mdi:xxx)",
           "assigned_kids": "Assigned Kids",
           "type": "Type of Challenge",
@@ -646,7 +689,16 @@
         "none": "None",
         "daily": "Daily",
         "weekly": "Weekly",
-        "monthly": "Monthly"
+        "biweekly": "Byweekly",
+        "monthly": "Monthly",
+        "custom": "Custom"
+      }
+    },
+    "custom_interval_unit": {
+      "options": {
+        "days": "Days",
+        "weeks": "Weeks",
+        "months": "Months"
       }
     },
     "applicable_days": {
@@ -814,7 +866,7 @@
           "example": "Yelling"
         }
       }
-    },  
+    },
     "apply_bonus": {
       "name": "Apply Bonus",
       "description": "A parent applies a bonus to a kid, awarding points.",
@@ -836,7 +888,7 @@
         }
       }
     },
-    
+
     "reset_all_data": {
       "name": "Reset All Data",
       "description": "Completely clears the KidsChores data from storage."
@@ -929,7 +981,9 @@
               "none": "None",
               "daily": "Daily",
               "weekly": "Weekly",
-              "monthly": "Monthly"
+              "biweekly": "Byweekly",
+              "monthly": "Monthly",
+              "custom": "Custom"
             }
           },
           "applicable_days": {
@@ -947,6 +1001,8 @@
           "due_date": { "name": "Due Date" },
           "default_points": { "name": "Default Points" },
           "description": { "name": "Description" },
+          "chore_current_streak": { "name": "Chore Current Streak" },
+          "chore_highest_streak": { "name": "Chore Highest Streak" },
           "global_state": {
             "name": "Global State",
             "state": {
@@ -974,7 +1030,16 @@
               "false": "No"
             }
           },
-          "assigned_kids": { "name": "Assigned Kids" }
+          "assigned_kids": { "name": "Assigned Kids" },
+          "custom_frequency_interval": { "name": "Custom Frequency" },
+          "custom_frequency_unit": {
+            "name": "Custom Frequency Period",
+            "state": {
+              "days": "Days",
+              "weeks": "Weeks",
+              "months": "Months"
+            }
+          }
         }
       },
       "kid_points_sensor": {
@@ -1054,7 +1119,9 @@
               "none": "None",
               "daily": "Daily",
               "weekly": "Weekly",
-              "monthly": "Monthly"
+              "biweekly": "Byweekly",
+              "monthly": "Monthly",
+              "custom": "Custom"
             }
           },
           "applicable_days": {

@@ -8,5 +8,5 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/ad-ha/kidschores-ha/issues",
   "requirements": [],
-  "version": "0.2.2"
+  "version": "0.3.0"
 }

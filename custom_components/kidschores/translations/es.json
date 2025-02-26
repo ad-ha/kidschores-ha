@@ -833,7 +833,7 @@
           "example": "Gritar"
         }
       }
-    },  
+    },
     "apply_bonus": {
       "name": "Aplicar Bonificación",
       "description": "Un padre aplica una bonificación a un niño, otorgando puntos.",
@@ -965,6 +965,8 @@
           "due_date": { "name": "Fecha de Vencimiento" },
           "default_points": { "name": "Puntos Predeterminados" },
           "description": { "name": "Descripción" },
+          "chore_current_streak": { "name": "Racha Actual de la Tarea" },
+          "chore_highest_streak": { "name": "Mejor Racha de la Tarea" },
           "global_state": {
             "name": "Estado Global",
             "state": {
