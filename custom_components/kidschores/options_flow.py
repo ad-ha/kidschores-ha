@@ -638,39 +638,40 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             ):
                 errors["name"] = "duplicate_achievement"
             else:
-                internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-
                 _type = user_input["type"]
-                if _type == ACHIEVEMENT_TYPE_STREAK:
-                    chore_id = user_input.get("selected_chore_id")
-                    if not chore_id or chore_id == "None":
-                        errors["selected_chore_id"] = "a_chore_must_be_selected"
-                    final_criteria = chore_id
-                else:
-                    final_criteria = user_input["criteria"]
 
-                achievements_dict[internal_id] = {
-                    "name": achievement_name,
-                    "description": user_input.get("description", ""),
-                    "achievement_labels": user_input.get("achievement_labels", []),
-                    "icon": user_input.get("icon", ""),
-                    "assigned_kids": user_input["assigned_kids"],
-                    "type": _type,
-                    "selected_chore_id": chore_id
-                    if _type == ACHIEVEMENT_TYPE_STREAK
-                    else "",
-                    "criteria": final_criteria,
-                    "target_value": user_input["target_value"],
-                    "reward_points": user_input["reward_points"],
-                    "internal_id": internal_id,
-                    "progress": {},
-                }
-                self._entry_options[CONF_ACHIEVEMENTS] = achievements_dict
-                LOGGER.debug(
-                    "Added achievement '%s' with ID: %s", achievement_name, internal_id
-                )
-                await self._update_and_reload()
-                return await self.async_step_init()
+                chore_id = ""
+
+                if _type == ACHIEVEMENT_TYPE_STREAK:
+                    c = user_input.get("selected_chore_id") or ""
+                    if not c or c == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+                    chore_id = c
+
+                if not errors:
+                    internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+                    achievements_dict[internal_id] = {
+                        "name": achievement_name,
+                        "description": user_input.get("description", ""),
+                        "achievement_labels": user_input.get("achievement_labels", []),
+                        "icon": user_input.get("icon", ""),
+                        "assigned_kids": user_input["assigned_kids"],
+                        "type": _type,
+                        "selected_chore_id": chore_id,
+                        "criteria": user_input.get("criteria", "").strip(),
+                        "target_value": user_input["target_value"],
+                        "reward_points": user_input["reward_points"],
+                        "internal_id": internal_id,
+                        "progress": {},
+                    }
+                    self._entry_options["achievements"] = achievements_dict
+                    LOGGER.debug(
+                        "Added achievement '%s' with ID: %s",
+                        achievement_name,
+                        internal_id,
+                    )
+                    await self._update_and_reload()
+                    return await self.async_step_init()
 
         kids_dict = {
             kid_data["name"]: kid_id
@@ -697,16 +698,14 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             if any(data["name"] == challenge_name for data in challenges_dict.values()):
                 errors["name"] = "duplicate_challenge"
             else:
-                internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-
                 _type = user_input["type"]
-                final_criteria = ""
 
+                chore_id = ""
                 if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
-                    chosen_chore_id = user_input.get("selected_chore_id")
-                    final_criteria = ""
-                else:
-                    final_criteria = user_input.get("criteria", "")
+                    c = user_input.get("selected_chore_id") or ""
+                    if not c or c == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+                    chore_id = c
 
                 # Process start_date and end_date using the helper:
                 start_date_input = user_input.get("start_date")
@@ -740,48 +739,37 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 else:
                     end_date = None
 
-            if errors:
-                kids_dict = {
-                    data["name"]: kid_id
-                    for kid_id, data in self._entry_options.get(CONF_KIDS, {}).items()
-                }
-                schema = build_challenge_schema(
-                    kids_dict=kids_dict, chores_dict=chores_dict, default=user_input
-                )
-                return self.async_show_form(
-                    step_id="add_challenge", data_schema=schema, errors=errors
-                )
+                if not errors:
+                    internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+                    challenges_dict[internal_id] = {
+                        "name": challenge_name,
+                        "description": user_input.get("description", ""),
+                        "challenge_labels": user_input.get("challenge_labels", []),
+                        "icon": user_input.get("icon", ""),
+                        "assigned_kids": user_input["assigned_kids"],
+                        "type": _type,
+                        "selected_chore_id": chore_id,
+                        "criteria": user_input.get("criteria", "").strip(),
+                        "target_value": user_input["target_value"],
+                        "reward_points": user_input["reward_points"],
+                        "start_date": start_date,
+                        "end_date": end_date,
+                        "internal_id": internal_id,
+                        "progress": {},
+                    }
+                    self._entry_options[CONF_CHALLENGES] = challenges_dict
+                    LOGGER.debug(
+                        "Added challenge '%s' with ID: %s", challenge_name, internal_id
+                    )
+                    await self._update_and_reload()
+                    return await self.async_step_init()
 
-            challenges_dict[internal_id] = {
-                "name": challenge_name,
-                "description": user_input.get("description", ""),
-                "challenge_labels": user_input.get("challenge_labels", []),
-                "icon": user_input.get("icon", ""),
-                "assigned_kids": user_input["assigned_kids"],
-                "type": _type,
-                "selected_chore_id": chosen_chore_id
-                if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW
-                else "",
-                "criteria": final_criteria,
-                "target_value": user_input["target_value"],
-                "reward_points": user_input["reward_points"],
-                "start_date": start_date,
-                "end_date": end_date,
-                "internal_id": internal_id,
-                "progress": {},
-            }
-            self._entry_options[CONF_CHALLENGES] = challenges_dict
-            LOGGER.debug(
-                "Added challenge '%s' with ID: %s", challenge_name, internal_id
-            )
-            await self._update_and_reload()
-            return await self.async_step_init()
         kids_dict = {
             kid_data["name"]: kid_id
             for kid_id, kid_data in self._entry_options.get(CONF_KIDS, {}).items()
         }
         challenge_schema = build_challenge_schema(
-            kids_dict=kids_dict, chores_dict=chores_dict, default=None
+            kids_dict=kids_dict, chores_dict=chores_dict, default=user_input
         )
         return self.async_show_form(
             step_id="add_challenge", data_schema=challenge_schema, errors=errors
@@ -1247,36 +1235,36 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["name"] = "duplicate_achievement"
             else:
                 _type = user_input["type"]
+
+                chore_id = ""
                 if _type == ACHIEVEMENT_TYPE_STREAK:
-                    selected = user_input.get("selected_chore_id")
-                    if not selected or selected == "None":
+                    c = user_input.get("selected_chore_id") or ""
+                    if not c or c == "None":
                         errors["selected_chore_id"] = "a_chore_must_be_selected"
-                    achievement_data["selected_chore_id"] = selected
-                else:
-                    achievement_data["selected_chore_id"] = ""
-                achievement_data["name"] = new_name
-                achievement_data["description"] = user_input.get("description", "")
-                achievement_data["achievement_labels"] = user_input.get(
-                    "achievement_labels", []
-                )
-                achievement_data["icon"] = user_input.get("icon", "")
-                achievement_data["assigned_kids"] = user_input["assigned_kids"]
-                achievement_data["type"] = _type
-                achievement_data["selected_chore_id"] = user_input.get(
-                    "selected_chore_id", achievement_data.get("selected_chore_id", "")
-                )
-                achievement_data["criteria"] = user_input.get(
-                    "criteria", achievement_data.get("criteria", "")
-                )
-                achievement_data["target_value"] = user_input["target_value"]
-                achievement_data["reward_points"] = user_input["reward_points"]
-                achievements_dict[internal_id] = achievement_data
-                self._entry_options[CONF_ACHIEVEMENTS] = achievements_dict
-                LOGGER.debug(
-                    "Edited achievement '%s' with ID: %s", new_name, internal_id
-                )
-                await self._update_and_reload()
-                return await self.async_step_init()
+                    chore_id = c
+
+                if not errors:
+                    achievement_data["name"] = new_name
+                    achievement_data["description"] = user_input.get("description", "")
+                    achievement_data["achievement_labels"] = user_input.get(
+                        "achievement_labels", []
+                    )
+                    achievement_data["icon"] = user_input.get("icon", "")
+                    achievement_data["assigned_kids"] = user_input["assigned_kids"]
+                    achievement_data["type"] = _type
+                    achievement_data["selected_chore_id"] = chore_id
+                    achievement_data["criteria"] = user_input.get(
+                        "criteria", ""
+                    ).strip()
+                    achievement_data["target_value"] = user_input["target_value"]
+                    achievement_data["reward_points"] = user_input["reward_points"]
+                    achievements_dict[internal_id] = achievement_data
+                    self._entry_options[CONF_ACHIEVEMENTS] = achievements_dict
+                    LOGGER.debug(
+                        "Edited achievement '%s' with ID: %s", new_name, internal_id
+                    )
+                    await self._update_and_reload()
+                    return await self.async_step_init()
 
         kids_dict = {
             kid_data["name"]: kid_id
@@ -1313,29 +1301,14 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["name"] = "duplicate_challenge"
             else:
                 _type = user_input["type"]
-            if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
-                selected = user_input.get("selected_chore_id")
-                if not selected or selected == "None":
-                    errors["selected_chore_id"] = "a_chore_must_be_selected"
-                challenge_data["name"] = new_name
-                challenge_data["description"] = user_input.get("description", "")
-                challenge_data["challenge_labels"] = user_input.get(
-                    "challenge_labels", []
-                )
-                challenge_data["icon"] = user_input.get("icon", "")
-                challenge_data["assigned_kids"] = user_input["assigned_kids"]
-                challenge_data["type"] = _type
-                challenge_data["selected_chore_id"] = user_input.get(
-                    "selected_chore_id", challenge_data.get("selected_chore_id", "")
-                )
 
-                challenge_data["criteria"] = user_input.get(
-                    "criteria", challenge_data.get("criteria", "")
-                )
-                challenge_data["target_value"] = user_input["target_value"]
-                challenge_data["reward_points"] = user_input["reward_points"]
+                chore_id = ""
+                if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
+                    c = user_input.get("selected_chore_id") or ""
+                    if not c or c == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+                    chore_id = c
 
-                # Process start_date and end_date using ensure_utc_datetime:
                 start_date_input = user_input.get("start_date")
                 end_date_input = user_input.get("end_date")
 
@@ -1375,28 +1348,24 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 else:
                     challenge_data["end_date"] = None
 
-            if errors:
-                kids_dict = {
-                    data["name"]: kid_id
-                    for kid_id, data in self._entry_options.get(CONF_KIDS, {}).items()
-                }
-                chores_dict = self._entry_options.get(CONF_CHORES, {})
-                default_data = user_input.copy()
-                return self.async_show_form(
-                    step_id="edit_challenge",
-                    data_schema=build_challenge_schema(
-                        kids_dict=kids_dict,
-                        chores_dict=chores_dict,
-                        default=default_data,
-                    ),
-                    errors=errors,
-                )
-
-            challenges_dict[internal_id] = challenge_data
-            self._entry_options[CONF_CHALLENGES] = challenges_dict
-            LOGGER.debug("Edited challenge '%s' with ID: %s", new_name, internal_id)
-            await self._update_and_reload()
-            return await self.async_step_init()
+                if not errors:
+                    challenge_data["name"] = new_name
+                    challenge_data["description"] = user_input.get("description", "")
+                    challenge_data["challenge_labels"] = user_input.get(
+                        "challenge_labels", []
+                    )
+                    challenge_data["icon"] = user_input.get("icon", "")
+                    challenge_data["assigned_kids"] = user_input["assigned_kids"]
+                    challenge_data["type"] = _type
+                    challenge_data["selected_chore_id"] = chore_id
+                    challenge_data["criteria"] = user_input.get("criteria", "").strip()
+                    challenge_data["target_value"] = user_input["target_value"]
+                    challenge_data["reward_points"] = user_input["reward_points"]
+                    LOGGER.debug(
+                        "Edited challenge '%s' with ID: %s", new_name, internal_id
+                    )
+                    await self._update_and_reload()
+                    return await self.async_step_init()
 
         kids_dict = {
             kid_data["name"]: kid_id

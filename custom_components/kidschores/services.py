@@ -660,6 +660,8 @@ def async_setup_services(hass: HomeAssistant):
         for kid_id, kid_info in coordinator.kids_data.items():
             kid_info["claimed_chores"] = []
             kid_info["approved_chores"] = []
+            kid_info["overdue_chores"] = []
+            kid_info["overdue_notifications"] = {}
 
         # Clear the pending approvals queue
         coordinator._data[DATA_PENDING_CHORE_APPROVALS] = []
@@ -779,8 +781,11 @@ def async_setup_services(hass: HomeAssistant):
         chores_conf[chore_id] = existing_chore_options
         updated_options[DATA_CHORES] = chores_conf
 
+        new_data = dict(coordinator.config_entry.data)
+        new_data["last_change"] = dt_util.utcnow().isoformat()
+
         coordinator.hass.config_entries.async_update_entry(
-            coordinator.config_entry, options=updated_options
+            coordinator.config_entry, data=new_data, options=updated_options
         )
 
         coordinator._persist()

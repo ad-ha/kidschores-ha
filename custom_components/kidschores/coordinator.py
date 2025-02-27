@@ -1753,6 +1753,24 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     def _compute_shared_chore_state(self, chore_id: str) -> str:
         """Compute the global chore state for a shared chore based on each kid’s sub-state."""
         chore_info = self.chores_data[chore_id]
+
+        due_str = chore_info.get("due_date")
+        if due_str:
+            try:
+                due_date = dt_util.parse_datetime(due_str)
+                if due_date is None:
+                    due_date = datetime.fromisoformat(due_str)
+                due_date = dt_util.as_utc(due_date)
+                now = dt_util.utcnow()
+                if now >= due_date:
+                    return CHORE_STATE_OVERDUE
+            except Exception as err:
+                LOGGER.warning(
+                    "Error parsing due_date in _compute_shared_chore_state for chore '%s': %s",
+                    chore_id,
+                    err,
+                )
+
         assigned_kids = chore_info.get("assigned_kids", [])
 
         if not assigned_kids:
