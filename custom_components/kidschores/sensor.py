@@ -58,6 +58,7 @@ from .const import (
     ATTR_CHALLENGE_TYPE,
     ATTR_CLAIMED_ON,
     ATTR_CHORE_APPROVALS_COUNT,
+    ATTR_CHORE_APPROVALS_TODAY,
     ATTR_CHORE_CLAIMS_COUNT,
     ATTR_CHORE_CURRENT_STREAK,
     ATTR_CHORE_HIGHEST_STREAK,
@@ -80,6 +81,7 @@ from .const import (
     ATTR_PENALTY_NAME,
     ATTR_PENALTY_POINTS,
     ATTR_POINTS_MULTIPLIER,
+    ATTR_POINTS_TO_NEXT_BADGE,
     ATTR_RECURRING_FREQUENCY,
     ATTR_RAW_PROGRESS,
     ATTR_RAW_STREAK,
@@ -392,18 +394,21 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         """Return the chore's state based on shared or individual tracking."""
         chore_info = self.coordinator.chores_data.get(self._chore_id, {})
-        global_state = chore_info.get("state", CHORE_STATE_UNKNOWN)
 
-        if global_state == CHORE_STATE_OVERDUE:
-            return CHORE_STATE_OVERDUE
+        if chore_info.get("shared_chore", False):
+            return chore_info.get("state", CHORE_STATE_UNKNOWN)
 
-        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        if self._chore_id in kid_info.get("approved_chores", []):
-            return CHORE_STATE_APPROVED
-        elif self._chore_id in kid_info.get("claimed_chores", []):
-            return CHORE_STATE_CLAIMED
         else:
-            return CHORE_STATE_PENDING
+            kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+            # If the chore is marked overdue for this kid, return overdue.
+            if self._chore_id in kid_info.get("approved_chores", []):
+                return CHORE_STATE_APPROVED
+            elif self._chore_id in kid_info.get("claimed_chores", []):
+                return CHORE_STATE_CLAIMED
+            elif self._chore_id in kid_info.get("overdue_chores", []):
+                return CHORE_STATE_OVERDUE
+            else:
+                return CHORE_STATE_PENDING
 
     @property
     def extra_state_attributes(self):
@@ -453,6 +458,12 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
             ATTR_ASSIGNED_KIDS: assigned_kids_names,
             ATTR_LABELS: friendly_labels,
         }
+
+        if chore_info.get("allow_multiple_claims_per_day", False):
+            today_approvals = kid_info.get("today_chore_approvals", {}).get(
+                self._chore_id, 0
+            )
+            attributes[ATTR_CHORE_APPROVALS_TODAY] = today_approvals
 
         if chore_info.get("recurring_frequency") == FREQUENCY_CUSTOM:
             attributes[ATTR_CUSTOM_FREQUENCY_INTERVAL] = chore_info.get(
@@ -775,12 +786,27 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
                 get_friendly_label(self.hass, label) for label in stored_labels
             ]
 
+        # Compute points needed for next badge:
+        current_points = kid_info.get("points", 0)
+        # Gather thresholds for badges that are higher than current points
+        thresholds = [
+            badge.get("threshold_value", 0)
+            for badge in self.coordinator.badges_data.values()
+            if badge.get("threshold_value", 0) > current_points
+        ]
+        if thresholds:
+            next_threshold = min(thresholds)
+            points_to_next_badge = next_threshold - current_points
+        else:
+            points_to_next_badge = 0
+
         return {
             ATTR_KID_NAME: self._kid_name,
             ATTR_ALL_EARNED_BADGES: kid_info.get("badges", []),
             ATTR_HIGHEST_BADGE_THRESHOLD_VALUE: highest_val if highest_badge else 0,
             ATTR_POINTS_MULTIPLIER: current_multiplier,
             ATTR_LABELS: friendly_labels,
+            ATTR_POINTS_TO_NEXT_BADGE: points_to_next_badge,
         }
 
 
@@ -1067,6 +1093,13 @@ class SharedChoreGlobalStateSensor(CoordinatorEntity, SensorEntity):
             get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
+        total_approvals_today = 0
+        for kid_id in assigned_kids_ids:
+            kid_data = self.coordinator.kids_data.get(kid_id, {})
+            total_approvals_today += kid_data.get("today_chore_approvals", {}).get(
+                self._chore_id, 0
+            )
+
         attributes = {
             ATTR_CHORE_NAME: self._chore_name,
             ATTR_DESCRIPTION: chore_info.get("description", ""),
@@ -1078,6 +1111,7 @@ class SharedChoreGlobalStateSensor(CoordinatorEntity, SensorEntity):
             ATTR_ALLOW_MULTIPLE_CLAIMS_PER_DAY: chore_info.get(
                 "allow_multiple_claims_per_day", False
             ),
+            ATTR_CHORE_APPROVALS_TODAY: total_approvals_today,
             ATTR_ASSIGNED_KIDS: assigned_kids_names,
             ATTR_LABELS: friendly_labels,
         }

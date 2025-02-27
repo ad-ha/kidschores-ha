@@ -689,7 +689,7 @@
         "none": "None",
         "daily": "Daily",
         "weekly": "Weekly",
-        "biweekly": "Byweekly",
+        "biweekly": "Biweekly",
         "monthly": "Monthly",
         "custom": "Custom"
       }
@@ -981,7 +981,7 @@
               "none": "None",
               "daily": "Daily",
               "weekly": "Weekly",
-              "biweekly": "Byweekly",
+              "biweekly": "Biweekly",
               "monthly": "Monthly",
               "custom": "Custom"
             }
@@ -1119,7 +1119,7 @@
               "none": "None",
               "daily": "Daily",
               "weekly": "Weekly",
-              "biweekly": "Byweekly",
+              "biweekly": "Biweekly",
               "monthly": "Monthly",
               "custom": "Custom"
             }

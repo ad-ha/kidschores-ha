@@ -230,14 +230,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     # -------------------------------------------------------------------------------------
 
     async def _async_update_data(self):
-        """Periodic update.
-
-        - Checks overdue chores
-        - Handles recurring resets
-        - Notifies entities
-        """
+        """Periodic update."""
         try:
-            # Check overdue chores and reset daily/weekly/monthly counts
+            # Check overdue chores
             await self._check_overdue_chores()
 
             # Notify entities of changes
@@ -696,6 +691,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             "chore_streaks": {},
             "overall_chore_streak": 0,
             "last_chore_date": None,
+            "overdue_chores": [],
+            "overdue_notifications": {},
         }
 
         self._normalize_kid_lists(self._data[DATA_KIDS][kid_id])
@@ -743,6 +740,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         kid_info.setdefault("chore_streaks", {})
         kid_info.setdefault("overall_chore_streak", 0)
         kid_info.setdefault("last_chore_date", None)
+        kid_info.setdefault("overdue_chores", [])
+        kid_info.setdefault("overdue_notifications", {})
 
         self._normalize_kid_lists(self._data[DATA_KIDS][kid_id])
 
@@ -1400,6 +1399,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if chore_id not in kid_info.get("claimed_chores", []):
             kid_info.setdefault("claimed_chores", []).append(chore_id)
 
+        # Clear overdue tracking for this chore for the kid.
+        if "overdue_chores" in kid_info and chore_id in kid_info["overdue_chores"]:
+            kid_info["overdue_chores"].remove(chore_id)
+        if (
+            "overdue_notifications" in kid_info
+            and chore_id in kid_info["overdue_notifications"]
+        ):
+            kid_info["overdue_notifications"].pop(chore_id)
+
         chore_info["last_claimed"] = dt_util.utcnow().isoformat()
 
         # increment chore_claims
@@ -1502,11 +1510,21 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             else default_points * multiplier
         )
 
-        # remove from claimed if present
+        # Remove from claimed if present
         if chore_id in kid_info.get("claimed_chores", []):
             kid_info["claimed_chores"].remove(chore_id)
         if chore_id not in kid_info.get("approved_chores", []):
             kid_info.setdefault("approved_chores", []).append(chore_id)
+
+        # Clear any overdue tracking for this chore for the kid.
+        if kid_info:
+            if "overdue_chores" in kid_info and chore_id in kid_info["overdue_chores"]:
+                kid_info["overdue_chores"].remove(chore_id)
+            if (
+                "overdue_notifications" in kid_info
+                and chore_id in kid_info["overdue_notifications"]
+            ):
+                kid_info["overdue_notifications"].pop(chore_id)
 
         # Shared chore vs. non-shared
         if chore_info.get("shared_chore", False):
@@ -1529,6 +1547,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         kid_info["completed_chores_weekly"] += 1
         kid_info["completed_chores_monthly"] += 1
         kid_info["completed_chores_total"] += 1
+
+        # Track today’s approvals for chores that allow multiple claims.
+        if chore_info.get("allow_multiple_claims_per_day", False):
+            kid_info.setdefault("today_chore_approvals", {})
+            kid_info["today_chore_approvals"][chore_id] = (
+                kid_info["today_chore_approvals"].get(chore_id, 0) + 1
+            )
 
         chore_info["last_completed"] = dt_util.utcnow().isoformat()
 
@@ -1636,13 +1661,38 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # if shared chore, check if any other kid has it approved
         if chore_info.get("shared_chore", False):
-            new_global_state = self._compute_shared_chore_state(chore_id)
-            chore_info["state"] = new_global_state
-            LOGGER.debug(
-                "Shared chore '%s' global state recomputed as '%s'",
-                chore_id,
-                new_global_state,
-            )
+            due_str = chore_info.get("due_date")
+            due_date = None
+            if due_str:
+                try:
+                    due_date = dt_util.parse_datetime(due_str)
+                    if due_date is None:
+                        due_date = datetime.fromisoformat(due_str)
+                    due_date = dt_util.as_utc(due_date)
+                except Exception as e:
+                    LOGGER.warning(
+                        "Error parsing due_date '%s' for shared chore '%s': %s",
+                        due_str,
+                        chore_id,
+                        e,
+                    )
+            now = dt_util.utcnow()
+            if due_date and now >= due_date:
+                chore_info["state"] = CHORE_STATE_OVERDUE
+                chore_info["last_overdue_notification"] = now.isoformat()
+                LOGGER.debug(
+                    "Shared chore '%s' due date passed; setting state to OVERDUE",
+                    chore_id,
+                )
+            else:
+                new_global_state = self._compute_shared_chore_state(chore_id)
+                chore_info["state"] = new_global_state
+                LOGGER.debug(
+                    "Shared chore '%s' global state recomputed as '%s'",
+                    chore_id,
+                    new_global_state,
+                )
+
         else:
             # For non-shared chores, check if the due date has passed.
             due_str = chore_info.get("due_date")
@@ -1652,6 +1702,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     due_date = dt_util.parse_datetime(due_str)
                     if due_date is None:
                         due_date = datetime.fromisoformat(due_str)
+                    # Convert to UTC for proper comparison
+                    due_date = dt_util.as_utc(due_date)
                 except Exception as e:
                     LOGGER.warning(
                         "Error parsing due_date '%s' for chore '%s': %s",
@@ -2522,33 +2574,38 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     # -------------------------------------------------------------------------------------
 
     async def _check_overdue_chores(self):
-        """Check and mark overdue chores if due_date is passed.
+        """Check and mark overdue chores if due date is passed.
 
         Send an overdue notification only if not sent in the last 24 hours.
         """
         now = dt_util.utcnow()
+        LOGGER.debug("Starting overdue check at %s", now.isoformat())
+
         for chore_id, chore_info in self.chores_data.items():
-            if chore_info.get("state") in (
-                CHORE_STATE_APPROVED,
-                CHORE_STATE_APPROVED_IN_PART,
-                CHORE_STATE_CLAIMED,
-                CHORE_STATE_CLAIMED_IN_PART,
-            ):
+            LOGGER.debug(
+                "Checking chore '%s' (state=%s)", chore_id, chore_info.get("state")
+            )
+
+            # Only process chores that are pending
+            if chore_info.get("state") != CHORE_STATE_PENDING:
+                LOGGER.debug("Skipping chore '%s': state is not pending", chore_id)
                 continue
 
             due_str = chore_info.get("due_date")
             if not due_str:
+                LOGGER.debug("Chore '%s' has no due_date; skipping", chore_id)
                 continue
 
             try:
                 due_date = dt_util.parse_datetime(due_str)
                 if due_date is None:
                     raise ValueError("Parsed datetime is None")
-
                 due_date = dt_util.as_utc(due_date)
-
+                LOGGER.debug(
+                    "Chore '%s' due_date parsed as %s", chore_id, due_date.isoformat()
+                )
             except Exception as err:
-                LOGGER.warning(
+                LOGGER.error(
                     "Error parsing due_date '%s' for chore '%s': %s",
                     due_str,
                     chore_id,
@@ -2556,12 +2613,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
                 continue
 
-            # Check if the chore is scheduled for today only if applicable_days is non-empty.
+            # Check if today is an applicable day.
             applicable_days = chore_info.get(
                 CONF_APPLICABLE_DAYS, DEFAULT_APPLICABLE_DAYS
             )
-            if len(applicable_days) > 0:
-                # Map today's weekday (0=Monday ... 6=Sunday) to our keys.
+            if applicable_days:
                 weekday_mapping = {
                     0: "mon",
                     1: "tue",
@@ -2573,39 +2629,152 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 }
                 today_weekday = weekday_mapping[dt_util.as_local(now).weekday()]
                 if today_weekday not in applicable_days:
-                    # If today is not in the list, skip this chore.
+                    LOGGER.debug(
+                        "Chore '%s' is not scheduled for today (today=%s, applicable=%s)",
+                        chore_id,
+                        today_weekday,
+                        applicable_days,
+                    )
                     continue
 
-            # If the current time is past the due date…
             LOGGER.debug(
-                "Checking overdue: now=%s, due_date=%s for chore '%s'",
+                "Chore '%s': now=%s, due_date=%s",
+                chore_id,
                 now.isoformat(),
                 due_date.isoformat(),
-                chore_id,
             )
-            if now >= due_date:
+            if now < due_date:
+                LOGGER.debug("Chore '%s' is not yet due", chore_id)
+                continue
+
+            # --- Shared chores ---
+            if chore_info.get("shared_chore", False):
                 assigned_kids = chore_info.get("assigned_kids", [])
-                any_approved = any(
-                    chore_id
+                if any(
+                    chore_id in self.kids_data.get(kid_id, {}).get("claimed_chores", [])
+                    or chore_id
                     in self.kids_data.get(kid_id, {}).get("approved_chores", [])
                     for kid_id in assigned_kids
-                )
-                if not any_approved:
-                    # Check last notification time
-                    last_notif = chore_info.get("last_overdue_notification")
-                    if last_notif:
+                ):
+                    LOGGER.debug(
+                        "Shared chore '%s' has been acted upon; skipping overdue mark",
+                        chore_id,
+                    )
+                    continue
+
+                # Check global notification timestamp
+                last_notif = chore_info.get("last_overdue_notification")
+                if last_notif:
+                    try:
                         last_dt = dt_util.parse_datetime(last_notif)
                         if last_dt and (now - last_dt) < timedelta(hours=24):
-                            continue  # Skip if notified within last 24h
+                            LOGGER.debug(
+                                "Shared chore '%s' was already notified within 24 hours",
+                                chore_id,
+                            )
+                            continue
+                    except Exception as err:
+                        LOGGER.error(
+                            "Error parsing last_overdue_notification '%s' for chore '%s': %s",
+                            last_notif,
+                            chore_id,
+                            err,
+                        )
 
-                    chore_info["state"] = CHORE_STATE_OVERDUE
-                    chore_info["last_overdue_notification"] = now.isoformat()
-                    LOGGER.info(
-                        "Chore ID '%s' is overdue (no kids approved it)", chore_id
+                # Mark overdue globally and notify all kids/parents.
+                chore_info["state"] = CHORE_STATE_OVERDUE
+                chore_info["last_overdue_notification"] = now.isoformat()
+                LOGGER.info("Shared chore '%s' marked as OVERDUE", chore_id)
+                for kid_id in assigned_kids:
+                    extra_data = {"kid_id": kid_id, "chore_id": chore_id}
+                    actions = [
+                        {
+                            "action": f"{ACTION_APPROVE_CHORE}|{kid_id}|{chore_id}",
+                            "title": ACTION_TITLE_APPROVE,
+                        },
+                        {
+                            "action": f"{ACTION_DISAPPROVE_CHORE}|{kid_id}|{chore_id}",
+                            "title": ACTION_TITLE_DISAPPROVE,
+                        },
+                        {
+                            "action": f"{ACTION_REMIND_30}|{kid_id}|{chore_id}",
+                            "title": ACTION_TITLE_REMIND_30,
+                        },
+                    ]
+                    LOGGER.debug(
+                        "Notifying kid '%s' for shared overdue chore '%s'",
+                        kid_id,
+                        chore_id,
+                    )
+                    self.hass.async_create_task(
+                        self._notify_kid(
+                            kid_id,
+                            title="KidsChores: Chore Overdue",
+                            message=f"Your shared chore '{chore_info.get('name', 'Unnamed Chore')}' is overdue.",
+                            extra_data=extra_data,
+                        )
+                    )
+                    self.hass.async_create_task(
+                        self._notify_parents(
+                            kid_id,
+                            title="KidsChores: Chore Overdue",
+                            message=f"{self._get_kid_name_by_id(kid_id)}'s shared chore '{chore_info.get('name', 'Unnamed Chore')}' is overdue.",
+                            actions=actions,
+                            extra_data=extra_data,
+                        )
                     )
 
-                    for kid_id in assigned_kids:
-                        # Send overdue notification with actions
+            # --- Non-shared chores ---
+            else:
+                assigned_kids = chore_info.get("assigned_kids", [])
+                for kid_id in assigned_kids:
+                    kid_info = self.kids_data.get(kid_id, {})
+
+                    # Skip if kid already claimed/approved on the chore.
+                    if chore_id in kid_info.get(
+                        "claimed_chores", []
+                    ) or chore_id in kid_info.get("approved_chores", []):
+                        continue
+
+                    # Ensure the kid has the new tracking fields.
+                    kid_info.setdefault("overdue_chores", [])
+                    kid_info.setdefault("overdue_notifications", {})
+
+                    # Mark chore as overdue for this kid.
+                    kid_info["overdue_chores"].append(chore_id)
+
+                    # Check notification timestamp.
+                    last_notif_str = kid_info["overdue_notifications"].get(chore_id)
+                    notify = False
+                    if last_notif_str:
+                        try:
+                            last_dt = dt_util.parse_datetime(last_notif_str)
+                            if (
+                                (not last_dt)
+                                or (last_dt < due_date)
+                                or ((now - last_dt) >= timedelta(hours=24))
+                            ):
+                                notify = True
+                            else:
+                                LOGGER.debug(
+                                    "Non-shared chore '%s' for kid '%s' already notified within 24 hours",
+                                    chore_id,
+                                    kid_id,
+                                )
+                        except Exception as err:
+                            LOGGER.error(
+                                "Error parsing overdue notification '%s' for chore '%s', kid '%s': %s",
+                                last_notif_str,
+                                chore_id,
+                                kid_id,
+                                err,
+                            )
+                            notify = True
+                    else:
+                        notify = True
+
+                    if notify:
+                        kid_info["overdue_notifications"][chore_id] = now.isoformat()
                         extra_data = {"kid_id": kid_id, "chore_id": chore_id}
                         actions = [
                             {
@@ -2621,11 +2790,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                                 "title": ACTION_TITLE_REMIND_30,
                             },
                         ]
+                        LOGGER.debug(
+                            "Sending overdue notification for chore '%s' to kid '%s'",
+                            chore_id,
+                            kid_id,
+                        )
                         self.hass.async_create_task(
                             self._notify_kid(
                                 kid_id,
                                 title="KidsChores: Chore Overdue",
-                                message=f"Your chore '{chore_info.get('name', 'Unnamed Chore')}' is overdue.",
+                                message=f"Your chore '{chore_info.get('name', 'Unnamed Chore')}' is overdue",
                                 extra_data=extra_data,
                             )
                         )
@@ -2633,17 +2807,21 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             self._notify_parents(
                                 kid_id,
                                 title="KidsChores: Chore Overdue",
-                                message=f"{self._get_kid_name_by_id(kid_id)}'s chore '{chore_info.get('name', 'Unnamed Chore')}' is overdue.",
+                                message=f"{self._get_kid_name_by_id(kid_id)}'s chore '{chore_info.get('name', 'Unnamed Chore')}' is overdue",
                                 actions=actions,
                                 extra_data=extra_data,
                             )
                         )
+        LOGGER.debug("Overdue check completed")
 
     async def _reset_all_chore_counts(self, now: datetime):
         """Trigger resets based on the current time for all frequencies."""
         await self._handle_recurring_chore_resets(now)
         await self._reset_daily_reward_statuses()
         await self._check_overdue_chores()
+
+        for kid in self.kids_data.values():
+            kid["today_chore_approvals"] = {}
 
     async def _handle_recurring_chore_resets(self, now: datetime):
         """Handle recurring resets for daily, weekly, and monthly frequencies."""
@@ -3011,17 +3189,29 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     raise HomeAssistantError(
                         f"Kid '{kid.get('name', kid_id)}' is not assigned to chore '{chore.get('name', chore_id)}'."
                     )
-                if chore_id in kid.get("claimed_chores", []):
-                    kid["claimed_chores"].remove(chore_id)
-                if chore_id in kid.get("approved_chores", []):
-                    kid["approved_chores"].remove(chore_id)
+                for field in ["claimed_chores", "approved_chores"]:
+                    if chore_id in kid.get(field, []):
+                        kid[field] = [c for c in kid[field] if c != chore_id]
+                if "overdue_chores" in kid and chore_id in kid["overdue_chores"]:
+                    kid["overdue_chores"].remove(chore_id)
+                if (
+                    "overdue_notifications" in kid
+                    and chore_id in kid["overdue_notifications"]
+                ):
+                    kid["overdue_notifications"].pop(chore_id)
             else:
                 # Reset this chore for all kids.
                 for kid in self.kids_data.values():
-                    if chore_id in kid.get("claimed_chores", []):
-                        kid["claimed_chores"].remove(chore_id)
-                    if chore_id in kid.get("approved_chores", []):
-                        kid["approved_chores"].remove(chore_id)
+                    for field in ["claimed_chores", "approved_chores"]:
+                        if chore_id in kid.get(field, []):
+                            kid[field] = [c for c in kid[field] if c != chore_id]
+                    if "overdue_chores" in kid and chore_id in kid["overdue_chores"]:
+                        kid["overdue_chores"].remove(chore_id)
+                    if (
+                        "overdue_notifications" in kid
+                        and chore_id in kid["overdue_notifications"]
+                    ):
+                        kid["overdue_notifications"].pop(chore_id)
 
             # In either case, reset the chore's global state.
             if chore.get("state") == CHORE_STATE_OVERDUE:
@@ -3036,10 +3226,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             for cid, chore in self.chores_data.items():
                 if kid_id in chore.get("assigned_kids", []):
                     if chore.get("state") == CHORE_STATE_OVERDUE:
-                        if cid in kid.get("claimed_chores", []):
-                            kid["claimed_chores"].remove(cid)
-                        if cid in kid.get("approved_chores", []):
-                            kid["approved_chores"].remove(cid)
+                        for field in ["claimed_chores", "approved_chores"]:
+                            if cid in kid.get(field, []):
+                                kid[field] = [c for c in kid[field] if c != cid]
+                        if "overdue_chores" in kid and cid in kid["overdue_chores"]:
+                            kid["overdue_chores"].remove(cid)
+                        if (
+                            "overdue_notifications" in kid
+                            and cid in kid["overdue_notifications"]
+                        ):
+                            kid["overdue_notifications"].pop(cid)
 
                         # Reset the chore globally and reschedule.
                         chore["state"] = CHORE_STATE_PENDING
@@ -3050,10 +3246,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             for cid, chore in self.chores_data.items():
                 if chore.get("state") == CHORE_STATE_OVERDUE:
                     for kid in self.kids_data.values():
-                        if cid in kid.get("claimed_chores", []):
-                            kid["claimed_chores"].remove(cid)
-                        if cid in kid.get("approved_chores", []):
-                            kid["approved_chores"].remove(cid)
+                        for field in ["claimed_chores", "approved_chores"]:
+                            if cid in kid.get(field, []):
+                                kid[field] = [c for c in kid[field] if c != cid]
+                        if "overdue_chores" in kid and cid in kid["overdue_chores"]:
+                            kid["overdue_chores"].remove(cid)
+                        if (
+                            "overdue_notifications" in kid
+                            and cid in kid["overdue_notifications"]
+                        ):
+                            kid["overdue_notifications"].pop(cid)
 
                     chore["state"] = CHORE_STATE_PENDING
                     self._reschedule_next_due_date(chore)

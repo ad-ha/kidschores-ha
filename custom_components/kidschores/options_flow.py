@@ -14,6 +14,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import (
     ACHIEVEMENT_TYPE_STREAK,
+    CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
     CONF_APPLICABLE_DAYS,
     CONF_ACHIEVEMENTS,
     CONF_BADGES,
@@ -640,11 +641,13 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 internal_id = user_input.get("internal_id", str(uuid.uuid4()))
 
                 _type = user_input["type"]
-                if _type == "chore":
-                    chosen_chore_id = user_input.get("selected_chore_id")
-                    final_criteria = chosen_chore_id
+                if _type == ACHIEVEMENT_TYPE_STREAK:
+                    chore_id = user_input.get("selected_chore_id")
+                    if not chore_id or chore_id == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+                    final_criteria = chore_id
                 else:
-                    final_criteria = user_input.get("criteria", "")
+                    final_criteria = user_input["criteria"]
 
                 achievements_dict[internal_id] = {
                     "name": achievement_name,
@@ -653,6 +656,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "icon": user_input.get("icon", ""),
                     "assigned_kids": user_input["assigned_kids"],
                     "type": _type,
+                    "selected_chore_id": chore_id
+                    if _type == ACHIEVEMENT_TYPE_STREAK
+                    else "",
                     "criteria": final_criteria,
                     "target_value": user_input["target_value"],
                     "reward_points": user_input["reward_points"],
@@ -694,8 +700,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 internal_id = user_input.get("internal_id", str(uuid.uuid4()))
 
                 _type = user_input["type"]
-                if _type == "chore":
-                    final_criteria = user_input.get("selected_chore_id")
+                final_criteria = ""
+
+                if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
+                    chosen_chore_id = user_input.get("selected_chore_id")
+                    final_criteria = ""
                 else:
                     final_criteria = user_input.get("criteria", "")
 
@@ -750,6 +759,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 "icon": user_input.get("icon", ""),
                 "assigned_kids": user_input["assigned_kids"],
                 "type": _type,
+                "selected_chore_id": chosen_chore_id
+                if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW
+                else "",
                 "criteria": final_criteria,
                 "target_value": user_input["target_value"],
                 "reward_points": user_input["reward_points"],
@@ -1235,6 +1247,13 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["name"] = "duplicate_achievement"
             else:
                 _type = user_input["type"]
+                if _type == ACHIEVEMENT_TYPE_STREAK:
+                    selected = user_input.get("selected_chore_id")
+                    if not selected or selected == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+                    achievement_data["selected_chore_id"] = selected
+                else:
+                    achievement_data["selected_chore_id"] = ""
                 achievement_data["name"] = new_name
                 achievement_data["description"] = user_input.get("description", "")
                 achievement_data["achievement_labels"] = user_input.get(
@@ -1294,6 +1313,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["name"] = "duplicate_challenge"
             else:
                 _type = user_input["type"]
+            if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
+                selected = user_input.get("selected_chore_id")
+                if not selected or selected == "None":
+                    errors["selected_chore_id"] = "a_chore_must_be_selected"
                 challenge_data["name"] = new_name
                 challenge_data["description"] = user_input.get("description", "")
                 challenge_data["challenge_labels"] = user_input.get(

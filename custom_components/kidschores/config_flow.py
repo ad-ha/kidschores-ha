@@ -15,6 +15,8 @@ from homeassistant.util import dt as dt_util
 from typing import Any, Optional
 
 from .const import (
+    ACHIEVEMENT_TYPE_STREAK,
+    CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
     CONF_APPLICABLE_DAYS,
     CONF_ACHIEVEMENTS,
     CONF_BADGES,
@@ -550,7 +552,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 if self._penalty_count < 0:
                     raise ValueError
                 if self._penalty_count == 0:
-                    return await self.async_step_finish()
+                    return await self.async_step_bonus_count()
                 self._penalty_index = 0
                 return await self.async_step_penalties()
             except ValueError:
@@ -701,8 +703,10 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["name"] = "duplicate_achievement"
             else:
                 _type = user_input["type"]
-                if _type == "chore":
+                if _type == ACHIEVEMENT_TYPE_STREAK:
                     chore_id = user_input.get("selected_chore_id")
+                    if not chore_id or chore_id == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
                     final_criteria = chore_id
                 else:
                     final_criteria = user_input["criteria"]
@@ -715,6 +719,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     "icon": user_input.get("icon", ""),
                     "assigned_kids": user_input["assigned_kids"],
                     "type": _type,
+                    "selected_chore_id": chore_id
+                    if _type == ACHIEVEMENT_TYPE_STREAK
+                    else "",
                     "criteria": final_criteria,
                     "target_value": user_input["target_value"],
                     "reward_points": user_input["reward_points"],
@@ -775,9 +782,11 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["name"] = "duplicate_challenge"
             else:
                 _type = user_input["type"]
-                if _type == "chore":
-                    chore_id = user_input.get("selected_chore_id")
-                    final_criteria = chore_id
+                final_criteria = None
+
+                if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
+                    chosen_chore_id = user_input.get("selected_chore_id")
+                    final_criteria = ""
                 else:
                     final_criteria = user_input["criteria"]
 
@@ -838,6 +847,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     "icon": user_input.get("icon", ""),
                     "assigned_kids": user_input["assigned_kids"],
                     "type": _type,
+                    "selected_chore_id": chosen_chore_id
+                    if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW
+                    else "",
                     "criteria": final_criteria,
                     "target_value": user_input["target_value"],
                     "reward_points": user_input["reward_points"],

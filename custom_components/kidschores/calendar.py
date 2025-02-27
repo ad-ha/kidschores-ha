@@ -54,6 +54,7 @@ class KidsChoresCalendarEntity(CalendarEntity):
         self._config_entry = config_entry
         self._attr_name = f"KidsChores Calendar: {kid_name}"
         self._attr_unique_id = f"{config_entry.entry_id}_{kid_id}_calendar"
+        self.entity_id = f"calendar.kc_{kid_name}"
 
     async def async_get_events(
         self, hass: HomeAssistant, start: datetime.datetime, end: datetime.datetime

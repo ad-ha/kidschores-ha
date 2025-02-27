@@ -394,9 +394,10 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
         chore_options.append({"value": chore_id, "label": chore_name})
 
     default_selected_chore = default.get("selected_chore_id", "")
-    available_values = [option["value"] for option in chore_options]
-    if default_selected_chore not in available_values:
-        default_selected_chore = ""
+    if not default_selected_chore or default_selected_chore not in [
+        option["value"] for option in chore_options
+    ]:
+        pass
 
     default_criteria = default.get("criteria", "")
     default_assigned_kids = default.get("assigned_kids", [])
