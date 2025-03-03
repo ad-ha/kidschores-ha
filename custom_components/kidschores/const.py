@@ -176,10 +176,12 @@ CHORE_STATE_APPROVED = "approved"  # Chore fully approved
 CHORE_STATE_APPROVED_IN_PART = "approved_in_part"  # Chore approved for some kids
 CHORE_STATE_CLAIMED = "claimed"  # Chore claimed by a kid
 CHORE_STATE_CLAIMED_IN_PART = "claimed_in_part"  # Chore claimed by some kids
+CHORE_STATE_INDEPENDENT = "independent"  # Chore is not shared
 CHORE_STATE_OVERDUE = "overdue"  # Chore not completed before the due date
 CHORE_STATE_PARTIAL = "partial"  # Chore approved with partial points
 CHORE_STATE_PENDING = "pending"  # Default state: chore pending approval
-CHORE_STATE_UNKNOWN = "unknown"
+CHORE_STATE_UNKNOWN = "unknown"  # Unknown chore state
+
 
 # Reward States
 REWARD_STATE_APPROVED = "approved"  # Reward fully approved

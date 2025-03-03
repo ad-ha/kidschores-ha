@@ -13,17 +13,17 @@ Available Sensors:
 07. CompletedChoresWeeklySensor ........ Chores completed by the kid this week
 08. CompletedChoresMonthlySensor ....... Chores completed by the kid this month
 09. CompletedChoresTotalSensor ......... Total chores completed by the kid
-10. KidBadgesSensor .................... Number of badges the kid currently has - DEPRECATE
+10.* KidBadgesSensor .................... Number of badges the kid currently has - DEPRECATE
 11. KidHighestBadgeSensor .............. The highest (threshold) badge the kid holds
 12. BadgeSensor ........................ One sensor per badge, showing its threshold & who earned it
 13. ChoreStatusSensor .................. Shows current state (pending/claimed/approved, etc.) for each (kid, chore)
 14. SharedChoreGlobalStateSensor ....... Shows current global state for shared chores
 15. RewardStatusSensor ................. Shows current state (not claimed/claimed/approved) for each (kid, reward)
 16. PenaltyAppliesSensor ............... Tracks how many times each penalty was applied for each kid
-17. RewardClaimsSensor ................. Number of times a reward was claimed by a kid - DEPRECATE
-18. RewardApprovalsSensor .............. Number of times a reward was approved for a kid - DEPRECATE
-19. ChoreClaimsSensor .................. Number of times a chore was claimed by a kid - DEPRECATE
-20. ChoreApprovalsSensor ............... Number of times a chore was approved for a kid - DEPRECATE
+17.* RewardClaimsSensor ................. Number of times a reward was claimed by a kid - DEPRECATE
+18.* RewardApprovalsSensor .............. Number of times a reward was approved for a kid - DEPRECATE
+19.* ChoreClaimsSensor .................. Number of times a chore was claimed by a kid - DEPRECATE
+20.* ChoreApprovalsSensor ............... Number of times a chore was approved for a kid - DEPRECATE
 21. PendingChoreApprovalsSensor ........ Lists chores that are awaiting approval
 22. PendingRewardApprovalsSensor ....... Lists rewards that are awaiting approval
 23. AchievementSensor .................. Shows the achievement name, target value, reward points, and number of kids that have earned it
@@ -31,7 +31,7 @@ Available Sensors:
 25. AchievementProgressSensor .......... Progress (in %) toward an achievement per kid
 26. ChallengeProgressSensor ............ Progress (in %) toward a challenge per kid
 27. KidHighestStreakSensor ............. The highest current streak (in days) among streak-type achievements for a kid
-28. ChoreStreakSensor .................. Current streak (in days) for a kid for a specific chore - DEPRECATE
+28.* ChoreStreakSensor .................. Current streak (in days) for a kid for a specific chore - DEPRECATE
 """
 
 from homeassistant.config_entries import ConfigEntry
@@ -805,8 +805,8 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
             ATTR_ALL_EARNED_BADGES: kid_info.get("badges", []),
             ATTR_HIGHEST_BADGE_THRESHOLD_VALUE: highest_val if highest_badge else 0,
             ATTR_POINTS_MULTIPLIER: current_multiplier,
-            ATTR_LABELS: friendly_labels,
             ATTR_POINTS_TO_NEXT_BADGE: points_to_next_badge,
+            ATTR_LABELS: friendly_labels,
         }
 
 

@@ -75,6 +75,8 @@
           "chore_labels": "Chore Labels",
           "icon": "Icon (mdi:xxx)",
           "recurring_frequency": "Recurring Frequency",
+          "custom_interval": "Custom Recurring Frequency Interval (only use if Custom Recurring Frequency is set)",
+          "custom_interval_unit": "Custom Recurring Frequency Period",
           "applicable_days": "Applicable Days",
           "due_date": "Due Date",
           "notify_on_claim": "Notify on Claim",
@@ -216,6 +218,7 @@
       }
     },
     "error": {
+      "a_chore_must_be_selected": "A chore must be selected",
       "duplicate_achievement": "An achievement with this name already exists",
       "duplicate_badge": "A badge with this name already exists",
       "duplicate_challenge": "A challenge with this name already exists",
@@ -224,6 +227,7 @@
       "duplicate_parent": "A parent with this name already exists",
       "duplicate_penalty": "A penalty with this name already exists",
       "duplicate_reward": "A reward with this name already exists",
+      "duplicate_bonus": "A bonus with this name already exists",
       "due_date_in_past": "Due date must be in the future.",
       "end_date_in_past": "End Date must be in the future.",
       "end_date_not_after_start_date": "End date must be later than start date",
@@ -607,6 +611,7 @@
       }
     },
     "error": {
+      "a_chore_must_be_selected": "A chore must be selected",
       "duplicate_achievement": "An achievement with this name already exists",
       "duplicate_badge": "A badge with this name already exists",
       "duplicate_challenge": "A challenge with this name already exists",
@@ -1001,6 +1006,8 @@
           "due_date": { "name": "Due Date" },
           "default_points": { "name": "Default Points" },
           "description": { "name": "Description" },
+          "chore_claims_count": { "name": "Chore Claims Count" },
+          "chore_approvals_count": { "name": "Chore Approvals Count" },
           "chore_current_streak": { "name": "Chore Current Streak" },
           "chore_highest_streak": { "name": "Chore Highest Streak" },
           "global_state": {
@@ -1039,6 +1046,12 @@
               "weeks": "Weeks",
               "months": "Months"
             }
+          },
+          "chore_approvals_today": {
+            "name": "Chore Approvals Today"
+          },
+          "labels": {
+            "name": "Labels"
           }
         }
       },
@@ -1068,7 +1081,12 @@
         "state_attributes": {
           "kid_name": { "name": "Kid Name" },
           "all_earned_badges": { "name": "All Earned Badges" },
-          "highest_badge_threshold_value": { "name": "Highest Badge Threshold" }
+          "highest_badge_threshold_value": {
+            "name": "Highest Badge Threshold"
+          },
+          "points_multiplier": { "name": "Points Multiplier" },
+          "points_to_next_badge": { "name": "Points to Next Badge" },
+          "labels": { "name": "Labels" }
         }
       },
       "badge_sensor": {
@@ -1083,7 +1101,8 @@
           },
           "points_multiplier": { "name": "Points Multiplier" },
           "description": { "name": "Description" },
-          "kids_earned": { "name": "Kids Earned" }
+          "kids_earned": { "name": "Kids Earned" },
+          "labels": { "name": "Labels" }
         }
       },
       "pending_chores_approvals_sensor": {
@@ -1154,7 +1173,9 @@
           },
           "assigned_kids": {
             "name": "Assigned Kids"
-          }
+          },
+          "chore_approvals_today": { "name": "Chore Approvals Today" },
+          "labels": { "name": "Labels" }
         }
       },
       "reward_status_sensor": {
@@ -1170,7 +1191,8 @@
           "kid_name": { "name": "Kid Name" },
           "reward_name": { "name": "Reward Name" },
           "reward_cost": { "name": "Reward Cost" },
-          "description": { "name": "Description" }
+          "description": { "name": "Description" },
+          "labels": { "name": "Labels" }
         }
       },
       "chore_claims_sensor": {
@@ -1185,7 +1207,8 @@
           "kid_name": { "name": "Kid Name" },
           "penalty_name": { "name": "Penalty Name" },
           "description": { "name": "Description" },
-          "penalty_points": { "name": "Penalty Points" }
+          "penalty_points": { "name": "Penalty Points" },
+          "labels": { "name": "Labels" }
         }
       },
       "bonus_applies_sensor": {
@@ -1194,7 +1217,8 @@
           "kid_name": { "name": "Kid Name" },
           "bonus_name": { "name": "Bonus Name" },
           "description": { "name": "Description" },
-          "bonus_points": { "name": "Bonus Points" }
+          "bonus_points": { "name": "Bonus Points" },
+          "labels": { "name": "Labels" }
         }
       },
       "kid_points_earned_daily_sensor": {
@@ -1217,7 +1241,8 @@
           "critera": { "name": "Criteria" },
           "target_value": { "name": "Target" },
           "reward_points": { "name": "Reward Points" },
-          "kids_earned": { "name": "Earned by" }
+          "kids_earned": { "name": "Earned by" },
+          "labels": { "name": "Labels" }
         }
       },
       "challenge_state_sensor": {
@@ -1234,7 +1259,8 @@
           "reward_points": { "name": "Reward Points" },
           "start_date": { "name": "Start Date" },
           "end_date": { "name": "End Date" },
-          "kids_earned": { "name": "Earned by" }
+          "kids_earned": { "name": "Earned by" },
+          "labels": { "name": "Labels" }
         }
       },
       "achievement_progress_sensor": {
@@ -1255,7 +1281,8 @@
               "true": "Yes",
               "false": "No"
             }
-          }
+          },
+          "labels": { "name": "Labels" }
         }
       },
       "challenge_progress_sensor": {
@@ -1279,7 +1306,8 @@
               "true": "Yes",
               "false": "No"
             }
-          }
+          },
+          "labels": { "name": "Labels" }
         }
       },
       "kid_highest_streak_sensor": {
@@ -1298,28 +1326,52 @@
     },
     "button": {
       "claim_chore_button": {
-        "name": "{kid_name} - Claim Chore - {chore_name}"
+        "name": "{kid_name} - Claim Chore - {chore_name}",
+        "state_attributes": {
+          "labels": { "name": "Labels" }
+        }
       },
       "approve_chore_button": {
-        "name": "{kid_name} - Approve Chore - {chore_name}"
+        "name": "{kid_name} - Approve Chore - {chore_name}",
+        "state_attributes": {
+          "labels": { "name": "Labels" }
+        }
       },
       "disapprove_chore_button": {
-        "name": "{kid_name} - Disapprove Chore - {chore_name}"
+        "name": "{kid_name} - Disapprove Chore - {chore_name}",
+        "state_attributes": {
+          "labels": { "name": "Labels" }
+        }
       },
       "claim_reward_button": {
-        "name": "{kid_name} - Claim Reward - {reward_name}"
+        "name": "{kid_name} - Claim Reward - {reward_name}",
+        "state_attributes": {
+          "labels": { "name": "Labels" }
+        }
       },
       "approve_reward_button": {
-        "name": "{kid_name} - Approve Reward - {reward_name}"
+        "name": "{kid_name} - Approve Reward - {reward_name}",
+        "state_attributes": {
+          "labels": { "name": "Labels" }
+        }
       },
       "disapprove_reward_button": {
-        "name": "{kid_name} - Disapprove Reward - {reward_name}"
+        "name": "{kid_name} - Disapprove Reward - {reward_name}",
+        "state_attributes": {
+          "labels": { "name": "Labels" }
+        }
       },
       "penalty_button": {
-        "name": "{kid_name} - Apply Penalty - {penalty_name}"
+        "name": "{kid_name} - Apply Penalty - {penalty_name}",
+        "state_attributes": {
+          "labels": { "name": "Labels" }
+        }
       },
       "bonus_button": {
-        "name": "{kid_name} - Apply Bonus - {bonus_name}"
+        "name": "{kid_name} - Apply Bonus - {bonus_name}",
+        "state_attributes": {
+          "labels": { "name": "Labels" }
+        }
       },
       "manual_adjustment_button": {
         "name": "{kid_name} {sign_label} {points_label}"
