@@ -10,19 +10,20 @@ import os
 
 from homeassistant.helpers.storage import Store
 from .const import (
+    DATA_ACHIEVEMENTS,
+    DATA_BADGES,
+    DATA_BONUSES,
+    DATA_CHALLENGES,
+    DATA_CHORES,
+    DATA_KIDS,
+    DATA_PARENTS,
+    DATA_PENALTIES,
+    DATA_PENDING_CHORE_APPROVALS,
+    DATA_PENDING_REWARD_APPROVALS,
+    DATA_REWARDS,
     LOGGER,
     STORAGE_KEY,
     STORAGE_VERSION,
-    DATA_KIDS,
-    DATA_CHORES,
-    DATA_BADGES,
-    DATA_REWARDS,
-    DATA_PENALTIES,
-    DATA_PARENTS,
-    DATA_ACHIEVEMENTS,
-    DATA_CHALLENGES,
-    DATA_PENDING_CHORE_APPROVALS,
-    DATA_PENDING_REWARD_APPROVALS,
 )
 
 
@@ -62,11 +63,12 @@ class KidsChoresStorageManager:
                 DATA_BADGES: {},  # Dictionary of badges keyed by internal_id.
                 DATA_REWARDS: {},  # Dictionary of rewards keyed by internal_id.
                 DATA_PENALTIES: {},  # Dictionary of penalties keyed by internal_id.
+                DATA_BONUSES: {},  # Dictionary of bonuses keyed by internal_id.
                 DATA_PARENTS: {},  # Dictionary of parents keyed by internal_id.
                 DATA_ACHIEVEMENTS: {},  # Dictionary of achievements keyed by internal_id.
                 DATA_CHALLENGES: {},  # Dictionary of challenges keyed by internal_id.
-                DATA_PENDING_CHORE_APPROVALS: {},  # Dictionary of pending chore approvals keyed by internal_id.
-                DATA_PENDING_REWARD_APPROVALS: {},  # Dictionary of pending rewar approvals keyed by internal_id.
+                DATA_PENDING_CHORE_APPROVALS: [],  # List of pending chore approvals keyed by internal_id.
+                DATA_PENDING_REWARD_APPROVALS: [],  # List of pending rewar approvals keyed by internal_id.
             }
         else:
             # Load existing data into memory.
@@ -110,6 +112,10 @@ class KidsChoresStorageManager:
         """Retrieve the penalties data."""
         return self._data.get(DATA_PENALTIES, {})
 
+    def get_bonuses(self):
+        """Retrieve the bonuses data."""
+        return self._data.get(DATA_BONUSES, {})
+
     def get_achievements(self):
         """Retrieve the achievements data."""
         return self._data.get(DATA_ACHIEVEMENTS, {})
@@ -120,11 +126,11 @@ class KidsChoresStorageManager:
 
     def get_pending_chore_approvals(self):
         """Retrieve the pending chore approvals data."""
-        return self._data.get(DATA_PENDING_CHORE_APPROVALS, {})
+        return self._data.get(DATA_PENDING_CHORE_APPROVALS, [])
 
     def get_pending_reward_aprovals(self):
         """Retrieve the pending reward approvals data."""
-        return self._data.get(DATA_PENDING_REWARD_APPROVALS, {})
+        return self._data.get(DATA_PENDING_REWARD_APPROVALS, [])
 
     async def link_user_to_kid(self, user_id, kid_id):
         """Link a Home Assistant user ID to a specific kid by internal_id."""
@@ -165,10 +171,11 @@ class KidsChoresStorageManager:
             DATA_REWARDS: {},
             DATA_PARENTS: {},
             DATA_PENALTIES: {},
+            DATA_BONUSES: {},
             DATA_ACHIEVEMENTS: {},
             DATA_CHALLENGES: {},
-            DATA_PENDING_REWARD_APPROVALS: {},
-            DATA_PENDING_CHORE_APPROVALS: {},
+            DATA_PENDING_REWARD_APPROVALS: [],
+            DATA_PENDING_CHORE_APPROVALS: [],
         }
         await self.async_save()
 

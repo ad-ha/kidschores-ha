@@ -15,6 +15,8 @@ from homeassistant.util import dt as dt_util
 from typing import Any, Optional
 
 from .const import (
+    ACHIEVEMENT_TYPE_STREAK,
+    CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
     CONF_APPLICABLE_DAYS,
     CONF_ACHIEVEMENTS,
     CONF_BADGES,
@@ -29,12 +31,14 @@ from .const import (
     CONF_POINTS_ICON,
     CONF_POINTS_LABEL,
     CONF_REWARDS,
+    CONF_BONUSES,
     DEFAULT_APPLICABLE_DAYS,
     DEFAULT_NOTIFY_ON_APPROVAL,
     DEFAULT_NOTIFY_ON_CLAIM,
     DEFAULT_NOTIFY_ON_DISAPPROVAL,
     DEFAULT_POINTS_ICON,
     DEFAULT_POINTS_LABEL,
+    FREQUENCY_CUSTOM,
     DOMAIN,
     LOGGER,
 )
@@ -49,6 +53,7 @@ from .flow_helpers import (
     build_achievement_schema,
     build_challenge_schema,
     ensure_utc_datetime,
+    build_bonus_schema,
 )
 
 
@@ -68,6 +73,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._achievements_temp: dict[str, dict[str, Any]] = {}
         self._challenges_temp: dict[str, dict[str, Any]] = {}
         self._penalties_temp: dict[str, dict[str, Any]] = {}
+        self._bonuses_temp: dict[str, dict[str, Any]] = {}
 
         self._kid_count: int = 0
         self._parents_count: int = 0
@@ -77,6 +83,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._achievement_count: int = 0
         self._challenge_count: int = 0
         self._penalty_count: int = 0
+        self._bonus_count: int = 0
 
         self._kid_index: int = 0
         self._parents_index: int = 0
@@ -86,6 +93,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._achievement_index: int = 0
         self._challenge_index: int = 0
         self._penalty_index: int = 0
+        self._bonus_index: int = 0
 
     async def async_step_user(self, user_input: Optional[dict[str, Any]] = None):
         """Start the config flow with an intro step."""
@@ -356,6 +364,10 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     errors=errors,
                 )
 
+            if user_input.get("recurring_frequency") != FREQUENCY_CUSTOM:
+                user_input.pop("custom_interval", None)
+                user_input.pop("custom_interval_unit", None)
+
             # If no errors, store the chore
             self._chores_temp[internal_id] = {
                 "name": chore_name,
@@ -367,8 +379,11 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     "allow_multiple_claims_per_day"
                 ],
                 "description": user_input.get("chore_description", ""),
+                "chore_labels": user_input.get("chore_labels", []),
                 "icon": user_input.get("icon", ""),
                 "recurring_frequency": user_input.get("recurring_frequency", "none"),
+                "custom_interval": user_input.get("custom_interval"),
+                "custom_interval_unit": user_input.get("custom_interval_unit"),
                 "due_date": due_date_str,
                 "applicable_days": user_input.get(
                     CONF_APPLICABLE_DAYS, DEFAULT_APPLICABLE_DAYS
@@ -450,6 +465,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     "icon": user_input.get("icon", ""),
                     "internal_id": internal_id,
                     "description": user_input.get("badge_description", ""),
+                    "badge_labels": user_input.get("badge_labels", []),
                 }
                 LOGGER.debug("Added badge: %s with ID: %s", badge_name, internal_id)
 
@@ -508,6 +524,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     "name": reward_name,
                     "cost": user_input["reward_cost"],
                     "description": user_input.get("reward_description", ""),
+                    "reward_labels": user_input.get("reward_labels", []),
                     "icon": user_input.get("icon", ""),
                     "internal_id": internal_id,
                 }
@@ -535,7 +552,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 if self._penalty_count < 0:
                     raise ValueError
                 if self._penalty_count == 0:
-                    return await self.async_step_finish()
+                    return await self.async_step_bonus_count()
                 self._penalty_index = 0
                 return await self.async_step_penalties()
             except ValueError:
@@ -568,6 +585,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._penalties_temp[internal_id] = {
                     "name": penalty_name,
                     "description": user_input.get("penalty_description", ""),
+                    "penalty_labels": user_input.get("penalty_labels", []),
                     "points": -abs(penalty_points),  # Ensure points are negative
                     "icon": user_input.get("icon", ""),
                     "internal_id": internal_id,
@@ -576,12 +594,74 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             self._penalty_index += 1
             if self._penalty_index >= self._penalty_count:
-                return await self.async_step_achievement_count()
+                return await self.async_step_bonus_count()
             return await self.async_step_penalties()
 
         penalty_schema = build_penalty_schema()
         return self.async_show_form(
             step_id="penalties", data_schema=penalty_schema, errors=errors
+        )
+
+    # --------------------------------------------------------------------------
+    # BONUSES
+    # --------------------------------------------------------------------------
+    async def async_step_bonus_count(self, user_input=None):
+        """Ask how many bonuses to define."""
+        errors = {}
+        if user_input is not None:
+            try:
+                self._bonus_count = int(user_input["bonus_count"])
+                if self._bonus_count < 0:
+                    raise ValueError
+                if self._bonus_count == 0:
+                    return await self.async_step_achievement_count()
+                self._bonus_index = 0
+                return await self.async_step_bonuses()
+            except ValueError:
+                errors["base"] = "invalid_bonus_count"
+
+        schema = vol.Schema({vol.Required("bonus_count", default=0): vol.Coerce(int)})
+        return self.async_show_form(
+            step_id="bonus_count", data_schema=schema, errors=errors
+        )
+
+    async def async_step_bonuses(self, user_input=None):
+        """Collect bonus details using internal_id as the primary key.
+
+        Store in self._bonuses_temp as a dict keyed by internal_id.
+        """
+        errors = {}
+        if user_input is not None:
+            bonus_name = user_input["bonus_name"].strip()
+            bonus_points = user_input["bonus_points"]
+            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+
+            if not bonus_name:
+                errors["bonus_name"] = "invalid_bonus_name"
+            elif any(
+                bonus_data["name"] == bonus_name
+                for bonus_data in self._bonuses_temp.values()
+            ):
+                errors["bonus_name"] = "duplicate_bonus"
+            else:
+                self._bonuses_temp[internal_id] = {
+                    "name": bonus_name,
+                    "description": user_input.get("bonus_description", ""),
+                    "bonus_labels": user_input.get("bonus_labels", []),
+                    "points": abs(bonus_points),  # Ensure points are positive
+                    "icon": user_input.get("icon", ""),
+                    "internal_id": internal_id,
+                }
+                LOGGER.debug("Added bonus '%s' with ID: %s", bonus_name, internal_id)
+
+            self._bonus_index += 1
+            if self._bonus_index >= self._bonus_count:
+                return await self.async_step_achievement_count()
+            return await self.async_step_bonuses()
+
+        schema = build_bonus_schema()
+        return self.async_show_form(
+            step_id="bonuses", data_schema=schema, errors=errors
         )
 
     # --------------------------------------------------------------------------
@@ -623,29 +703,38 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["name"] = "duplicate_achievement"
             else:
                 _type = user_input["type"]
-                if _type == "chore":
-                    chore_id = user_input.get("selected_chore_id")
-                    final_criteria = chore_id
-                else:
-                    final_criteria = user_input["criteria"]
 
-                internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-                self._achievements_temp[internal_id] = {
-                    "name": achievement_name,
-                    "description": user_input.get("description", ""),
-                    "icon": user_input.get("icon", ""),
-                    "assigned_kids": user_input["assigned_kids"],
-                    "type": _type,
-                    "criteria": final_criteria,
-                    "target_value": user_input["target_value"],
-                    "reward_points": user_input["reward_points"],
-                    "internal_id": internal_id,
-                    "progress": {},
-                }
-            self._achievement_index += 1
-            if self._achievement_index >= self._achievement_count:
-                return await self.async_step_challenge_count()
-            return await self.async_step_achievements()
+                if _type == ACHIEVEMENT_TYPE_STREAK:
+                    chore_id = user_input.get("selected_chore_id")
+                    if not chore_id or chore_id == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+
+                    final_chore_id = chore_id
+                else:
+                    # Discard chore if not streak
+                    final_chore_id = ""
+
+                if not errors:
+                    internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+                    self._achievements_temp[internal_id] = {
+                        "name": achievement_name,
+                        "description": user_input.get("description", ""),
+                        "achievement_labels": user_input.get("achievement_labels", []),
+                        "icon": user_input.get("icon", ""),
+                        "assigned_kids": user_input["assigned_kids"],
+                        "type": _type,
+                        "selected_chore_id": final_chore_id,
+                        "criteria": user_input.get("criteria", "").strip(),
+                        "target_value": user_input["target_value"],
+                        "reward_points": user_input["reward_points"],
+                        "internal_id": internal_id,
+                        "progress": {},
+                    }
+
+                    self._achievement_index += 1
+                    if self._achievement_index >= self._achievement_count:
+                        return await self.async_step_challenge_count()
+                    return await self.async_step_achievements()
 
         kids_dict = {
             kid_data["name"]: kid_id for kid_id, kid_data in self._kids_temp.items()
@@ -696,11 +785,15 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["name"] = "duplicate_challenge"
             else:
                 _type = user_input["type"]
-                if _type == "chore":
-                    chore_id = user_input.get("selected_chore_id")
-                    final_criteria = chore_id
+
+                if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
+                    chosen_chore_id = user_input.get("selected_chore_id")
+                    if not chosen_chore_id or chosen_chore_id == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+                    final_chore_id = chosen_chore_id
                 else:
-                    final_criteria = user_input["criteria"]
+                    # Discard chore if not "CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW"
+                    final_chore_id = ""
 
                 # Process start_date and end_date using the helper:
                 start_date_input = user_input.get("start_date")
@@ -734,49 +827,38 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 else:
                     end_date = None
 
-                if errors:
-                    kids_dict = {
-                        kid_data["name"]: kid_id
-                        for kid_id, kid_data in self._kids_temp.items()
+                if not errors:
+                    internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+                    self._challenges_temp[internal_id] = {
+                        "name": challenge_name,
+                        "description": user_input.get("description", ""),
+                        "challenge_labels": user_input.get("challenge_labels", []),
+                        "icon": user_input.get("icon", ""),
+                        "assigned_kids": user_input["assigned_kids"],
+                        "type": _type,
+                        "selected_chore_id": final_chore_id,
+                        "criteria": user_input.get("criteria", "").strip(),
+                        "target_value": user_input["target_value"],
+                        "reward_points": user_input["reward_points"],
+                        "start_date": start_date,
+                        "end_date": end_date,
+                        "internal_id": internal_id,
+                        "progress": {},
                     }
-                    all_chores = self._chores_temp
-                    default_data = user_input.copy()
-                    return self.async_show_form(
-                        step_id="challenges",
-                        data_schema=build_challenge_schema(
-                            kids_dict=kids_dict,
-                            chores_dict=all_chores,
-                            default=default_data,
-                        ),
-                        errors=errors,
-                    )
-
-                internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-                self._challenges_temp[internal_id] = {
-                    "name": challenge_name,
-                    "description": user_input.get("description", ""),
-                    "icon": user_input.get("icon", ""),
-                    "assigned_kids": user_input["assigned_kids"],
-                    "type": _type,
-                    "criteria": final_criteria,
-                    "target_value": user_input["target_value"],
-                    "reward_points": user_input["reward_points"],
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "internal_id": internal_id,
-                    "progress": {},
-                }
-            self._challenge_index += 1
-            if self._challenge_index >= self._challenge_count:
-                return await self.async_step_finish()
-            return await self.async_step_challenges()
+                    self._challenge_index += 1
+                    if self._challenge_index >= self._challenge_count:
+                        return await self.async_step_finish()
+                    return await self.async_step_challenges()
 
         kids_dict = {
             kid_data["name"]: kid_id for kid_id, kid_data in self._kids_temp.items()
         }
         all_chores = self._chores_temp
+        default_data = user_input if user_input else None
         challenge_schema = build_challenge_schema(
-            kids_dict=kids_dict, chores_dict=all_chores, default=None
+            kids_dict=kids_dict,
+            chores_dict=all_chores,
+            default=default_data,
         )
         return self.async_show_form(
             step_id="challenges", data_schema=challenge_schema, errors=errors
@@ -815,6 +897,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             f"Badges: {', '.join(badge_data['name'] for badge_data in self._badges_temp.values()) or 'None'}\n\n"
             f"Rewards: {', '.join(reward_data['name'] for reward_data in self._rewards_temp.values()) or 'None'}\n\n"
             f"Penalties: {', '.join(penalty_data['name'] for penalty_data in self._penalties_temp.values()) or 'None'}\n\n"
+            f"Bonuses: {', '.join(bonus_data['name'] for bonus_data in self._bonuses_temp.values()) or 'None'}\n\n"
             f"Achievements: {', '.join(achievement_data['name'] for achievement_data in self._achievements_temp.values()) or 'None'}\n\n"
             f"Challenges: {', '.join(challenge_data['name'] for challenge_data in self._challenges_temp.values()) or 'None'}\n\n"
         )
@@ -836,6 +919,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             CONF_BADGES: self._badges_temp,
             CONF_REWARDS: self._rewards_temp,
             CONF_PENALTIES: self._penalties_temp,
+            CONF_BONUSES: self._bonuses_temp,
             CONF_ACHIEVEMENTS: self._achievements_temp,
             CONF_CHALLENGES: self._challenges_temp,
         }

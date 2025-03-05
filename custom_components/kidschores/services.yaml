@@ -189,6 +189,32 @@ apply_penalty:
       selector:
         text:
 
+apply_bonus:
+  name: "Apply Bonus"
+  description: "A parent applies a bonus to award extra points."
+  fields:
+    parent_name:
+      name: "Parent Name"
+      description: "The parent applying the bonus."
+      example: "Dad"
+      required: true
+      selector:
+        text:
+    kid_name:
+      name: "Kid Name"
+      description: "The kid receiving the bonus."
+      example: "Bob"
+      required: true
+      selector:
+        text:
+    bonus_name:
+      name: "Bonus Name"
+      description: "The name of the bonus to apply."
+      example: "Extra Helpful"
+      required: true
+      selector:
+        text:
+
 reset_all_data:
   name: "Reset All Data"
   description: "Completely clears the KidsChores data from storage."

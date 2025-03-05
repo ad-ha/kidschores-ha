@@ -19,6 +19,7 @@ LOGGER = logging.getLogger(__package__)
 # Supported Platforms
 PLATFORMS = [
     Platform.BUTTON,
+    Platform.CALENDAR,
     Platform.SELECT,
     Platform.SENSOR,
 ]
@@ -44,6 +45,7 @@ CONF_PENALTIES = "penalties"  # Key for penalties configuration
 CONF_POINTS_ICON = "points_icon"
 CONF_POINTS_LABEL = "points_label"  # Custom label for points
 CONF_REWARDS = "rewards"  # Key for rewards configuration
+CONF_BONUSES = "bonuses"
 
 # Options Flow Management
 OPTIONS_FLOW_ACHIEVEMENTS = "manage_achievements"  # Edit achivements step
@@ -54,6 +56,7 @@ OPTIONS_FLOW_KIDS = "manage_kids"  # Edit kids step
 OPTIONS_FLOW_PARENTS = "manage_parents"  # Edit parents step
 OPTIONS_FLOW_PENALTIES = "manage_penalties"  # Edit penalties step
 OPTIONS_FLOW_REWARDS = "manage_rewards"  # Edit rewards step
+OPTIONS_FLOW_BONUSES = "manage_bonuses"  # Edit bonuses step
 
 # Validation Keys
 VALIDATION_DUE_DATE = "due_date"  # Optional due date for chores
@@ -73,20 +76,24 @@ CONF_CHORE_NOTIFY_SERVICE = "chore_notify_service"
 NOTIFICATION_EVENT = "mobile_app_notification_action"
 
 # Achievement types
-ACHIEVEMENT_TYPE_STREAK = "chore_streak"  # e.g., “Make bed 20 days in a row”
-ACHIEVEMENT_TYPE_TOTAL = "chore_total"  # e.g., “Complete 100 chores overall”
+ACHIEVEMENT_TYPE_STREAK = "chore_streak"  # e.g., "Make bed 20 days in a row"
+ACHIEVEMENT_TYPE_TOTAL = "chore_total"  # e.g., "Complete 100 chores overall"
+ACHIEVEMENT_TYPE_DAILY_MIN = (
+    "daily_minimum"  # e.g., "Complete minimum 5 chores in one day"
+)
 
 # Challenge types
 CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW = (
-    "total_within_window"  # e.g., “Complete 50 chores in 30 days”
+    "total_within_window"  # e.g., "Complete 50 chores in 30 days"
 )
-CHALLENGE_TYPE_DAILY_MIN = "daily_minimum"  # e.g., “Do 2 chores each day for 14 days”
+CHALLENGE_TYPE_DAILY_MIN = "daily_minimum"  # e.g., "Do 2 chores each day for 14 days"
 
 
 # -------------------- Defaults --------------------
 # Default Icons
 DEFAULT_ACHIEVEMENTS_ICON = "mdi:trophy-award"  # Default icon for achievements
-DEFAULT_BADGE_ICON = "mdi:shield-star-outline"
+DEFAULT_BADGE_ICON = "mdi:shield-star-outline"  # Default icon for badges
+DEFAULT_CALENDAR_ICON = "mdi:calendar"  # Default icon for calendar sensors
 DEFAULT_CHALLENGES_ICON = "mdi:trophy"  # Default icon for achievements
 DEFAULT_CHORE_APPROVE_ICON = "mdi:checkbox-marked-circle-outline"
 DEFAULT_CHORE_BINARY_ICON = (
@@ -107,6 +114,7 @@ DEFAULT_POINTS_ADJUST_MINUS_MULTIPLE_ICON = "mdi:minus-circle-multiple-outline"
 DEFAULT_POINTS_ADJUST_PLUS_MULTIPLE_ICON = "mdi:plus-circle-multiple-outline"
 DEFAULT_POINTS_ICON = "mdi:star-outline"  # Default icon for points
 DEFAULT_STREAK_ICON = "mdi:blur-linear"  # Default icon for streaks
+DEFAULT_BONUS_ICON = "mdi:seal"  # Default icon for bonuses
 DEFAULT_REWARD_ICON = "mdi:gift-outline"  # Default icon for rewards
 DEFAULT_TROPHY_ICON = "mdi:trophy"  # For highest-badge sensor fallback
 DEFAULT_TROPHY_OUTLINE = "mdi:trophy-outline"
@@ -120,6 +128,7 @@ DEFAULT_POINTS = 5  # Default points awarded for each chore
 DEFAULT_POINTS_MULTIPLIER = 1  # Default points multiplier for badges
 DEFAULT_POINTS_LABEL = "Points"  # Default label for points displayed in UI
 DEFAULT_PENALTY_POINTS = 2  # Default points deducted for each penalty
+DEFAULT_BONUS_POINTS = 2  # Default points added for each bonus
 DEFAULT_REMINDER_DELAY = 30  # Default reminder delay in minutes
 DEFAULT_REWARD_COST = 10  # Default cost for each reward
 DEFAULT_DAILY_RESET_TIME = {
@@ -134,6 +143,8 @@ DEFAULT_NOTIFY_ON_APPROVAL = True
 DEFAULT_NOTIFY_ON_DISAPPROVAL = True
 
 # -------------------- Recurring Frequencies --------------------
+FREQUENCY_BIWEEKLY = "biweekly"
+FREQUENCY_CUSTOM = "custom"
 FREQUENCY_DAILY = "daily"
 FREQUENCY_MONTHLY = "monthly"
 FREQUENCY_NONE = "none"
@@ -151,6 +162,7 @@ DATA_PENDING_CHORE_APPROVALS = "pending_chore_approvals"  # Pending chore approv
 DATA_PENDING_REWARD_APPROVALS = "pending_reward_approvals"  # Pending reward approvals
 DATA_PENALTIES = "penalties"  # Key for storing penalties data
 DATA_REWARDS = "rewards"  # Key for storing rewards data
+DATA_BONUSES = "bonuses"  # Key for storing bonuses data
 
 # -------------------- States --------------------
 # Badge Threshold Types
@@ -164,10 +176,12 @@ CHORE_STATE_APPROVED = "approved"  # Chore fully approved
 CHORE_STATE_APPROVED_IN_PART = "approved_in_part"  # Chore approved for some kids
 CHORE_STATE_CLAIMED = "claimed"  # Chore claimed by a kid
 CHORE_STATE_CLAIMED_IN_PART = "claimed_in_part"  # Chore claimed by some kids
+CHORE_STATE_INDEPENDENT = "independent"  # Chore is not shared
 CHORE_STATE_OVERDUE = "overdue"  # Chore not completed before the due date
 CHORE_STATE_PARTIAL = "partial"  # Chore approved with partial points
 CHORE_STATE_PENDING = "pending"  # Default state: chore pending approval
-CHORE_STATE_UNKNOWN = "unknown"
+CHORE_STATE_UNKNOWN = "unknown"  # Unknown chore state
+
 
 # Reward States
 REWARD_STATE_APPROVED = "approved"  # Reward fully approved
@@ -205,12 +219,17 @@ ATTR_ASSOCIATED_CHORE = "associated_chore"
 ATTR_BADGES = "badges"
 ATTR_CHALLENGE_NAME = "challenge_name"
 ATTR_CHALLENGE_TYPE = "challenge_type"
+ATTR_CHORE_APPROVALS_COUNT = "chore_approvals_count"
+ATTR_CHORE_APPROVALS_TODAY = "chore_approvals_today"
+ATTR_CHORE_CLAIMS_COUNT = "chore_claims_count"
 ATTR_CHORE_CURRENT_STREAK = "chore_current_streak"
 ATTR_CHORE_HIGHEST_STREAK = "chore_highest_streak"
 ATTR_CHORE_NAME = "chore_name"
 ATTR_CLAIMED_ON = "Claimed on"
 ATTR_COST = "cost"
 ATTR_CRITERIA = "criteria"
+ATTR_CUSTOM_FREQUENCY_INTERVAL = "custom_frequency_interval"
+ATTR_CUSTOM_FREQUENCY_UNIT = "custom_frequency_unit"
 ATTR_DEFAULT_POINTS = "default_points"
 ATTR_DESCRIPTION = "description"
 ATTR_DUE_DATE = "due_date"
@@ -219,23 +238,37 @@ ATTR_GLOBAL_STATE = "global_state"
 ATTR_HIGHEST_BADGE_THRESHOLD_VALUE = "highest_badge_threshold_value"
 ATTR_KID_NAME = "kid_name"
 ATTR_KID_STATE = "kid_state"
+ATTR_LABELS = "labels"
 ATTR_KIDS_EARNED = "kids_earned"
 ATTR_LAST_DATE = "last_date"
 ATTR_PARTIAL_ALLOWED = "partial_allowed"
 ATTR_PENALTY_NAME = "penalty_name"
 ATTR_PENALTY_POINTS = "penalty_points"
 ATTR_POINTS_MULTIPLIER = "points_multiplier"
+ATTR_POINTS_TO_NEXT_BADGE = "points_to_next_badge"
 ATTR_RAW_PROGRESS = "raw_progress"
 ATTR_RAW_STREAK = "raw_streak"
 ATTR_RECURRING_FREQUENCY = "recurring_frequency"
 ATTR_REDEEMED_ON = "Redeemed on"
+ATTR_REWARD_APPROVALS_COUNT = "reward_approvals_count"
+ATTR_REWARD_CLAIMS_COUNT = "reward_claims_count"
 ATTR_REWARD_NAME = "reward_name"
 ATTR_REWARD_POINTS = "reward_points"
+ATTR_BONUS_NAME = "bonus_name"
+ATTR_BONUS_POINTS = "bonus_points"
 ATTR_START_DATE = "start_date"
 ATTR_SHARED_CHORE = "shared_chore"
 ATTR_TARGET_VALUE = "target_value"
 ATTR_THRESHOLD_TYPE = "threshold_type"
 ATTR_TYPE = "type"
+
+# Calendar Attributes
+ATTR_CAL_SUMMARY = "summary"
+ATTR_CAL_START = "start"
+ATTR_CAL_END = "end"
+ATTR_CAL_ALL_DAY = "all_day"
+ATTR_CAL_DESCRIPTION = "description"
+ATTR_CAL_MANUFACTURER = "manufacturer"
 
 # Sensor Types
 SENSOR_TYPE_BADGES = "badges"  # Sensor tracking earned badges
@@ -260,6 +293,7 @@ SENSOR_TYPE_PENDING_REWARD_APPROVALS = (
 )
 SENSOR_TYPE_REWARD_APPROVALS = "reward_approvals"  # Reward approvals sensor
 SENSOR_TYPE_REWARD_CLAIMS = "reward_claims"  # Reward claims sensor
+SENSOR_TYPE_BONUS_APPLIES = "bonus_applies"  # Bonus applies sensor
 
 
 # -------------------- Services --------------------
@@ -278,6 +312,7 @@ SERVICE_SET_CHORE_DUE_DATE = "set_chore_due_date"  # Set or reset chores due dat
 SERVICE_SKIP_CHORE_DUE_DATE = (
     "skip_chore_due_date"  # Skip chores due date and reschedule
 )
+SERVICE_APPLY_BONUS = "apply_bonus"  # Apply bonus service
 
 # Field Names (for consistency across services)
 FIELD_CHORE_ID = "chore_id"
@@ -287,6 +322,7 @@ FIELD_PARENT_NAME = "parent_name"
 FIELD_PENALTY_NAME = "penalty_name"
 FIELD_POINTS_AWARDED = "points_awarded"
 FIELD_REWARD_NAME = "reward_name"
+FIELD_BONUS_NAME = "bonus_name"
 
 # -------------------- Labels --------------------
 # Labels for Sensors and UI
@@ -306,6 +342,7 @@ BUTTON_PENALTY_PREFIX = (
     "penalty_button_"  # Prefix for dynamically created penalty buttons
 )
 BUTTON_REWARD_PREFIX = "reward_button_"  # Prefix for dynamically created reward buttons
+BUTTON_BONUS_PREFIX = "bonus_button_"  # Prefix for dynamically created bonus buttons
 
 # -------------------- Errors and Warnings --------------------
 DUE_DATE_NOT_SET = "Not Set"
@@ -324,6 +361,8 @@ ERROR_PENALTY_NOT_FOUND_FMT = (
 )
 ERROR_REWARD_NOT_FOUND = "Reward not found."  # Error for missing reward
 ERROR_REWARD_NOT_FOUND_FMT = "Reward '{}' not found"  # Error format for missing reward
+ERROR_BONUS_NOT_FOUND = "Bonus not found."  # Error for missing bonus
+ERROR_BONUS_NOT_FOUND_FMT = "Bonus '{}' not found"  # Error format for missing bonus
 ERROR_USER_NOT_AUTHORIZED = (
     "User is not authorized to perform this action."  # Auth error
 )

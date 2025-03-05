@@ -30,9 +30,11 @@ from .const import (
     FIELD_PENALTY_NAME,
     FIELD_POINTS_AWARDED,
     FIELD_REWARD_NAME,
+    FIELD_BONUS_NAME,
     LOGGER,
     MSG_NO_ENTRY_FOUND,
     SERVICE_APPLY_PENALTY,
+    SERVICE_APPLY_BONUS,
     SERVICE_APPROVE_CHORE,
     SERVICE_APPROVE_REWARD,
     SERVICE_CLAIM_CHORE,
@@ -107,11 +109,11 @@ APPLY_PENALTY_SCHEMA = vol.Schema(
     }
 )
 
-APPROVE_REWARD_SCHEMA = vol.Schema(
+APPLY_BONUS_SCHEMA = vol.Schema(
     {
         vol.Required(FIELD_PARENT_NAME): cv.string,
         vol.Required(FIELD_KID_NAME): cv.string,
-        vol.Required(FIELD_REWARD_NAME): cv.string,
+        vol.Required(FIELD_BONUS_NAME): cv.string,
     }
 )
 
@@ -551,6 +553,67 @@ def async_setup_services(hass: HomeAssistant):
                 f"Failed to apply penalty '{penalty_name}' for kid '{kid_name}'."
             )
 
+    async def handle_apply_bonus(call: ServiceCall):
+        """Handle applying a bonus."""
+        entry_id = _get_first_kidschores_entry(hass)
+        if not entry_id:
+            LOGGER.warning("Apply Bonus: %s", MSG_NO_ENTRY_FOUND)
+            return
+
+        coordinator: KidsChoresDataCoordinator = hass.data[DOMAIN][entry_id][
+            "coordinator"
+        ]
+        parent_name = call.data[FIELD_PARENT_NAME]
+        kid_name = call.data[FIELD_KID_NAME]
+        bonus_name = call.data[FIELD_BONUS_NAME]
+
+        # Map kid_name and bonus_name to internal_ids
+        kid_id = _get_kid_id_by_name(coordinator, kid_name)
+        if not kid_id:
+            LOGGER.warning("Apply Bonus: Kid '%s' not found", kid_name)
+            raise HomeAssistantError(f"Kid '{kid_name}' not found")
+
+        bonus_id = _get_bonus_id_by_name(coordinator, bonus_name)
+        if not bonus_id:
+            LOGGER.warning("Apply Bonus: Bonus '%s' not found", bonus_name)
+            raise HomeAssistantError(f"Bonus '{bonus_name}' not found")
+
+        # Check if user is authorized
+        user_id = call.context.user_id
+        if user_id and not await is_user_authorized_for_global_action(
+            hass, user_id, kid_id
+        ):
+            LOGGER.warning("Apply Bonus: User not authorized")
+            raise HomeAssistantError(
+                "You are not authorized to apply bonuses for this kid."
+            )
+
+        # Apply bonus
+        try:
+            coordinator.apply_bonus(
+                parent_name=parent_name, kid_id=kid_id, bonus_id=bonus_id
+            )
+            LOGGER.info(
+                "Bonus '%s' applied for kid '%s' by parent '%s'",
+                bonus_name,
+                kid_name,
+                parent_name,
+            )
+            await coordinator.async_request_refresh()
+        except HomeAssistantError as e:
+            LOGGER.error("Apply Bonus: %s", e)
+            raise
+        except Exception as e:
+            LOGGER.error(
+                "Apply Bonus: Failed to apply bonus '%s' for kid '%s': %s",
+                bonus_name,
+                kid_name,
+                e,
+            )
+            raise HomeAssistantError(
+                f"Failed to apply bonus '{bonus_name}' for kid '{kid_name}'."
+            )
+
     async def handle_reset_all_data(call: ServiceCall):
         """Handle manually resetting ALL data in KidsChores."""
         entry_id = _get_first_kidschores_entry(hass)
@@ -569,7 +632,7 @@ def async_setup_services(hass: HomeAssistant):
         await coordinator.storage_manager.async_clear_data()
 
         # Re-init the coordinator with reload config entry
-        hass.config_entries.async_reload(entry_id)
+        await hass.config_entries.async_reload(entry_id)
 
         coordinator.async_set_updated_data(coordinator._data)
         LOGGER.info("Manually reset all KidsChores data. Integration is now cleared")
@@ -597,6 +660,8 @@ def async_setup_services(hass: HomeAssistant):
         for kid_id, kid_info in coordinator.kids_data.items():
             kid_info["claimed_chores"] = []
             kid_info["approved_chores"] = []
+            kid_info["overdue_chores"] = []
+            kid_info["overdue_notifications"] = {}
 
         # Clear the pending approvals queue
         coordinator._data[DATA_PENDING_CHORE_APPROVALS] = []
@@ -641,6 +706,7 @@ def async_setup_services(hass: HomeAssistant):
         coordinator.reset_overdue_chores(chore_id=chore_id, kid_id=kid_id)
         LOGGER.info("Reset overdue chores (chore_id=%s, kid_id=%s)", chore_id, kid_id)
         await coordinator.async_request_refresh()
+        await coordinator._check_overdue_chores()
 
     async def handle_set_chore_due_date(call: ServiceCall):
         """Handle setting (or clearing) the due date of a chore."""
@@ -716,13 +782,17 @@ def async_setup_services(hass: HomeAssistant):
         chores_conf[chore_id] = existing_chore_options
         updated_options[DATA_CHORES] = chores_conf
 
+        new_data = dict(coordinator.config_entry.data)
+        new_data["last_change"] = dt_util.utcnow().isoformat()
+
         coordinator.hass.config_entries.async_update_entry(
-            coordinator.config_entry, options=updated_options
+            coordinator.config_entry, data=new_data, options=updated_options
         )
 
         coordinator._persist()
         coordinator.async_set_updated_data(coordinator._data)
         await coordinator.async_request_refresh()
+        await coordinator._check_overdue_chores()
 
     async def handle_skip_chore_due_date(call: ServiceCall) -> None:
         """Handle skipping the due date on a chore by rescheduling it to the next due date."""
@@ -820,6 +890,10 @@ def async_setup_services(hass: HomeAssistant):
         schema=SKIP_CHORE_DUE_DATE_SCHEMA,
     )
 
+    hass.services.async_register(
+        DOMAIN, SERVICE_APPLY_BONUS, handle_apply_bonus, schema=APPLY_BONUS_SCHEMA
+    )
+
     LOGGER.info("KidsChores services have been registered successfully")
 
 
@@ -832,6 +906,7 @@ async def async_unload_services(hass: HomeAssistant):
         SERVICE_REDEEM_REWARD,
         SERVICE_DISAPPROVE_REWARD,
         SERVICE_APPLY_PENALTY,
+        SERVICE_APPLY_BONUS,
         SERVICE_APPROVE_REWARD,
         SERVICE_RESET_ALL_DATA,
         SERVICE_RESET_ALL_CHORES,
@@ -892,4 +967,14 @@ def _get_penalty_id_by_name(
     for penalty_id, penalty_info in coordinator.penalties_data.items():
         if penalty_info.get("name") == penalty_name:
             return penalty_id
+    return None
+
+
+def _get_bonus_id_by_name(
+    coordinator: KidsChoresDataCoordinator, bonus_name: str
+) -> Optional[str]:
+    """Help function to get bonus_id by bonus_name."""
+    for bonus_id, bonus_info in coordinator.bonuses_data.items():
+        if bonus_info.get("name") == bonus_name:
+            return bonus_id
     return None

@@ -183,3 +183,28 @@ class ChoresKidSelect(KidsChoresSelectBase):
             if self._kid_id in chore.get("assigned_kids", []):
                 options.append(chore.get("name", f"Chore {chore_id}"))
         return options
+
+
+class BonusesSelect(KidsChoresSelectBase):
+    """Global select entity listing all defined bonuses by name."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "bonuses_select"
+
+    def __init__(self, coordinator: KidsChoresDataCoordinator, entry: ConfigEntry):
+        """Initialize the Bonuses select entity."""
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{entry.entry_id}_bonuses_select"
+        self._attr_name = "KidsChores: All Bonuses"
+        self.entity_id = f"select.kc_all_bonuses"
+
+    @property
+    def options(self) -> list[str]:
+        """Return a list of bonus names from the coordinator.
+
+        If no bonuses exist, returns an empty list.
+        """
+        return [
+            bonus_info.get("name", f"Bonus {bonus_id}")
+            for bonus_id, bonus_info in self.coordinator.bonuses_data.items()
+        ]

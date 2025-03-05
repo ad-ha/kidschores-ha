@@ -3,6 +3,7 @@
 
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import User
+from homeassistant.helpers.label_registry import async_get
 from typing import Optional
 
 from .const import LOGGER, DOMAIN
@@ -137,3 +138,10 @@ def _get_kid_name_by_id(self, kid_id: str) -> Optional[str]:
     if kid_info:
         return kid_info.get("name")
     return None
+
+
+def get_friendly_label(hass, label_name: str) -> str:
+    registry = async_get(hass)
+    entries = registry.async_list_labels()
+    label_entry = registry.async_get_label(label_name)
+    return label_entry.name if label_entry else label_name

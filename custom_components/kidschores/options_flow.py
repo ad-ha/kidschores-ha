@@ -14,6 +14,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import (
     ACHIEVEMENT_TYPE_STREAK,
+    CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
     CONF_APPLICABLE_DAYS,
     CONF_ACHIEVEMENTS,
     CONF_BADGES,
@@ -28,12 +29,14 @@ from .const import (
     CONF_POINTS_ICON,
     CONF_POINTS_LABEL,
     CONF_REWARDS,
+    CONF_BONUSES,
     DEFAULT_APPLICABLE_DAYS,
     DEFAULT_NOTIFY_ON_APPROVAL,
     DEFAULT_NOTIFY_ON_CLAIM,
     DEFAULT_NOTIFY_ON_DISAPPROVAL,
     DEFAULT_POINTS_ICON,
     DEFAULT_POINTS_LABEL,
+    FREQUENCY_CUSTOM,
     DOMAIN,
     LOGGER,
 )
@@ -48,6 +51,7 @@ from .flow_helpers import (
     build_achievement_schema,
     build_challenge_schema,
     ensure_utc_datetime,
+    build_bonus_schema,
 )
 
 
@@ -60,7 +64,7 @@ def _ensure_str(value):
 
 
 class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
-    """Options Flow for adding/editing/deleting kids, chores, badges, rewards, and penalties.
+    """Options Flow for adding/editing/deleting kids, chores, badges, rewards, penalties, and bonuses.
 
     Manages entities via internal_id for consistency and historical data preservation.
     """
@@ -98,6 +102,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             "manage_badge",
             "manage_reward",
             "manage_penalty",
+            "manage_bonus",
             "manage_achievement",
             "manage_challenge",
             "done",
@@ -252,6 +257,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             "penalty": CONF_PENALTIES,
             "achievement": CONF_ACHIEVEMENTS,
             "challenge": CONF_CHALLENGES,
+            "bonus": CONF_BONUSES,
         }
         key = entity_type_to_conf.get(self._entity_type)
         if key is None:
@@ -413,6 +419,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     step_id="add_chore", data_schema=schema, errors=errors
                 )
 
+            if user_input.get("recurring_frequency") != FREQUENCY_CUSTOM:
+                user_input.pop("custom_interval", None)
+                user_input.pop("custom_interval_unit", None)
+
             chores_dict[internal_id] = {
                 "name": chore_name,
                 "default_points": user_input["default_points"],
@@ -423,8 +433,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 ],
                 "assigned_kids": user_input["assigned_kids"],
                 "description": user_input.get("chore_description", ""),
+                "chore_labels": user_input.get("chore_labels", []),
                 "icon": user_input.get("icon", ""),
                 "recurring_frequency": user_input.get("recurring_frequency", "none"),
+                "custom_interval": user_input.get("custom_interval"),
+                "custom_interval_unit": user_input.get("custom_interval_unit"),
                 "due_date": due_date_str,
                 "applicable_days": user_input.get(
                     CONF_APPLICABLE_DAYS, DEFAULT_APPLICABLE_DAYS
@@ -485,6 +498,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "icon": user_input.get("icon", ""),
                     "internal_id": internal_id,
                     "description": user_input.get("badge_description", ""),
+                    "badge_labels": user_input.get("badge_labels", []),
                 }
                 self._entry_options[CONF_BADGES] = badges_dict
 
@@ -518,6 +532,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "name": reward_name,
                     "cost": user_input["reward_cost"],
                     "description": user_input.get("reward_description", ""),
+                    "reward_labels": user_input.get("reward_labels", []),
                     "icon": user_input.get("icon", ""),
                     "internal_id": internal_id,
                 }
@@ -553,6 +568,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 penalties_dict[internal_id] = {
                     "name": penalty_name,
                     "description": user_input.get("penalty_description", ""),
+                    "penalty_labels": user_input.get("penalty_labels", []),
                     "points": -abs(penalty_points),  # Ensure points are negative
                     "icon": user_input.get("icon", ""),
                     "internal_id": internal_id,
@@ -568,6 +584,42 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         schema = build_penalty_schema()
         return self.async_show_form(
             step_id="add_penalty", data_schema=schema, errors=errors
+        )
+
+    async def async_step_add_bonus(self, user_input=None):
+        """Add a new bonus."""
+        self._entry_options = dict(self.config_entry.options)
+
+        errors = {}
+        bonuses_dict = self._entry_options.setdefault(CONF_BONUSES, {})
+
+        if user_input is not None:
+            bonus_name = user_input["bonus_name"].strip()
+            bonus_points = user_input["bonus_points"]
+            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+
+            if any(
+                bonus_data["name"] == bonus_name for bonus_data in bonuses_dict.values()
+            ):
+                errors["bonus_name"] = "duplicate_bonus"
+            else:
+                bonuses_dict[internal_id] = {
+                    "name": bonus_name,
+                    "description": user_input.get("bonus_description", ""),
+                    "bonus_labels": user_input.get("bonus_labels", []),
+                    "points": abs(bonus_points),  # Ensure points are positive
+                    "icon": user_input.get("icon", ""),
+                    "internal_id": internal_id,
+                }
+                self._entry_options[CONF_BONUSES] = bonuses_dict
+
+                LOGGER.debug("Added bonus '%s' with ID: %s", bonus_name, internal_id)
+                await self._update_and_reload()
+                return await self.async_step_init()
+
+        schema = build_bonus_schema()
+        return self.async_show_form(
+            step_id="add_bonus", data_schema=schema, errors=errors
         )
 
     async def async_step_add_achievement(self, user_input=None):
@@ -586,33 +638,40 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             ):
                 errors["name"] = "duplicate_achievement"
             else:
-                internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-
                 _type = user_input["type"]
-                if _type == "chore":
-                    chosen_chore_id = user_input.get("selected_chore_id")
-                    final_criteria = chosen_chore_id
-                else:
-                    final_criteria = user_input.get("criteria", "")
 
-                achievements_dict[internal_id] = {
-                    "name": achievement_name,
-                    "description": user_input.get("description", ""),
-                    "icon": user_input.get("icon", ""),
-                    "assigned_kids": user_input["assigned_kids"],
-                    "type": _type,
-                    "criteria": final_criteria,
-                    "target_value": user_input["target_value"],
-                    "reward_points": user_input["reward_points"],
-                    "internal_id": internal_id,
-                    "progress": {},
-                }
-                self._entry_options[CONF_ACHIEVEMENTS] = achievements_dict
-                LOGGER.debug(
-                    "Added achievement '%s' with ID: %s", achievement_name, internal_id
-                )
-                await self._update_and_reload()
-                return await self.async_step_init()
+                chore_id = ""
+
+                if _type == ACHIEVEMENT_TYPE_STREAK:
+                    c = user_input.get("selected_chore_id") or ""
+                    if not c or c == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+                    chore_id = c
+
+                if not errors:
+                    internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+                    achievements_dict[internal_id] = {
+                        "name": achievement_name,
+                        "description": user_input.get("description", ""),
+                        "achievement_labels": user_input.get("achievement_labels", []),
+                        "icon": user_input.get("icon", ""),
+                        "assigned_kids": user_input["assigned_kids"],
+                        "type": _type,
+                        "selected_chore_id": chore_id,
+                        "criteria": user_input.get("criteria", "").strip(),
+                        "target_value": user_input["target_value"],
+                        "reward_points": user_input["reward_points"],
+                        "internal_id": internal_id,
+                        "progress": {},
+                    }
+                    self._entry_options["achievements"] = achievements_dict
+                    LOGGER.debug(
+                        "Added achievement '%s' with ID: %s",
+                        achievement_name,
+                        internal_id,
+                    )
+                    await self._update_and_reload()
+                    return await self.async_step_init()
 
         kids_dict = {
             kid_data["name"]: kid_id
@@ -639,13 +698,14 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             if any(data["name"] == challenge_name for data in challenges_dict.values()):
                 errors["name"] = "duplicate_challenge"
             else:
-                internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-
                 _type = user_input["type"]
-                if _type == "chore":
-                    final_criteria = user_input.get("selected_chore_id")
-                else:
-                    final_criteria = user_input.get("criteria", "")
+
+                chore_id = ""
+                if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
+                    c = user_input.get("selected_chore_id") or ""
+                    if not c or c == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+                    chore_id = c
 
                 # Process start_date and end_date using the helper:
                 start_date_input = user_input.get("start_date")
@@ -679,44 +739,37 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 else:
                     end_date = None
 
-            if errors:
-                kids_dict = {
-                    data["name"]: kid_id
-                    for kid_id, data in self._entry_options.get(CONF_KIDS, {}).items()
-                }
-                schema = build_challenge_schema(
-                    kids_dict=kids_dict, chores_dict=chores_dict, default=user_input
-                )
-                return self.async_show_form(
-                    step_id="add_challenge", data_schema=schema, errors=errors
-                )
+                if not errors:
+                    internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+                    challenges_dict[internal_id] = {
+                        "name": challenge_name,
+                        "description": user_input.get("description", ""),
+                        "challenge_labels": user_input.get("challenge_labels", []),
+                        "icon": user_input.get("icon", ""),
+                        "assigned_kids": user_input["assigned_kids"],
+                        "type": _type,
+                        "selected_chore_id": chore_id,
+                        "criteria": user_input.get("criteria", "").strip(),
+                        "target_value": user_input["target_value"],
+                        "reward_points": user_input["reward_points"],
+                        "start_date": start_date,
+                        "end_date": end_date,
+                        "internal_id": internal_id,
+                        "progress": {},
+                    }
+                    self._entry_options[CONF_CHALLENGES] = challenges_dict
+                    LOGGER.debug(
+                        "Added challenge '%s' with ID: %s", challenge_name, internal_id
+                    )
+                    await self._update_and_reload()
+                    return await self.async_step_init()
 
-            challenges_dict[internal_id] = {
-                "name": challenge_name,
-                "description": user_input.get("description", ""),
-                "icon": user_input.get("icon", ""),
-                "assigned_kids": user_input["assigned_kids"],
-                "type": _type,
-                "criteria": final_criteria,
-                "target_value": user_input["target_value"],
-                "reward_points": user_input["reward_points"],
-                "start_date": start_date,
-                "end_date": end_date,
-                "internal_id": internal_id,
-                "progress": {},
-            }
-            self._entry_options[CONF_CHALLENGES] = challenges_dict
-            LOGGER.debug(
-                "Added challenge '%s' with ID: %s", challenge_name, internal_id
-            )
-            await self._update_and_reload()
-            return await self.async_step_init()
         kids_dict = {
             kid_data["name"]: kid_id
             for kid_id, kid_data in self._entry_options.get(CONF_KIDS, {}).items()
         }
         challenge_schema = build_challenge_schema(
-            kids_dict=kids_dict, chores_dict=chores_dict, default=None
+            kids_dict=kids_dict, chores_dict=chores_dict, default=user_input
         )
         return self.async_show_form(
             step_id="add_challenge", data_schema=challenge_schema, errors=errors
@@ -877,8 +930,13 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             ):
                 errors["chore_name"] = "duplicate_chore"
             else:
+                if user_input.get("recurring_frequency") != FREQUENCY_CUSTOM:
+                    user_input.pop("custom_interval", None)
+                    user_input.pop("custom_interval_unit", None)
+
                 chore_data["name"] = new_name
                 chore_data["description"] = user_input.get("chore_description", "")
+                chore_data["chore_labels"] = user_input.get("chore_labels", [])
                 chore_data["default_points"] = user_input["default_points"]
                 chore_data["shared_chore"] = user_input["shared_chore"]
                 chore_data["partial_allowed"] = user_input["partial_allowed"]
@@ -889,6 +947,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 chore_data["icon"] = user_input.get("icon", "")
                 chore_data["recurring_frequency"] = user_input.get(
                     "recurring_frequency", "none"
+                )
+                chore_data["custom_interval"] = user_input.get("custom_interval")
+                chore_data["custom_interval_unit"] = user_input.get(
+                    "custom_interval_unit"
                 )
                 if raw_due:
                     try:
@@ -1004,6 +1066,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 badge_data["points_multiplier"] = user_input["points_multiplier"]
                 badge_data["icon"] = user_input.get("icon", "")
                 badge_data["description"] = user_input["badge_description"]
+                badge_data["badge_labels"] = user_input.get("badge_labels", [])
 
                 self._entry_options[CONF_BADGES] = badges_dict
 
@@ -1043,6 +1106,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 reward_data["name"] = new_name
                 reward_data["cost"] = user_input["reward_cost"]
                 reward_data["description"] = user_input.get("reward_description", "")
+                reward_data["reward_labels"] = user_input.get("reward_labels", [])
                 reward_data["icon"] = user_input.get("icon", "")
 
                 self._entry_options[CONF_REWARDS] = rewards_dict
@@ -1083,6 +1147,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             else:
                 penalty_data["name"] = new_name
                 penalty_data["description"] = user_input.get("penalty_description", "")
+                penalty_data["penalty_labels"] = user_input.get("penalty_labels", [])
                 penalty_data["points"] = -abs(
                     penalty_points
                 )  # Ensure points are negative
@@ -1100,6 +1165,51 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         schema = build_penalty_schema(default=display_data)
         return self.async_show_form(
             step_id="edit_penalty", data_schema=schema, errors=errors
+        )
+
+    async def async_step_edit_bonus(self, user_input=None):
+        """Edit an existing bonus."""
+        self._entry_options = dict(self.config_entry.options)
+
+        errors = {}
+        bonuses_dict = self._entry_options.get(CONF_BONUSES, {})
+        internal_id = self.context.get("internal_id")
+
+        if not internal_id or internal_id not in bonuses_dict:
+            LOGGER.error("Edit bonus: Invalid internal_id '%s'", internal_id)
+            return self.async_abort(reason="invalid_bonus")
+
+        bonus_data = bonuses_dict[internal_id]
+
+        if user_input is not None:
+            new_name = user_input["bonus_name"].strip()
+            bonus_points = user_input["bonus_points"]
+
+            # Check for duplicate names excluding current bonus
+            if any(
+                data["name"] == new_name and eid != internal_id
+                for eid, data in bonuses_dict.items()
+            ):
+                errors["bonus_name"] = "duplicate_bonus"
+            else:
+                bonus_data["name"] = new_name
+                bonus_data["description"] = user_input.get("bonus_description", "")
+                bonus_data["bonus_labels"] = user_input.get("bonus_labels", [])
+                bonus_data["points"] = abs(bonus_points)  # Ensure points are positive
+                bonus_data["icon"] = user_input.get("icon", "")
+
+                self._entry_options[CONF_BONUSES] = bonuses_dict
+
+                LOGGER.debug("Edited bonus '%s' with ID: %s", new_name, internal_id)
+                await self._update_and_reload()
+                return await self.async_step_init()
+
+        # Prepare data for schema (convert points to positive for display)
+        display_data = dict(bonus_data)
+        display_data["bonus_points"] = abs(display_data["points"])
+        schema = build_bonus_schema(default=display_data)
+        return self.async_show_form(
+            step_id="edit_bonus", data_schema=schema, errors=errors
         )
 
     async def async_step_edit_achievement(self, user_input=None):
@@ -1125,26 +1235,36 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["name"] = "duplicate_achievement"
             else:
                 _type = user_input["type"]
-                achievement_data["name"] = new_name
-                achievement_data["description"] = user_input.get("description", "")
-                achievement_data["icon"] = user_input.get("icon", "")
-                achievement_data["assigned_kids"] = user_input["assigned_kids"]
-                achievement_data["type"] = _type
-                achievement_data["selected_chore_id"] = user_input.get(
-                    "selected_chore_id", achievement_data.get("selected_chore_id", "")
-                )
-                achievement_data["criteria"] = user_input.get(
-                    "criteria", achievement_data.get("criteria", "")
-                )
-                achievement_data["target_value"] = user_input["target_value"]
-                achievement_data["reward_points"] = user_input["reward_points"]
-                achievements_dict[internal_id] = achievement_data
-                self._entry_options[CONF_ACHIEVEMENTS] = achievements_dict
-                LOGGER.debug(
-                    "Edited achievement '%s' with ID: %s", new_name, internal_id
-                )
-                await self._update_and_reload()
-                return await self.async_step_init()
+
+                chore_id = ""
+                if _type == ACHIEVEMENT_TYPE_STREAK:
+                    c = user_input.get("selected_chore_id") or ""
+                    if not c or c == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+                    chore_id = c
+
+                if not errors:
+                    achievement_data["name"] = new_name
+                    achievement_data["description"] = user_input.get("description", "")
+                    achievement_data["achievement_labels"] = user_input.get(
+                        "achievement_labels", []
+                    )
+                    achievement_data["icon"] = user_input.get("icon", "")
+                    achievement_data["assigned_kids"] = user_input["assigned_kids"]
+                    achievement_data["type"] = _type
+                    achievement_data["selected_chore_id"] = chore_id
+                    achievement_data["criteria"] = user_input.get(
+                        "criteria", ""
+                    ).strip()
+                    achievement_data["target_value"] = user_input["target_value"]
+                    achievement_data["reward_points"] = user_input["reward_points"]
+                    achievements_dict[internal_id] = achievement_data
+                    self._entry_options[CONF_ACHIEVEMENTS] = achievements_dict
+                    LOGGER.debug(
+                        "Edited achievement '%s' with ID: %s", new_name, internal_id
+                    )
+                    await self._update_and_reload()
+                    return await self.async_step_init()
 
         kids_dict = {
             kid_data["name"]: kid_id
@@ -1172,6 +1292,61 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         challenge_data = challenges_dict[internal_id]
 
+        if user_input is None:
+            kids_dict = {
+                data["name"]: kid_id
+                for kid_id, data in self._entry_options.get(CONF_KIDS, {}).items()
+            }
+            chores_dict = self._entry_options.get(CONF_CHORES, {})
+            # Convert stored start/end dates to a display format (e.g. local time string)
+            default_data = {
+                **challenge_data,
+                "start_date": challenge_data.get("start_date")
+                and dt_util.as_local(
+                    dt_util.parse_datetime(challenge_data["start_date"])
+                ).strftime("%Y-%m-%d %H:%M:%S"),
+                "end_date": challenge_data.get("end_date")
+                and dt_util.as_local(
+                    dt_util.parse_datetime(challenge_data["end_date"])
+                ).strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            schema = build_challenge_schema(
+                kids_dict=kids_dict, chores_dict=chores_dict, default=default_data
+            )
+            return self.async_show_form(
+                step_id="edit_challenge", data_schema=schema, errors=errors
+            )
+
+        start_date_input = user_input.get("start_date")
+        if start_date_input:
+            try:
+                new_start_date = ensure_utc_datetime(self.hass, start_date_input)
+                start_dt = dt_util.parse_datetime(new_start_date)
+                if start_dt and start_dt < dt_util.utcnow():
+                    errors["start_date"] = "start_date_in_past"
+            except Exception:
+                errors["start_date"] = "invalid_start_date"
+                new_start_date = None
+        else:
+            new_start_date = None
+
+        end_date_input = user_input.get("end_date")
+        if end_date_input:
+            try:
+                new_end_date = ensure_utc_datetime(self.hass, end_date_input)
+                end_dt = dt_util.parse_datetime(new_end_date)
+                if end_dt and end_dt <= dt_util.utcnow():
+                    errors["end_date"] = "end_date_in_past"
+                if new_start_date:
+                    sdt = dt_util.parse_datetime(new_start_date)
+                    if sdt and end_dt and end_dt <= sdt:
+                        errors["end_date"] = "end_date_not_after_start_date"
+            except Exception:
+                errors["end_date"] = "invalid_end_date"
+                new_end_date = None
+        else:
+            new_end_date = None
+
         if user_input is not None:
             new_name = user_input["name"].strip()
             if any(
@@ -1181,83 +1356,34 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["name"] = "duplicate_challenge"
             else:
                 _type = user_input["type"]
-                challenge_data["name"] = new_name
-                challenge_data["description"] = user_input.get("description", "")
-                challenge_data["icon"] = user_input.get("icon", "")
-                challenge_data["assigned_kids"] = user_input["assigned_kids"]
-                challenge_data["type"] = _type
-                challenge_data["selected_chore_id"] = user_input.get(
-                    "selected_chore_id", challenge_data.get("selected_chore_id", "")
-                )
 
-                challenge_data["criteria"] = user_input.get(
-                    "criteria", challenge_data.get("criteria", "")
-                )
-                challenge_data["target_value"] = user_input["target_value"]
-                challenge_data["reward_points"] = user_input["reward_points"]
+                chore_id = ""
+                if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
+                    c = user_input.get("selected_chore_id") or ""
+                    if not c or c == "None":
+                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+                    chore_id = c
 
-                # Process start_date and end_date using ensure_utc_datetime:
-                start_date_input = user_input.get("start_date")
-                end_date_input = user_input.get("end_date")
-
-                if start_date_input:
-                    try:
-                        start_date = ensure_utc_datetime(
-                            self.hass, user_input["start_date"]
-                        )
-                        start_dt = dt_util.parse_datetime(start_date)
-                        if start_dt and start_dt < dt_util.utcnow():
-                            errors["start_date"] = "start_date_in_past"
-                        else:
-                            challenge_data["start_date"] = start_date
-                    except Exception:
-                        errors["start_date"] = "invalid_start_date"
-                else:
-                    challenge_data["start_date"] = None
-
-                if end_date_input:
-                    try:
-                        end_date = ensure_utc_datetime(
-                            self.hass, user_input["end_date"]
-                        )
-                        end_dt = dt_util.parse_datetime(end_date)
-                        if end_dt and end_dt <= dt_util.utcnow():
-                            errors["end_date"] = "end_date_in_past"
-                        if challenge_data.get("start_date"):
-                            sdt = dt_util.parse_datetime(challenge_data["start_date"])
-                            if sdt and end_dt and end_dt <= sdt:
-                                errors["end_date"] = "end_date_not_after_start_date"
-                            else:
-                                challenge_data["end_date"] = end_date
-                        else:
-                            challenge_data["end_date"] = end_date
-                    except Exception:
-                        errors["end_date"] = "invalid_end_date"
-                else:
-                    challenge_data["end_date"] = None
-
-            if errors:
-                kids_dict = {
-                    data["name"]: kid_id
-                    for kid_id, data in self._entry_options.get(CONF_KIDS, {}).items()
-                }
-                chores_dict = self._entry_options.get(CONF_CHORES, {})
-                default_data = user_input.copy()
-                return self.async_show_form(
-                    step_id="edit_challenge",
-                    data_schema=build_challenge_schema(
-                        kids_dict=kids_dict,
-                        chores_dict=chores_dict,
-                        default=default_data,
-                    ),
-                    errors=errors,
-                )
-
-            challenges_dict[internal_id] = challenge_data
-            self._entry_options[CONF_CHALLENGES] = challenges_dict
-            LOGGER.debug("Edited challenge '%s' with ID: %s", new_name, internal_id)
-            await self._update_and_reload()
-            return await self.async_step_init()
+                if not errors:
+                    challenge_data["name"] = new_name
+                    challenge_data["description"] = user_input.get("description", "")
+                    challenge_data["challenge_labels"] = user_input.get(
+                        "challenge_labels", []
+                    )
+                    challenge_data["icon"] = user_input.get("icon", "")
+                    challenge_data["assigned_kids"] = user_input["assigned_kids"]
+                    challenge_data["type"] = _type
+                    challenge_data["selected_chore_id"] = chore_id
+                    challenge_data["criteria"] = user_input.get("criteria", "").strip()
+                    challenge_data["target_value"] = user_input["target_value"]
+                    challenge_data["reward_points"] = user_input["reward_points"]
+                    challenge_data["start_date"] = new_start_date
+                    challenge_data["end_date"] = new_end_date
+                    LOGGER.debug(
+                        "Edited challenge '%s' with ID: %s", new_name, internal_id
+                    )
+                    await self._update_and_reload()
+                    return await self.async_step_init()
 
         kids_dict = {
             kid_data["name"]: kid_id
@@ -1265,8 +1391,13 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         }
         chores_dict = self._entry_options.get(CONF_CHORES, {})
 
+        default_data = {
+            **challenge_data,
+            "start_date": new_start_date,
+            "end_date": new_end_date,
+        }
         challenge_schema = build_challenge_schema(
-            kids_dict=kids_dict, chores_dict=chores_dict, default=challenge_data
+            kids_dict=kids_dict, chores_dict=chores_dict, default=default_data
         )
         return self.async_show_form(
             step_id="edit_challenge", data_schema=challenge_schema, errors=errors
@@ -1495,6 +1626,34 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="delete_challenge",
             data_schema=vol.Schema({}),
             description_placeholders={"challenge_name": challenge_name},
+        )
+
+    async def async_step_delete_bonus(self, user_input=None):
+        """Delete a bonus."""
+        self._entry_options = dict(self.config_entry.options)
+
+        bonuses_dict = self._entry_options.get(CONF_BONUSES, {})
+        internal_id = self.context.get("internal_id")
+
+        if not internal_id or internal_id not in bonuses_dict:
+            LOGGER.error("Delete bonus: Invalid internal_id '%s'", internal_id)
+            return self.async_abort(reason="invalid_bonus")
+
+        bonus_name = bonuses_dict[internal_id]["name"]
+
+        if user_input is not None:
+            bonuses_dict.pop(internal_id, None)
+
+            self._entry_options[CONF_BONUSES] = bonuses_dict
+
+            LOGGER.debug("Deleted bonus '%s' with ID: %s", bonus_name, internal_id)
+            await self._update_and_reload()
+            return await self.async_step_init()
+
+        return self.async_show_form(
+            step_id="delete_bonus",
+            data_schema=vol.Schema({}),
+            description_placeholders={"bonus_name": bonus_name},
         )
 
     # ------------------ HELPER METHODS ------------------

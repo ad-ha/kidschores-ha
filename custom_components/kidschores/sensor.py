@@ -13,17 +13,17 @@ Available Sensors:
 07. CompletedChoresWeeklySensor ........ Chores completed by the kid this week
 08. CompletedChoresMonthlySensor ....... Chores completed by the kid this month
 09. CompletedChoresTotalSensor ......... Total chores completed by the kid
-10. KidBadgesSensor .................... Number of badges the kid currently has
+10.* KidBadgesSensor .................... Number of badges the kid currently has - DEPRECATE
 11. KidHighestBadgeSensor .............. The highest (threshold) badge the kid holds
 12. BadgeSensor ........................ One sensor per badge, showing its threshold & who earned it
 13. ChoreStatusSensor .................. Shows current state (pending/claimed/approved, etc.) for each (kid, chore)
 14. SharedChoreGlobalStateSensor ....... Shows current global state for shared chores
 15. RewardStatusSensor ................. Shows current state (not claimed/claimed/approved) for each (kid, reward)
 16. PenaltyAppliesSensor ............... Tracks how many times each penalty was applied for each kid
-17. RewardClaimsSensor ................. Number of times a reward was claimed by a kid
-18. RewardApprovalsSensor .............. Number of times a reward was approved for a kid
-19. ChoreClaimsSensor .................. Number of times a chore was claimed by a kid
-20. ChoreApprovalsSensor ............... Number of times a chore was approved for a kid
+17.* RewardClaimsSensor ................. Number of times a reward was claimed by a kid - DEPRECATE
+18.* RewardApprovalsSensor .............. Number of times a reward was approved for a kid - DEPRECATE
+19.* ChoreClaimsSensor .................. Number of times a chore was claimed by a kid - DEPRECATE
+20.* ChoreApprovalsSensor ............... Number of times a chore was approved for a kid - DEPRECATE
 21. PendingChoreApprovalsSensor ........ Lists chores that are awaiting approval
 22. PendingRewardApprovalsSensor ....... Lists rewards that are awaiting approval
 23. AchievementSensor .................. Shows the achievement name, target value, reward points, and number of kids that have earned it
@@ -31,10 +31,11 @@ Available Sensors:
 25. AchievementProgressSensor .......... Progress (in %) toward an achievement per kid
 26. ChallengeProgressSensor ............ Progress (in %) toward a challenge per kid
 27. KidHighestStreakSensor ............. The highest current streak (in days) among streak-type achievements for a kid
-28. ChoreStreakSensor .................. Current streak (in days) for a kid for a specific chore
+28.* ChoreStreakSensor .................. Current streak (in days) for a kid for a specific chore - DEPRECATE
 """
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import PERCENTAGE, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.exceptions import HomeAssistantError
@@ -42,6 +43,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from .const import (
+    ACHIEVEMENT_TYPE_DAILY_MIN,
     ACHIEVEMENT_TYPE_STREAK,
     ACHIEVEMENT_TYPE_TOTAL,
     ATTR_ACHIEVEMENT_NAME,
@@ -55,11 +57,16 @@ from .const import (
     ATTR_CHALLENGE_NAME,
     ATTR_CHALLENGE_TYPE,
     ATTR_CLAIMED_ON,
+    ATTR_CHORE_APPROVALS_COUNT,
+    ATTR_CHORE_APPROVALS_TODAY,
+    ATTR_CHORE_CLAIMS_COUNT,
     ATTR_CHORE_CURRENT_STREAK,
     ATTR_CHORE_HIGHEST_STREAK,
     ATTR_CHORE_NAME,
     ATTR_COST,
     ATTR_CRITERIA,
+    ATTR_CUSTOM_FREQUENCY_INTERVAL,
+    ATTR_CUSTOM_FREQUENCY_UNIT,
     ATTR_DEFAULT_POINTS,
     ATTR_DESCRIPTION,
     ATTR_DUE_DATE,
@@ -68,19 +75,25 @@ from .const import (
     ATTR_GLOBAL_STATE,
     ATTR_KID_NAME,
     ATTR_KIDS_EARNED,
+    ATTR_LABELS,
     ATTR_LAST_DATE,
     ATTR_PARTIAL_ALLOWED,
     ATTR_PENALTY_NAME,
     ATTR_PENALTY_POINTS,
     ATTR_POINTS_MULTIPLIER,
+    ATTR_POINTS_TO_NEXT_BADGE,
     ATTR_RECURRING_FREQUENCY,
     ATTR_RAW_PROGRESS,
     ATTR_RAW_STREAK,
     ATTR_REDEEMED_ON,
+    ATTR_REWARD_APPROVALS_COUNT,
+    ATTR_REWARD_CLAIMS_COUNT,
     ATTR_REWARD_NAME,
     ATTR_REWARD_POINTS,
     ATTR_START_DATE,
     ATTR_SHARED_CHORE,
+    ATTR_BONUS_NAME,
+    ATTR_BONUS_POINTS,
     ATTR_TARGET_VALUE,
     ATTR_THRESHOLD_TYPE,
     ATTR_TYPE,
@@ -105,11 +118,14 @@ from .const import (
     DEFAULT_POINTS_LABEL,
     DEFAULT_REWARD_COST,
     DEFAULT_REWARD_ICON,
+    DEFAULT_BONUS_ICON,
+    DEFAULT_BONUS_POINTS,
     DEFAULT_STREAK_ICON,
     DEFAULT_TROPHY_ICON,
     DEFAULT_TROPHY_OUTLINE,
     DOMAIN,
     DUE_DATE_NOT_SET,
+    FREQUENCY_CUSTOM,
     LABEL_POINTS,
     REWARD_STATE_APPROVED,
     REWARD_STATE_CLAIMED,
@@ -119,20 +135,13 @@ from .const import (
     UNKNOWN_REWARD,
 )
 from .coordinator import KidsChoresDataCoordinator
-from homeassistant.const import PERCENTAGE, UnitOfTime
+from .kc_helpers import get_friendly_label
 
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ):
-    """Set up sensors for KidsChores integration.
-
-    - Kid points
-    - Completed chores daily/weekly/monthly
-    - Kid badges (# of badges)
-    - Highest badge sensor
-    - A ChoreStatusSensor for each (kid, chore).
-    """
+    """Set up sensors for KidsChores integration."""
     data = hass.data[DOMAIN][entry.entry_id]
     coordinator: KidsChoresDataCoordinator = data["coordinator"]
 
@@ -259,6 +268,15 @@ async def async_setup_entry(
                 )
             )
 
+        # Bonus Applies
+        for bonus_id, bonus_info in coordinator.bonuses_data.items():
+            bonus_name = bonus_info.get("name", f"Bonus {bonus_id}")
+            entities.append(
+                BonusAppliesSensor(
+                    coordinator, entry, kid_id, kid_name, bonus_id, bonus_name
+                )
+            )
+
         # Achivement Progress per Kid
         for achievement_id, achievement in coordinator.achievements_data.items():
             if kid_id in achievement.get("assigned_kids", []):
@@ -376,16 +394,15 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         """Return the chore's state based on shared or individual tracking."""
         chore_info = self.coordinator.chores_data.get(self._chore_id, {})
-        global_state = chore_info.get("state", CHORE_STATE_UNKNOWN)
-
-        if global_state == CHORE_STATE_OVERDUE:
-            return CHORE_STATE_OVERDUE
 
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        # The status of the kids chore should always be their own status, it's only global status that would show independent or in-part
         if self._chore_id in kid_info.get("approved_chores", []):
             return CHORE_STATE_APPROVED
         elif self._chore_id in kid_info.get("claimed_chores", []):
             return CHORE_STATE_CLAIMED
+        elif self._chore_id in kid_info.get("overdue_chores", []):
+            return CHORE_STATE_OVERDUE
         else:
             return CHORE_STATE_PENDING
 
@@ -407,10 +424,21 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
         current_streak = chore_streak_data.get("current_streak", 0)
         highest_streak = chore_streak_data.get("max_streak", 0)
 
+        stored_labels = chore_info.get("chore_labels", [])
+        friendly_labels = [
+            get_friendly_label(self.hass, label) for label in stored_labels
+        ]
+
         attributes = {
             ATTR_KID_NAME: self._kid_name,
             ATTR_CHORE_NAME: self._chore_name,
             ATTR_DESCRIPTION: chore_info.get("description", ""),
+            ATTR_CHORE_CLAIMS_COUNT: kid_info.get("chore_claims", {}).get(
+                self._chore_id, 0
+            ),
+            ATTR_CHORE_APPROVALS_COUNT: kid_info.get("chore_approvals", {}).get(
+                self._chore_id, 0
+            ),
             ATTR_CHORE_CURRENT_STREAK: current_streak,
             ATTR_CHORE_HIGHEST_STREAK: highest_streak,
             ATTR_SHARED_CHORE: shared,
@@ -424,7 +452,23 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
                 "allow_multiple_claims_per_day", False
             ),
             ATTR_ASSIGNED_KIDS: assigned_kids_names,
+            ATTR_LABELS: friendly_labels,
         }
+
+        if chore_info.get("allow_multiple_claims_per_day", False):
+            today_approvals = kid_info.get("today_chore_approvals", {}).get(
+                self._chore_id, 0
+            )
+            attributes[ATTR_CHORE_APPROVALS_TODAY] = today_approvals
+
+        if chore_info.get("recurring_frequency") == FREQUENCY_CUSTOM:
+            attributes[ATTR_CUSTOM_FREQUENCY_INTERVAL] = chore_info.get(
+                "custom_interval"
+            )
+            attributes[ATTR_CUSTOM_FREQUENCY_UNIT] = chore_info.get(
+                "custom_interval_unit"
+            )
+
         return attributes
 
     @property
@@ -612,7 +656,7 @@ class CompletedChoresMonthlySensor(CoordinatorEntity, SensorEntity):
         return kid_info.get("completed_chores_monthly", 0)
 
 
-# ------------------------------------------------------------------------------------------
+# DEPRECATE --------------------------------------------------------------------------------
 class KidBadgesSensor(CoordinatorEntity, SensorEntity):
     """Sensor: number of badges earned + attribute with the list."""
 
@@ -716,19 +760,49 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        """Provide additional details.
-
-        - kid_name
-        - all_earned_badges
-        - highest_badge_threshold_value
-        """
+        """Provide additional details."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
         highest_badge, highest_val = self._find_highest_badge()
+
+        current_multiplier = 1.0
+        friendly_labels = []
+
+        if highest_badge:
+            badge_data = next(
+                (
+                    info
+                    for bid, info in self.coordinator.badges_data.items()
+                    if info.get("name") == highest_badge
+                ),
+                {},
+            )
+            current_multiplier = badge_data.get("points_multiplier", 1.0)
+            stored_labels = badge_data.get("badge_labels", [])
+            friendly_labels = [
+                get_friendly_label(self.hass, label) for label in stored_labels
+            ]
+
+        # Compute points needed for next badge:
+        current_points = kid_info.get("points", 0)
+        # Gather thresholds for badges that are higher than current points
+        thresholds = [
+            badge.get("threshold_value", 0)
+            for badge in self.coordinator.badges_data.values()
+            if badge.get("threshold_value", 0) > current_points
+        ]
+        if thresholds:
+            next_threshold = min(thresholds)
+            points_to_next_badge = next_threshold - current_points
+        else:
+            points_to_next_badge = 0
 
         return {
             ATTR_KID_NAME: self._kid_name,
             ATTR_ALL_EARNED_BADGES: kid_info.get("badges", []),
             ATTR_HIGHEST_BADGE_THRESHOLD_VALUE: highest_val if highest_badge else 0,
+            ATTR_POINTS_MULTIPLIER: current_multiplier,
+            ATTR_POINTS_TO_NEXT_BADGE: points_to_next_badge,
+            ATTR_LABELS: friendly_labels,
         }
 
 
@@ -758,10 +832,7 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self) -> float:
-        """The sensor state is the threshold_value for the badge.
-
-        For 'chore_count' badges, it's still numeric.
-        """
+        """The sensor state is the threshold_value for the badge."""
         badge_info = self.coordinator.badges_data.get(self._badge_id, {})
         return badge_info.get("threshold_value", 0)
 
@@ -774,6 +845,11 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
         description = badge_info.get("description", "")
 
         kids_earned_ids = badge_info.get("earned_by", [])
+
+        stored_labels = badge_info.get("badge_labels", [])
+        friendly_labels = [
+            get_friendly_label(self.hass, label) for label in stored_labels
+        ]
 
         # Convert each kid_id to kid_name
         kids_earned_names = []
@@ -789,6 +865,7 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
             ATTR_THRESHOLD_TYPE: threshold_type,
             ATTR_POINTS_MULTIPLIER: points_multiplier,
             ATTR_KIDS_EARNED: kids_earned_names,
+            ATTR_LABELS: friendly_labels,
         }
 
     @property
@@ -860,7 +937,7 @@ class PendingRewardApprovalsSensor(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_pending_reward_approvals"
         self._attr_icon = "mdi:gift-open-outline"
-        self.entity_id = f"sensor.kc_global_pending_reward_approvals"
+        self.entity_id = f"sensor.kc_global_reward_pending_approvals"
 
     @property
     def native_value(self):
@@ -896,7 +973,7 @@ class PendingRewardApprovalsSensor(CoordinatorEntity, SensorEntity):
         return grouped_by_kid
 
 
-# ------------------------------------------------------------------------------------------
+# DEPRECATE --------------------------------------------------------------------------------
 class RewardClaimsSensor(CoordinatorEntity, SensorEntity):
     """Sensor tracking how many times each reward has been claimed by a kid."""
 
@@ -931,7 +1008,7 @@ class RewardClaimsSensor(CoordinatorEntity, SensorEntity):
         return reward_info.get("icon", DEFAULT_REWARD_ICON)
 
 
-# ------------------------------------------------------------------------------------------
+# DEPRECATE --------------------------------------------------------------------------------
 class RewardApprovalsSensor(CoordinatorEntity, SensorEntity):
     """Sensor tracking how many times each reward has been approved for a kid."""
 
@@ -1007,7 +1084,19 @@ class SharedChoreGlobalStateSensor(CoordinatorEntity, SensorEntity):
             for k_id in assigned_kids_ids
         ]
 
-        return {
+        stored_labels = chore_info.get("chore_labels", [])
+        friendly_labels = [
+            get_friendly_label(self.hass, label) for label in stored_labels
+        ]
+
+        total_approvals_today = 0
+        for kid_id in assigned_kids_ids:
+            kid_data = self.coordinator.kids_data.get(kid_id, {})
+            total_approvals_today += kid_data.get("today_chore_approvals", {}).get(
+                self._chore_id, 0
+            )
+
+        attributes = {
             ATTR_CHORE_NAME: self._chore_name,
             ATTR_DESCRIPTION: chore_info.get("description", ""),
             ATTR_RECURRING_FREQUENCY: chore_info.get("recurring_frequency", "None"),
@@ -1018,8 +1107,20 @@ class SharedChoreGlobalStateSensor(CoordinatorEntity, SensorEntity):
             ATTR_ALLOW_MULTIPLE_CLAIMS_PER_DAY: chore_info.get(
                 "allow_multiple_claims_per_day", False
             ),
+            ATTR_CHORE_APPROVALS_TODAY: total_approvals_today,
             ATTR_ASSIGNED_KIDS: assigned_kids_names,
+            ATTR_LABELS: friendly_labels,
         }
+
+        if chore_info.get("recurring_frequency") == FREQUENCY_CUSTOM:
+            attributes[ATTR_CUSTOM_FREQUENCY_INTERVAL] = chore_info.get(
+                "custom_interval"
+            )
+            attributes[ATTR_CUSTOM_FREQUENCY_UNIT] = chore_info.get(
+                "custom_interval_unit"
+            )
+
+        return attributes
 
     @property
     def icon(self) -> str:
@@ -1075,11 +1176,23 @@ class RewardStatusSensor(CoordinatorEntity, SensorEntity):
         reward_info = self.coordinator.rewards_data.get(self._reward_id, {})
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
 
+        stored_labels = reward_info.get("reward_labels", [])
+        friendly_labels = [
+            get_friendly_label(self.hass, label) for label in stored_labels
+        ]
+
         attributes = {
             ATTR_KID_NAME: self._kid_name,
             ATTR_REWARD_NAME: self._reward_name,
             ATTR_DESCRIPTION: reward_info.get("description", ""),
             ATTR_COST: reward_info.get("cost", DEFAULT_REWARD_COST),
+            ATTR_REWARD_CLAIMS_COUNT: kid_info.get("reward_claims", {}).get(
+                self._reward_id, 0
+            ),
+            ATTR_REWARD_APPROVALS_COUNT: kid_info.get("reward_approvals", {}).get(
+                self._reward_id, 0
+            ),
+            ATTR_LABELS: friendly_labels,
         }
 
         return attributes
@@ -1091,7 +1204,7 @@ class RewardStatusSensor(CoordinatorEntity, SensorEntity):
         return reward_info.get("icon", DEFAULT_REWARD_ICON)
 
 
-# ------------------------------------------------------------------------------------------
+# DEPRECATE --------------------------------------------------------------------------------
 class ChoreClaimsSensor(CoordinatorEntity, SensorEntity):
     """Sensor tracking how many times each chore has been claimed by a kid."""
 
@@ -1125,7 +1238,7 @@ class ChoreClaimsSensor(CoordinatorEntity, SensorEntity):
         return chore_info.get("icon", DEFAULT_CHORE_SENSOR_ICON)
 
 
-# ------------------------------------------------------------------------------------------
+# DEPRECATE --------------------------------------------------------------------------------
 class ChoreApprovalsSensor(CoordinatorEntity, SensorEntity):
     """Sensor tracking how many times each chore has been approved for a kid."""
 
@@ -1191,11 +1304,17 @@ class PenaltyAppliesSensor(CoordinatorEntity, SensorEntity):
         """Expose additional details like penalty points and description."""
         penalty_info = self.coordinator.penalties_data.get(self._penalty_id, {})
 
+        stored_labels = penalty_info.get("penalty_labels", [])
+        friendly_labels = [
+            get_friendly_label(self.hass, label) for label in stored_labels
+        ]
+
         return {
             ATTR_KID_NAME: self._kid_name,
             ATTR_PENALTY_NAME: self._penalty_name,
             ATTR_DESCRIPTION: penalty_info.get("description", ""),
             ATTR_PENALTY_POINTS: penalty_info.get("points", DEFAULT_PENALTY_POINTS),
+            ATTR_LABELS: friendly_labels,
         }
 
     @property
@@ -1388,6 +1507,24 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
 
             percent = (total_current / global_target * 100) if global_target > 0 else 0
 
+        elif ach_type == ACHIEVEMENT_TYPE_DAILY_MIN:
+            total_progress = 0
+
+            for kid_id in assigned_kids:
+                daily = self.coordinator.kids_data.get(kid_id, {}).get(
+                    "completed_chores_today", 0
+                )
+                kid_progress = (
+                    100
+                    if daily >= target
+                    else (daily / target * 100)
+                    if target > 0
+                    else 0
+                )
+                total_progress += kid_progress
+
+            percent = total_progress / len(assigned_kids)
+
         else:
             percent = 0
 
@@ -1426,8 +1563,17 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
                 kids_progress[kid_name] = progress_data.get("current_value", 0)
             elif ach_type == ACHIEVEMENT_TYPE_STREAK:
                 kids_progress[kid_name] = progress_data.get("current_streak", 0)
+            elif achievement.get("type") == ACHIEVEMENT_TYPE_DAILY_MIN:
+                kids_progress[kid_name] = self.coordinator.kids_data.get(
+                    kid_id, {}
+                ).get("completed_chores_today", 0)
             else:
                 kids_progress[kid_name] = 0
+
+        stored_labels = achievement.get("achievement_labels", [])
+        friendly_labels = [
+            get_friendly_label(self.hass, label) for label in stored_labels
+        ]
 
         return {
             ATTR_ACHIEVEMENT_NAME: self._achievement_name,
@@ -1439,6 +1585,7 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
             ATTR_TARGET_VALUE: achievement.get("target_value"),
             ATTR_REWARD_POINTS: achievement.get("reward_points"),
             ATTR_KIDS_EARNED: earned_by,
+            ATTR_LABELS: friendly_labels,
         }
 
     @property
@@ -1549,12 +1696,16 @@ class ChallengeSensor(CoordinatorEntity, SensorEntity):
             else:
                 kids_progress[kid_name] = 0
 
+        stored_labels = challenge.get("challenge_labels", [])
+        friendly_labels = [
+            get_friendly_label(self.hass, label) for label in stored_labels
+        ]
+
         return {
             ATTR_CHALLENGE_NAME: self._challenge_name,
-            ATTR_CHALLENGE_TYPE: challenge_type,
             ATTR_DESCRIPTION: challenge.get("description", ""),
             ATTR_ASSIGNED_KIDS: assigned_kids_names,
-            ATTR_TYPE: challenge.get("type"),
+            ATTR_TYPE: challenge_type,
             ATTR_ASSOCIATED_CHORE: associated_chore,
             ATTR_CRITERIA: challenge.get("criteria", ""),
             ATTR_TARGET_VALUE: challenge.get("target_value"),
@@ -1562,6 +1713,7 @@ class ChallengeSensor(CoordinatorEntity, SensorEntity):
             ATTR_START_DATE: challenge.get("start_date"),
             ATTR_END_DATE: challenge.get("end_date"),
             ATTR_KIDS_EARNED: earned_by,
+            ATTR_LABELS: friendly_labels,
         }
 
     @property
@@ -1641,6 +1793,13 @@ class AchievementProgressSensor(CoordinatorEntity, SensorEntity):
 
             percent = (progress / target * 100) if target > 0 else 0
 
+        elif ach_type == ACHIEVEMENT_TYPE_DAILY_MIN:
+            daily = self.coordinator.kids_data.get(self._kid_id, {}).get(
+                "completed_chores_today", 0
+            )
+
+            percent = (daily / target * 100) if target > 0 else 0
+
         else:
             percent = 0
 
@@ -1664,11 +1823,17 @@ class AchievementProgressSensor(CoordinatorEntity, SensorEntity):
                 if isinstance(progress_data, dict)
                 else 0
             )
-        else:
+
+        elif achievement.get("type") == ACHIEVEMENT_TYPE_STREAK:
             raw_progress = (
                 progress_data.get("current_streak", 0)
                 if isinstance(progress_data, dict)
                 else 0
+            )
+
+        elif achievement.get("type") == ACHIEVEMENT_TYPE_DAILY_MIN:
+            raw_progress = self.coordinator.kids_data.get(self._kid_id, {}).get(
+                "completed_chores_today", 0
             )
 
         associated_chore = ""
@@ -1684,6 +1849,11 @@ class AchievementProgressSensor(CoordinatorEntity, SensorEntity):
             for k_id in assigned_kids_ids
         ]
 
+        stored_labels = achievement.get("achievement_labels", [])
+        friendly_labels = [
+            get_friendly_label(self.hass, label) for label in stored_labels
+        ]
+
         return {
             ATTR_ACHIEVEMENT_NAME: self._achievement_name,
             ATTR_DESCRIPTION: achievement.get("description", ""),
@@ -1695,6 +1865,7 @@ class AchievementProgressSensor(CoordinatorEntity, SensorEntity):
             ATTR_REWARD_POINTS: achievement.get("reward_points"),
             ATTR_RAW_PROGRESS: raw_progress,
             ATTR_AWARDED: awarded,
+            ATTR_LABELS: friendly_labels,
         }
 
     @property
@@ -1818,12 +1989,17 @@ class ChallengeProgressSensor(CoordinatorEntity, SensorEntity):
             for k_id in assigned_kids_ids
         ]
 
+        stored_labels = challenge.get("challenge_labels", [])
+        friendly_labels = [
+            get_friendly_label(self.hass, label) for label in stored_labels
+        ]
+
         return {
             ATTR_CHALLENGE_NAME: self._challenge_name,
             ATTR_DESCRIPTION: challenge.get("description", ""),
             ATTR_ASSIGNED_KIDS: assigned_kids_names,
+            ATTR_TYPE: challenge_type,
             ATTR_ASSOCIATED_CHORE: associated_chore,
-            ATTR_CHALLENGE_TYPE: challenge_type,
             ATTR_CRITERIA: challenge.get("criteria", ""),
             ATTR_TARGET_VALUE: target,
             ATTR_REWARD_POINTS: challenge.get("reward_points"),
@@ -1831,6 +2007,7 @@ class ChallengeProgressSensor(CoordinatorEntity, SensorEntity):
             ATTR_END_DATE: challenge.get("end_date"),
             ATTR_RAW_PROGRESS: raw_progress,
             ATTR_AWARDED: awarded,
+            ATTR_LABELS: friendly_labels,
         }
 
     @property
@@ -1967,3 +2144,55 @@ class ChoreStreakSensor(CoordinatorEntity, SensorEntity):
         """Return the chore's custom icon if set, else fallback."""
         chore_info = self.coordinator.chores_data.get(self._chore_id, {})
         return chore_info.get("icon", DEFAULT_CHORE_SENSOR_ICON)
+
+
+# ------------------------------------------------------------------------------------------
+class BonusAppliesSensor(CoordinatorEntity, SensorEntity):
+    """Sensor tracking how many times each bonus has been applied to a kid."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "bonus_applies_sensor"
+
+    def __init__(self, coordinator, entry, kid_id, kid_name, bonus_id, bonus_name):
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._kid_id = kid_id
+        self._kid_name = kid_name
+        self._bonus_id = bonus_id
+        self._bonus_name = bonus_name
+        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_{bonus_id}_bonus_applies"
+        self._attr_translation_placeholders = {
+            "kid_name": kid_name,
+            "bonus_name": bonus_name,
+        }
+        self.entity_id = f"sensor.kc_{kid_name}_bonuses_applied_{bonus_name}"
+
+    @property
+    def native_value(self):
+        """Return the number of times the bonus has been applied."""
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        return kid_info.get("bonus_applies", {}).get(self._bonus_id, 0)
+
+    @property
+    def extra_state_attributes(self):
+        """Expose additional details like bonus points and description."""
+        bonus_info = self.coordinator.bonuses_data.get(self._bonus_id, {})
+
+        stored_labels = bonus_info.get("bonus_labels", [])
+        friendly_labels = [
+            get_friendly_label(self.hass, label) for label in stored_labels
+        ]
+
+        return {
+            ATTR_KID_NAME: self._kid_name,
+            ATTR_BONUS_NAME: self._bonus_name,
+            ATTR_DESCRIPTION: bonus_info.get("description", ""),
+            ATTR_BONUS_POINTS: bonus_info.get("points", DEFAULT_BONUS_POINTS),
+            ATTR_LABELS: friendly_labels,
+        }
+
+    @property
+    def icon(self):
+        """Return the bonus's custom icon if set, else fallback."""
+        bonus_info = self.coordinator.bonuses_data.get(self._bonus_id, {})
+        return bonus_info.get("icon", DEFAULT_BONUS_ICON)
