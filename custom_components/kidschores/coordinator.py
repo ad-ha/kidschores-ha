@@ -977,7 +977,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         LOGGER.debug("Updated chore '%s' with ID: %s", chore_info["name"], chore_id)
 
-        self._check_overdue_chores()
+        self.hass.async_create_task(self._check_overdue_chores())
 
     # -- Badges
     def _create_badge(self, badge_id: str, badge_data: dict[str, Any]):
