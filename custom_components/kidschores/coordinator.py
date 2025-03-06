@@ -2435,9 +2435,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             return
 
         # Get or create the existing progress dictionary for this kid
-        progress_for_kid = achievement.setdefault("progress", {}).setdefault(
-            kid_id, {"current_value": 0, "awarded": False}
-        )
+        progress_for_kid = achievement.setdefault("progress", {}).get(kid_id)
+        if progress_for_kid is None:
+            # If it doesn't exist, initialize it with baseline from the kid's current total.
+            kid_info = self.kids_data.get(kid_id, {})
+            progress_dict = {
+                "baseline": kid_info.get("completed_chores_total", 0),
+                "current_value": 0,
+                "awarded": False,
+            }
+            achievement["progress"][kid_id] = progress_dict
 
         # Mark achievement as earned for the kid by storing progress (e.g. set to target)
         progress_for_kid["awarded"] = True
