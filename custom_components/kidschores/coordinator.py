@@ -3308,6 +3308,131 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._persist()
         self.async_set_updated_data(self._data)
 
+    # -------------------------------------------------------------------------------------
+    # Penalties: Reset
+    # -------------------------------------------------------------------------------------
+
+    def reset_penalties(
+        self, kid_id: Optional[str] = None, penalty_id: Optional[str] = None
+    ) -> None:
+        """Reset penalties based on provided kid_id and penalty_id."""
+
+        if penalty_id and kid_id:
+            # Reset a specific penalty for a specific kid
+            kid_info = self.kids_data.get(kid_id)
+            if not kid_info:
+                LOGGER.error("Reset Penalties: Kid with ID '%s' not found.", kid_id)
+                raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+            if penalty_id not in kid_info.get("penalty_applies", {}):
+                LOGGER.error(
+                    "Reset Penalties: Penalty '%s' does not apply to kid '%s'.",
+                    penalty_id,
+                    kid_id,
+                )
+                raise HomeAssistantError(
+                    f"Penalty '{penalty_id}' does not apply to kid '{kid_id}'."
+                )
+
+            kid_info["penalty_applies"].pop(penalty_id, None)
+
+        elif penalty_id:
+            # Reset a specific penalty for all kids
+            found = False
+            for kid_info in self.kids_data.values():
+                if penalty_id in kid_info.get("penalty_applies", {}):
+                    found = True
+                    kid_info["penalty_applies"].pop(penalty_id, None)
+
+            if not found:
+                LOGGER.warning(
+                    "Reset Penalties: Penalty '%s' not found in any kid's data.",
+                    penalty_id,
+                )
+
+        elif kid_id:
+            # Reset all penalties for a specific kid
+            kid_info = self.kids_data.get(kid_id)
+            if not kid_info:
+                LOGGER.error("Reset Penalties: Kid with ID '%s' not found.", kid_id)
+                raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+
+            kid_info["penalty_applies"].clear()
+
+        else:
+            # Reset all penalties for all kids
+            LOGGER.info("Reset Penalties: Resetting all penalties for all kids.")
+            for kid_info in self.kids_data.values():
+                kid_info["penalty_applies"].clear()
+
+        LOGGER.debug(
+            "Penalties reset completed (kid_id=%s, penalty_id=%s)", kid_id, penalty_id
+        )
+
+        self._persist()
+        self.async_set_updated_data(self._data)
+
+    # -------------------------------------------------------------------------------------
+    # Bonuses: Reset
+    # -------------------------------------------------------------------------------------
+
+    def reset_bonuses(
+        self, kid_id: Optional[str] = None, bonus_id: Optional[str] = None
+    ) -> None:
+        """Reset bonuses based on provided kid_id and bonus_id."""
+
+        if bonus_id and kid_id:
+            # Reset a specific bonus for a specific kid
+            kid_info = self.kids_data.get(kid_id)
+            if not kid_info:
+                LOGGER.error("Reset Bonuses: Kid with ID '%s' not found.", kid_id)
+                raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+            if bonus_id not in kid_info.get("bonus_applies", {}):
+                LOGGER.error(
+                    "Reset Bonuses: Bonus '%s' does not apply to kid '%s'.",
+                    bonus_id,
+                    kid_id,
+                )
+                raise HomeAssistantError(
+                    f"Bonus '{bonus_id}' does not apply to kid '{kid_id}'."
+                )
+
+            kid_info["bonus_applies"].pop(bonus_id, None)
+
+        elif bonus_id:
+            # Reset a specific bonus for all kids
+            found = False
+            for kid_info in self.kids_data.values():
+                if bonus_id in kid_info.get("bonus_applies", {}):
+                    found = True
+                    kid_info["bonus_applies"].pop(bonus_id, None)
+
+            if not found:
+                LOGGER.warning(
+                    "Reset Bonuses: Bonus '%s' not found in any kid's data.", bonus_id
+                )
+
+        elif kid_id:
+            # Reset all bonuses for a specific kid
+            kid_info = self.kids_data.get(kid_id)
+            if not kid_info:
+                LOGGER.error("Reset Bonuses: Kid with ID '%s' not found.", kid_id)
+                raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+
+            kid_info["bonus_applies"].clear()
+
+        else:
+            # Reset all bonuses for all kids
+            LOGGER.info("Reset Bonuses: Resetting all bonuses for all kids.")
+            for kid_info in self.kids_data.values():
+                kid_info["bonus_applies"].clear()
+
+        LOGGER.debug(
+            "Bonuses reset completed (kid_id=%s, bonus_id=%s)", kid_id, bonus_id
+        )
+
+        self._persist()
+        self.async_set_updated_data(self._data)
+
     # Persist new due dates on config entries
     async def _update_all_chore_due_dates_in_config(self) -> None:
         updated_options = dict(self.config_entry.options)

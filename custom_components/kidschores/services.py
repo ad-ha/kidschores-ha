@@ -44,6 +44,8 @@ from .const import (
     SERVICE_RESET_ALL_CHORES,
     SERVICE_RESET_ALL_DATA,
     SERVICE_RESET_OVERDUE_CHORES,
+    SERVICE_RESET_PENALTIES,
+    SERVICE_RESET_BONUSES,
     SERVICE_SET_CHORE_DUE_DATE,
     SERVICE_SKIP_CHORE_DUE_DATE,
 )
@@ -122,6 +124,20 @@ RESET_OVERDUE_CHORES_SCHEMA = vol.Schema(
         vol.Optional(FIELD_CHORE_ID): cv.string,
         vol.Optional(FIELD_CHORE_NAME): cv.string,
         vol.Optional(FIELD_KID_NAME): cv.string,
+    }
+)
+
+RESET_PENALTIES_SCHEMA = vol.Schema(
+    {
+        vol.Optional(FIELD_KID_NAME): cv.string,
+        vol.Optional(FIELD_PENALTY_NAME): cv.string,
+    }
+)
+
+RESET_BONUSES_SCHEMA = vol.Schema(
+    {
+        vol.Optional(FIELD_KID_NAME): cv.string,
+        vol.Optional(FIELD_BONUS_NAME): cv.string,
     }
 )
 
@@ -553,6 +569,104 @@ def async_setup_services(hass: HomeAssistant):
                 f"Failed to apply penalty '{penalty_name}' for kid '{kid_name}'."
             )
 
+    async def handle_reset_penalties(call: ServiceCall):
+        """Handle resetting penalties."""
+        entry_id = _get_first_kidschores_entry(hass)
+        if not entry_id:
+            LOGGER.warning("Reset Penalties: %s", MSG_NO_ENTRY_FOUND)
+            return
+
+        coordinator: KidsChoresDataCoordinator = hass.data[DOMAIN][entry_id][
+            "coordinator"
+        ]
+
+        kid_name = call.data.get(FIELD_KID_NAME)
+        penalty_name = call.data.get(FIELD_PENALTY_NAME)
+
+        kid_id = _get_kid_id_by_name(coordinator, kid_name) if kid_name else None
+        penalty_id = (
+            _get_penalty_id_by_name(coordinator, penalty_name) if penalty_name else None
+        )
+
+        if kid_name and not kid_id:
+            LOGGER.warning("Reset Penalties: Kid '%s' not found.", kid_name)
+            raise HomeAssistantError(f"Kid '{kid_name}' not found.")
+
+        if penalty_name and not penalty_id:
+            LOGGER.warning("Reset Penalties: Penalty '%s' not found.", penalty_name)
+            raise HomeAssistantError(f"Penalty '{penalty_name}' not found.")
+
+        # Check if user is authorized
+        user_id = call.context.user_id
+        if user_id and not await is_user_authorized_for_global_action(
+            hass, user_id, kid_id
+        ):
+            LOGGER.warning("Reset Penalties: User not authorized.")
+            raise HomeAssistantError("You are not authorized to reset penalties.")
+
+        # Log action based on parameters provided
+        if kid_id is None and penalty_id is None:
+            LOGGER.info("Resetting all penalties for all kids.")
+        elif kid_id is None:
+            LOGGER.info("Resetting penalty '%s' for all kids.", penalty_name)
+        elif penalty_id is None:
+            LOGGER.info("Resetting all penalties for kid '%s'.", kid_name)
+        else:
+            LOGGER.info("Resetting penalty '%s' for kid '%s'.", penalty_name, kid_name)
+
+        # Reset penalties
+        coordinator.reset_penalties(kid_id=kid_id, penalty_id=penalty_id)
+        await coordinator.async_request_refresh()
+
+    async def handle_reset_bonuses(call: ServiceCall):
+        """Handle resetting bonuses."""
+        entry_id = _get_first_kidschores_entry(hass)
+        if not entry_id:
+            LOGGER.warning("Reset Bonuses: %s", MSG_NO_ENTRY_FOUND)
+            return
+
+        coordinator: KidsChoresDataCoordinator = hass.data[DOMAIN][entry_id][
+            "coordinator"
+        ]
+
+        kid_name = call.data.get(FIELD_KID_NAME)
+        bonus_name = call.data.get(FIELD_BONUS_NAME)
+
+        kid_id = _get_kid_id_by_name(coordinator, kid_name) if kid_name else None
+        bonus_id = (
+            _get_bonus_id_by_name(coordinator, bonus_name) if bonus_name else None
+        )
+
+        if kid_name and not kid_id:
+            LOGGER.warning("Reset Bonuses: Kid '%s' not found.", kid_name)
+            raise HomeAssistantError(f"Kid '{kid_name}' not found.")
+
+        if bonus_name and not bonus_id:
+            LOGGER.warning("Reset Bonuses: Bonus '%s' not found.", bonus_name)
+            raise HomeAssistantError(f"Bonus '{bonus_name}' not found.")
+
+        # Check if user is authorized
+        user_id = call.context.user_id
+        if user_id and not await is_user_authorized_for_global_action(
+            hass, user_id, kid_id
+        ):
+            LOGGER.warning("Reset Bonuses: User not authorized.")
+            raise HomeAssistantError("You are not authorized to reset bonuses.")
+
+        # Log action based on parameters provided
+        if kid_id is None and bonus_id is None:
+            LOGGER.info("Resetting all bonuses for all kids.")
+        elif kid_id is None:
+            LOGGER.info("Resetting bonus '%s' for all kids.", bonus_name)
+        elif bonus_id is None:
+            LOGGER.info("Resetting all bonuses for kid '%s'.", kid_name)
+        else:
+            LOGGER.info("Resetting bonus '%s' for kid '%s'.", bonus_name, kid_name)
+
+        # Reset bonuses
+        coordinator.reset_bonuses(kid_id=kid_id, bonus_id=bonus_id)
+        await coordinator.async_request_refresh()
+
     async def handle_apply_bonus(call: ServiceCall):
         """Handle applying a bonus."""
         entry_id = _get_first_kidschores_entry(hass)
@@ -878,6 +992,20 @@ def async_setup_services(hass: HomeAssistant):
 
     hass.services.async_register(
         DOMAIN,
+        SERVICE_RESET_PENALTIES,
+        handle_reset_penalties,
+        schema=RESET_PENALTIES_SCHEMA,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_RESET_BONUSES,
+        handle_reset_bonuses,
+        schema=RESET_BONUSES_SCHEMA,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
         SERVICE_SET_CHORE_DUE_DATE,
         handle_set_chore_due_date,
         schema=SET_CHORE_DUE_DATE_SCHEMA,
@@ -911,6 +1039,7 @@ async def async_unload_services(hass: HomeAssistant):
         SERVICE_RESET_ALL_DATA,
         SERVICE_RESET_ALL_CHORES,
         SERVICE_RESET_OVERDUE_CHORES,
+        SERVICE_RESET_PENALTIES,
         SERVICE_SET_CHORE_DUE_DATE,
         SERVICE_SKIP_CHORE_DUE_DATE,
     ]
