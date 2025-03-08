@@ -2026,12 +2026,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         self._check_badges_for_kid(kid_id)
 
-        # remove from pending approvals
-        self._data[DATA_PENDING_REWARD_APPROVALS] = [
-            ap
-            for ap in self._data[DATA_PENDING_REWARD_APPROVALS]
-            if not (ap["kid_id"] == kid_id and ap["reward_id"] == reward_id)
-        ]
+        # remove 1 claim from pending approvals
+        approvals = self._data[DATA_PENDING_REWARD_APPROVALS]
+        for i, ap in enumerate(approvals):
+            if ap["kid_id"] == kid_id and ap["reward_id"] == reward_id:
+                del approvals[i]  # Remove only the first match
+                break  # Stop after the first removal
 
         # increment reward_approvals
         if reward_id in kid_info["reward_approvals"]:
