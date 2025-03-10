@@ -2690,21 +2690,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         LOGGER.debug("Starting overdue check at %s", now.isoformat())
 
         for chore_id, chore_info in self.chores_data.items():
-            LOGGER.debug(
-                "Checking chore '%s' id '%s' (state=%s)",
-                chore_info.get("name"),
-                chore_id,
-                chore_info.get("state"),
-            )
+            # LOGGER.debug("Checking chore '%s' id '%s' (state=%s)", chore_info.get("name"), chore_id, chore_info.get("state"))
 
             # Get the list of assigned kids
             assigned_kids = chore_info.get("assigned_kids", [])
-            LOGGER.debug(
-                "Chore '%s' id '%s' assigned to kids: %s",
-                chore_info.get("name"),
-                chore_id,
-                assigned_kids,
-            )
+            # LOGGER.debug("Chore '%s' id '%s' assigned to kids: %s", chore_info.get("name"), chore_id, assigned_kids,)
 
             # Check if all assigned kids have either claimed or approved the chore
             all_kids_claimed_or_approved = all(
@@ -2719,26 +2709,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 has_claimed = chore_id in kid_info.get("claimed_chores", [])
                 has_approved = chore_id in kid_info.get("approved_chores", [])
 
-                LOGGER.debug(
-                    "Kid '%s': claimed=%s, approved=%s",
-                    kid_id,
-                    has_claimed,
-                    has_approved,
-                )
+                # LOGGER.debug("Kid '%s': claimed=%s, approved=%s", kid_id, has_claimed, has_approved
 
             # Log the overall result of the check
-            LOGGER.debug(
-                "Chore '%s': all_kids_claimed_or_approved=%s",
-                chore_id,
-                all_kids_claimed_or_approved,
-            )
+            # LOGGER.debug("Chore '%s': all_kids_claimed_or_approved=%s", chore_id, all_kids_claimed_or_approved)
 
             # Only skip the chore if ALL assigned kids have acted on it
             if all_kids_claimed_or_approved:
-                LOGGER.debug(
-                    "Skipping chore '%s': all assigned kids have claimed or approved",
-                    chore_id,
-                )
+                # LOGGER.debug("Skipping chore '%s': all assigned kids have claimed or approved", chore_id,)
                 continue
 
             due_str = chore_info.get("due_date")
@@ -2757,9 +2735,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 if due_date is None:
                     raise ValueError("Parsed datetime is None")
                 due_date = dt_util.as_utc(due_date)
-                LOGGER.debug(
-                    "Chore '%s' due_date parsed as %s", chore_id, due_date.isoformat()
-                )
+                # LOGGER.debug("Chore '%s' due_date parsed as %s", chore_id, due_date.isoformat())
             except Exception as err:
                 LOGGER.error(
                     "Error parsing due_date '%s' for chore '%s': %s",
@@ -2770,13 +2746,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 continue
 
             # Check for applicable day is no longer required; the scheduling function ensures due_date matches applicable day criteria.
-
-            LOGGER.debug(
-                "Chore '%s': now=%s, due_date=%s",
-                chore_id,
-                now.isoformat(),
-                due_date.isoformat(),
-            )
+            # LOGGER.debug("Chore '%s': now=%s, due_date=%s", chore_id, now.isoformat(), due_date.isoformat()
             if now < due_date:
                 # Not past due date, but before resetting the state back to pending, check if global state is currently overdue
                 for kid_id in assigned_kids:
@@ -2803,6 +2773,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
                 # Mark chore as overdue for this kid.
                 self._process_chore_state(kid_id, chore_id, CHORE_STATE_OVERDUE)
+                LOGGER.debug(
+                    "Marking chore '%s' as overdue for kid '%s'", chore_id, kid_id
+                )
 
                 # Check notification timestamp.
                 last_notif_str = kid_info["overdue_notifications"].get(chore_id)
@@ -2922,6 +2895,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # If daily reset -> reset statuses
         if frequency == FREQUENCY_DAILY:
             await self._reset_daily_chore_statuses([frequency])
+        elif frequency == FREQUENCY_WEEKLY:
+            await self._reset_daily_chore_statuses([frequency, FREQUENCY_WEEKLY])
 
     async def _reschedule_recurring_chores(self, now: datetime):
         """For chores with the given recurring frequency, reschedule due date if they are approved and past due."""
@@ -3127,7 +3102,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 next_due,
                 next_due_local,
                 now,
-                dt_util.as_local(now),
+                now_local,
                 weekday_mapping[next_due_local.weekday()],
                 applicable_days,
             )
@@ -3137,12 +3112,21 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Update config_entry.options for this chore so that the new due_date is visible in Options
         self.hass.async_create_task(
-            self._update_chore_due_date_in_config(chore_id, chore_info["due_date"])
+            self._update_chore_due_date_in_config(
+                chore_id, chore_info["due_date"], None, None, None
+            )
         )
         # Reset the chore state to Pending
         for kid_id in chore_info.get("assigned_kids", []):
             if kid_id:
                 self._process_chore_state(kid_id, chore_id, CHORE_STATE_PENDING)
+
+        LOGGER.info(
+            "Chore '%s' rescheduled: Original due date %s, Final new due date (local) %s",
+            chore_info.get("name", chore_id),
+            dt_util.as_local(original_due).isoformat(),
+            next_due_local.isoformat(),
+        )
 
     # Removed the _add_one_month method since _add_months method will handle all cases including adding one month.
     def _add_months(self, dt_in: datetime, months: int) -> datetime:
@@ -3175,10 +3159,35 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 f"Missing 'due_date' key in chore data for '{chore_id}': {err}"
             )
 
+        # If the due date is cleared (None), then remove any recurring frequency
+        # and custom interval settings unless the frequency is none, daily, or weekly.
+        if new_due_date is None:
+            # FREQUENCY_DAILY, FREQUENCY_WEEKLY, and FREQUENCY_NONE are all OK without a due_date
+            current_frequency = chore_info.get("recurring_frequency")
+            if chore_info.get("recurring_frequency") not in (
+                FREQUENCY_NONE,
+                FREQUENCY_DAILY,
+                FREQUENCY_WEEKLY,
+            ):
+                LOGGER.debug(
+                    "Removing frequency for chore '%s': current frequency '%s' is does not work with a due date of None",
+                    chore_id,
+                    current_frequency,
+                )
+                chore_info["recurring_frequency"] = FREQUENCY_NONE
+                chore_info.pop("custom_interval", None)
+                chore_info.pop("custom_interval_unit", None)
+
         # Update config_entry.options so that the new due date is visible in Options.
         # Use new_due_date here to ensure we’re passing the updated value.
         self.hass.async_create_task(
-            self._update_chore_due_date_in_config(chore_id, new_due_date)
+            self._update_chore_due_date_in_config(
+                chore_id,
+                chore_info.get("due_date"),
+                chore_info.get("recurring_frequency"),
+                chore_info.get("custom_interval"),
+                chore_info.get("custom_interval_unit"),
+            )
         )
 
         self._persist()
@@ -3373,7 +3382,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     # Persist new due dates on config entries
     # This is not being used currently, but was refactored so it calls a new function _update_chore_due_date_in_config
-    # which can be used to update a single chore's due date.  New fuction can be used in multiple places.
+    # which can be used to update a single chore's due date and frequency.  New function can be used in multiple places.
 
     async def _update_all_chore_due_dates_in_config(self) -> None:
         """Update due dates for all chores in config_entry.options."""
@@ -3382,7 +3391,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if "due_date" in chore_info:
                 tasks.append(
                     self._update_chore_due_date_in_config(
-                        chore_id, chore_info["due_date"]
+                        chore_id,
+                        chore_info.get("due_date"),
+                        recurring_frequency=chore_info.get("recurring_frequency"),
+                        custom_interval=chore_info.get("custom_interval"),
+                        custom_interval_unit=chore_info.get("custom_interval_unit"),
                     )
                 )
 
@@ -3392,36 +3405,59 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     # Persist new due dates on config entries
     async def _update_chore_due_date_in_config(
-        self, chore_id: str, due_date: Optional[str]
+        self,
+        chore_id: str,
+        due_date: Optional[str],
+        recurring_frequency: Optional[str] = None,
+        custom_interval: Optional[int] = None,
+        custom_interval_unit: Optional[str] = None,
     ) -> None:
-        """Update the due date for a specific chore in config_entry.options.
+        """Update the due date and frequency fields for a specific chore in config_entry.options.
 
-        If due_date is provided, it should be an ISO-formatted string (e.g. "2025-03-16T23:59:00+00:00").
-        If due_date is None, the chore's due date is cleared.
+        - due_date should be an ISO-formatted string (or None).
+        - If a frequency is passed, then that value is set.
+        If the frequency is FREQUENCY_CUSTOM, custom_interval and custom_interval_unit are required.
+        If the frequency is not custom, any custom interval settings are cleared.
+        - If no frequency is passed, then do not change the frequency or custom interval settings.
         """
         updated_options = dict(self.config_entry.options)
         chores_conf = dict(updated_options.get(DATA_CHORES, {}))
 
-        # Get or create the existing options for the chore.
+        # Get existing options for the chore.
         existing_options = dict(chores_conf.get(chore_id, {}))
+
+        # Update due_date: set if provided; otherwise remove.
         if due_date is not None:
-            # Store the ISO string if provided.
             existing_options["due_date"] = due_date
         else:
-            # Remove the due_date key to clear it.
             existing_options.pop("due_date", None)
+
+        # If a frequency is passed, update it.
+        if recurring_frequency is not None:
+            existing_options["recurring_frequency"] = recurring_frequency
+            if recurring_frequency == FREQUENCY_CUSTOM:
+                # For custom frequency, custom_interval and custom_interval_unit are required.
+                if custom_interval is None or custom_interval_unit is None:
+                    raise HomeAssistantError(
+                        "For custom frequency, both custom_interval and custom_interval_unit are required."
+                    )
+                existing_options["custom_interval"] = custom_interval
+                existing_options["custom_interval_unit"] = custom_interval_unit
+            else:
+                # For non-custom frequencies, clear any custom interval settings.
+                existing_options.pop("custom_interval", None)
+                existing_options.pop("custom_interval_unit", None)
+        # If no frequency is passed, leave the frequency and custom fields unchanged.
+
         chores_conf[chore_id] = existing_options
         updated_options[DATA_CHORES] = chores_conf
 
         new_data = dict(self.config_entry.data)
         new_data["last_change"] = dt_util.utcnow().isoformat()
 
-        # Push the updated options to Home Assistant.
         update_result = self.hass.config_entries.async_update_entry(
             self.config_entry, data=new_data, options=updated_options
         )
-
-        # Only await if update_result is a coroutine.
         if asyncio.iscoroutine(update_result):
             await update_result
 
