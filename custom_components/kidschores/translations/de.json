@@ -1,0 +1,1638 @@
+{
+  "title": "KinderChores",
+  "config": {
+    "step": {
+      "intro": {
+        "title": "Willkommen bei KidsChores",
+        "description": "Dieser Assistent führt Sie durch die Einrichtung von KidsChores."
+      },
+      "points_label": {
+        "title": "Punkte Etikett",
+        "description": "Wählen Sie eine Bezeichnung und ein Symbol für die Punkte.",
+        "data": {
+          "points_label": "Punkte Etikett",
+          "points_icon": "Punkte-Symbol"
+        }
+      },
+      "kid_count": {
+        "title": "Anzahl der Kinder",
+        "description": "Wie viele Kinder wollen Sie betreuen?",
+        "data": {
+          "kid_count": "Anzahl der Kinder"
+        }
+      },
+      "kids": {
+        "title": "Definieren Sie Kind",
+        "description": "Geben Sie den Namen für jedes Kind ein.",
+        "data": {
+          "kid_name": "Kind Name",
+          "internal_id": "Interne ID",
+          "ha_user": "Home Assistant Benutzer",
+          "enable_mobile_notifications": "Mobile Benachrichtigungen aktivieren",
+          "mobile_notify_service": "Dienst benachrichtigen",
+          "enable_persistent_notifications": "Dauerhafte Benachrichtigungen aktivieren"
+        }
+      },
+      "parent_count": {
+        "title": "Anzahl der Eltern",
+        "description": "Wie viele Eltern wollen Sie zunächst definieren?",
+        "data": {
+          "parent_count": "Anzahl der Eltern"
+        }
+      },
+      "parents": {
+        "title": "Elternteil definieren",
+        "description": "Geben Sie die Angaben für jeden Elternteil ein.",
+        "data": {
+          "parent_name": "Name des Elternteils",
+          "ha_user_id": "Home Assistant Benutzer",
+          "associated_kids": "Assoziierte Kinder",
+          "enable_mobile_notifications": "Mobile Benachrichtigungen aktivieren",
+          "mobile_notify_service": "Dienst benachrichtigen",
+          "enable_persistent_notifications": "Dauerhafte Benachrichtigungen aktivieren",
+          "internal_id": "Interne ID"
+        }
+      },
+      "chore_count": {
+        "title": "Anzahl der Hausarbeiten",
+        "description": "Wie viele Aufgaben wollen Sie definieren?",
+        "data": {
+          "chore_count": "Anzahl der Hausarbeiten"
+        }
+      },
+      "chores": {
+        "title": "Hausarbeit definieren",
+        "description": "Geben Sie Details für jede Aufgabe ein.",
+        "data": {
+          "chore_name": "Hausarbeit Name",
+          "internal_id": "Interne ID",
+          "default_points": "Standard-Punkte",
+          "allow_multiple_claims_per_day": "Mehrere Ansprüche pro Tag zulassen?",
+          "partial_allowed": "Partielle Punkte zulassen?",
+          "shared_chore": "Geteilte Hausarbeit?",
+          "assigned_kids": "Zugewiesene Kinder",
+          "chore_description": "Beschreibung (fakultativ)",
+          "chore_labels": "Chore-Etiketten",
+          "icon": "Symbol (mdi:xxx)",
+          "recurring_frequency": "Wiederkehrende Häufigkeit",
+          "custom_interval": "Intervall für benutzerdefinierte Wiederholungshäufigkeit (nur verwenden, wenn benutzerdefinierte Wiederholungshäufigkeit eingestellt ist)",
+          "custom_interval_unit": "Benutzerdefinierte wiederkehrende Periodizität",
+          "applicable_days": "Anwendbare Tage",
+          "due_date": "Fälligkeitsdatum",
+          "notify_on_claim": "Bei Anspruch benachrichtigen",
+          "notify_on_approval": "Bei Genehmigung benachrichtigen",
+          "notify_on_disapproval": "Benachrichtigung bei Nichtgenehmigung"
+        }
+      },
+      "badge_count": {
+        "title": "Anzahl der Abzeichen",
+        "description": "Wie viele Abzeichen möchten Sie definieren?",
+        "data": {
+          "badge_count": "Abzeichen zählen"
+        }
+      },
+      "badges": {
+        "title": "Abzeichen definieren",
+        "description": "Geben Sie Details für jeden Ausweis ein.",
+        "data": {
+          "badge_name": "Abzeichen Name",
+          "internal_id": "Interne ID",
+          "threshold_type": "Schwellenwert Typ",
+          "threshold_value": "Schwellenwert",
+          "points_multiplier": "Punkte-Multiplikator",
+          "icon": "Symbol (mdi:xxx)",
+          "badge_description": "Beschreibung (fakultativ)",
+          "badge_labels": "Abzeichen-Etiketten"
+        }
+      },
+      "reward_count": {
+        "title": "Anzahl der Belohnungen",
+        "description": "Wie viele Belohnungen wollen Sie festlegen?",
+        "data": {
+          "reward_count": "Anzahl der Belohnungen"
+        }
+      },
+      "rewards": {
+        "title": "Belohnung definieren",
+        "description": "Geben Sie Details für jede Prämie ein.",
+        "data": {
+          "reward_name": "Belohnung Name",
+          "internal_id": "Interne ID",
+          "reward_cost": "Belohnung Kosten",
+          "reward_description": "Beschreibung (fakultativ)",
+          "reward_labels": "Belohnungsetiketten",
+          "icon": "Symbol (mdi:xxx)"
+        }
+      },
+      "penalty_count": {
+        "title": "Anzahl der Sanktionen",
+        "description": "Wie viele Strafen wollen Sie festlegen?",
+        "data": {
+          "penalty_count": "Anzahl der Strafen"
+        }
+      },
+      "penalties": {
+        "title": "Strafe definieren",
+        "description": "Geben Sie für jede Strafe Einzelheiten an.",
+        "data": {
+          "penalty_name": "Strafe Name",
+          "penalty_description": "Beschreibung (fakultativ)",
+          "penalty_labels": "Strafzettel",
+          "internal_id": "Interne ID",
+          "penalty_points": "Strafpunkte (negativ)",
+          "icon": "Symbol (mdi:xxx)"
+        }
+      },
+      "bonus_count": {
+        "title": "Anzahl der Boni",
+        "description": "Wie viele Boni wollen Sie festlegen?",
+        "data": {
+          "bonus_count": "Boni zählen"
+        }
+      },
+      "bonuses": {
+        "title": "Bonus definieren",
+        "description": "Geben Sie die Details für jeden Bonus ein.",
+        "data": {
+          "bonus_name": "Bonus Name",
+          "bonus_description": "Beschreibung (fakultativ)",
+          "bonus_labels": "Bonus-Etiketten",
+          "internal_id": "Interne ID",
+          "bonus_points": "Bonuspunkte",
+          "icon": "Symbol (mdi:xxx)"
+        }
+      },
+      "achievement_count": {
+        "title": "Anzahl der Errungenschaften",
+        "description": "Wie viele Leistungen wollen Sie definieren?",
+        "data": {
+          "achievement_count": "Leistung zählen"
+        }
+      },
+      "achievements": {
+        "title": "Leistung definieren",
+        "description": "Geben Sie Details für jede Leistung ein.",
+        "data": {
+          "name": "Errungenschaft Name",
+          "description": "Beschreibung (fakultativ)",
+          "achievement_labels": "Leistungsetiketten",
+          "icon": "Symbol (mdi:xxx)",
+          "assigned_kids": "Zugewiesene Kinder",
+          "type": "Art der Errungenschaft",
+          "selected_chore_id": "Wählen Sie Chore Assoziiert",
+          "criteria": "Kriterien (fakultativ)",
+          "target_value": "Erreichung des Ziels",
+          "reward_points": "Extrapunkte für das Erreichen einer Leistung",
+          "internal_id": "Interne ID"
+        }
+      },
+      "challenge_count": {
+        "title": "Anzahl der Herausforderungen",
+        "description": "Wie viele Herausforderungen wollen Sie definieren?",
+        "data": {
+          "challenge_count": "Herausforderung Zählen"
+        }
+      },
+      "challenges": {
+        "title": "Herausforderung definieren",
+        "description": "Geben Sie Details für jede Herausforderung ein.",
+        "data": {
+          "name": "Herausforderung Name",
+          "description": "Beschreibung (fakultativ)",
+          "challenge_labels": "Herausforderung Etiketten",
+          "icon": "Symbol (mdi:xxx)",
+          "assigned_kids": "Zugewiesene Kinder",
+          "type": "Art der Herausforderung",
+          "selected_chore_id": "Mit der Herausforderung verbundene Aufgabe auswählen (optional)",
+          "criteria": "Kriterien (fakultativ)",
+          "target_value": "Herausforderungen Ziel",
+          "reward_points": "Extrapunkte für das Abschließen der Herausforderung",
+          "start_date": "Datum des Beginns",
+          "end_date": "Enddatum",
+          "internal_id": "Interne ID"
+        }
+      },
+      "finish": {
+        "title": "Überprüfung &amp; Abschluss",
+        "description": "Überprüfen Sie die Einstellungen:\n{summary}\nKlicken Sie zum Abschließen auf Senden."
+      }
+    },
+    "error": {
+      "a_chore_must_be_selected": "Eine Hausarbeit muss ausgewählt werden",
+      "duplicate_achievement": "Ein Erfolg mit diesem Namen existiert bereits",
+      "duplicate_badge": "Ein Ausweis mit diesem Namen existiert bereits",
+      "duplicate_challenge": "Eine Herausforderung mit diesem Namen existiert bereits",
+      "duplicate_chore": "Eine Aufgabe mit diesem Namen existiert bereits",
+      "duplicate_kid": "Es gibt bereits ein Kind mit diesem Namen",
+      "duplicate_parent": "Ein Elternteil mit diesem Namen existiert bereits",
+      "duplicate_penalty": "Eine Strafe mit diesem Namen existiert bereits",
+      "duplicate_reward": "Eine Belohnung mit diesem Namen existiert bereits",
+      "duplicate_bonus": "Ein Bonus mit diesem Namen existiert bereits",
+      "due_date_in_past": "Das Fälligkeitsdatum muss in der Zukunft liegen.",
+      "end_date_in_past": "Das Enddatum muss in der Zukunft liegen.",
+      "end_date_not_after_start_date": "Das Enddatum muss nach dem Startdatum liegen",
+      "invalid_achievement_count": "Ungültige Anzahl von Leistungen",
+      "invalid_achievement_name": "Ungültiger Name der Leistung",
+      "invalid_badge": "Ungültiges Abzeichen",
+      "invalid_badge_count": "Ungültige Ausweisanzahl",
+      "invalid_badge_name": "Ungültiger Ausweisname",
+      "invalid_challenge_count": "Ungültige Anzahl von Herausforderungen",
+      "invalid_challenge_name": "Ungültiger Name der Herausforderung",
+      "invalid_chore": "Ungültige Hausarbeit",
+      "invalid_chore_count": "Ungültige Anzahl von Hausarbeiten",
+      "invalid_chore_name": "Ungültiger Hausarbeit",
+      "invalid_due_date": "Ungültiges Fälligkeitsdatum",
+      "invalid_end_date": "Ungültiges Enddatum.",
+      "invalid_kid_count": "Ungültige Kinderzahl",
+      "invalid_kid_name": "Ungültiger Name des Kindes",
+      "invalid_parent_count": "Ungültige Elternzahl",
+      "invalid_parent_name": "Ungültiger übergeordneter Name",
+      "invalid_penalty": "Ungültige Strafe",
+      "invalid_penalty_count": "Ungültige Anzahl von Strafen",
+      "invalid_penalty_name": "Ungültiger Name der Strafe",
+      "invalid_reward": "Ungültige Belohnung",
+      "invalid_reward_count": "Ungültige Anzahl von Belohnungen",
+      "invalid_reward_name": "Ungültiger Reward-Name",
+      "invalid_bonus": "Ungültiger Bonus",
+      "invalid_bonus_count": "Ungültige Bonusanzahl",
+      "invalid_bonus_name": "Ungültiger Bonusname",
+      "invalid_start_date": "Ungültiges Startdatum.",
+      "start_date_in_past": "Das Startdatum muss in der Zukunft liegen."
+    },
+    "abort": {
+      "single_instance_allowed": "Es kann nur eine einzige KidsChores-Instanz konfiguriert werden."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "KidsChores Optionen",
+        "description": "Verwalten Sie Kinder, Aufgaben, Abzeichen, Belohnungen, Strafen, Boni oder den Abschluss.",
+        "data": {
+          "menu_selection": "Wählen Sie eine Option"
+        }
+      },
+      "manage_entity": {
+        "title": "Aktion auswählen",
+        "description": "Optionen hinzufügen, bearbeiten oder löschen.",
+        "data": {
+          "manage_action": "Wählen Sie eine Aktion"
+        }
+      },
+      "select_entity": {
+        "title": "Wählen Sie {entity_type}",
+        "description": "Wählen Sie die {entity_type} aus, die Sie unter {action} aufrufen möchten.",
+        "data": {
+          "entity_name": "Name"
+        }
+      },
+      "manage_points": {
+        "title": "Punkte-Etikett und -Symbol bearbeiten",
+        "description": "Ändern Sie die Beschriftung und das Symbol zur Darstellung von Punkten.",
+        "data": {
+          "points_label": "Punkte Etikett",
+          "points_icon": "Punkte-Symbol"
+        }
+      },
+      "add_kid": {
+        "title": "Kind hinzufügen",
+        "description": "Geben Sie die Einzelheiten für das neue Kind an.",
+        "data": {
+          "kid_name": "Kind Name",
+          "ha_user": "Home Assistant Benutzer",
+          "enable_mobile_notifications": "Mobile Benachrichtigungen aktivieren",
+          "mobile_notify_service": "Dienst benachrichtigen",
+          "enable_persistent_notifications": "Dauerhafte Benachrichtigungen aktivieren",
+          "internal_id": "Interne ID"
+        }
+      },
+      "add_parent": {
+        "title": "Elternteil hinzufügen",
+        "description": "Geben Sie die Details für den neuen Elternteil an.",
+        "data": {
+          "parent_name": "Name des Elternteils",
+          "ha_user_id": "Home Assistant Benutzer",
+          "associated_kids": "Assoziierte Kinder",
+          "enable_mobile_notifications": "Mobile Benachrichtigungen aktivieren",
+          "mobile_notify_service": "Dienst benachrichtigen",
+          "enable_persistent_notifications": "Dauerhafte Benachrichtigungen aktivieren",
+          "internal_id": "Interne ID"
+        }
+      },
+      "add_chore": {
+        "title": "Hausarbeit hinzufügen",
+        "description": "Geben Sie die Details für die neue Aufgabe an.",
+        "data": {
+          "chore_name": "Hausarbeit Name",
+          "internal_id": "Interne ID",
+          "default_points": "Standard-Punkte",
+          "allow_multiple_claims_per_day": "Mehrere Ansprüche pro Tag zulassen?",
+          "partial_allowed": "Partielle Punkte zulassen?",
+          "shared_chore": "Geteilte Hausarbeit?",
+          "assigned_kids": "Zugewiesene Kinder",
+          "chore_description": "Beschreibung (fakultativ)",
+          "chore_labels": "Chore-Etiketten",
+          "icon": "Symbol (mdi:xxx)",
+          "recurring_frequency": "Wiederkehrende Häufigkeit",
+          "custom_interval": "Intervall für benutzerdefinierte Wiederholungshäufigkeit (nur verwenden, wenn benutzerdefinierte Wiederholungshäufigkeit eingestellt ist)",
+          "custom_interval_unit": "Benutzerdefinierte wiederkehrende Periodizität",
+          "applicable_days": "Anwendbare Tage",
+          "due_date": "Fälligkeitsdatum",
+          "notify_on_claim": "Bei Anspruch benachrichtigen",
+          "notify_on_approval": "Bei Genehmigung benachrichtigen",
+          "notify_on_disapproval": "Benachrichtigung bei Nichtgenehmigung"
+        }
+      },
+      "add_badge": {
+        "title": "Abzeichen hinzufügen",
+        "description": "Geben Sie die Details für den neuen Ausweis an.",
+        "data": {
+          "badge_name": "Abzeichen Name",
+          "internal_id": "Interne ID",
+          "threshold_type": "Schwellenwert Typ",
+          "threshold_value": "Schwellenwert",
+          "points_multiplier": "Punkte-Multiplikator",
+          "icon": "Symbol (mdi:xxx)",
+          "badge_description": "Beschreibung (fakultativ)",
+          "badge_labels": "Abzeichen-Etiketten"
+        }
+      },
+      "add_reward": {
+        "title": "Belohnung hinzufügen",
+        "description": "Geben Sie die Details für die neue Belohnung an.",
+        "data": {
+          "reward_name": "Belohnung Name",
+          "internal_id": "Interne ID",
+          "reward_cost": "Belohnung Kosten",
+          "reward_description": "Beschreibung (fakultativ)",
+          "reward_labels": "Belohnungsetiketten",
+          "icon": "Symbol (mdi:xxx)"
+        }
+      },
+      "add_penalty": {
+        "title": "Strafe hinzufügen",
+        "description": "Geben Sie die Einzelheiten für die neue Strafe an.",
+        "data": {
+          "penalty_name": "Strafe Name",
+          "penalty_description": "Beschreibung (fakultativ)",
+          "penalty_labels": "Strafzettel",
+          "internal_id": "Interne ID",
+          "penalty_points": "Strafpunkte (negativ)",
+          "icon": "Symbol (mdi:xxx)"
+        }
+      },
+      "add_bonus": {
+        "title": "Bonus hinzufügen",
+        "description": "Geben Sie die Details für den neuen Bonus an.",
+        "data": {
+          "bonus_name": "Bonus Name",
+          "bonus_description": "Beschreibung (fakultativ)",
+          "bonus_labels": "Bonus-Etiketten",
+          "internal_id": "Interne ID",
+          "bonus_points": "Bonuspunkte",
+          "icon": "Symbol (mdi:xxx)"
+        }
+      },
+      "add_achievement": {
+        "title": "Leistung definieren",
+        "description": "Geben Sie Details für jede Leistung ein.",
+        "data": {
+          "name": "Errungenschaft Name",
+          "description": "Beschreibung (fakultativ)",
+          "achievement_labels": "Leistungsetiketten",
+          "icon": "Symbol (mdi:xxx)",
+          "assigned_kids": "Zugewiesene Kinder",
+          "type": "Art der Errungenschaft",
+          "selected_chore_id": "Wählen Sie Chore Assoziiert",
+          "criteria": "Kriterien (fakultativ)",
+          "target_value": "Erreichung des Ziels",
+          "reward_points": "Extrapunkte für das Erreichen einer Leistung",
+          "internal_id": "Interne ID"
+        }
+      },
+      "add_challenge": {
+        "title": "Herausforderung definieren",
+        "description": "Geben Sie Details für jede Herausforderung ein.",
+        "data": {
+          "name": "Herausforderung Name",
+          "description": "Beschreibung (fakultativ)",
+          "challenge_labels": "Herausforderung Etiketten",
+          "icon": "Symbol (mdi:xxx)",
+          "assigned_kids": "Zugewiesene Kinder",
+          "type": "Art der Herausforderung",
+          "selected_chore_id": "Mit der Herausforderung verbundene Aufgabe auswählen (optional)",
+          "criteria": "Kriterien (fakultativ)",
+          "target_value": "Herausforderungen Ziel",
+          "reward_points": "Extrapunkte für das Abschließen der Herausforderung",
+          "start_date": "Datum des Beginns",
+          "end_date": "Enddatum",
+          "internal_id": "Interne ID"
+        }
+      },
+      "edit_kid": {
+        "title": "Kind bearbeiten",
+        "description": "Ändern Sie die Details des ausgewählten Kindes.",
+        "data": {
+          "kid_name": "Kind Name",
+          "ha_user": "Home Assistant Benutzer",
+          "enable_mobile_notifications": "Mobile Benachrichtigungen aktivieren",
+          "mobile_notify_service": "Dienst benachrichtigen",
+          "enable_persistent_notifications": "Dauerhafte Benachrichtigungen aktivieren",
+          "internal_id": "Interne ID"
+        }
+      },
+      "edit_parent": {
+        "title": "Elternteil bearbeiten",
+        "description": "Ändern Sie die Details des ausgewählten Elternteils.",
+        "data": {
+          "parent_name": "Name des Elternteils",
+          "ha_user_id": "Home Assistant Benutzer",
+          "associated_kids": "Assoziierte Kinder",
+          "enable_mobile_notifications": "Mobile Benachrichtigungen aktivieren",
+          "mobile_notify_service": "Dienst benachrichtigen",
+          "enable_persistent_notifications": "Dauerhafte Benachrichtigungen aktivieren",
+          "internal_id": "Interne ID"
+        }
+      },
+      "edit_chore": {
+        "title": "Aufgabe bearbeiten",
+        "description": "Ändern Sie die Details der ausgewählten Aufgabe.",
+        "data": {
+          "chore_name": "Hausarbeit Name",
+          "internal_id": "Interne ID",
+          "default_points": "Standard-Punkte",
+          "allow_multiple_claims_per_day": "Mehrere Ansprüche pro Tag zulassen?",
+          "partial_allowed": "Partielle Punkte zulassen?",
+          "shared_chore": "Geteilte Hausarbeit?",
+          "assigned_kids": "Zugewiesene Kinder",
+          "chore_description": "Beschreibung (fakultativ)",
+          "chore_labels": "Chore-Etiketten",
+          "icon": "Symbol (mdi:xxx)",
+          "recurring_frequency": "Wiederkehrende Häufigkeit",
+          "custom_interval": "Intervall für benutzerdefinierte Wiederholungshäufigkeit (nur verwenden, wenn benutzerdefinierte Wiederholungshäufigkeit eingestellt ist)",
+          "custom_interval_unit": "Benutzerdefinierte wiederkehrende Periodizität",
+          "applicable_days": "Anwendbare Tage",
+          "due_date": "Fälligkeitsdatum",
+          "notify_on_claim": "Bei Anspruch benachrichtigen",
+          "notify_on_approval": "Bei Genehmigung benachrichtigen",
+          "notify_on_disapproval": "Benachrichtigung bei Nichtgenehmigung"
+        }
+      },
+      "edit_badge": {
+        "title": "Abzeichen bearbeiten",
+        "description": "Ändern Sie die Details des ausgewählten Ausweises.",
+        "data": {
+          "badge_name": "Abzeichen Name",
+          "internal_id": "Interne ID",
+          "threshold_type": "Schwellenwert Typ",
+          "threshold_value": "Schwellenwert",
+          "points_multiplier": "Punkte-Multiplikator",
+          "icon": "Symbol (mdi:xxx)",
+          "badge_description": "Beschreibung (fakultativ)",
+          "badge_labels": "Abzeichen-Etiketten"
+        }
+      },
+      "edit_reward": {
+        "title": "Belohnung bearbeiten",
+        "description": "Ändern Sie die Details der ausgewählten Belohnung.",
+        "data": {
+          "reward_name": "Belohnung Name",
+          "internal_id": "Interne ID",
+          "reward_cost": "Belohnung Kosten",
+          "reward_description": "Beschreibung (fakultativ)",
+          "reward_labels": "Belohnungsetiketten",
+          "icon": "Symbol (mdi:xxx)"
+        }
+      },
+      "edit_penalty": {
+        "title": "Strafe bearbeiten",
+        "description": "Ändern Sie die Details der ausgewählten Strafe.",
+        "data": {
+          "penalty_name": "Strafe Name",
+          "penalty_description": "Beschreibung (fakultativ)",
+          "penalty_labels": "Strafzettel",
+          "internal_id": "Interne ID",
+          "penalty_points": "Strafpunkte (negativ)",
+          "icon": "Symbol (mdi:xxx)"
+        }
+      },
+      "edit_bonus": {
+        "title": "Bonus bearbeiten",
+        "description": "Ändern Sie die Details der ausgewählten Prämie.",
+        "data": {
+          "bonus_name": "Bonus Name",
+          "bonus_description": "Beschreibung (fakultativ)",
+          "bonus_labels": "Bonus-Etiketten",
+          "internal_id": "Interne ID",
+          "bonus_points": "Bonuspunkte",
+          "icon": "Symbol (mdi:xxx)"
+        }
+      },
+      "edit_achievement": {
+        "title": "Leistung definieren",
+        "description": "Geben Sie Details für jede Leistung ein.",
+        "data": {
+          "name": "Errungenschaft Name",
+          "description": "Beschreibung (fakultativ)",
+          "achievement_labels": "Leistungsetiketten",
+          "icon": "Symbol (mdi:xxx)",
+          "assigned_kids": "Zugewiesene Kinder",
+          "type": "Art der Errungenschaft",
+          "selected_chore_id": "Wählen Sie Chore Assoziiert",
+          "criteria": "Kriterien (fakultativ)",
+          "target_value": "Erreichung des Ziels",
+          "reward_points": "Extrapunkte für das Erreichen einer Leistung",
+          "internal_id": "Interne ID"
+        }
+      },
+      "edit_challenge": {
+        "title": "Herausforderung definieren",
+        "description": "Geben Sie Details für jede Herausforderung ein.",
+        "data": {
+          "name": "Herausforderung Name",
+          "description": "Beschreibung (fakultativ)",
+          "challenge_labels": "Herausforderung Etiketten",
+          "icon": "Symbol (mdi:xxx)",
+          "assigned_kids": "Zugewiesene Kinder",
+          "type": "Art der Herausforderung",
+          "selected_chore_id": "Mit der Herausforderung verbundene Aufgabe auswählen (optional)",
+          "criteria": "Kriterien (fakultativ)",
+          "target_value": "Herausforderungen Ziel",
+          "reward_points": "Extrapunkte für das Abschließen der Herausforderung",
+          "start_date": "Datum des Beginns",
+          "end_date": "Enddatum",
+          "internal_id": "Interne ID"
+        }
+      },
+      "delete_kid": {
+        "title": "Kind löschen",
+        "description": "Sind Sie sicher, dass Sie das Kind löschen wollen {kid_name}?",
+        "data": {}
+      },
+      "delete_parent": {
+        "title": "Elternteil löschen",
+        "description": "Sind Sie sicher, dass Sie die übergeordnete Seite {parent_name} löschen wollen?",
+        "data": {}
+      },
+      "delete_chore": {
+        "title": "Aufgabe löschen",
+        "description": "Sind Sie sicher, dass Sie die Hausarbeit {chore_name} löschen möchten?",
+        "data": {}
+      },
+      "delete_badge": {
+        "title": "Abzeichen löschen",
+        "description": "Sind Sie sicher, dass Sie das Abzeichen {badge_name} löschen möchten?",
+        "data": {}
+      },
+      "delete_reward": {
+        "title": "Belohnung löschen",
+        "description": "Sind Sie sicher, dass Sie die Belohnung {reward_name} löschen möchten?",
+        "data": {}
+      },
+      "delete_penalty": {
+        "title": "Strafe löschen",
+        "description": "Sind Sie sicher, dass Sie die Strafe {penalty_name} löschen wollen?",
+        "data": {}
+      },
+      "delete_bonus": {
+        "title": "Bonus löschen",
+        "description": "Sind Sie sicher, dass Sie den Bonus {bonus_name} löschen wollen?",
+        "data": {}
+      },
+      "delete_achievement": {
+        "title": "Errungenschaft löschen",
+        "description": "Sind Sie sicher, dass Sie die Leistung {achievement_name} löschen wollen?",
+        "data": {}
+      },
+      "delete_challenge": {
+        "title": "Herausforderung löschen",
+        "description": "Sind Sie sicher, dass Sie die Herausforderung {challenge_name} löschen wollen?",
+        "data": {}
+      }
+    },
+    "error": {
+      "a_chore_must_be_selected": "Eine Hausarbeit muss ausgewählt werden",
+      "duplicate_achievement": "Ein Erfolg mit diesem Namen existiert bereits",
+      "duplicate_badge": "Ein Ausweis mit diesem Namen existiert bereits",
+      "duplicate_challenge": "Eine Herausforderung mit diesem Namen existiert bereits",
+      "duplicate_chore": "Eine Aufgabe mit diesem Namen existiert bereits",
+      "duplicate_kid": "Es gibt bereits ein Kind mit diesem Namen",
+      "duplicate_parent": "Ein Elternteil mit diesem Namen existiert bereits",
+      "duplicate_penalty": "Eine Strafe mit diesem Namen existiert bereits",
+      "duplicate_reward": "Eine Belohnung mit diesem Namen existiert bereits",
+      "duplicate_bonus": "Ein Bonus mit diesem Namen existiert bereits",
+      "due_date_in_past": "Das Fälligkeitsdatum muss in der Zukunft liegen.",
+      "end_date_in_past": "Das Enddatum muss in der Zukunft liegen.",
+      "end_date_not_after_start_date": "Das Enddatum muss nach dem Startdatum liegen",
+      "invalid_badge": "Ungültiges Abzeichen",
+      "invalid_badge_count": "Ungültige Ausweisanzahl",
+      "invalid_chore": "Ungültige Hausarbeit",
+      "invalid_chore_count": "Ungültige Anzahl von Hausarbeiten",
+      "invalid_due_date": "Ungültiges Fälligkeitsdatum",
+      "invalid_end_date": "Ungültiges Enddatum.",
+      "invalid_kid_count": "Ungültige Kinderzahl",
+      "invalid_kid_name": "Ungültiger Name des Kindes",
+      "invalid_penalty": "Ungültige Strafe",
+      "invalid_penalty_count": "Ungültige Anzahl von Strafen",
+      "invalid_bonus": "Ungültiger Bonus",
+      "invalid_bonus_count": "Ungültige Bonusanzahl",
+      "invalid_reward": "Ungültige Belohnung",
+      "invalid_reward_count": "Ungültige Anzahl von Belohnungen",
+      "invalid_start_date": "Ungültiges Startdatum.",
+      "start_date_in_past": "Das Startdatum muss in der Zukunft liegen."
+    },
+    "abort": {
+      "invalid_action": "Ungültige Aktion",
+      "invalid_achievement": "Ungültige Leistung",
+      "invalid_badge": "Ungültiges Abzeichen",
+      "invalid_challenge": "Ungültige Herausforderung",
+      "invalid_chore": "Ungültige Hausarbeit",
+      "invalid_entity": "Ungültige Entität",
+      "invalid_kid": "Unfähiges Kind",
+      "invalid_parent": "Ungültiger Elternteil",
+      "invalid_penalty": "Ungültige Strafe",
+      "invalid_reward": "Ungültige Belohnung",
+      "invalid_bonus": "Ungültiger Bonus",
+      "no_kid": "Keine Kinder sind für die Bearbeitung eingerichtet. Fügen Sie zuerst einen Eintrag hinzu.",
+      "no_parent": "Es sind keine Eltern zur Bearbeitung eingerichtet. Fügen Sie zuerst einen Eintrag hinzu.",
+      "no_chore": "Es sind keine Hausarbeiten zur Bearbeitung eingerichtet. Fügen Sie zuerst einen Eintrag hinzu.",
+      "no_badge": "Es sind keine Abzeichen zur Bearbeitung eingerichtet. Fügen Sie zuerst einen Eintrag hinzu.",
+      "no_reward": "Es sind keine Belohnungen zur Bearbeitung eingerichtet. Fügen Sie zuerst einen Eintrag hinzu.",
+      "no_penalty": "Für die Bearbeitung sind keine Strafen vorgesehen. Fügen Sie zuerst einen Eintrag hinzu.",
+      "no_bonus": "Es sind keine Boni für die Bearbeitung eingerichtet. Fügen Sie zuerst einen Eintrag hinzu.",
+      "no_achievement": "Es sind keine Achievements zur Bearbeitung eingerichtet. Fügen Sie zuerst einen Eintrag hinzu.",
+      "no_challenge": "Es sind keine Challenges zur Bearbeitung eingerichtet. Füge zuerst einen Eintrag hinzu.",
+      "setup_complete": "Einrichtung abgeschlossen"
+    }
+  },
+  "selector": {
+    "main_menu": {
+      "options": {
+        "manage_points": "Punkte verwalten",
+        "manage_kid": "Kind verwalten",
+        "manage_parent": "Elternteil verwalten",
+        "manage_chore": "Hausarbeit verwalten",
+        "manage_badge": "Ausweis verwalten",
+        "manage_reward": "Belohnung verwalten",
+        "manage_penalty": "Strafe verwalten",
+        "manage_bonus": "Bonus verwalten",
+        "manage_achievement": "Leistung verwalten",
+        "manage_challenge": "Herausforderung meistern",
+        "done": "Einrichtung beenden"
+      }
+    },
+    "manage_actions": {
+      "options": {
+        "add": "hinzufügen",
+        "edit": "bearbeiten",
+        "delete": "Löschen",
+        "back": "Zurück zum Hauptmenü"
+      }
+    },
+    "recurring_frequency": {
+      "options": {
+        "none": "Keine",
+        "daily": "Täglich",
+        "weekly": "Wöchentlich",
+        "biweekly": "Zweiwöchentlich",
+        "monthly": "Monatlich",
+        "custom": "Benutzerdefiniert"
+      }
+    },
+    "custom_interval_unit": {
+      "options": {
+        "days": "Tage",
+        "weeks": "Wochen",
+        "months": "Monate"
+      }
+    },
+    "applicable_days": {
+      "options": {
+        "mon": "Montag",
+        "tue": "Dienstag",
+        "wed": "Mittwoch",
+        "thu": "Donnerstag",
+        "fri": "Freitag",
+        "sat": "Samstag",
+        "sun": "Sonntag"
+      }
+    },
+    "threshold_type": {
+      "options": {
+        "points": "Punkte",
+        "chore_count": "Hausarbeit zählen"
+      }
+    }
+  },
+  "services": {
+    "claim_chore": {
+      "name": "Hausarbeit reklamieren",
+      "description": "Ein Kind beansprucht eine Aufgabe und markiert sie als \"beansprucht\", um die Zustimmung der Eltern zu erhalten.",
+      "fields": {
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Der Name des Kindes, das die Hausarbeit anfordert.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Hausarbeit Name",
+          "description": "Der Name der zu reklamierenden Aufgabe.",
+          "example": "Geschirr spülen"
+        }
+      }
+    },
+    "approve_chore": {
+      "name": "Hausarbeit genehmigen",
+      "description": "Die Eltern genehmigen die Hausarbeit und vergeben Punkte.",
+      "fields": {
+        "parent_name": {
+          "name": "Name des Elternteils",
+          "description": "Der Elternteil, der die Hausarbeit genehmigt.",
+          "example": "Mama"
+        },
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Der Name des Kindes, das die Aufgabe erledigt hat.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Hausarbeit Name",
+          "description": "Der Name der zu genehmigenden Hausarbeit.",
+          "example": "Geschirr spülen"
+        },
+        "points_awarded": {
+          "name": "Vergebene Punkte",
+          "description": "Zu vergebende Punkte (optional; Standardwert sind die Punkte der Hausarbeit).",
+          "example": 3
+        }
+      }
+    },
+    "disapprove_chore": {
+      "name": "Hausarbeit ablehnen",
+      "description": "Ein Elternteil missbilligt eine Aufgabe für ein Kind, indem er ihren Status umkehrt.",
+      "fields": {
+        "parent_name": {
+          "name": "Name des Elternteils",
+          "description": "Die Eltern missbilligen die Hausarbeit.",
+          "example": "Mama"
+        },
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Der Name des Kindes, dessen Hausarbeit missbilligt wird.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Hausarbeit Name",
+          "description": "Der Name der zu missbilligenden Hausarbeit.",
+          "example": "Reinraum"
+        }
+      }
+    },
+    "redeem_reward": {
+      "name": "Prämie einlösen",
+      "description": "Ein Elternteil löst eine Belohnung für ein Kind ein und zieht Punkte ab.",
+      "fields": {
+        "parent_name": {
+          "name": "Name des Elternteils",
+          "description": "Der Elternteil, der die Einlösung der Prämie genehmigt.",
+          "example": "Mama"
+        },
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Das Kind, das die Belohnung einlöst.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belohnung Name",
+          "description": "Der Name der einzulösenden Belohnung.",
+          "example": "Extra Bildschirmzeit"
+        }
+      }
+    },
+    "approve_reward": {
+      "name": "Belohnung genehmigen",
+      "description": "Ein Elternteil genehmigt eine Belohnung, die von einem Kind beantragt wurde.",
+      "fields": {
+        "parent_name": {
+          "name": "Name des Elternteils",
+          "description": "Der Elternteil, der die Belohnung genehmigt.",
+          "example": "Mama"
+        },
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Das Kind, das die Belohnung einlöst.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belohnung Name",
+          "description": "Der Name der zu genehmigenden Belohnung.",
+          "example": "Extra Bildschirmzeit"
+        }
+      }
+    },
+    "disapprove_reward": {
+      "name": "Ablehnen Belohnung",
+      "description": "Ein Elternteil missbilligt die Rückzahlung einer Belohnung für ein Kind.",
+      "fields": {
+        "parent_name": {
+          "name": "Name des Elternteils",
+          "description": "Der Elternteil, der die Belohnung ablehnt.",
+          "example": "Papa"
+        },
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Das Kind, dessen Belohnungsrückzahlung abgelehnt wird.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belohnung Name",
+          "description": "Der Name der abgelehnten Belohnung.",
+          "example": "Extra Bildschirmzeit"
+        }
+      }
+    },
+    "apply_penalty": {
+      "name": "Strafe anwenden",
+      "description": "Ein Elternteil wendet eine Strafe an, um Punkte abzuziehen.",
+      "fields": {
+        "parent_name": {
+          "name": "Name des Elternteils",
+          "description": "Der Elternteil, der die Strafe verhängt.",
+          "example": "Papa"
+        },
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Das Kind, das die Strafe erhält.",
+          "example": "Alice"
+        },
+        "penalty_name": {
+          "name": "Strafe Name",
+          "description": "Die Bezeichnung der anzuwendenden Strafe.",
+          "example": "Schreien"
+        }
+      }
+    },
+    "apply_bonus": {
+      "name": "Bonus anwenden",
+      "description": "Ein Elternteil vergibt einen Bonus für ein Kind und vergibt Punkte.",
+      "fields": {
+        "parent_name": {
+          "name": "Name des Elternteils",
+          "description": "Der Elternteil, der die Prämie beantragt.",
+          "example": "Mama"
+        },
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Das Kind, das die Prämie erhält.",
+          "example": "Alice"
+        },
+        "bonus_name": {
+          "name": "Bonus Name",
+          "description": "Der Name der zu beantragenden Prämie.",
+          "example": "Besonders hilfreich"
+        }
+      }
+    },
+    "reset_all_data": {
+      "name": "Alle Daten zurücksetzen",
+      "description": "Löscht die KidsChores-Daten vollständig aus dem Speicher."
+    },
+    "reset_all_chores": {
+      "name": "Alle Hausarbeiten zurücksetzen",
+      "description": "Manuelles Zurücksetzen von Aufgaben in den Schwebestatus, Entfernen von Ansprüchen und Genehmigungen."
+    },
+    "reset_overdue_chores": {
+      "name": "Überfällige Hausarbeiten zurücksetzen",
+      "description": "Setzen Sie überfällige Hausarbeiten auf den Status \"Ausstehend\" zurück und planen Sie sie auf der Grundlage ihrer wiederkehrenden Häufigkeit und des vorherigen Fälligkeitsdatums neu ein. Sie können optional eine chore_id (oder chore_name) angeben, um eine bestimmte Hausarbeit zurückzusetzen und optional einen kid_name, um die Hausarbeit nur für dieses Kind zurückzusetzen.",
+      "fields": {
+        "chore_id": {
+          "name": "Hausarbeit-ID",
+          "description": "Die interne ID der zurückzusetzenden Aufgabe (optional, wenn chore_name angegeben ist).",
+          "example": "abc123"
+        },
+        "chore_name": {
+          "name": "Hausarbeit Name",
+          "description": "Der Name der zurückzusetzenden Aufgabe (optional, wenn chore_id angegeben ist).",
+          "example": "Geschirr spülen"
+        },
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Das Kind, das die Strafe erhält.",
+          "example": "Alice"
+        }
+      }
+    },
+    "set_chore_due_date": {
+      "name": "Hausarbeit Fälligkeitsdatum festlegen/zurücksetzen",
+      "description": "Setzen (oder löschen) Sie das Fälligkeitsdatum für eine Aufgabe. Geben Sie den Namen der Aufgabe und, falls gewünscht, ein neues Fälligkeitsdatum an. Wenn kein Fälligkeitsdatum angegeben wird, wird das bestehende Fälligkeitsdatum gelöscht. Fälligkeitsdaten, die in der Vergangenheit festgelegt wurden, werden vom Dienst abgelehnt.",
+      "fields": {
+        "chore_name": {
+          "name": "Hausarbeit Name",
+          "description": "Der Name der zu aktualisierenden Hausarbeit",
+          "example": "Geschirr spülen"
+        },
+        "due_date": {
+          "name": "Fälligkeitsdatum",
+          "description": "Das neue Fälligkeitsdatum für die Hausarbeit. Verwenden Sie die Datums-/Zeitauswahl, um ein gültiges Datum und eine Uhrzeit (in Ihrer lokalen Zeitzone) auszuwählen. Lassen Sie es leer, um das Fälligkeitsdatum zu löschen.",
+          "example": "2025-03-01T23:59:00Z"
+        }
+      }
+    },
+    "skip_chore_due_date": {
+      "name": "Hausarbeit überspringen Fälligkeitsdatum",
+      "description": "Überspringen Sie das aktuelle Fälligkeitsdatum einer wiederkehrenden Aufgabe. Dieser Dienst verschiebt das Fälligkeitsdatum der Aufgabe sofort auf der Grundlage der Wiederholungshäufigkeit und setzt ihren Status auf ausstehend zurück. Alle ausstehenden Forderungen oder Genehmigungen werden entfernt.",
+      "fields": {
+        "chore_id": {
+          "name": "Hausarbeit-ID",
+          "description": "Die interne ID der zurückzusetzenden Aufgabe (optional, wenn chore_name angegeben ist).",
+          "example": "abc123"
+        },
+        "chore_name": {
+          "name": "Hausarbeit Name",
+          "description": "Der Name der zurückzusetzenden Aufgabe (optional, wenn chore_id angegeben ist).",
+          "example": "Geschirr spülen"
+        }
+      }
+    },
+    "reset_penalties": {
+      "name": "Strafen zurücksetzen",
+      "description": "Setzt alle angewendeten Strafen für alle Kinder zurück. Optional kann penalty_name angegeben werden, um eine bestimmte Strafe für alle Kinder zurückzusetzen. Verwende kid_name, um alle Strafen für ein bestimmtes Kind zurückzusetzen. Kombiniere beide, um eine bestimmte Strafe für ein bestimmtes Kind zurückzusetzen.",
+      "fields": {
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Das Kind, für das die Strafen zurückgesetzt werden.",
+          "example": "Alice"
+        },
+        "penalty_name": {
+          "name": "Strafenname",
+          "description": "Der Name der Strafe, die zurückgesetzt werden soll.",
+          "example": "Schreien"
+        }
+      }
+    },
+    "reset_bonuses": {
+      "name": "Boni zurücksetzen",
+      "description": "Setzt alle angewendeten Boni für alle Kinder zurück. Optional kann bonus_name angegeben werden, um einen bestimmten Bonus für alle Kinder zurückzusetzen. Verwende kid_name, um alle Boni für ein bestimmtes Kind zurückzusetzen. Kombiniere beide, um einen bestimmten Bonus für ein bestimmtes Kind zurückzusetzen.",
+      "fields": {
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Das Kind, für das die Boni zurückgesetzt werden.",
+          "example": "Alice"
+        },
+        "bonus_name": {
+          "name": "Bonusname",
+          "description": "Der Name des Bonus, der zurückgesetzt werden soll.",
+          "example": "Helfen"
+        }
+      }
+    },
+    "reset_rewards": {
+      "name": "Belohnungen zurücksetzen",
+      "description": "Setzt alle Belohnungsansprüche und Genehmigungszähler für alle Kinder zurück. Optional kann reward_name angegeben werden, um die Zähler für eine bestimmte Belohnung für alle Kinder zurückzusetzen. Verwende kid_name, um alle Belohnungszähler für ein bestimmtes Kind zurückzusetzen. Kombiniere beide, um eine bestimmte Belohnung für ein bestimmtes Kind zurückzusetzen.",
+      "fields": {
+        "kid_name": {
+          "name": "Kind Name",
+          "description": "Das Kind, für das die Belohnungszähler zurückgesetzt werden.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belohnungsname",
+          "description": "Der Name der Belohnung, die zurückgesetzt werden soll.",
+          "example": "Eiscreme"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "chore_status_sensor": {
+        "name": "{kid_name} - Status - {chore_name}",
+        "state": {
+          "pending": "Anhängig",
+          "approved": "Genehmigt",
+          "claimed": "Beansprucht",
+          "overdue": "Überfällig",
+          "unknown": "Unbekannt",
+          "none": "Keine",
+          "approved_in_part": "Genehmigt (teilweise)",
+          "claimed_in_part": "Beansprucht (zum Teil)"
+        },
+        "state_attributes": {
+          "kid_name": {
+            "name": "Kind Name"
+          },
+          "chore_name": {
+            "name": "Hausarbeit Name"
+          },
+          "shared_chore": {
+            "name": "Gemeinsame Hausarbeit",
+            "state": {
+              "true": "Ja",
+              "false": "Nein"
+            }
+          },
+          "recurring_frequency": {
+            "name": "Wiederkehrende Häufigkeit",
+            "state": {
+              "none": "Keine",
+              "daily": "Täglich",
+              "weekly": "Wöchentlich",
+              "biweekly": "Zweiwöchentlich",
+              "monthly": "Monatlich",
+              "custom": "Benutzerdefiniert"
+            }
+          },
+          "applicable_days": {
+            "name": "Anwendbare Tage",
+            "state": {
+              "mon": "Montag",
+              "tue": "Dienstag",
+              "wed": "Mittwoch",
+              "thu": "Donnerstag",
+              "fri": "Freitag",
+              "sat": "Samstag",
+              "sun": "Sonntag"
+            }
+          },
+          "due_date": {
+            "name": "Fälligkeitsdatum"
+          },
+          "default_points": {
+            "name": "Standard-Punkte"
+          },
+          "description": {
+            "name": "Beschreibung"
+          },
+          "chore_claims_count": {
+            "name": "Chore Claims Count"
+          },
+          "chore_approvals_count": {
+            "name": "Chore Genehmigungen zählen"
+          },
+          "chore_current_streak": {
+            "name": "Hausarbeit Aktuelle Serie"
+          },
+          "chore_highest_streak": {
+            "name": "Hausarbeit Höchste Streak"
+          },
+          "global_state": {
+            "name": "Globaler Staat",
+            "state": {
+              "pending": "Anhängig",
+              "approved": "Genehmigt",
+              "claimed": "Beansprucht",
+              "overdue": "Überfällig",
+              "unknown": "Unbekannt",
+              "none": "Keine",
+              "approved_in_part": "Genehmigt (teilweise)",
+              "claimed_in_part": "Beansprucht (zum Teil)",
+              "independent": "Unabhängig"
+            }
+          },
+          "partial_allowed": {
+            "name": "Teilweise Erlaubt",
+            "state": {
+              "true": "Ja",
+              "false": "Nein"
+            }
+          },
+          "allow_multiple_claims_per_day": {
+            "name": "Mehrere Ansprüche pro Tag zulassen",
+            "state": {
+              "true": "Ja",
+              "false": "Nein"
+            }
+          },
+          "assigned_kids": {
+            "name": "Zugewiesene Kinder"
+          },
+          "custom_frequency_interval": {
+            "name": "Benutzerdefinierte Frequenz"
+          },
+          "custom_frequency_unit": {
+            "name": "Benutzerdefinierte Frequenz Periode",
+            "state": {
+              "days": "Tage",
+              "weeks": "Wochen",
+              "months": "Monate"
+            }
+          },
+          "chore_approvals_today": {
+            "name": "Choreografische Genehmigungen heute"
+          },
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "kid_points_sensor": {
+        "name": "{kid_name} - {points}"
+      },
+      "kid_max_points_ever_sensor": {
+        "name": "{kid_name} - Höchste Punktzahl aller Zeiten"
+      },
+      "chores_completed_total_sensor": {
+        "name": "{kid_name} - Erledigte Hausarbeiten - Gesamt"
+      },
+      "chores_completed_daily_sensor": {
+        "name": "{kid_name} - Erledigte Hausarbeiten - täglich"
+      },
+      "chores_completed_weekly_sensor": {
+        "name": "{kid_name} - Erledigte Hausarbeiten - Wöchentlich"
+      },
+      "chores_completed_monthly_sensor": {
+        "name": "{kid_name} - Erledigte Hausarbeiten - Monatlich"
+      },
+      "kid_badges_sensor": {
+        "name": "{kid_name} - Verdiente Abzeichen"
+      },
+      "kids_highest_badge_sensor": {
+        "name": "{kid_name} - Abzeichen",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Kind Name"
+          },
+          "all_earned_badges": {
+            "name": "Alle verdienten Abzeichen"
+          },
+          "highest_badge_threshold_value": {
+            "name": "Höchster Schwellenwert für Abzeichen"
+          },
+          "points_multiplier": {
+            "name": "Punkte-Multiplikator"
+          },
+          "points_to_next_badge": {
+            "name": "Punkte für das nächste Abzeichen"
+          },
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "badge_sensor": {
+        "name": "Abzeichen - {badge_name}",
+        "state_attributes": {
+          "threshold_type": {
+            "name": "Schwellenwert Typ",
+            "state": {
+              "points": "Punkte",
+              "chore_count": "Hausarbeit zählen"
+            }
+          },
+          "points_multiplier": {
+            "name": "Punkte-Multiplikator"
+          },
+          "description": {
+            "name": "Beschreibung"
+          },
+          "kids_earned": {
+            "name": "Verdiente Kinder"
+          },
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "pending_chores_approvals_sensor": {
+        "name": "Ausstehende Genehmigungen für Hausarbeiten"
+      },
+      "pending_rewards_approvals_sensor": {
+        "name": "Ausstehende Genehmigungen für Belohnungen"
+      },
+      "reward_claims_sensor": {
+        "name": "{kid_name} - Ansprüche - {reward_name}"
+      },
+      "reward_approvals_sensor": {
+        "name": "{kid_name} - Zulassungen - {reward_name}"
+      },
+      "shared_chore_global_status_sensor": {
+        "name": "{chore_name} - Globaler Status",
+        "state": {
+          "pending": "Anhängig",
+          "approved": "Genehmigt",
+          "claimed": "Beansprucht",
+          "overdue": "Überfällig",
+          "unknown": "Unbekannt",
+          "none": "Keine",
+          "approved_in_part": "Genehmigt (teilweise)",
+          "claimed_in_part": "Beansprucht (zum Teil)",
+          "independent": "Unabhängig"
+        },
+        "state_attributes": {
+          "chore_name": {
+            "name": "Hausarbeit Name"
+          },
+          "description": {
+            "name": "Beschreibung"
+          },
+          "recurring_frequency": {
+            "name": "Wiederkehrende Häufigkeit",
+            "state": {
+              "none": "Keine",
+              "daily": "Täglich",
+              "weekly": "Wöchentlich",
+              "biweekly": "Zweiwöchentlich",
+              "monthly": "Monatlich",
+              "custom": "Benutzerdefiniert"
+            }
+          },
+          "applicable_days": {
+            "name": "Anwendbare Tage",
+            "state": {
+              "mon": "Montag",
+              "tue": "Dienstag",
+              "wed": "Mittwoch",
+              "thu": "Donnerstag",
+              "fri": "Freitag",
+              "sat": "Samstag",
+              "sun": "Sonntag"
+            }
+          },
+          "due_date": {
+            "name": "Fälligkeitsdatum"
+          },
+          "default_points": {
+            "name": "Standard-Punkte"
+          },
+          "partial_allowed": {
+            "name": "Teilweise Erlaubt",
+            "state": {
+              "true": "Ja",
+              "false": "Nein"
+            }
+          },
+          "allow_multiple_claims_per_day": {
+            "name": "Mehrere Ansprüche pro Tag zulassen",
+            "state": {
+              "true": "Ja",
+              "false": "Nein"
+            }
+          },
+          "assigned_kids": {
+            "name": "Zugewiesene Kinder"
+          },
+          "chore_approvals_today": {
+            "name": "Choreografische Genehmigungen heute"
+          },
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "reward_status_sensor": {
+        "name": "{kid_name} - Belohnungsstatus - {reward_name}",
+        "state": {
+          "not_claimed": "Nicht beansprucht",
+          "approved": "Genehmigt",
+          "claimed": "Beansprucht",
+          "unknown": "Unbekannt",
+          "none": "Keine"
+        },
+        "state_attributes": {
+          "kid_name": {
+            "name": "Kind Name"
+          },
+          "reward_name": {
+            "name": "Belohnung Name"
+          },
+          "reward_cost": {
+            "name": "Belohnung Kosten"
+          },
+          "description": {
+            "name": "Beschreibung"
+          },
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "chore_claims_sensor": {
+        "name": "{kid_name} - Ansprüche - {chore_name}"
+      },
+      "chore_approvals_sensor": {
+        "name": "{kid_name} - Zulassungen - {chore_name}"
+      },
+      "penalty_applies_sensor": {
+        "name": "{kid_name} - Angewandte Sanktionen - {penalty_name}",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Kind Name"
+          },
+          "penalty_name": {
+            "name": "Strafe Name"
+          },
+          "description": {
+            "name": "Beschreibung"
+          },
+          "penalty_points": {
+            "name": "Strafpunkte"
+          },
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "bonus_applies_sensor": {
+        "name": "{kid_name} - Bonus gilt - {bonus_name}",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Kind Name"
+          },
+          "bonus_name": {
+            "name": "Bonus Name"
+          },
+          "description": {
+            "name": "Beschreibung"
+          },
+          "bonus_points": {
+            "name": "Bonuspunkte"
+          },
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "kid_points_earned_daily_sensor": {
+        "name": "{kid_name} - Verdiente Punkte - täglich"
+      },
+      "kid_points_earned_weekly_sensor": {
+        "name": "{kid_name} - Verdiente Punkte - Wöchentlich"
+      },
+      "kid_points_earned_monthly_sensor": {
+        "name": "{kid_name} - Verdiente Punkte - Monatlich"
+      },
+      "achievement_state_sensor": {
+        "name": "Errungenschaften - {achievement_name}",
+        "state_attributes": {
+          "achievement_name": {
+            "name": "Errungenschaft Name"
+          },
+          "description": {
+            "name": "Beschreibung"
+          },
+          "assigned_kids": {
+            "name": "Zugewiesene Kinder"
+          },
+          "type": {
+            "name": "Typ",
+            "state": {
+              "chore_total": "Hausarbeit Gesamt",
+              "chore_streak": "Hausarbeit-Streifen",
+              "daily_minimum": "Tägliches Minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Assoziierte Choreographie"
+          },
+          "critera": {
+            "name": "Kriterien"
+          },
+          "target_value": {
+            "name": "Ziel"
+          },
+          "reward_points": {
+            "name": "Belohnungspunkte"
+          },
+          "kids_earned": {
+            "name": "Verdient durch"
+          },
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "challenge_state_sensor": {
+        "name": "Herausforderung - {challenge_name}",
+        "state_attributes": {
+          "challenge_name": {
+            "name": "Herausforderung Name"
+          },
+          "description": {
+            "name": "Beschreibung"
+          },
+          "assigned_kids": {
+            "name": "Zugewiesene Kinder"
+          },
+          "type": {
+            "name": "Typ",
+            "state": {
+              "total_within_window": "Gesamt innerhalb des Fensters",
+              "daily_minimum": "Tägliches Minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Assoziierte Choreographie"
+          },
+          "critera": {
+            "name": "Kriterien"
+          },
+          "target_value": {
+            "name": "Ziel"
+          },
+          "reward_points": {
+            "name": "Belohnungspunkte"
+          },
+          "start_date": {
+            "name": "Datum des Beginns"
+          },
+          "end_date": {
+            "name": "Enddatum"
+          },
+          "kids_earned": {
+            "name": "Verdient durch"
+          },
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "achievement_progress_sensor": {
+        "name": "{kid_name} - Fortschritt - {achievement_name}",
+        "state_attributes": {
+          "achievement_name": {
+            "name": "Errungenschaft Name"
+          },
+          "description": {
+            "name": "Beschreibung"
+          },
+          "assigned_kids": {
+            "name": "Zugewiesene Kinder"
+          },
+          "type": {
+            "name": "Typ",
+            "state": {
+              "chore_total": "Hausarbeit Gesamt",
+              "chore_streak": "Hausarbeit-Streifen",
+              "daily_minimum": "Tägliches Minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Assoziierte Choreographie"
+          },
+          "critera": {
+            "name": "Kriterien"
+          },
+          "target_value": {
+            "name": "Ziel"
+          },
+          "reward_points": {
+            "name": "Belohnungspunkte"
+          },
+          "raw_progress": {
+            "name": "Fortschritt"
+          },
+          "awarded": {
+            "name": "Ausgezeichnet",
+            "state": {
+              "true": "Ja",
+              "false": "Nein"
+            }
+          },
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "challenge_progress_sensor": {
+        "name": "{kid_name} - Fortschritt - {challenge_name}",
+        "state_attributes": {
+          "challenge_name": {
+            "name": "Herausforderung Name"
+          },
+          "description": {
+            "name": "Beschreibung"
+          },
+          "assigned_kids": {
+            "name": "Zugewiesene Kinder"
+          },
+          "type": {
+            "name": "Typ",
+            "state": {
+              "total_within_window": "Gesamt innerhalb des Fensters",
+              "daily_minimum": "Tägliches Minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Assoziierte Choreographie"
+          },
+          "critera": {
+            "name": "Kriterien"
+          },
+          "target_value": {
+            "name": "Ziel"
+          },
+          "reward_points": {
+            "name": "Belohnungspunkte"
+          },
+          "start_date": {
+            "name": "Datum des Beginns"
+          },
+          "end_date": {
+            "name": "Enddatum"
+          },
+          "raw_progress": {
+            "name": "Fortschritt"
+          },
+          "awarded": {
+            "name": "Ausgezeichnet",
+            "state": {
+              "true": "Ja",
+              "false": "Nein"
+            }
+          },
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "kid_highest_streak_sensor": {
+        "name": "{kid_name} - Höchste Serie",
+        "state_attributes": {
+          "streaks_by_achievement": {
+            "name": "Streams nach Leistung"
+          }
+        }
+      },
+      "chore_streak_sensor": {
+        "name": "{kid_name} - Strähne - {chore_name}",
+        "state_attributes": {
+          "last_date": {
+            "name": "Letzter Termin"
+          },
+          "raw_streak": {
+            "name": "Aktuelle Serie"
+          }
+        }
+      }
+    },
+    "button": {
+      "claim_chore_button": {
+        "name": "{kid_name} - Hausarbeit reklamieren - {chore_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "approve_chore_button": {
+        "name": "{kid_name} - Hausarbeit genehmigen - {chore_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "disapprove_chore_button": {
+        "name": "{kid_name} - Hausarbeit ablehnen - {chore_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "claim_reward_button": {
+        "name": "{kid_name} - Belohnung beanspruchen - {reward_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "approve_reward_button": {
+        "name": "{kid_name} - Belohnung genehmigen - {reward_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "disapprove_reward_button": {
+        "name": "{kid_name} - Ablehnen Belohnung - {reward_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "penalty_button": {
+        "name": "{kid_name} - Strafe anwenden - {penalty_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "bonus_button": {
+        "name": "{kid_name} - Bonus anwenden - {bonus_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketten"
+          }
+        }
+      },
+      "manual_adjustment_button": {
+        "name": "{kid_name} {sign_label} {points_label}"
+      }
+    }
+  }
+}
