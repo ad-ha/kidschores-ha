@@ -4,7 +4,6 @@
 Ensures that all add/edit/delete operations reference entities via internal_id for consistency.
 """
 
-import datetime
 import uuid
 import voluptuous as vol
 
@@ -16,9 +15,14 @@ from typing import Any, Optional
 
 from .const import (
     ACHIEVEMENT_TYPE_STREAK,
+    BADGE_TYPE_CUMULATIVE,
     CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
     CONF_APPLICABLE_DAYS,
     CONF_ACHIEVEMENTS,
+    CONF_BADGE_MAINTENANCE_RULES,
+    CONF_BADGE_RESET_GRACE_PERIOD,
+    CONF_BADGE_RESET_PERIOD,
+    CONF_BADGE_RESET_PERIODICALLY,
     CONF_BADGES,
     CONF_CHALLENGES,
     CONF_CHORES,
@@ -43,17 +47,17 @@ from .const import (
     LOGGER,
 )
 from .flow_helpers import (
-    build_points_schema,
+    build_achievement_schema,
+    build_badge_cumulative_schema,
+    build_bonus_schema,
+    build_challenge_schema,
+    build_chore_schema,
     build_kid_schema,
     build_parent_schema,
-    build_chore_schema,
-    build_badge_schema,
-    build_reward_schema,
     build_penalty_schema,
-    build_achievement_schema,
-    build_challenge_schema,
+    build_points_schema,
+    build_reward_schema,
     ensure_utc_datetime,
-    build_bonus_schema,
 )
 
 
@@ -440,10 +444,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_badges(self, user_input=None):
-        """Collect badge details using internal_id as the primary key.
-
-        Store in self._badges_temp as a dict keyed by internal_id.
-        """
+        """Collect badge details using internal_id as the primary key."""
         errors = {}
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
@@ -459,13 +460,26 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 self._badges_temp[internal_id] = {
                     "name": badge_name,
-                    "threshold_type": user_input["threshold_type"],
+                    "badge_description": user_input.get("badge_description", ""),
+                    "badge_labels": user_input.get("badge_labels", []),
+                    "icon": user_input.get("icon", ""),
+                    "threshold_type": "points",
                     "threshold_value": user_input["threshold_value"],
                     "points_multiplier": user_input["points_multiplier"],
-                    "icon": user_input.get("icon", ""),
+                    CONF_BADGE_RESET_PERIODICALLY: user_input.get(
+                        CONF_BADGE_RESET_PERIODICALLY, False
+                    ),
+                    CONF_BADGE_RESET_PERIOD: user_input.get(
+                        CONF_BADGE_RESET_PERIOD, "year_end"
+                    ),
+                    CONF_BADGE_RESET_GRACE_PERIOD: user_input.get(
+                        CONF_BADGE_RESET_GRACE_PERIOD, 0
+                    ),
+                    CONF_BADGE_MAINTENANCE_RULES: user_input.get(
+                        CONF_BADGE_MAINTENANCE_RULES, ""
+                    ),
+                    "badge_type": BADGE_TYPE_CUMULATIVE,
                     "internal_id": internal_id,
-                    "description": user_input.get("badge_description", ""),
-                    "badge_labels": user_input.get("badge_labels", []),
                 }
                 LOGGER.debug("Added badge: %s with ID: %s", badge_name, internal_id)
 
@@ -474,7 +488,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return await self.async_step_reward_count()
             return await self.async_step_badges()
 
-        badge_schema = build_badge_schema()
+        badge_schema = build_badge_cumulative_schema()
         return self.async_show_form(
             step_id="badges", data_schema=badge_schema, errors=errors
         )

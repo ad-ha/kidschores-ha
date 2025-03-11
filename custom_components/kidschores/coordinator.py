@@ -36,6 +36,12 @@ from .const import (
     ACTION_TITLE_REMIND_30,
     BADGE_THRESHOLD_TYPE_CHORE_COUNT,
     BADGE_THRESHOLD_TYPE_POINTS,
+    BADGE_TYPE_ACHIEVEMENT_LINKED,
+    BADGE_TYPE_CHALLENGE_LINKED,
+    BADGE_TYPE_CUMULATIVE,
+    BADGE_TYPE_DAILY,
+    BADGE_TYPE_PERIODIC,
+    BADGE_TYPE_SPECIAL_OCCASION,
     CHALLENGE_TYPE_DAILY_MIN,
     CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
     CHORE_STATE_APPROVED,
@@ -49,6 +55,10 @@ from .const import (
     CHORE_STATE_UNKNOWN,
     CONF_ACHIEVEMENTS,
     CONF_APPLICABLE_DAYS,
+    CONF_BADGE_MAINTENANCE_RULES,
+    CONF_BADGE_RESET_GRACE_PERIOD,
+    CONF_BADGE_RESET_PERIOD,
+    CONF_BADGE_RESET_PERIODICALLY,
     CONF_BADGES,
     CONF_CHALLENGES,
     CONF_CHORES,
@@ -1054,24 +1064,83 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     # -- Badges
     def _create_badge(self, badge_id: str, badge_data: dict[str, Any]):
+        """Create a new badge entity."""
+
+        # Base fields common to all types:
         self._data[DATA_BADGES][badge_id] = {
-            "name": badge_data.get("name", ""),
-            "threshold_type": badge_data.get(
-                "threshold_type", BADGE_THRESHOLD_TYPE_POINTS
-            ),
-            "threshold_value": badge_data.get(
-                "threshold_value", DEFAULT_BADGE_THRESHOLD
-            ),
-            "chore_count_type": badge_data.get("chore_count_type", FREQUENCY_DAILY),
-            "earned_by": badge_data.get("earned_by", []),
-            "points_multiplier": badge_data.get(
-                "points_multiplier", DEFAULT_POINTS_MULTIPLIER
-            ),
-            "icon": badge_data.get("icon", DEFAULT_ICON),
-            "description": badge_data.get("description", ""),
+            "name": badge_data.get("badge_name", ""),
+            "description": badge_data.get("badge_description", ""),
             "badge_labels": badge_data.get("badge_labels", []),
+            "icon": badge_data.get("icon", DEFAULT_ICON),
             "internal_id": badge_id,
+            "badge_type": badge_data.get("badge_type", BADGE_TYPE_CUMULATIVE),
         }
+        badge_type = badge_data.get("badge_type", BADGE_TYPE_CUMULATIVE)
+        if badge_type == BADGE_TYPE_CUMULATIVE:
+            self._data[DATA_BADGES][badge_id].update(
+                {
+                    "threshold_type": "points",  # standard badges now use only points
+                    "threshold_value": badge_data.get(
+                        "threshold_value", DEFAULT_BADGE_THRESHOLD
+                    ),
+                    "points_multiplier": badge_data.get(
+                        "points_multiplier", DEFAULT_POINTS_MULTIPLIER
+                    ),
+                    CONF_BADGE_RESET_PERIODICALLY: badge_data.get(
+                        CONF_BADGE_RESET_PERIODICALLY, False
+                    ),
+                    CONF_BADGE_RESET_PERIOD: badge_data.get(
+                        CONF_BADGE_RESET_PERIOD, "year_end"
+                    ),
+                    CONF_BADGE_RESET_GRACE_PERIOD: badge_data.get(
+                        CONF_BADGE_RESET_GRACE_PERIOD, 0
+                    ),
+                    CONF_BADGE_MAINTENANCE_RULES: badge_data.get(
+                        CONF_BADGE_MAINTENANCE_RULES, ""
+                    ),
+                }
+            )
+        elif badge_type == BADGE_TYPE_DAILY:
+            self._data[DATA_BADGES][badge_id].update(
+                {
+                    "daily_threshold": badge_data.get("daily_threshold"),
+                    "reward": badge_data.get("reward"),
+                }
+            )
+        elif badge_type == BADGE_TYPE_PERIODIC:
+            self._data[DATA_BADGES][badge_id].update(
+                {
+                    "period": badge_data.get("period", "weekly"),
+                    "threshold_value": badge_data.get("threshold_value", 200),
+                    "reward": badge_data.get("reward", 15),
+                    "reset_criteria": badge_data.get(
+                        "reset_criteria", "Sunday midnight"
+                    ),
+                }
+            )
+        elif badge_type == BADGE_TYPE_ACHIEVEMENT_LINKED:
+            self._data[DATA_BADGES][badge_id].update(
+                {
+                    "associated_achievement": badge_data.get(
+                        "associated_achievement", ""
+                    ),
+                    "one_time_reward": badge_data.get("one_time_reward", ""),
+                }
+            )
+        elif badge_type == BADGE_TYPE_CHALLENGE_LINKED:
+            self._data[DATA_BADGES][badge_id].update(
+                {
+                    "associated_challenge": badge_data.get("associated_challenge", ""),
+                    "one_time_reward": badge_data.get("one_time_reward", ""),
+                }
+            )
+        elif badge_type == BADGE_TYPE_SPECIAL_OCCASION:
+            self._data[DATA_BADGES][badge_id].update(
+                {
+                    "occasion_type": badge_data.get("occasion_type", "holiday"),
+                    "trigger_info": badge_data.get("trigger_info", ""),
+                }
+            )
         LOGGER.debug(
             "Added new badge '%s' with ID: %s",
             self._data[DATA_BADGES][badge_id]["name"],
@@ -1079,32 +1148,88 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         )
 
     def _update_badge(self, badge_id: str, badge_data: dict[str, Any]):
+        """Update an existing badge entity."""
+
         badge_info = self._data[DATA_BADGES][badge_id]
-        badge_info["name"] = badge_data.get("name", badge_info["name"])
-        badge_info["threshold_type"] = badge_data.get(
-            "threshold_type",
-            badge_info.get("threshold_type", BADGE_THRESHOLD_TYPE_POINTS),
-        )
-        badge_info["threshold_value"] = badge_data.get(
-            "threshold_value",
-            badge_info.get("threshold_value", DEFAULT_BADGE_THRESHOLD),
-        )
-        badge_info["chore_count_type"] = badge_data.get(
-            "chore_count_type", badge_info.get("chore_count_type", FREQUENCY_NONE)
-        )
-        badge_info["points_multiplier"] = badge_data.get(
-            "points_multiplier",
-            badge_info.get("points_multiplier", DEFAULT_POINTS_MULTIPLIER),
-        )
-        badge_info["icon"] = badge_data.get(
-            "icon", badge_info.get("icon", DEFAULT_ICON)
-        )
+
+        badge_info["name"] = badge_data.get("badge_name", badge_info["name"])
         badge_info["description"] = badge_data.get(
-            "description", badge_info.get("description", "")
+            "badge_description", badge_info["description"]
         )
         badge_info["badge_labels"] = badge_data.get(
             "badge_labels", badge_info.get("badge_labels", [])
         )
+        badge_info["icon"] = badge_data.get(
+            "icon", badge_info.get("icon", DEFAULT_ICON)
+        )
+        badge_type = badge_data.get(
+            "badge_type", badge_info.get("badge_type", BADGE_TYPE_CUMULATIVE)
+        )
+        badge_info["badge_type"] = badge_type
+        if badge_type == BADGE_TYPE_CUMULATIVE:
+            badge_info["threshold_value"] = badge_data.get(
+                "threshold_value",
+                badge_info.get("threshold_value", DEFAULT_BADGE_THRESHOLD),
+            )
+            badge_info["points_multiplier"] = badge_data.get(
+                "points_multiplier",
+                badge_info.get("points_multiplier", DEFAULT_POINTS_MULTIPLIER),
+            )
+            badge_info[CONF_BADGE_RESET_PERIODICALLY] = badge_data.get(
+                CONF_BADGE_RESET_PERIODICALLY,
+                badge_info.get(CONF_BADGE_RESET_PERIODICALLY, False),
+            )
+            badge_info[CONF_BADGE_RESET_PERIOD] = badge_data.get(
+                CONF_BADGE_RESET_PERIOD,
+                badge_info.get(CONF_BADGE_RESET_PERIOD, "year_end"),
+            )
+            badge_info[CONF_BADGE_RESET_GRACE_PERIOD] = badge_data.get(
+                CONF_BADGE_RESET_GRACE_PERIOD,
+                badge_info.get(CONF_BADGE_RESET_GRACE_PERIOD, 0),
+            )
+            badge_info[CONF_BADGE_MAINTENANCE_RULES] = badge_data.get(
+                CONF_BADGE_MAINTENANCE_RULES,
+                badge_info.get(CONF_BADGE_MAINTENANCE_RULES, ""),
+            )
+        elif badge_type == BADGE_TYPE_DAILY:
+            badge_info["daily_threshold"] = badge_data.get(
+                "daily_threshold", badge_info.get("daily_threshold")
+            )
+            badge_info["reward"] = badge_data.get("reward", badge_info.get("reward"))
+        elif badge_type == BADGE_TYPE_PERIODIC:
+            badge_info["period"] = badge_data.get(
+                "period", badge_info.get("period", "weekly")
+            )
+            badge_info["threshold_value"] = badge_data.get(
+                "threshold_value", badge_info.get("threshold_value", 200)
+            )
+            badge_info["reward"] = badge_data.get(
+                "reward", badge_info.get("reward", 15)
+            )
+            badge_info["reset_criteria"] = badge_data.get(
+                "reset_criteria", badge_info.get("reset_criteria", "Sunday midnight")
+            )
+        elif badge_type == BADGE_TYPE_ACHIEVEMENT_LINKED:
+            badge_info["associated_achievement"] = badge_data.get(
+                "associated_achievement", badge_info.get("associated_achievement", "")
+            )
+            badge_info["one_time_reward"] = badge_data.get(
+                "one_time_reward", badge_info.get("one_time_reward", "")
+            )
+        elif badge_type == BADGE_TYPE_CHALLENGE_LINKED:
+            badge_info["associated_challenge"] = badge_data.get(
+                "associated_challenge", badge_info.get("associated_challenge", "")
+            )
+            badge_info["one_time_reward"] = badge_data.get(
+                "one_time_reward", badge_info.get("one_time_reward", "")
+            )
+        elif badge_type == BADGE_TYPE_SPECIAL_OCCASION:
+            badge_info["occasion_type"] = badge_data.get(
+                "occasion_type", badge_info.get("occasion_type", "holiday")
+            )
+            badge_info["trigger_info"] = badge_data.get(
+                "trigger_info", badge_info.get("trigger_info", "")
+            )
 
         LOGGER.debug("Updated badge '%s' with ID: %s", badge_info["name"], badge_id)
 
@@ -2089,39 +2214,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self.async_set_updated_data(self._data)
 
     # -------------------------------------------------------------------------------------
-    # Badges: Add, Check, Award
+    # Badges: Check, Award
     # -------------------------------------------------------------------------------------
-
-    def add_badge(self, badge_def: dict[str, Any]):
-        """Add new badge at runtime if needed."""
-        badge_name = badge_def.get("name")
-        if not badge_name:
-            LOGGER.warning("Add badge: Badge must have a name")
-            return
-        if any(b["name"] == badge_name for b in self.badges_data.values()):
-            LOGGER.warning("Add badge: Badge '%s' already exists", badge_name)
-            return
-        internal_id = str(uuid.uuid4())
-        self.badges_data[internal_id] = {
-            "name": badge_name,
-            "threshold_type": badge_def.get(
-                "threshold_type", BADGE_THRESHOLD_TYPE_POINTS
-            ),
-            "threshold_value": badge_def.get(
-                "threshold_value", DEFAULT_BADGE_THRESHOLD
-            ),
-            "chore_count_type": badge_def.get("chore_count_type", FREQUENCY_DAILY),
-            "earned_by": [],
-            "points_multiplier": badge_def.get(
-                "points_multiplier", DEFAULT_POINTS_MULTIPLIER
-            ),
-            "icon": badge_def.get("icon", DEFAULT_ICON),
-            "description": badge_def.get("description", ""),
-            "internal_id": internal_id,
-        }
-        LOGGER.debug("Added new badge '%s' with ID: %s", badge_name, internal_id)
-        self._persist()
-        self.async_set_updated_data(self._data)
 
     def _check_badges_for_kid(self, kid_id: str):
         """Evaluate all badge thresholds for kid."""

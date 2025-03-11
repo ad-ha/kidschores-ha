@@ -33,19 +33,19 @@ UPDATE_INTERVAL = 5  # Update interval for coordinator (in minutes)
 
 # -------------------- Configuration --------------------
 # Configuration Keys
-CONF_ACHIEVEMENTS = "achievements"
-CONF_APPLICABLE_DAYS = "applicable_days"
+CONF_ACHIEVEMENTS = "achievements"  # Key for achievements configuration
+CONF_APPLICABLE_DAYS = "applicable_days"  # Key for applicable days configuration
 CONF_BADGES = "badges"  # Key for badges configuration
-CONF_CHALLENGES = "challenges"
+CONF_CHALLENGES = "challenges"  # Key for challenges configuration
 CONF_CHORES = "chores"  # Key for chores configuration
-CONF_GLOBAL = "global"
+CONF_GLOBAL = "global"  # Key for global configuration
 CONF_KIDS = "kids"  # Key for kids configuration
 CONF_PARENTS = "parents"  # Key for parents configuration
 CONF_PENALTIES = "penalties"  # Key for penalties configuration
-CONF_POINTS_ICON = "points_icon"
+CONF_POINTS_ICON = "points_icon"  # Custom icon for points
 CONF_POINTS_LABEL = "points_label"  # Custom label for points
 CONF_REWARDS = "rewards"  # Key for rewards configuration
-CONF_BONUSES = "bonuses"
+CONF_BONUSES = "bonuses"  # Key for bonuses configuration
 
 # Options Flow Management
 OPTIONS_FLOW_ACHIEVEMENTS = "manage_achievements"  # Edit achivements step
@@ -74,6 +74,22 @@ CONF_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
 CONF_CHORE_NOTIFY_SERVICE = "chore_notify_service"
 
 NOTIFICATION_EVENT = "mobile_app_notification_action"
+
+# Badge types
+BADGE_TYPE_CUMULATIVE = "cumulative"
+BADGE_TYPE_DAILY = "daily"
+BADGE_TYPE_PERIODIC = "periodic"
+BADGE_TYPE_ACHIEVEMENT_LINKED = "achievement_linked"
+BADGE_TYPE_CHALLENGE_LINKED = "challenge_linked"
+BADGE_TYPE_SPECIAL_OCCASION = "special_occasions"
+
+# Badge configuration keys
+CONF_BADGE_RESET_PERIODICALLY = "reset_periodically"  # Reset badges periodically
+CONF_BADGE_RESET_PERIOD = "reset_period"  # e.g. "year_end", "custom"
+CONF_BADGE_RESET_GRACE_PERIOD = (
+    "reset_grace_period"  # Optional grace period (minutes/hours/days)
+)
+CONF_BADGE_MAINTENANCE_RULES = "maintenance_rules"  # Maintenance rules for badges
 
 # Achievement types
 ACHIEVEMENT_TYPE_STREAK = "chore_streak"  # e.g., "Make bed 20 days in a row"

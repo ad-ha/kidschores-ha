@@ -15,9 +15,19 @@ from .const import (
     ACHIEVEMENT_TYPE_DAILY_MIN,
     ACHIEVEMENT_TYPE_STREAK,
     ACHIEVEMENT_TYPE_TOTAL,
+    BADGE_TYPE_ACHIEVEMENT_LINKED,
+    BADGE_TYPE_CHALLENGE_LINKED,
+    BADGE_TYPE_CUMULATIVE,
+    BADGE_TYPE_DAILY,
+    BADGE_TYPE_PERIODIC,
+    BADGE_TYPE_SPECIAL_OCCASION,
     CHALLENGE_TYPE_DAILY_MIN,
     CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
     CONF_APPLICABLE_DAYS,
+    CONF_BADGE_MAINTENANCE_RULES,
+    CONF_BADGE_RESET_GRACE_PERIOD,
+    CONF_BADGE_RESET_PERIOD,
+    CONF_BADGE_RESET_PERIODICALLY,
     CONF_ENABLE_MOBILE_NOTIFICATIONS,
     CONF_ENABLE_PERSISTENT_NOTIFICATIONS,
     CONF_MOBILE_NOTIFY_SERVICE,
@@ -33,7 +43,6 @@ from .const import (
     DEFAULT_POINTS_MULTIPLIER,
     DEFAULT_POINTS_LABEL,
     DEFAULT_POINTS_ICON,
-    DOMAIN,
     FREQUENCY_BIWEEKLY,
     FREQUENCY_CUSTOM,
     FREQUENCY_DAILY,
@@ -42,6 +51,10 @@ from .const import (
     FREQUENCY_WEEKLY,
     WEEKDAY_OPTIONS,
 )
+
+# ----------------------------------------------------------------------------------
+# POINTS SCHEMA
+# ----------------------------------------------------------------------------------
 
 
 def build_points_schema(
@@ -56,6 +69,11 @@ def build_points_schema(
             ): selector.IconSelector(),
         }
     )
+
+
+# ----------------------------------------------------------------------------------
+# KIDS SCHEMA
+# ----------------------------------------------------------------------------------
 
 
 def build_kid_schema(
@@ -106,6 +124,11 @@ def build_kid_schema(
             vol.Required("internal_id", default=internal_id or str(uuid.uuid4())): str,
         }
     )
+
+
+# ----------------------------------------------------------------------------------
+# PARENTS SCHEMA
+# ----------------------------------------------------------------------------------
 
 
 def build_parent_schema(
@@ -170,6 +193,11 @@ def build_parent_schema(
             vol.Required("internal_id", default=internal_id or str(uuid.uuid4())): str,
         }
     )
+
+
+# ----------------------------------------------------------------------------------
+# CHORES SCHEMA
+# ----------------------------------------------------------------------------------
 
 
 def build_chore_schema(kids_dict, default=None):
@@ -294,27 +322,203 @@ def build_chore_schema(kids_dict, default=None):
     )
 
 
-def build_badge_schema(default=None):
-    """Build a schema for badges, keyed by internal_id in the dict."""
+# ----------------------------------------------------------------------------------
+# BADGES SCHEMAS
+# ----------------------------------------------------------------------------------
+
+
+def build_badge_cumulative_schema(default: dict = None, rewards_list: list = None):
+    """Build schema for cumulative badges (by points or chore count)."""
     default = default or {}
-    badge_name_default = default.get("name", "")
+    rewards_list = rewards_list or [{"value": "", "label": "Select Reward"}]
     internal_id_default = default.get("internal_id", str(uuid.uuid4()))
-    points_multiplier_default = default.get(
-        "points_multiplier", DEFAULT_POINTS_MULTIPLIER
-    )
 
     return vol.Schema(
         {
-            vol.Required("badge_name", default=badge_name_default): str,
+            vol.Required("badge_name", default=default.get("name", "")): str,
             vol.Optional(
                 "badge_description", default=default.get("description", "")
             ): str,
             vol.Optional(
                 "badge_labels", default=default.get("badge_labels", [])
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
+            vol.Optional(
+                "icon", default=default.get("icon", "")
+            ): selector.IconSelector(),
             vol.Required(
-                "threshold_type",
-                default=default.get("threshold_type", "points"),
+                "threshold_value", default=default.get("threshold_value", 250)
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=1,
+                )
+            ),
+            vol.Required(
+                "award_mode", default=default.get("award_mode", "points")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=["points", "reward"],
+                    translation_key="award_mode",
+                )
+            ),
+            vol.Required(
+                "points_multiplier", default=default.get("points_multiplier", 1.1)
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    step=0.01,
+                    min=1.0,
+                )
+            ),
+            vol.Optional(
+                "award_reward", default=default.get("award_reward", "")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=rewards_list,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="award_reward",
+                )
+            ),
+            vol.Required(
+                CONF_BADGE_RESET_PERIODICALLY,
+                default=default.get(CONF_BADGE_RESET_PERIODICALLY, False),
+            ): selector.BooleanSelector(),
+            vol.Optional(
+                CONF_BADGE_RESET_PERIOD,
+                default=default.get(CONF_BADGE_RESET_PERIOD, "year_end"),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=["year_end", "custom"],
+                    translation_key="reset_period",
+                )
+            ),
+            vol.Optional(
+                CONF_BADGE_RESET_GRACE_PERIOD,
+                default=default.get(CONF_BADGE_RESET_GRACE_PERIOD, 0),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=1,
+                )
+            ),
+            vol.Optional(
+                CONF_BADGE_MAINTENANCE_RULES,
+                default=default.get(CONF_BADGE_MAINTENANCE_RULES, ""),
+            ): str,
+            vol.Required(
+                "badge_type", default=default.get("badge_type", BADGE_TYPE_CUMULATIVE)
+            ): str,
+            vol.Required("internal_id", default=internal_id_default): str,
+        }
+    )
+
+
+def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
+    """Build schema for daily badges that reset every day."""
+    default = default or {}
+    rewards_list = rewards_list or [{"value": "", "label": "Select Reward"}]
+    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+
+    return vol.Schema(
+        {
+            vol.Required("badge_name", default=default.get("name", "")): str,
+            vol.Optional(
+                "badge_description", default=default.get("description", "")
+            ): str,
+            vol.Optional(
+                "badge_labels", default=default.get("badge_labels", [])
+            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
+            vol.Optional(
+                "icon", default=default.get("icon", "")
+            ): selector.IconSelector(),
+            vol.Required(
+                "daily_threshold_type",
+                default=default.get("daily_threshold_type", "points"),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=["points", "chore_count"],
+                    translation_key="daily_threshold_type",
+                )
+            ),
+            vol.Required(
+                "daily_threshold", default=default.get("daily_threshold", 15)
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=1,
+                )
+            ),
+            vol.Required(
+                "award_mode", default=default.get("award_mode", "points")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=["points", "reward"],
+                    translation_key="award_mode",
+                )
+            ),
+            vol.Optional(
+                "award_points", default=default.get("award_points", 5)
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=1,
+                )
+            ),
+            vol.Optional(
+                "award_reward", default=default.get("award_reward", "")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=rewards_list,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="award_reward",
+                )
+            ),
+            vol.Required(
+                "badge_type", default=default.get("badge_type", BADGE_TYPE_DAILY)
+            ): str,
+            vol.Required("internal_id", default=internal_id_default): str,
+        }
+    )
+
+
+def build_badge_periodic_schema(default: dict = None, rewards_list: list = None):
+    """Build schema for periodic badges (e.g. weekly or monthly)."""
+    default = default or {}
+    rewards_list = rewards_list or [{"value": "", "label": "Select Reward"}]
+    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+
+    return vol.Schema(
+        {
+            vol.Required("badge_name", default=default.get("name", "")): str,
+            vol.Optional(
+                "badge_description", default=default.get("description", "")
+            ): str,
+            vol.Optional(
+                "badge_labels", default=default.get("badge_labels", [])
+            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
+            vol.Optional(
+                "icon", default=default.get("icon", "")
+            ): selector.IconSelector(),
+            vol.Required(
+                "period", default=default.get("period", "weekly")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=["weekly", "monthly", "custom"],
+                    translation_key="period",
+                )
+            ),
+            vol.Optional(
+                "start_date", default=default.get("start_date", "")
+            ): selector.DateSelector(),
+            vol.Optional(
+                "end_date", default=default.get("end_date", "")
+            ): selector.DateSelector(),
+            vol.Required(
+                "threshold_type", default=default.get("threshold_type", "points")
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=["points", "chore_count"],
@@ -322,28 +526,195 @@ def build_badge_schema(default=None):
                 )
             ),
             vol.Required(
-                "threshold_value", default=default.get("threshold_value", 10)
+                "threshold_value", default=default.get("threshold_value", 200)
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
                     min=0,
-                    step=0.1,
+                    step=1,
                 )
             ),
             vol.Required(
-                "points_multiplier",
-                default=points_multiplier_default,
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX, step=0.01, min=1.0
+                "award_mode", default=default.get("award_mode", "points")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=["points", "reward"],
+                    translation_key="award_mode",
                 )
             ),
             vol.Optional(
-                "icon", default=default.get("icon", "")
-            ): selector.IconSelector(),
+                "award_points", default=default.get("award_points", 15)
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=1,
+                )
+            ),
+            vol.Optional(
+                "award_reward", default=default.get("award_reward", "")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=rewards_list,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="award_reward",
+                )
+            ),
+            vol.Required(
+                "reset_criteria",
+                default=default.get(
+                    "reset_criteria",
+                    "Sunday midnight"
+                    if default.get("period", "weekly") == "weekly"
+                    else "1st day of month",
+                ),
+            ): str,
+            vol.Required(
+                "badge_type", default=default.get("badge_type", BADGE_TYPE_PERIODIC)
+            ): str,
             vol.Required("internal_id", default=internal_id_default): str,
         }
     )
+
+
+def build_badge_achievement_schema(
+    default: dict = None, achievements_list: list = None, rewards_list: list = None
+):
+    """Build schema for achievement‑linked badges."""
+    default = default or {}
+    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+    achievements_list = achievements_list or [
+        {"value": "", "label": "Select Achievement"}
+    ]
+    rewards_list = rewards_list or [{"value": "", "label": "Select Reward"}]
+    return vol.Schema(
+        {
+            vol.Required("badge_name", default=default.get("name", "")): str,
+            vol.Optional(
+                "badge_description", default=default.get("description", "")
+            ): str,
+            vol.Optional(
+                "badge_labels", default=default.get("badge_labels", [])
+            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
+            vol.Optional(
+                "icon", default=default.get("icon", "")
+            ): selector.IconSelector(),
+            vol.Required(
+                "associated_achievement",
+                default=default.get("associated_achievement", ""),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=achievements_list,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="associated_achievement",
+                )
+            ),
+            vol.Required(
+                "one_time_reward", default=default.get("one_time_reward", "")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=rewards_list,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="one_time_reward",
+                )
+            ),
+            vol.Required(
+                "badge_type",
+                default=default.get("badge_type", BADGE_TYPE_ACHIEVEMENT_LINKED),
+            ): str,
+            vol.Required("internal_id", default=internal_id_default): str,
+        }
+    )
+
+
+def build_badge_challenge_schema(
+    default: dict = None, challenges_list: list = None, rewards_list: list = None
+):
+    """Build schema for challenge‑linked badges."""
+    default = default or {}
+    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+    challenges_list = challenges_list or [{"value": "", "label": "Select Challenge"}]
+    rewards_list = rewards_list or [{"value": "", "label": "Select Reward"}]
+    return vol.Schema(
+        {
+            vol.Required("badge_name", default=default.get("name", "")): str,
+            vol.Optional(
+                "badge_description", default=default.get("description", "")
+            ): str,
+            vol.Optional(
+                "badge_labels", default=default.get("badge_labels", [])
+            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
+            vol.Optional(
+                "icon", default=default.get("icon", "")
+            ): selector.IconSelector(),
+            vol.Required(
+                "associated_challenge", default=default.get("associated_challenge", "")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=challenges_list,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="associated_challenge",
+                )
+            ),
+            vol.Required(
+                "one_time_reward", default=default.get("one_time_reward", "")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=rewards_list,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="one_time_reward",
+                )
+            ),
+            vol.Required(
+                "badge_type",
+                default=default.get("badge_type", BADGE_TYPE_CHALLENGE_LINKED),
+            ): str,
+            vol.Required("internal_id", default=internal_id_default): str,
+        }
+    )
+
+
+def build_badge_special_occasions_schema(default: dict = None):
+    """Build schema for special occasion badges."""
+    default = default or {}
+    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+    return vol.Schema(
+        {
+            vol.Required("badge_name", default=default.get("name", "")): str,
+            vol.Optional(
+                "badge_description", default=default.get("description", "")
+            ): str,
+            vol.Optional(
+                "badge_labels", default=default.get("badge_labels", [])
+            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
+            vol.Optional(
+                "icon", default=default.get("icon", "")
+            ): selector.IconSelector(),
+            vol.Required(
+                "occasion_type", default=default.get("occasion_type", "holiday")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=["holiday", "birthday", "other"],
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="occasion_type",
+                )
+            ),
+            vol.Required(
+                "occasion_date", default=default.get("occasion_date", "")
+            ): selector.DateSelector(),
+            vol.Required("trigger_info", default=default.get("trigger_info", "")): str,
+            vol.Required(
+                "badge_type",
+                default=default.get("badge_type", BADGE_TYPE_SPECIAL_OCCASION),
+            ): str,
+            vol.Required("internal_id", default=internal_id_default): str,
+        }
+    )
+
+
+# ----------------------------------------------------------------------------------
+# REWARDS SCHEMA
+# ----------------------------------------------------------------------------------
 
 
 def build_reward_schema(default=None):
@@ -376,6 +747,11 @@ def build_reward_schema(default=None):
             vol.Required("internal_id", default=internal_id_default): str,
         }
     )
+
+
+# ----------------------------------------------------------------------------------
+# ACHIEVEMENTS SCHEMA
+# ----------------------------------------------------------------------------------
 
 
 def build_achievement_schema(kids_dict, chores_dict, default=None):
@@ -471,6 +847,11 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
             vol.Required("internal_id", default=internal_id_default): str,
         }
     )
+
+
+# ----------------------------------------------------------------------------------
+# CHALLENGES SCHEMA
+# ----------------------------------------------------------------------------------
 
 
 def build_challenge_schema(kids_dict, chores_dict, default=None):
@@ -575,6 +956,11 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
     )
 
 
+# ----------------------------------------------------------------------------------
+# PENALTIES SCHEMA
+# ----------------------------------------------------------------------------------
+
+
 def build_penalty_schema(default=None):
     """Build a schema for penalties, keyed by internal_id in the dict.
 
@@ -611,6 +997,11 @@ def build_penalty_schema(default=None):
             vol.Required("internal_id", default=internal_id_default): str,
         }
     )
+
+
+# ----------------------------------------------------------------------------------
+# BONUSES SCHEMA
+# ----------------------------------------------------------------------------------
 
 
 def build_bonus_schema(default=None):
@@ -651,7 +1042,9 @@ def build_bonus_schema(default=None):
     )
 
 
-# ----------------- HELPERS -----------------
+# ----------------------------------------------------------------------------------
+# HELPERS
+# ----------------------------------------------------------------------------------
 
 
 # Penalty points are stored as negative internally, but displayed as positive in the form.
@@ -664,7 +1057,7 @@ def process_penalty_form_input(user_input: dict) -> dict:
 
 # Get notify services from HA
 def _get_notify_services(hass: HomeAssistant) -> list[dict[str, str]]:
-    """Return a list of all notify.* services as [{'value': 'notify.foo', 'label': 'notify.foo'}, ...]."""
+    """Return a list of all notify.* services as"""
     services_list = []
     all_services = hass.services.async_services()
     if "notify" in all_services:
@@ -676,7 +1069,7 @@ def _get_notify_services(hass: HomeAssistant) -> list[dict[str, str]]:
 
 # Ensure aware datetime objects
 def ensure_utc_datetime(hass: HomeAssistant, dt_value: any) -> str:
-    """Convert a datetime input (or a datetime string) into an ISO string that is timezone aware (in UTC).
+    """Convert a datetime input (or datetime string) into an ISO timezone aware string(in UTC).
 
     If dt_value is naive, assume it is in the local timezone.
     """

@@ -14,9 +14,19 @@ from homeassistant.util import dt as dt_util
 
 from .const import (
     ACHIEVEMENT_TYPE_STREAK,
+    BADGE_TYPE_ACHIEVEMENT_LINKED,
+    BADGE_TYPE_CHALLENGE_LINKED,
+    BADGE_TYPE_CUMULATIVE,
+    BADGE_TYPE_DAILY,
+    BADGE_TYPE_PERIODIC,
+    BADGE_TYPE_SPECIAL_OCCASION,
     CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
     CONF_APPLICABLE_DAYS,
     CONF_ACHIEVEMENTS,
+    CONF_BADGE_MAINTENANCE_RULES,
+    CONF_BADGE_RESET_GRACE_PERIOD,
+    CONF_BADGE_RESET_PERIOD,
+    CONF_BADGE_RESET_PERIODICALLY,
     CONF_BADGES,
     CONF_CHALLENGES,
     CONF_CHORES,
@@ -37,21 +47,25 @@ from .const import (
     DEFAULT_POINTS_ICON,
     DEFAULT_POINTS_LABEL,
     FREQUENCY_CUSTOM,
-    DOMAIN,
     LOGGER,
 )
 from .flow_helpers import (
-    build_points_schema,
+    build_achievement_schema,
+    build_badge_achievement_schema,
+    build_badge_challenge_schema,
+    build_badge_cumulative_schema,
+    build_badge_daily_schema,
+    build_badge_periodic_schema,
+    build_badge_special_occasions_schema,
+    build_bonus_schema,
+    build_challenge_schema,
+    build_chore_schema,
     build_kid_schema,
     build_parent_schema,
-    build_chore_schema,
-    build_badge_schema,
-    build_reward_schema,
     build_penalty_schema,
-    build_achievement_schema,
-    build_challenge_schema,
+    build_points_schema,
+    build_reward_schema,
     ensure_utc_datetime,
-    build_bonus_schema,
 )
 
 
@@ -64,7 +78,7 @@ def _ensure_str(value):
 
 
 class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
-    """Options Flow for adding/editing/deleting kids, chores, badges, rewards, penalties, and bonuses.
+    """Options Flow for adding/editing/deleting configuration elements.
 
     Manages entities via internal_id for consistency and historical data preservation.
     """
@@ -475,40 +489,283 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_add_badge(self, user_input=None):
-        """Add a new badge."""
-        self._entry_options = dict(self.config_entry.options)
+        """Entry point to add a new badge."""
+        if user_input is not None:
+            badge_type = user_input["badge_type"]
+            self.context["badge_type"] = badge_type
+            if badge_type == BADGE_TYPE_CUMULATIVE:
+                return await self.async_step_add_badge_cumulative()
+            elif badge_type == BADGE_TYPE_DAILY:
+                return await self.async_step_add_badge_daily()
+            elif badge_type == BADGE_TYPE_PERIODIC:
+                return await self.async_step_add_badge_periodic()
+            elif badge_type == BADGE_TYPE_ACHIEVEMENT_LINKED:
+                return await self.async_step_add_badge_achievement()
+            elif badge_type == BADGE_TYPE_CHALLENGE_LINKED:
+                return await self.async_step_add_badge_challenge()
+            elif badge_type == BADGE_TYPE_SPECIAL_OCCASION:
+                return await self.async_step_add_badge_special()
+            else:
+                # Fallback to cumulative if unknown.
+                return await self.async_step_add_badge_cumulative()
 
+        badge_type_options = [
+            BADGE_TYPE_CUMULATIVE,
+            BADGE_TYPE_DAILY,
+            BADGE_TYPE_PERIODIC,
+            BADGE_TYPE_ACHIEVEMENT_LINKED,
+            BADGE_TYPE_CHALLENGE_LINKED,
+            BADGE_TYPE_SPECIAL_OCCASION,
+        ]
+        schema = vol.Schema(
+            {
+                vol.Required("badge_type"): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=badge_type_options,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key="badge_type",
+                    )
+                )
+            }
+        )
+        return self.async_show_form(step_id="add_badge", data_schema=schema)
+
+    # ----- Add Cumulative Badge (Points-only) -----
+    async def async_step_add_badge_cumulative(self, user_input=None):
+        """Add a new cumulative badge."""
+
+        self._entry_options = dict(self.config_entry.options)
         errors = {}
         badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
 
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
             internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-
             if any(
-                badge_data["name"] == badge_name for badge_data in badges_dict.values()
+                badge.get("badge_name") == badge_name for badge in badges_dict.values()
+            ):
+                errors["badge_name"] = "duplicate_badge"
+            else:
+                # Cumulative badges now use only points.
+                badges_dict[internal_id] = {
+                    "badge_name": badge_name,
+                    "badge_description": user_input.get("badge_description", ""),
+                    "badge_labels": user_input.get("badge_labels", []),
+                    "icon": user_input.get("icon", ""),
+                    "threshold_value": user_input["threshold_value"],
+                    "points_multiplier": user_input["points_multiplier"],
+                    # Periodic reset settings for maintenance (if enabled)
+                    CONF_BADGE_RESET_PERIODICALLY: user_input.get(
+                        CONF_BADGE_RESET_PERIODICALLY, False
+                    ),
+                    CONF_BADGE_RESET_PERIOD: user_input.get(
+                        CONF_BADGE_RESET_PERIOD, "year_end"
+                    ),
+                    CONF_BADGE_RESET_GRACE_PERIOD: user_input.get(
+                        CONF_BADGE_RESET_GRACE_PERIOD, 0
+                    ),
+                    CONF_BADGE_MAINTENANCE_RULES: user_input.get(
+                        CONF_BADGE_MAINTENANCE_RULES, ""
+                    ),
+                    "badge_type": BADGE_TYPE_CUMULATIVE,
+                    "internal_id": internal_id,
+                }
+                self._entry_options[CONF_BADGES] = badges_dict
+                LOGGER.debug(
+                    "Added cumulative badge '%s' with ID: %s", badge_name, internal_id
+                )
+                await self._update_and_reload()
+                return await self.async_step_init()
+        schema = build_badge_cumulative_schema(default=user_input)
+        return self.async_show_form(
+            step_id="add_badge_cumulative", data_schema=schema, errors=errors
+        )
+
+    # ----- Add Daily Badge -----
+    async def async_step_add_badge_daily(self, user_input=None):
+        """Add a new daily badge."""
+        self._entry_options = dict(self.config_entry.options)
+        errors = {}
+        badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
+        if user_input is not None:
+            badge_name = user_input["badge_name"].strip()
+            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            if any(
+                badge.get("badge_name") == badge_name for badge in badges_dict.values()
             ):
                 errors["badge_name"] = "duplicate_badge"
             else:
                 badges_dict[internal_id] = {
-                    "name": badge_name,
-                    "threshold_type": user_input["threshold_type"],
-                    "threshold_value": user_input["threshold_value"],
-                    "points_multiplier": user_input["points_multiplier"],
-                    "icon": user_input.get("icon", ""),
-                    "internal_id": internal_id,
-                    "description": user_input.get("badge_description", ""),
+                    "badge_name": badge_name,
+                    "badge_description": user_input.get("badge_description", ""),
                     "badge_labels": user_input.get("badge_labels", []),
+                    "icon": user_input.get("icon", ""),
+                    "daily_threshold": user_input["daily_threshold"],
+                    "reward": user_input["reward"],
+                    "badge_type": BADGE_TYPE_DAILY,
+                    "internal_id": internal_id,
                 }
                 self._entry_options[CONF_BADGES] = badges_dict
-
-                LOGGER.debug("Added badge '%s' with ID: %s", badge_name, internal_id)
+                LOGGER.debug(
+                    "Added daily badge '%s' with ID: %s", badge_name, internal_id
+                )
                 await self._update_and_reload()
                 return await self.async_step_init()
-
-        schema = build_badge_schema()
+        schema = build_badge_daily_schema(default=user_input)
         return self.async_show_form(
-            step_id="add_badge", data_schema=schema, errors=errors
+            step_id="add_badge_daily", data_schema=schema, errors=errors
+        )
+
+    # ----- Add Periodic Badge -----
+    async def async_step_add_badge_periodic(self, user_input=None):
+        """Add a new periodic badge."""
+        self._entry_options = dict(self.config_entry.options)
+        errors = {}
+        badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
+        if user_input is not None:
+            badge_name = user_input["badge_name"].strip()
+            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            if any(
+                badge.get("badge_name") == badge_name for badge in badges_dict.values()
+            ):
+                errors["badge_name"] = "duplicate_badge"
+            else:
+                badges_dict[internal_id] = {
+                    "badge_name": badge_name,
+                    "badge_description": user_input.get("badge_description", ""),
+                    "badge_labels": user_input.get("badge_labels", []),
+                    "icon": user_input.get("icon", ""),
+                    "period": user_input.get("period", "weekly"),
+                    "threshold_value": user_input["threshold_value"],
+                    "reward": user_input["reward"],
+                    "reset_criteria": user_input.get(
+                        "reset_criteria", "Sunday midnight"
+                    ),
+                    "badge_type": BADGE_TYPE_PERIODIC,
+                    "internal_id": internal_id,
+                }
+                self._entry_options[CONF_BADGES] = badges_dict
+                LOGGER.debug(
+                    "Added periodic badge '%s' with ID: %s", badge_name, internal_id
+                )
+                await self._update_and_reload()
+                return await self.async_step_init()
+        schema = build_badge_periodic_schema(default=user_input)
+        return self.async_show_form(
+            step_id="add_badge_periodic", data_schema=schema, errors=errors
+        )
+
+    # ----- Add Achievement-Linked Badge -----
+    async def async_step_add_badge_achievement(self, user_input=None):
+        """Add a new achievement-linked badge."""
+        self._entry_options = dict(self.config_entry.options)
+        errors = {}
+        badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
+        if user_input is not None:
+            badge_name = user_input["badge_name"].strip()
+            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            if any(
+                badge.get("badge_name") == badge_name for badge in badges_dict.values()
+            ):
+                errors["badge_name"] = "duplicate_badge"
+            else:
+                badges_dict[internal_id] = {
+                    "badge_name": badge_name,
+                    "badge_description": user_input.get("badge_description", ""),
+                    "badge_labels": user_input.get("badge_labels", []),
+                    "icon": user_input.get("icon", ""),
+                    "associated_achievement": user_input.get(
+                        "associated_achievement", ""
+                    ),
+                    "one_time_reward": user_input.get("one_time_reward", ""),
+                    "badge_type": BADGE_TYPE_ACHIEVEMENT_LINKED,
+                    "internal_id": internal_id,
+                }
+                self._entry_options[CONF_BADGES] = badges_dict
+                LOGGER.debug(
+                    "Added achievement-linked badge '%s' with ID: %s",
+                    badge_name,
+                    internal_id,
+                )
+                await self._update_and_reload()
+                return await self.async_step_init()
+        schema = build_badge_achievement_schema(default=user_input)
+        return self.async_show_form(
+            step_id="add_badge_achievement", data_schema=schema, errors=errors
+        )
+
+    # ----- Add Challenge-Linked Badge -----
+    async def async_step_add_badge_challenge(self, user_input=None):
+        """Add a new challenge-linked badge."""
+        self._entry_options = dict(self.config_entry.options)
+        errors = {}
+        badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
+        if user_input is not None:
+            badge_name = user_input["badge_name"].strip()
+            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            if any(
+                badge.get("badge_name") == badge_name for badge in badges_dict.values()
+            ):
+                errors["badge_name"] = "duplicate_badge"
+            else:
+                badges_dict[internal_id] = {
+                    "badge_name": badge_name,
+                    "badge_description": user_input.get("badge_description", ""),
+                    "badge_labels": user_input.get("badge_labels", []),
+                    "icon": user_input.get("icon", ""),
+                    "associated_challenge": user_input.get("associated_challenge", ""),
+                    "one_time_reward": user_input.get("one_time_reward", ""),
+                    "badge_type": BADGE_TYPE_CHALLENGE_LINKED,
+                    "internal_id": internal_id,
+                }
+                self._entry_options[CONF_BADGES] = badges_dict
+                LOGGER.debug(
+                    "Added challenge-linked badge '%s' with ID: %s",
+                    badge_name,
+                    internal_id,
+                )
+                await self._update_and_reload()
+                return await self.async_step_init()
+        schema = build_badge_challenge_schema(default=user_input)
+        return self.async_show_form(
+            step_id="add_badge_challenge", data_schema=schema, errors=errors
+        )
+
+    # ----- Add Special Occasion Badge -----
+    async def async_step_add_badge_special(self, user_input=None):
+        """Add a new special occasion badge."""
+        self._entry_options = dict(self.config_entry.options)
+        errors = {}
+        badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
+        if user_input is not None:
+            badge_name = user_input["badge_name"].strip()
+            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            if any(
+                badge.get("badge_name") == badge_name for badge in badges_dict.values()
+            ):
+                errors["badge_name"] = "duplicate_badge"
+            else:
+                badges_dict[internal_id] = {
+                    "badge_name": badge_name,
+                    "badge_description": user_input.get("badge_description", ""),
+                    "badge_labels": user_input.get("badge_labels", []),
+                    "icon": user_input.get("icon", ""),
+                    "occasion_type": user_input.get("occasion_type", "holiday"),
+                    "trigger_info": user_input.get("trigger_info", ""),
+                    "badge_type": BADGE_TYPE_SPECIAL_OCCASION,
+                    "internal_id": internal_id,
+                }
+                self._entry_options[CONF_BADGES] = badges_dict
+                LOGGER.debug(
+                    "Added special occasion badge '%s' with ID: %s",
+                    badge_name,
+                    internal_id,
+                )
+                await self._update_and_reload()
+                return await self.async_step_init()
+        schema = build_badge_special_occasions_schema(default=user_input)
+        return self.async_show_form(
+            step_id="add_badge_special", data_schema=schema, errors=errors
         )
 
     async def async_step_add_reward(self, user_input=None):
@@ -1039,8 +1296,6 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_edit_badge(self, user_input=None):
         """Edit an existing badge."""
         self._entry_options = dict(self.config_entry.options)
-
-        errors = {}
         badges_dict = self._entry_options.get(CONF_BADGES, {})
         internal_id = self.context.get("internal_id")
 
@@ -1049,32 +1304,129 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_abort(reason="invalid_badge")
 
         badge_data = badges_dict[internal_id]
+        badge_type = badge_data.get("badge_type", BADGE_TYPE_CUMULATIVE)
+
+        errors = {}
 
         if user_input is not None:
             new_name = user_input["badge_name"].strip()
-
-            # Check for duplicate names excluding current badge
             if any(
-                data["name"] == new_name and eid != internal_id
+                data.get("badge_name") == new_name and eid != internal_id
                 for eid, data in badges_dict.items()
             ):
                 errors["badge_name"] = "duplicate_badge"
             else:
-                badge_data["name"] = new_name
-                badge_data["threshold_type"] = user_input["threshold_type"]
-                badge_data["threshold_value"] = user_input["threshold_value"]
-                badge_data["points_multiplier"] = user_input["points_multiplier"]
-                badge_data["icon"] = user_input.get("icon", "")
-                badge_data["description"] = user_input["badge_description"]
-                badge_data["badge_labels"] = user_input.get("badge_labels", [])
+                badge_data["badge_name"] = new_name
+                badge_data["badge_description"] = user_input.get(
+                    "badge_description", badge_data.get("badge_description", "")
+                )
+                badge_data["badge_labels"] = user_input.get(
+                    "badge_labels", badge_data.get("badge_labels", [])
+                )
+                badge_data["icon"] = user_input.get("icon", badge_data.get("icon", ""))
 
+                # Update type-specific fields:
+                if badge_type == BADGE_TYPE_CUMULATIVE:
+                    badge_data["threshold_value"] = user_input.get(
+                        "threshold_value", badge_data.get("threshold_value")
+                    )
+                    badge_data["points_multiplier"] = user_input.get(
+                        "points_multiplier", badge_data.get("points_multiplier")
+                    )
+                    badge_data[CONF_BADGE_RESET_PERIODICALLY] = user_input.get(
+                        CONF_BADGE_RESET_PERIODICALLY,
+                        badge_data.get(CONF_BADGE_RESET_PERIODICALLY, False),
+                    )
+                    badge_data[CONF_BADGE_RESET_PERIOD] = user_input.get(
+                        CONF_BADGE_RESET_PERIOD,
+                        badge_data.get(CONF_BADGE_RESET_PERIOD, "year_end"),
+                    )
+                    badge_data[CONF_BADGE_RESET_GRACE_PERIOD] = user_input.get(
+                        CONF_BADGE_RESET_GRACE_PERIOD,
+                        badge_data.get(CONF_BADGE_RESET_GRACE_PERIOD, 0),
+                    )
+                    badge_data[CONF_BADGE_MAINTENANCE_RULES] = user_input.get(
+                        CONF_BADGE_MAINTENANCE_RULES,
+                        badge_data.get(CONF_BADGE_MAINTENANCE_RULES, ""),
+                    )
+
+                elif badge_type == BADGE_TYPE_DAILY:
+                    badge_data["daily_threshold"] = user_input.get(
+                        "daily_threshold", badge_data.get("daily_threshold")
+                    )
+                    badge_data["reward"] = user_input.get(
+                        "reward", badge_data.get("reward")
+                    )
+
+                elif badge_type == BADGE_TYPE_PERIODIC:
+                    badge_data["period"] = user_input.get(
+                        "period", badge_data.get("period", "weekly")
+                    )
+                    badge_data["threshold_value"] = user_input.get(
+                        "threshold_value", badge_data.get("threshold_value")
+                    )
+                    badge_data["reward"] = user_input.get(
+                        "reward", badge_data.get("reward")
+                    )
+                    badge_data["reset_criteria"] = user_input.get(
+                        "reset_criteria",
+                        badge_data.get("reset_criteria", "Sunday midnight"),
+                    )
+
+                elif badge_type == BADGE_TYPE_ACHIEVEMENT_LINKED:
+                    badge_data["associated_achievement"] = user_input.get(
+                        "associated_achievement",
+                        badge_data.get("associated_achievement", ""),
+                    )
+                    badge_data["one_time_reward"] = user_input.get(
+                        "one_time_reward", badge_data.get("one_time_reward", "")
+                    )
+
+                elif badge_type == BADGE_TYPE_CHALLENGE_LINKED:
+                    badge_data["associated_challenge"] = user_input.get(
+                        "associated_challenge",
+                        badge_data.get("associated_challenge", ""),
+                    )
+                    badge_data["one_time_reward"] = user_input.get(
+                        "one_time_reward", badge_data.get("one_time_reward", "")
+                    )
+
+                elif badge_type == BADGE_TYPE_SPECIAL_OCCASION:
+                    badge_data["occasion_type"] = user_input.get(
+                        "occasion_type", badge_data.get("occasion_type", "holiday")
+                    )
+                    badge_data["trigger_info"] = user_input.get(
+                        "trigger_info", badge_data.get("trigger_info", "")
+                    )
+
+                badges_dict[internal_id] = badge_data
                 self._entry_options[CONF_BADGES] = badges_dict
 
-                LOGGER.debug("Edited badge '%s' with ID: %s", new_name, internal_id)
+                LOGGER.debug(
+                    "Edited badge '%s' with ID: %s",
+                    badge_data["badge_name"],
+                    internal_id,
+                )
+
                 await self._update_and_reload()
                 return await self.async_step_init()
 
-        schema = build_badge_schema(default=badge_data)
+        # Build the schema based on badge_type:
+        if badge_type == BADGE_TYPE_CUMULATIVE:
+            schema = build_badge_cumulative_schema(default=badge_data)
+        elif badge_type == BADGE_TYPE_DAILY:
+            schema = build_badge_daily_schema(default=badge_data)
+        elif badge_type == BADGE_TYPE_PERIODIC:
+            schema = build_badge_periodic_schema(default=badge_data)
+        elif badge_type == BADGE_TYPE_ACHIEVEMENT_LINKED:
+            schema = build_badge_achievement_schema(default=badge_data)
+        elif badge_type == BADGE_TYPE_CHALLENGE_LINKED:
+            schema = build_badge_challenge_schema(default=badge_data)
+        elif badge_type == BADGE_TYPE_SPECIAL_OCCASION:
+            schema = build_badge_special_occasions_schema(default=badge_data)
+        else:
+            schema = build_badge_cumulative_schema(default=badge_data)
+
         return self.async_show_form(
             step_id="edit_badge", data_schema=schema, errors=errors
         )
