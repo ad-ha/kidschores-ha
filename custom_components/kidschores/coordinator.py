@@ -2723,11 +2723,23 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if not due_str:
                 LOGGER.debug(
                     "Chore '%s' has no due_date; checking to confirm it isn't overdue; then skipping if not",
-                    chore_id,
+                    chore_info.get("name", chore_id),
                 )
                 # If it has no due date, but is overdue, it should be marked as pending
-                if chore_info.get("state") == CHORE_STATE_OVERDUE:
-                    self._process_chore_state(kid_id, chore_id, CHORE_STATE_PENDING)
+                # Also check if status is independent, just in case
+                if (
+                    chore_info.get("state") == CHORE_STATE_OVERDUE
+                    or chore_info.get("state") == CHORE_STATE_INDEPENDENT
+                ):
+                    for kid_id in assigned_kids:
+                        if chore_id in kid_info.get("overdue_chores", []):
+                            self._process_chore_state(
+                                kid_id, chore_id, CHORE_STATE_PENDING
+                            )
+                            LOGGER.debug(
+                                "Chore '%s' status is overdue but no due date; cleared overdue flags",
+                                chore_id,
+                            )
                 continue
 
             try:
@@ -3188,6 +3200,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 chore_info.get("custom_interval"),
                 chore_info.get("custom_interval_unit"),
             )
+        )
+
+        # Reset the chore state to Pending
+        for kid_id in chore_info.get("assigned_kids", []):
+            if kid_id:
+                self._process_chore_state(kid_id, chore_id, CHORE_STATE_PENDING)
+
+        LOGGER.info(
+            "Chore '%s' due date set",
+            chore_info.get("name", chore_id),
         )
 
         self._persist()
