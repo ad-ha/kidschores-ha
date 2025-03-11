@@ -1,0 +1,3295 @@
+{
+  "title": "KidsChores",
+  "config": {
+    "step": {
+      "intro": {
+        "title": "Benvinguts a KidsChores",
+        "description": "Aquest assistent us guiarà a través de la configuració de KidsChores."
+      },
+      "data_recovery": {
+        "title": "Opcions de recuperació de dades",
+        "description": "Dades de KidsChores existents trobades a:\n{storage_path}\n\nS'han trobat {backup_count} fitxers de còpia de seguretat.\n\nQuè vols fer?",
+        "data": {
+          "backup_selection": "Selecciona l'opció"
+        }
+      },
+      "points_label": {
+        "title": "Etiqueta de punts",
+        "description": "Trieu una etiqueta i una icona per als punts.",
+        "data": {
+          "points_label": "Etiqueta de punts",
+          "points_icon": "Icona de punts"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar els paràmetres del sistema",
+        "description": "Actualitza la configuració del sistema com ara l'etiqueta i la icona dels punts.",
+        "data": {
+          "points_label": "Etiqueta de punts",
+          "points_icon": "Icona de punts"
+        }
+      },
+      "kid_count": {
+        "title": "Nombre de nens",
+        "description": "Quants nens vols gestionar?",
+        "data": {
+          "kid_count": "Nombre de nens"
+        }
+      },
+      "kids": {
+        "title": "Defineix el nen",
+        "description": "Introduïu el nom de cada nen/a.",
+        "data": {
+          "kid_name": "Nom del nen/a",
+          "internal_id": "ID intern",
+          "ha_user": "Usuari de l'Assistent de la Llar",
+          "enable_mobile_notifications": "Activa les notificacions mòbils",
+          "mobile_notify_service": "Notificar al servei",
+          "enable_persistent_notifications": "Activa les notificacions persistents"
+        }
+      },
+      "parent_count": {
+        "title": "Nombre de pares",
+        "description": "Quants pares vols definir inicialment?",
+        "data": {
+          "parent_count": "Nombre de pares"
+        }
+      },
+      "parents": {
+        "title": "Defineix el pare",
+        "description": "Introduïu les dades de cada progenitor.",
+        "data": {
+          "parent_name": "Nom del pare/mare",
+          "ha_user_id": "Usuari de l'Assistent de la Llar",
+          "associated_kids": "Nens associats",
+          "enable_mobile_notifications": "Activa les notificacions mòbils",
+          "mobile_notify_service": "Notificar al servei",
+          "enable_persistent_notifications": "Activa les notificacions persistents",
+          "internal_id": "ID intern"
+        }
+      },
+      "chore_count": {
+        "title": "Nombre de tasques",
+        "description": "Quantes tasques vols definir?",
+        "data": {
+          "chore_count": "Nombre de tasques"
+        }
+      },
+      "chores": {
+        "title": "Afegeix una tasca",
+        "description": "Crea una nova tasca amb punts, tasques i un horari recurrent.",
+        "data": {
+          "chore_name": "📋 Nom de la tasca",
+          "chore_description": "📋 Descripció (opcional)",
+          "icon": "📋 Icona (mdi:xxx)",
+          "chore_labels": "📋 Etiquetes (opcional)",
+          "default_points": "💰 Punts atorgats",
+          "assigned_kids": "👥 Nens assignats",
+          "completion_criteria": "👥 Tipus de finalització",
+          "approval_reset_type": "➡️ Finalitzacions permeses i restabliment del temps",
+          "approval_reset_pending_claim_action": "➡️ Reclamacions pendents en reiniciar",
+          "overdue_handling_type": "⏰ Vençut: Tipus de gestió",
+          "auto_approve": "✅ Aprovació automàtica de reclamacions?",
+          "recurring_frequency": "🔄 Horari: Freqüència",
+          "custom_interval": "🔄 Programació: Interval personalitzat (per a la freqüència personalitzada)",
+          "custom_interval_unit": "🔄 Programació: Unitat d'interval personalitzada",
+          "applicable_days": "📅 Horari: Dies aplicables (opcional)",
+          "due_date": "📅 Horari: Data de venciment (opcional)",
+          "show_on_calendar": "📅 Mostrar al calendari?",
+          "chore_notifications": "🔔 Esdeveniments de notificació (opcional)"
+        },
+        "data_description": {
+          "chore_name": "Nom únic que es mostra a tot el sistema.",
+          "chore_description": "Instruccions o detalls opcionals sobre com completar aquesta tasca.",
+          "icon": "Icona de disseny de materials (per exemple, mdi:broom, mdi:dishwasher).",
+          "chore_labels": "Etiquetes per organitzar les tasques (per exemple, \"cuina\", \"exterior\"). Deixeu-ho en blanc si no és necessari.",
+          "default_points": "Punts guanyats en completar-se.",
+          "assigned_kids": "Nens que poden veure i reclamar aquesta tasca.",
+          "completion_criteria": "Com funcionen les tasques compartides: Independent (cada nen les completa per separat), Compartides totes (tots han d'aprovar) o Compartides primer (la primera aprovació completa la tasca).",
+          "approval_reset_type": "Controla quan es reinicia aquesta tasca i quantes finalitzacions es permeten durant aquest període.",
+          "approval_reset_pending_claim_action": "Quan aquesta tasca es reinicia (segons el temps de reinici de la finalització anterior), què passa amb les reclamacions que encara estan pendents d'aprovació?",
+          "overdue_handling_type": "Acció després de la data de venciment: Amaga l'estat de venciment, mantén el venciment fins que es reclama o restableix-lo a pendent en el següent cicle d'aprovació.",
+          "auto_approve": "Quan estan habilitades, les reclamacions s'aproven instantàniament sense la revisió dels pares.",
+          "recurring_frequency": "Freqüència amb què es repeteix la tasca: Diàriament, Setmanalment, Mensualment, Anualment, Personalitzada o Cap.",
+          "custom_interval": "Nombre d'unitats de temps entre repeticions (per exemple, 3 per a \"cada 3 setmanes\"). Només s'utilitza amb la freqüència personalitzada.",
+          "custom_interval_unit": "Unitat de temps per a l'interval personalitzat (dies, setmanes, mesos). Només s'utilitza amb la freqüència personalitzada.",
+          "applicable_days": "Restringeix la tasca a dies feiners específics. Deixa en blanc per a tots els dies.",
+          "due_date": "Data límit opcional. Es pot combinar amb programacions recurrents.",
+          "show_on_calendar": "Mostra aquesta tasca a la vista de calendari.",
+          "chore_notifications": "Quan enviar notificacions: En cas de reclamació, aprovació, rebuig o qualsevol combinació."
+        }
+      },
+      "badge_count": {
+        "title": "Nombre de distintius",
+        "description": "Quantes insígnies vols definir?",
+        "data": {
+          "badge_count": "Recompte de distintius"
+        }
+      },
+      "badges": {
+        "title": "Afegeix una insígnia acumulativa",
+        "description": "Configura els detalls d'una insígnia acumulativa. Aquestes insígnies recompensen els nens per assolir els llindars de punts de per vida i donen suport als cicles de manteniment per fomentar el rendiment continu.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "target_type": "🎯 OBJECTIU: Tipus d'objectiu",
+          "threshold_value": "🎯 OBJECTIU: Valor llindar",
+          "maintenance_rules": "🎯 OBJECTIU: Punts de manteniment (opcional)",
+          "occasion_type": "🎉 Tipus d'ocasió",
+          "associated_achievement": "🏆 Assoliment associat",
+          "associated_challenge": "🏁 Repte associat",
+          "selected_chores": "🧹 Tasques domèstiques controlades (opcional)",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses, bonificacions, multiplicador (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)",
+          "points_multiplier": "🎁 PREMIS: Multiplicador de punts (per defecte 💎 1.0x)",
+          "recurring_frequency": "🔄 CICLE DE MANTENIMENT: Freqüència",
+          "custom_interval": "🔄 CICLE DE MANTENIMENT: Interval personalitzat (obligatori per a la freqüència personalitzada)",
+          "custom_interval_unit": "🔄 CICLE DE MANTENIMENT: Unitat d'interval personalitzada (obligatòria per a la freqüència personalitzada)",
+          "start_date": "🔄 REINICIAR CICLE: Data d'inici (opcional)",
+          "end_date": "🔄 CICLE DE MANTENIMENT: Data de finalització (opcional)",
+          "grace_period_days": "🔄 CICLE DE MANTENIMENT: Període de gràcia en dies (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "target_type": "Seleccioneu el tipus d'objectiu per a aquesta insígnia (per exemple, punts o recompte de tasques).",
+          "threshold_value": "Defineix el total de punts de per vida necessaris per obtenir aquesta insígnia.",
+          "maintenance_rules": "Especifiqueu els punts mínims necessaris durant el cicle de manteniment per conservar la insígnia i el seu multiplicador actiu (opcional).",
+          "occasion_type": "Trieu el tipus d'ocasió per a aquesta insígnia (per exemple, vacances, aniversari).",
+          "associated_achievement": "Enllaça aquesta insígnia a un assoliment per fer-ne un seguiment.",
+          "associated_challenge": "Enllaça aquesta insígnia a un repte per al seguiment.",
+          "selected_chores": "Seleccioneu les tasques que contribueixen a obtenir punts per a aquesta insígnia. Deixeu-ho en blanc si voleu fer un seguiment de totes les tasques assignades (opcional).",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més dels següents punts, recompenses, bonificacions o un multiplicador de punts. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional).",
+          "points_multiplier": "Si el multiplicador és un premi seleccionat, defineix un multiplicador pels punts guanyats mentre aquesta insígnia estigui activa (per exemple, 1,5x).",
+          "recurring_frequency": "Habilita el cicle de manteniment, que requereix que s'aconseguissin els punts mínims especificats abans del final del període (per exemple, setmanalment, mensualment).",
+          "custom_interval": "Especifiqueu el NOMBRE de dies, setmanes, mesos, etc. per a la Freqüència personalitzada (per exemple, 3 si definiu 3 setmanes). Només s'aplica a la Freqüència personalitzada.",
+          "custom_interval_unit": "Seleccioneu la unitat per a l'interval personalitzat (per exemple, dies, setmanes). Només s'aplica a la freqüència personalitzada.",
+          "start_date": "Estableix la data d'inici (opcional).",
+          "end_date": "Seleccioneu la data de finalització del cicle de manteniment (opcional).",
+          "grace_period_days": "Especifiqueu el nombre de dies addicionals després del final del cicle que els nens han d'assolir els punts necessaris abans del descens de categoria (opcional)."
+        }
+      },
+      "reward_count": {
+        "title": "Nombre de recompenses",
+        "description": "Quantes recompenses vols definir?",
+        "data": {
+          "reward_count": "Recompte de recompenses"
+        }
+      },
+      "rewards": {
+        "title": "Definir recompensa",
+        "description": "Introdueix els detalls de cada recompensa.",
+        "data": {
+          "reward_name": "Nom de la recompensa",
+          "internal_id": "ID intern",
+          "reward_cost": "Cost de la recompensa",
+          "reward_description": "Descripció (opcional)",
+          "reward_labels": "Etiquetes de recompensa",
+          "icon": "Icona (mdi:xxx)"
+        }
+      },
+      "penalty_count": {
+        "title": "Nombre de penalitzacions",
+        "description": "Quantes penalitzacions vols definir?",
+        "data": {
+          "penalty_count": "Recompte de penalitzacions"
+        }
+      },
+      "penalties": {
+        "title": "Definir penalització",
+        "description": "Introduïu els detalls de cada penalització.",
+        "data": {
+          "penalty_name": "Nom de la penalització",
+          "penalty_description": "Descripció (opcional)",
+          "penalty_labels": "Etiquetes de penalització",
+          "internal_id": "ID intern",
+          "penalty_points": "Punts de penalització (negatius)",
+          "icon": "Icona (mdi:xxx)"
+        }
+      },
+      "bonus_count": {
+        "title": "Nombre de bonificacions",
+        "description": "Quantes bonificacions vols definir?",
+        "data": {
+          "bonus_count": "Recompte de bonificacions"
+        }
+      },
+      "bonuses": {
+        "title": "Definir bonificació",
+        "description": "Introduïu els detalls de cada bonificació.",
+        "data": {
+          "bonus_name": "Nom de la bonificació",
+          "bonus_description": "Descripció (opcional)",
+          "bonus_labels": "Etiquetes de bonificació",
+          "internal_id": "ID intern",
+          "bonus_points": "Punts de bonificació",
+          "icon": "Icona (mdi:xxx)"
+        }
+      },
+      "achievement_count": {
+        "title": "Nombre d'assoliments",
+        "description": "Quants èxits vols definir?",
+        "data": {
+          "achievement_count": "Recompte d'assoliments"
+        }
+      },
+      "achievements": {
+        "title": "Definir assoliment",
+        "description": "Introdueix els detalls de cada assoliment.",
+        "data": {
+          "name": "Nom de l'assoliment",
+          "description": "Descripció (opcional)",
+          "achievement_labels": "Etiquetes d'assoliment",
+          "icon": "Icona (mdi:xxx)",
+          "assigned_kids": "Nens assignats",
+          "type": "Tipus d'assoliment",
+          "selected_chore_id": "Selecciona la tasca associada",
+          "criteria": "Criteris (opcional)",
+          "target_value": "Objectiu d'assoliment",
+          "reward_points": "Punts addicionals per completar l'assoliment",
+          "internal_id": "ID intern"
+        }
+      },
+      "challenge_count": {
+        "title": "Nombre de reptes",
+        "description": "Quants reptes vols definir?",
+        "data": {
+          "challenge_count": "Recompte de reptes"
+        }
+      },
+      "challenges": {
+        "title": "Defineix el repte",
+        "description": "Introdueix els detalls de cada repte.",
+        "data": {
+          "name": "Nom del repte",
+          "description": "Descripció (opcional)",
+          "challenge_labels": "Etiquetes de repte",
+          "icon": "Icona (mdi:xxx)",
+          "assigned_kids": "Nens assignats",
+          "type": "Tipus de repte",
+          "selected_chore_id": "Selecciona la tasca associada al repte (opcional)",
+          "criteria": "Criteris (opcional)",
+          "target_value": "Objectiu de reptes",
+          "reward_points": "Punts extra per completar el repte",
+          "start_date": "Data d'inici",
+          "end_date": "Data de finalització",
+          "internal_id": "ID intern"
+        }
+      },
+      "finish": {
+        "title": "Revisa i acaba",
+        "description": "Reviseu la configuració:\n{summary}\nFeu clic a Envia per finalitzar."
+      }
+    },
+    "error": {
+      "a_chore_must_be_selected": "Cal seleccionar una tasca",
+      "badge_requires_assignment": "Com a mínim un nen ha de tenir assignat aquest distintiu",
+      "duplicate_achievement": "Ja existeix un assoliment amb aquest nom",
+      "duplicate_badge": "Ja existeix una insígnia amb aquest nom",
+      "duplicate_challenge": "Ja existeix un repte amb aquest nom",
+      "duplicate_chore": "Ja existeix una tasca amb aquest nom",
+      "duplicate_kid": "Ja existeix un nen amb aquest nom",
+      "duplicate_parent": "Ja existeix un pare o mare amb aquest nom",
+      "duplicate_penalty": "Ja existeix una penalització amb aquest nom",
+      "duplicate_reward": "Ja existeix una recompensa amb aquest nom",
+      "duplicate_bonus": "Ja existeix un bonus amb aquest nom",
+      "due_date_in_past": "La data de venciment ha de ser en el futur.",
+      "end_date_in_past": "La data de finalització ha de ser en el futur.",
+      "end_date_not_after_start_date": "La data de finalització ha de ser posterior a la data d'inici",
+      "invalid_achievement_count": "Recompte d'assoliments no vàlid",
+      "invalid_achievement_name": "Nom d'assoliment no vàlid",
+      "invalid_badge": "Insígnia no vàlida",
+      "invalid_badge_count": "Recompte de distintius no vàlid",
+      "invalid_badge_name": "Nom de la insígnia no vàlid",
+      "invalid_challenge_count": "Recompte de desafiaments no vàlid",
+      "invalid_challenge_name": "Nom de repte no vàlid",
+      "invalid_chore": "Tasca no vàlida",
+      "invalid_chore_count": "Recompte de tasques no vàlid",
+      "invalid_chore_name": "Nom de tasca no vàlid",
+      "invalid_due_date": "Data de venciment no vàlida",
+      "date_required_for_frequency": "Cal una data de venciment per a aquesta freqüència recurrent. L'opció \"Esborrar dates\" només funciona amb la freqüència Cap, Diària o Setmanal.",
+      "invalid_end_date": "Data de finalització no vàlida.",
+      "invalid_kid_count": "Recompte de nens no vàlid",
+      "invalid_kid_name": "Nom de nen no vàlid",
+      "invalid_parent_count": "Recompte de pares no vàlid",
+      "invalid_parent_name": "Nom del pare no vàlid",
+      "no_kids_assigned": "Com a mínim un nen ha de tenir assignat la tasca",
+      "invalid_penalty": "Penalització no vàlida",
+      "invalid_penalty_count": "Recompte de penalitzacions no vàlid",
+      "invalid_penalty_name": "Nom de penalització no vàlid",
+      "invalid_reward": "Recompensa no vàlida",
+      "invalid_reward_count": "Recompte de recompenses no vàlid",
+      "invalid_reward_name": "Nom de recompensa no vàlid",
+      "invalid_bonus": "Bonificació no vàlida",
+      "invalid_bonus_count": "Recompte de bonificacions no vàlid",
+      "invalid_bonus_name": "Nom de bonificació no vàlid",
+      "invalid_start_date": "Data d'inici no vàlida.",
+      "start_date_in_past": "La data d'inici ha de ser en el futur.",
+      "points_label_required": "Cal l'etiqueta de punts",
+      "corrupt_file": "El fitxer seleccionat conté un JSON no vàlid i no es pot llegir.",
+      "invalid_structure": "Al fitxer seleccionat li falta l'estructura de dades necessària.",
+      "file_not_found": "No s'ha pogut trobar el fitxer seleccionat.",
+      "invalid_selection": "Si us plau, seleccioneu una opció vàlida.",
+      "invalid_input": "L'entrada proporcionada no és vàlida. Si us plau, reviseu les entrades i torneu-ho a intentar.",
+      "duplicate_name": "Ja existeix un element amb aquest nom. Trieu-ne un altre.",
+      "invalid_date_range": "L'interval de dates no és vàlid. La data de finalització ha de ser posterior a la data d'inici.",
+      "missing_required": "Falta un camp obligatori. Si us plau, proporcioneu tota la informació necessària.",
+      "invalid_format": "El format no és vàlid. Si us plau, reviseu les dades introduïdes i torneu-ho a intentar.",
+      "invalid_update_interval": "Interval d'actualització no vàlid. Ha de ser un enter positiu.",
+      "invalid_calendar_show_period": "Període de visualització del calendari no vàlid. Ha de ser un nombre enter positiu.",
+      "invalid_retention_period": "Període de retenció no vàlid. Ha de ser un nombre enter positiu.",
+      "invalid_points_adjust_values": "Valors d'ajust de punts no vàlids. Ha de ser una llista."
+    },
+    "abort": {
+      "single_instance_allowed": "Només es pot configurar una única instància de KidsChores.",
+      "already_configured": "Les dades de KidsChores s'han restaurat correctament. Ara podeu tornar a carregar la integració.",
+      "file_not_found": "No s'ha pogut trobar el fitxer de còpia de seguretat seleccionat.",
+      "corrupt_file": "El fitxer seleccionat conté un JSON no vàlid i no es pot llegir.",
+      "invalid_structure": "Al fitxer seleccionat li falta l'estructura de dades KidsChores obligatòria.",
+      "reconfigure_failed": "La reconfiguració ha fallat. Torneu-ho a intentar.",
+      "reconfigure_successful": "La configuració del sistema s'ha actualitzat correctament."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcions de tasques infantils",
+        "description": "Gestiona els nens, les tasques, les insígnies, les recompenses, les penalitzacions, les bonificacions o els finals.",
+        "data": {
+          "menu_selection": "Selecciona una opció"
+        }
+      },
+      "manage_entity": {
+        "title": "Selecciona una acció",
+        "description": "Afegir, editar o eliminar opcions.",
+        "data": {
+          "manage_action": "Selecciona una acció"
+        }
+      },
+      "select_entity": {
+        "title": "Seleccioneu {entity_type}",
+        "description": "Seleccioneu el {entity_type} que voleu {action}.",
+        "data": {
+          "entity_name": "Nom"
+        }
+      },
+      "manage_points": {
+        "title": "Edita l'etiqueta i la icona dels punts",
+        "description": "Canvieu l'etiqueta i la icona que s'utilitzen per representar punts.",
+        "data": {
+          "points_label": "Etiqueta de punts",
+          "points_icon": "Icona de punts"
+        }
+      },
+      "add_kid": {
+        "title": "Afegeix un nen/a",
+        "description": "Proporciona els detalls del nen nouvingut.",
+        "data": {
+          "kid_name": "Nom del nen/a",
+          "ha_user": "Usuari de l'Assistent de la Llar",
+          "enable_mobile_notifications": "Activa les notificacions mòbils",
+          "mobile_notify_service": "Notificar al servei",
+          "enable_persistent_notifications": "Activa les notificacions persistents",
+          "internal_id": "ID intern"
+        }
+      },
+      "add_parent": {
+        "title": "Afegeix un pare",
+        "description": "Proporcioneu les dades del nou progenitor.",
+        "data": {
+          "parent_name": "Nom del pare/mare",
+          "ha_user_id": "Usuari de l'Assistent de la Llar",
+          "associated_kids": "Nens associats",
+          "enable_mobile_notifications": "Activa les notificacions mòbils",
+          "mobile_notify_service": "Notificar al servei",
+          "enable_persistent_notifications": "Activa les notificacions persistents",
+          "internal_id": "ID intern"
+        }
+      },
+      "add_chore": {
+        "title": "Afegeix una tasca",
+        "description": "Crea una nova tasca amb punts, tasques i un horari recurrent.",
+        "data": {
+          "chore_name": "📋 Nom de la tasca",
+          "chore_description": "📋 Descripció (opcional)",
+          "icon": "📋 Icona (mdi:xxx)",
+          "chore_labels": "📋 Etiquetes (opcional)",
+          "default_points": "💰 Punts atorgats",
+          "assigned_kids": "👥 Nens assignats",
+          "completion_criteria": "👥 Tipus de finalització",
+          "approval_reset_type": "➡️ Finalitzacions permeses i restabliment del temps",
+          "approval_reset_pending_claim_action": "➡️ Reclamacions pendents en reiniciar",
+          "overdue_handling_type": "⏰ Vençut: Tipus de gestió",
+          "auto_approve": "✅ Aprovació automàtica de reclamacions?",
+          "recurring_frequency": "🔄 Horari: Freqüència",
+          "custom_interval": "🔄 Programació: Interval personalitzat (per a la freqüència personalitzada)",
+          "custom_interval_unit": "🔄 Programació: Unitat d'interval personalitzada",
+          "applicable_days": "📅 Horari: Dies aplicables (opcional)",
+          "due_date": "📅 Horari: Data de venciment (opcional)",
+          "show_on_calendar": "📅 Mostrar al calendari?",
+          "chore_notifications": "🔔 Esdeveniments de notificació (opcional)"
+        },
+        "data_description": {
+          "chore_name": "Nom únic que es mostra a tot el sistema.",
+          "chore_description": "Instruccions o detalls opcionals sobre com completar aquesta tasca.",
+          "icon": "Icona de disseny de materials (per exemple, mdi:broom, mdi:dishwasher).",
+          "chore_labels": "Etiquetes per organitzar les tasques (per exemple, \"cuina\", \"exterior\"). Deixeu-ho en blanc si no és necessari.",
+          "default_points": "Punts guanyats en completar-se.",
+          "assigned_kids": "Nens que poden veure i reclamar aquesta tasca.",
+          "completion_criteria": "Com funcionen les tasques compartides: Independent (cada nen les completa per separat), Compartides totes (tots han d'aprovar) o Compartides primer (la primera aprovació completa la tasca).",
+          "approval_reset_type": "Controla quan es reinicia aquesta tasca i quantes finalitzacions es permeten durant aquest període.",
+          "approval_reset_pending_claim_action": "Quan aquesta tasca es reinicia (segons el temps de reinici de la finalització anterior), què passa amb les reclamacions que encara estan pendents d'aprovació?",
+          "overdue_handling_type": "Acció després de la data de venciment: Amaga l'estat de venciment, mantén el venciment fins que es reclama o restableix-lo a pendent en el següent cicle d'aprovació.",
+          "auto_approve": "Quan estan habilitades, les reclamacions s'aproven instantàniament sense la revisió dels pares.",
+          "recurring_frequency": "Freqüència amb què es repeteix la tasca: Diàriament, Setmanalment, Mensualment, Anualment, Personalitzada o Cap.",
+          "custom_interval": "Nombre d'unitats de temps entre repeticions (per exemple, 3 per a \"cada 3 setmanes\"). Només s'utilitza amb la freqüència personalitzada.",
+          "custom_interval_unit": "Unitat de temps per a l'interval personalitzat (dies, setmanes, mesos). Només s'utilitza amb la freqüència personalitzada.",
+          "applicable_days": "Restringeix la tasca a dies feiners específics. Deixa en blanc per a tots els dies.",
+          "due_date": "Data límit opcional. Es pot combinar amb programacions recurrents.",
+          "show_on_calendar": "Mostra aquesta tasca a la vista de calendari.",
+          "chore_notifications": "Quan enviar notificacions: En cas de reclamació, aprovació, rebuig o qualsevol combinació."
+        }
+      },
+      "add_badge": {
+        "title": "Afegeix una insígnia",
+        "description": "Proporcioneu el tipus desitjat per a la nova insígnia.",
+        "data": {
+          "badge_type": "Tipus de distintiu"
+        }
+      },
+      "add_badge_cumulative": {
+        "title": "Afegeix una insígnia acumulativa",
+        "description": "Configura els detalls d'una insígnia acumulativa. Aquestes insígnies recompensen els nens per assolir els llindars de punts de per vida i donen suport als cicles de manteniment per fomentar el rendiment continu.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "target_type": "🎯 OBJECTIU: Tipus d'objectiu",
+          "threshold_value": "🎯 OBJECTIU: Valor llindar",
+          "maintenance_rules": "🎯 OBJECTIU: Punts de manteniment (opcional)",
+          "occasion_type": "🎉 Tipus d'ocasió",
+          "associated_achievement": "🏆 Assoliment associat",
+          "associated_challenge": "🏁 Repte associat",
+          "selected_chores": "🧹 Tasques domèstiques controlades (opcional)",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses, bonificacions, multiplicador (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)",
+          "points_multiplier": "🎁 PREMIS: Multiplicador de punts (per defecte 💎 1.0x)",
+          "recurring_frequency": "🔄 CICLE DE MANTENIMENT: Freqüència",
+          "custom_interval": "🔄 CICLE DE MANTENIMENT: Interval personalitzat (obligatori per a la freqüència personalitzada)",
+          "custom_interval_unit": "🔄 CICLE DE MANTENIMENT: Unitat d'interval personalitzada (obligatòria per a la freqüència personalitzada)",
+          "start_date": "🔄 REINICIAR CICLE: Data d'inici (opcional)",
+          "end_date": "🔄 CICLE DE MANTENIMENT: Data de finalització (opcional)",
+          "grace_period_days": "🔄 CICLE DE MANTENIMENT: Període de gràcia en dies (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "target_type": "Seleccioneu el tipus d'objectiu per a aquesta insígnia (per exemple, punts o recompte de tasques).",
+          "threshold_value": "Defineix el total de punts de per vida necessaris per obtenir aquesta insígnia.",
+          "maintenance_rules": "Especifiqueu els punts mínims necessaris durant el cicle de manteniment per conservar la insígnia i el seu multiplicador actiu (opcional).",
+          "occasion_type": "Trieu el tipus d'ocasió per a aquesta insígnia (per exemple, vacances, aniversari).",
+          "associated_achievement": "Enllaça aquesta insígnia a un assoliment per fer-ne un seguiment.",
+          "associated_challenge": "Enllaça aquesta insígnia a un repte per al seguiment.",
+          "selected_chores": "Seleccioneu les tasques que contribueixen a obtenir punts per a aquesta insígnia. Deixeu-ho en blanc si voleu fer un seguiment de totes les tasques assignades (opcional).",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més dels següents punts, recompenses, bonificacions o un multiplicador de punts. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional).",
+          "points_multiplier": "Si el multiplicador és un premi seleccionat, defineix un multiplicador pels punts guanyats mentre aquesta insígnia estigui activa (per exemple, 1,5x).",
+          "recurring_frequency": "Habilita el cicle de manteniment, que requereix que s'aconseguissin els punts mínims especificats abans del final del període (per exemple, setmanalment, mensualment).",
+          "custom_interval": "Especifiqueu el NOMBRE de dies, setmanes, mesos, etc. per a la Freqüència personalitzada (per exemple, 3 si definiu 3 setmanes). Només s'aplica a la Freqüència personalitzada.",
+          "custom_interval_unit": "Seleccioneu la unitat per a l'interval personalitzat (per exemple, dies, setmanes). Només s'aplica a la freqüència personalitzada.",
+          "start_date": "Estableix la data d'inici (opcional).",
+          "end_date": "Seleccioneu la data de finalització del cicle de manteniment (opcional).",
+          "grace_period_days": "Especifiqueu el nombre de dies addicionals després del final del cicle que els nens han d'assolir els punts necessaris abans del descens de categoria (opcional)."
+        }
+      },
+      "add_badge_daily": {
+        "title": "Afegeix una insígnia diària",
+        "description": "Configura els detalls d'una insígnia diària. Aquestes insígnies recompensen els nens per completar les tasques diàries o assolir els llindars diaris.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "target_type": "🎯 OBJECTIU DIARI: Tipus d'objectiu",
+          "threshold_value": "🎯 OBJECTIU DIARI: Valor llindar",
+          "selected_chores": "🧹 Tasques domèstiques controlades (opcional)",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses, bonificacions i penalitzacions (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "target_type": "Seleccioneu el tipus d'objectiu diari per a aquesta insígnia (per exemple, punts, recompte de tasques o dies).",
+          "threshold_value": "Defineix els punts diaris, el recompte de tasques o el nombre de dies necessaris per obtenir aquesta insígnia. Per als tipus d'objectiu \"Dies\", introdueix 1, ja que la insígnia s'avalua diàriament (per exemple, 1 per completar totes les tasques seleccionades en un dia).",
+          "selected_chores": "Seleccioneu les tasques que contribueixen a obtenir punts per a aquesta insígnia. Deixeu-ho en blanc si voleu fer un seguiment de totes les tasques assignades (opcional).",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més dels següents opcions: punts, recompenses, bonificacions o penalitzacions. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. Les penalitzacions només s'aplicaran si no s'obtingui la insígnia abans de la data de finalització o de restabliment. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional)."
+        }
+      },
+      "add_badge_periodic": {
+        "title": "Afegeix una insígnia periòdica",
+        "description": "Configureu els detalls d'una insígnia periòdica. Aquestes insígnies recompensen els nens per assolir els llindars dins d'un període de temps definit i admeten cicles de reinici per al rendiment continu.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "target_type": "🎯 OBJECTIU: Tipus d'objectiu",
+          "threshold_value": "🎯 OBJECTIU: Valor llindar",
+          "maintenance_rules": "🎯 OBJECTIU: Punts de manteniment (opcional)",
+          "occasion_type": "🎉 Tipus d'ocasió",
+          "associated_achievement": "🏆 Assoliment associat",
+          "associated_challenge": "🏁 Repte associat",
+          "selected_chores": "🧹 Tasques domèstiques controlades (opcional)",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses, bonificacions i penalitzacions (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)",
+          "recurring_frequency": "🔄 CICLE DE REINICI: Freqüència",
+          "custom_interval": "🔄 CICLE DE REINICI: Interval personalitzat (obligatori per a la freqüència personalitzada)",
+          "custom_interval_unit": "🔄 REINICI DE CICLE: Unitat d'interval personalitzada (obligatòria per a la freqüència personalitzada)",
+          "start_date": "🔄 REINICIAR CICLE: Data d'inici (opcional)",
+          "end_date": "🔄 REINICIAR CICLE: Data de finalització (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "target_type": "Seleccioneu el tipus d'objectiu per a aquesta insígnia (per exemple, punts, recompte de tasques, dies o ratxa).",
+          "threshold_value": "Defineix el total de punts, el recompte de tasques o el nombre de dies (com ara per a ratxes de finalització de diverses tasques) necessaris per obtenir aquesta insígnia dins del període definit.",
+          "maintenance_rules": "Especifiqueu els punts mínims necessaris durant el cicle de reinici per conservar la insígnia i el seu multiplicador actiu (opcional).",
+          "occasion_type": "Trieu el tipus d'ocasió per a aquesta insígnia (per exemple, vacances, aniversari).",
+          "associated_achievement": "Enllaça aquesta insígnia a un assoliment per fer-ne un seguiment.",
+          "associated_challenge": "Enllaça aquesta insígnia a un repte per al seguiment.",
+          "selected_chores": "Seleccioneu les tasques que contribueixen a obtenir punts per a aquesta insígnia. Deixeu-ho en blanc si voleu fer un seguiment de totes les tasques assignades (opcional).",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més dels següents opcions: punts, recompenses, bonificacions o penalitzacions. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. Les penalitzacions només s'aplicaran si no s'obtingui la insígnia abans de la data de finalització o de restabliment. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional).",
+          "recurring_frequency": "Defineix la programació de restabliment per a aquesta insígnia (per exemple, setmanal, mensual).",
+          "custom_interval": "Especifiqueu el NOMBRE de dies, setmanes, mesos, etc. per a la Freqüència personalitzada (per exemple, 3 si definiu 3 setmanes).",
+          "custom_interval_unit": "Seleccioneu la unitat per a l'interval personalitzat (per exemple, dies, setmanes).",
+          "start_date": "Estableix la data d'inici del cicle de reinici (opcional).",
+          "end_date": "Estableix la data de finalització del cicle de reinici (opcional)."
+        }
+      },
+      "add_badge_achievement": {
+        "title": "Afegeix una insígnia vinculada a un assoliment",
+        "description": "Configura els detalls d'una insígnia vinculada a un assoliment. Aquestes insígnies recompensen els nens per completar assoliments específics.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "associated_achievement": "🏆 Assoliment associat",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses i bonificacions (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "associated_achievement": "Enllaça aquesta insígnia a un assoliment específic per fer-ne el seguiment.",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més punts, recompenses o bonificacions. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. Només s'aplicaran penalitzacions si no s'obtingui la insígnia abans de la data de finalització o de restabliment. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional)."
+        }
+      },
+      "add_badge_challenge": {
+        "title": "Afegeix una insígnia vinculada al repte",
+        "description": "Configura els detalls d'una insígnia vinculada a un repte. Aquestes insígnies recompensen els nens per completar reptes específics.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "associated_challenge": "🏁 Repte associat",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses i bonificacions (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "associated_challenge": "Enllaça aquesta insígnia a un repte específic per al seguiment.",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més punts, recompenses o bonificacions. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. Només s'aplicaran penalitzacions si no s'obtingui la insígnia abans de la data de finalització o de restabliment. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional)."
+        }
+      },
+      "add_badge_special": {
+        "title": "Afegeix una insígnia per a ocasions especials",
+        "description": "Configura els detalls d'una insígnia creada per a ocasions especials. Aquestes insígnies recompensen els nens per esdeveniments com ara aniversaris o vacances.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "occasion_type": "🎉 Tipus d'ocasió",
+          "end_date": "🎉 Data de l'ocasió",
+          "recurring_frequency": "🔄 RECURRÈNCIA: Freqüència",
+          "custom_interval": "🔄 RECURRÈNCIA: Interval personalitzat (obligatori per a la freqüència personalitzada)",
+          "custom_interval_unit": "🔄 RECURRÈNCIA: Unitat d'interval personalitzada (obligatòria per a la freqüència personalitzada)",
+          "start_date": "🔄 RECURRÈNCIA: Data d'inici (opcional)",
+          "grace_period_days": "🔄 RECURRÈNCIA: Període de gràcia en dies (opcional)",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses i bonificacions (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "occasion_type": "Seleccioneu el tipus d'ocasió per a aquesta insígnia (per exemple, vacances, aniversari).",
+          "end_date": "Fixeu la data per a l'ocasió.",
+          "recurring_frequency": "Defineix la programació de restabliment per a aquesta insígnia (per exemple, setmanal, mensual).",
+          "custom_interval": "Especifiqueu el NOMBRE de dies, setmanes, mesos, etc. per a la Freqüència personalitzada (per exemple, 3 si definiu 3 setmanes).",
+          "custom_interval_unit": "Seleccioneu la unitat per a l'interval personalitzat (per exemple, dies, setmanes).",
+          "start_date": "Estableix la data d'inici del cicle de reinici (opcional).",
+          "grace_period_days": "Especifiqueu el nombre de dies addicionals després del final del cicle perquè els nens assoleixin els punts requerits abans del descens de categoria (opcional).",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més punts, recompenses o bonificacions. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. Només s'aplicaran penalitzacions si no s'obtingui la insígnia abans de la data de finalització o de restabliment. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional)."
+        }
+      },
+      "add_reward": {
+        "title": "Afegeix una recompensa",
+        "description": "Proporcioneu els detalls de la nova recompensa.",
+        "data": {
+          "reward_name": "Nom de la recompensa",
+          "internal_id": "ID intern",
+          "reward_cost": "Cost de la recompensa",
+          "reward_description": "Descripció (opcional)",
+          "reward_labels": "Etiquetes de recompensa",
+          "icon": "Icona (mdi:xxx)"
+        }
+      },
+      "add_penalty": {
+        "title": "Afegeix penalització",
+        "description": "Proporcioneu els detalls de la nova sanció.",
+        "data": {
+          "penalty_name": "Nom de la penalització",
+          "penalty_description": "Descripció (opcional)",
+          "penalty_labels": "Etiquetes de penalització",
+          "internal_id": "ID intern",
+          "penalty_points": "Punts de penalització (negatius)",
+          "icon": "Icona (mdi:xxx)"
+        }
+      },
+      "add_bonus": {
+        "title": "Afegeix una bonificació",
+        "description": "Proporcioneu els detalls de la nova bonificació.",
+        "data": {
+          "bonus_name": "Nom de la bonificació",
+          "bonus_description": "Descripció (opcional)",
+          "bonus_labels": "Etiquetes de bonificació",
+          "internal_id": "ID intern",
+          "bonus_points": "Punts de bonificació",
+          "icon": "Icona (mdi:xxx)"
+        }
+      },
+      "add_achievement": {
+        "title": "Definir assoliment",
+        "description": "Introdueix els detalls de cada assoliment.",
+        "data": {
+          "name": "Nom de l'assoliment",
+          "description": "Descripció (opcional)",
+          "achievement_labels": "Etiquetes d'assoliment",
+          "icon": "Icona (mdi:xxx)",
+          "assigned_kids": "Nens assignats",
+          "type": "Tipus d'assoliment",
+          "selected_chore_id": "Selecciona la tasca associada",
+          "criteria": "Criteris (opcional)",
+          "target_value": "Objectiu d'assoliment",
+          "reward_points": "Punts addicionals per completar l'assoliment",
+          "internal_id": "ID intern"
+        }
+      },
+      "add_challenge": {
+        "title": "Defineix el repte",
+        "description": "Introdueix els detalls de cada repte.",
+        "data": {
+          "name": "Nom del repte",
+          "description": "Descripció (opcional)",
+          "challenge_labels": "Etiquetes de repte",
+          "icon": "Icona (mdi:xxx)",
+          "assigned_kids": "Nens assignats",
+          "type": "Tipus de repte",
+          "selected_chore_id": "Selecciona la tasca associada al repte (opcional)",
+          "criteria": "Criteris (opcional)",
+          "target_value": "Objectiu de reptes",
+          "reward_points": "Punts extra per completar el repte",
+          "start_date": "Data d'inici",
+          "end_date": "Data de finalització",
+          "internal_id": "ID intern"
+        }
+      },
+      "edit_kid": {
+        "title": "Edita el nen/a",
+        "description": "Modifiqueu les dades del nen/a seleccionat/da.",
+        "data": {
+          "kid_name": "Nom del nen/a",
+          "ha_user": "Usuari de l'Assistent de la Llar",
+          "enable_mobile_notifications": "Activa les notificacions mòbils",
+          "mobile_notify_service": "Notificar al servei",
+          "enable_persistent_notifications": "Activa les notificacions persistents",
+          "internal_id": "ID intern"
+        }
+      },
+      "edit_parent": {
+        "title": "Edita el pare",
+        "description": "Modifiqueu les dades del pare seleccionat.",
+        "data": {
+          "parent_name": "Nom del pare/mare",
+          "ha_user_id": "Usuari de l'Assistent de la Llar",
+          "associated_kids": "Nens associats",
+          "enable_mobile_notifications": "Activa les notificacions mòbils",
+          "mobile_notify_service": "Notificar al servei",
+          "enable_persistent_notifications": "Activa les notificacions persistents",
+          "internal_id": "ID intern"
+        }
+      },
+      "edit_chore": {
+        "title": "Edita la tasca",
+        "description": "Modifiqueu els detalls de la tasca seleccionada.",
+        "data": {
+          "chore_name": "📋 Nom de la tasca",
+          "chore_description": "📋 Descripció (opcional)",
+          "icon": "📋 Icona (mdi:xxx)",
+          "chore_labels": "📋 Etiquetes (opcional)",
+          "internal_id": "ID intern",
+          "default_points": "💰 Punts atorgats",
+          "assigned_kids": "👥 Nens assignats",
+          "completion_criteria": "👥 Tipus de finalització",
+          "approval_reset_type": "➡️ Finalitzacions permeses i restabliment del temps",
+          "approval_reset_pending_claim_action": "➡️ Reclamacions pendents en reiniciar",
+          "overdue_handling_type": "⏰ Vençut: Tipus de gestió",
+          "auto_approve": "✅ Aprovació automàtica de reclamacions?",
+          "recurring_frequency": "🔄 Horari: Freqüència",
+          "custom_interval": "🔄 Programació: Interval personalitzat (per a la freqüència personalitzada)",
+          "custom_interval_unit": "🔄 Programació: Unitat d'interval personalitzada",
+          "applicable_days": "📅 Horari: Dies aplicables (opcional)",
+          "due_date": "📅 Horari: Data de venciment (opcional)",
+          "show_on_calendar": "📅 Mostrar al calendari?",
+          "chore_notifications": "🔔 Esdeveniments de notificació (opcional)"
+        },
+        "data_description": {
+          "chore_name": "Nom únic que es mostra a tot el sistema.",
+          "chore_description": "Instruccions o detalls opcionals sobre com completar aquesta tasca.",
+          "icon": "Icona de disseny de materials (per exemple, mdi:broom, mdi:dishwasher).",
+          "chore_labels": "Etiquetes per organitzar les tasques (per exemple, \"cuina\", \"exterior\"). Deixeu-ho en blanc si no és necessari.",
+          "default_points": "Punts guanyats en completar-se.",
+          "assigned_kids": "Nens que poden veure i reclamar aquesta tasca.",
+          "completion_criteria": "Com funcionen les tasques compartides: Independent (cada nen les completa per separat), Compartides totes (tots han d'aprovar) o Compartides primer (la primera aprovació completa la tasca).",
+          "approval_reset_type": "Controla quan es reinicia aquesta tasca i quantes finalitzacions es permeten durant aquest període.",
+          "approval_reset_pending_claim_action": "Quan aquesta tasca es reinicia (segons el temps de reinici de la finalització anterior), què passa amb les reclamacions que encara estan pendents d'aprovació?",
+          "overdue_handling_type": "Acció després de la data de venciment: Amaga l'estat de venciment, mantén el venciment fins que es reclama o restableix-lo a pendent en el següent cicle d'aprovació.",
+          "auto_approve": "Quan estan habilitades, les reclamacions s'aproven instantàniament sense la revisió dels pares.",
+          "recurring_frequency": "Freqüència amb què es repeteix la tasca: Diàriament, Setmanalment, Mensualment, Anualment, Personalitzada o Cap.",
+          "custom_interval": "Nombre d'unitats de temps entre repeticions (per exemple, 3 per a \"cada 3 setmanes\"). Només s'utilitza amb la freqüència personalitzada.",
+          "custom_interval_unit": "Unitat de temps per a l'interval personalitzat (dies, setmanes, mesos). Només s'utilitza amb la freqüència personalitzada.",
+          "applicable_days": "Restringeix la tasca a dies feiners específics. Deixa en blanc per a tots els dies.",
+          "due_date": "Data límit opcional. Es pot combinar amb horaris recurrents. Per a tasques INDEPENDENTS, això serveix com a plantilla: apareixerà una pantalla addicional que permetrà dates individuals per nen.",
+          "show_on_calendar": "Mostra aquesta tasca a la vista de calendari.",
+          "chore_notifications": "Quan enviar notificacions: En cas de reclamació, aprovació, rebuig o qualsevol combinació."
+        }
+      },
+      "edit_chore_per_kid_dates": {
+        "title": "Edita les dates de venciment per nen/a: {chore_name}",
+        "description": "Establiu dates de venciment individuals per a cada nen assignat. El camp de data del formulari d'edició principal actua com a **plantilla** per comoditat: utilitzeu-lo per aplicar ràpidament la mateixa data a tots els nens mitjançant la casella de selecció següent o deixeu-lo en blanc i definiu les dates individualment aquí.\n\nEs mostren camps per a: {kid_names}. Deixeu-ho en blanc si no hi ha data límit.{template_date}",
+        "data": {
+          "apply_template_to_all": "Aplica la data de la plantilla a tots els nens"
+        },
+        "data_description": {
+          "apply_template_to_all": "Marqueu aquesta casella per aplicar la data definida a la pàgina principal d'edició de tasques a tots els nens assignats, sobreescrivint les seves dates individuals."
+        }
+      },
+      "edit_badge_cumulative": {
+        "title": "Edita la insígnia acumulativa",
+        "description": "Configura els detalls d'una insígnia acumulativa. Aquestes insígnies recompensen els nens per assolir els llindars de punts de per vida i donen suport als cicles de manteniment per fomentar el rendiment continu.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "target_type": "🎯 OBJECTIU: Tipus d'objectiu",
+          "threshold_value": "🎯 OBJECTIU: Valor llindar",
+          "maintenance_rules": "🎯 OBJECTIU: Punts de manteniment (opcional)",
+          "occasion_type": "🎉 Tipus d'ocasió",
+          "associated_achievement": "🏆 Assoliment associat",
+          "associated_challenge": "🏁 Repte associat",
+          "selected_chores": "🧹 Tasques domèstiques controlades (opcional)",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses, bonificacions, multiplicador (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)",
+          "points_multiplier": "🎁 PREMIS: Multiplicador de punts (per defecte 💎 1.0x)",
+          "recurring_frequency": "🔄 CICLE DE MANTENIMENT: Freqüència",
+          "custom_interval": "🔄 CICLE DE MANTENIMENT: Interval personalitzat (obligatori per a la freqüència personalitzada)",
+          "custom_interval_unit": "🔄 CICLE DE MANTENIMENT: Unitat d'interval personalitzada (obligatòria per a la freqüència personalitzada)",
+          "start_date": "🔄 REINICIAR CICLE: Data d'inici (opcional)",
+          "end_date": "🔄 CICLE DE MANTENIMENT: Data de finalització (opcional)",
+          "grace_period_days": "🔄 CICLE DE MANTENIMENT: Període de gràcia en dies (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "target_type": "Seleccioneu el tipus d'objectiu per a aquesta insígnia (per exemple, punts o recompte de tasques).",
+          "threshold_value": "Defineix el total de punts de per vida necessaris per obtenir aquesta insígnia.",
+          "maintenance_rules": "Especifiqueu els punts mínims necessaris durant el cicle de manteniment per conservar la insígnia i el seu multiplicador actiu (opcional).",
+          "occasion_type": "Trieu el tipus d'ocasió per a aquesta insígnia (per exemple, vacances, aniversari).",
+          "associated_achievement": "Enllaça aquesta insígnia a un assoliment per fer-ne un seguiment.",
+          "associated_challenge": "Enllaça aquesta insígnia a un repte per al seguiment.",
+          "selected_chores": "Seleccioneu les tasques que contribueixen a obtenir punts per a aquesta insígnia. Deixeu-ho en blanc si voleu fer un seguiment de totes les tasques assignades (opcional).",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més dels següents punts, recompenses, bonificacions o un multiplicador de punts. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional).",
+          "points_multiplier": "Si el multiplicador és un premi seleccionat, defineix un multiplicador pels punts guanyats mentre aquesta insígnia estigui activa (per exemple, 1,5x).",
+          "recurring_frequency": "Habilita el cicle de manteniment, que requereix que s'aconseguissin els punts mínims especificats abans del final del període (per exemple, setmanalment, mensualment).",
+          "custom_interval": "Especifiqueu el NOMBRE de dies, setmanes, mesos, etc. per a la Freqüència personalitzada (per exemple, 3 si definiu 3 setmanes). Només s'aplica a la Freqüència personalitzada.",
+          "custom_interval_unit": "Seleccioneu la unitat per a l'interval personalitzat (per exemple, dies, setmanes). Només s'aplica a la freqüència personalitzada.",
+          "start_date": "Estableix la data d'inici (opcional).",
+          "end_date": "Seleccioneu la data de finalització del cicle de manteniment (opcional).",
+          "grace_period_days": "Especifiqueu el nombre de dies addicionals després del final del cicle que els nens han d'assolir els punts necessaris abans del descens de categoria (opcional)."
+        }
+      },
+      "edit_badge_daily": {
+        "title": "Edita la insígnia diària",
+        "description": "Configura els detalls d'una insígnia diària. Aquestes insígnies recompensen els nens per completar les tasques diàries o assolir els llindars diaris.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "target_type": "🎯 OBJECTIU DIARI: Tipus d'objectiu",
+          "threshold_value": "🎯 OBJECTIU DIARI: Valor llindar",
+          "selected_chores": "🧹 Tasques domèstiques controlades (opcional)",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses, bonificacions i penalitzacions (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "target_type": "Seleccioneu el tipus d'objectiu diari per a aquesta insígnia (per exemple, punts, recompte de tasques o dies).",
+          "threshold_value": "Defineix els punts diaris, el recompte de tasques o el nombre de dies necessaris per obtenir aquesta insígnia. Per als tipus d'objectiu \"Dies\", introdueix 1, ja que la insígnia s'avalua diàriament (per exemple, 1 per completar totes les tasques seleccionades en un dia).",
+          "selected_chores": "Seleccioneu les tasques que contribueixen a obtenir punts per a aquesta insígnia. Deixeu-ho en blanc si voleu fer un seguiment de totes les tasques assignades (opcional).",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més dels següents opcions: punts, recompenses, bonificacions o penalitzacions. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. Les penalitzacions només s'aplicaran si no s'obtingui la insígnia abans de la data de finalització o de restabliment. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional)."
+        }
+      },
+      "edit_badge_periodic": {
+        "title": "Edita la insígnia periòdica",
+        "description": "Configureu els detalls d'una insígnia periòdica. Aquestes insígnies recompensen els nens per assolir els llindars dins d'un període de temps definit i admeten cicles de reinici per al rendiment continu.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "target_type": "🎯 OBJECTIU: Tipus d'objectiu",
+          "threshold_value": "🎯 OBJECTIU: Valor llindar",
+          "maintenance_rules": "🎯 OBJECTIU: Punts de manteniment (opcional)",
+          "occasion_type": "🎉 Tipus d'ocasió",
+          "associated_achievement": "🏆 Assoliment associat",
+          "associated_challenge": "🏁 Repte associat",
+          "selected_chores": "🧹 Tasques domèstiques controlades (opcional)",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses, bonificacions i penalitzacions (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)",
+          "recurring_frequency": "🔄 CICLE DE REINICI: Freqüència",
+          "custom_interval": "🔄 CICLE DE REINICI: Interval personalitzat (obligatori per a la freqüència personalitzada)",
+          "custom_interval_unit": "🔄 REINICI DE CICLE: Unitat d'interval personalitzada (obligatòria per a la freqüència personalitzada)",
+          "start_date": "🔄 REINICIAR CICLE: Data d'inici (opcional)",
+          "end_date": "🔄 REINICIAR CICLE: Data de finalització (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "target_type": "Seleccioneu el tipus d'objectiu per a aquesta insígnia (per exemple, punts, recompte de tasques, dies o ratxa).",
+          "threshold_value": "Defineix el total de punts, el recompte de tasques o el nombre de dies (com ara per a ratxes de finalització de diverses tasques) necessaris per obtenir aquesta insígnia dins del període definit.",
+          "maintenance_rules": "Especifiqueu els punts mínims necessaris durant el cicle de reinici per conservar la insígnia i el seu multiplicador actiu (opcional).",
+          "occasion_type": "Trieu el tipus d'ocasió per a aquesta insígnia (per exemple, vacances, aniversari).",
+          "associated_achievement": "Enllaça aquesta insígnia a un assoliment per fer-ne un seguiment.",
+          "associated_challenge": "Enllaça aquesta insígnia a un repte per al seguiment.",
+          "selected_chores": "Seleccioneu les tasques que contribueixen a obtenir punts per a aquesta insígnia. Deixeu-ho en blanc si voleu fer un seguiment de totes les tasques assignades (opcional).",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més dels següents opcions: punts, recompenses, bonificacions o penalitzacions. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. Les penalitzacions només s'aplicaran si no s'obtingui la insígnia abans de la data de finalització o de restabliment. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional).",
+          "recurring_frequency": "Defineix la programació de restabliment per a aquesta insígnia (per exemple, setmanal, mensual).",
+          "custom_interval": "Especifiqueu el NOMBRE de dies, setmanes, mesos, etc. per a la Freqüència personalitzada (per exemple, 3 si definiu 3 setmanes).",
+          "custom_interval_unit": "Seleccioneu la unitat per a l'interval personalitzat (per exemple, dies, setmanes).",
+          "start_date": "Estableix la data d'inici del cicle de reinici (opcional).",
+          "end_date": "Estableix la data de finalització del cicle de reinici (opcional)."
+        }
+      },
+      "edit_badge_achievement": {
+        "title": "Edita la insígnia vinculada a l'assoliment",
+        "description": "Configura els detalls d'una insígnia vinculada a un assoliment. Aquestes insígnies recompensen els nens per completar assoliments específics.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "associated_achievement": "🏆 Assoliment associat",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses i bonificacions (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "associated_achievement": "Enllaça aquesta insígnia a un assoliment específic per fer-ne el seguiment.",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més punts, recompenses o bonificacions. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. Només s'aplicaran penalitzacions si no s'obtingui la insígnia abans de la data de finalització o de restabliment. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional)."
+        }
+      },
+      "edit_badge_challenge": {
+        "title": "Edita la insígnia vinculada al repte",
+        "description": "Configura els detalls d'una insígnia vinculada a un repte. Aquestes insígnies recompensen els nens per completar reptes específics.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "associated_challenge": "🏁 Repte associat",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses i bonificacions (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "associated_challenge": "Enllaça aquesta insígnia a un repte específic per al seguiment.",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més punts, recompenses o bonificacions. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. Només s'aplicaran penalitzacions si no s'obtingui la insígnia abans de la data de finalització o de restabliment. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional)."
+        }
+      },
+      "edit_badge_special": {
+        "title": "Edita la insígnia per a ocasions especials",
+        "description": "Configura els detalls d'una insígnia creada per a ocasions especials. Aquestes insígnies recompensen els nens per esdeveniments com ara aniversaris o vacances.",
+        "data": {
+          "badge_name": "Nom de la insígnia",
+          "badge_description": "Descripció de la insígnia (opcional)",
+          "badge_labels": "Etiquetes (opcional)",
+          "icon": "Icona de distintiu (mdi:xxx)",
+          "occasion_type": "🎉 Tipus d'ocasió",
+          "end_date": "🎉 Data de l'ocasió",
+          "recurring_frequency": "🔄 RECURRÈNCIA: Freqüència",
+          "custom_interval": "🔄 RECURRÈNCIA: Interval personalitzat (obligatori per a la freqüència personalitzada)",
+          "custom_interval_unit": "🔄 RECURRÈNCIA: Unitat d'interval personalitzada (obligatòria per a la freqüència personalitzada)",
+          "start_date": "🔄 RECURRÈNCIA: Data d'inici (opcional)",
+          "grace_period_days": "🔄 RECURRÈNCIA: Període de gràcia en dies (opcional)",
+          "assigned_to": "🧒 Nens assignats (opcional)",
+          "award_items": "🎁 PREMIS: Punts seleccionats, recompenses i bonificacions (opcional)",
+          "award_points": "🎁 PREMIS: Punts atorgats (opcional)"
+        },
+        "data_description": {
+          "badge_name": "Introduïu un nom únic per a la insígnia. Aquest nom es mostrarà al sistema.",
+          "badge_description": "Proporcioneu una descripció de la finalitat o els criteris de la insígnia (opcional).",
+          "badge_labels": "Afegeix etiquetes per categoritzar o etiquetar la insígnia (opcional).",
+          "icon": "Especifiqueu una icona per a la insígnia utilitzant icones de disseny de materials (per exemple, mdi:star).",
+          "occasion_type": "Seleccioneu el tipus d'ocasió per a aquesta insígnia (per exemple, vacances, aniversari).",
+          "end_date": "Fixeu la data per a l'ocasió.",
+          "recurring_frequency": "Defineix la programació de restabliment per a aquesta insígnia (per exemple, setmanal, mensual).",
+          "custom_interval": "Especifiqueu el NOMBRE de dies, setmanes, mesos, etc. per a la Freqüència personalitzada (per exemple, 3 si definiu 3 setmanes).",
+          "custom_interval_unit": "Seleccioneu la unitat per a l'interval personalitzat (per exemple, dies, setmanes).",
+          "start_date": "Estableix la data d'inici del cicle de reinici (opcional).",
+          "grace_period_days": "Especifiqueu el nombre de dies addicionals després del final del cicle perquè els nens assoleixin els punts requerits abans del descens de categoria (opcional).",
+          "assigned_to": "Assigna aquesta insígnia a nens específics per al seguiment.",
+          "award_items": "Seleccioneu un o més punts, recompenses o bonificacions. Tots els elements seleccionats s'atorgaran o s'aplicaran quan s'obtingui la insígnia. Només s'aplicaran penalitzacions si no s'obtingui la insígnia abans de la data de finalització o de restabliment. (opcional)",
+          "award_points": "Si els punts són un premi seleccionat, especifiqueu el nombre de punts que s'aplicaran quan s'obtingui aquesta insígnia (opcional)."
+        }
+      },
+      "edit_reward": {
+        "title": "Edita la recompensa",
+        "description": "Modifiqueu els detalls de la recompensa seleccionada.",
+        "data": {
+          "reward_name": "Nom de la recompensa",
+          "internal_id": "ID intern",
+          "reward_cost": "Cost de la recompensa",
+          "reward_description": "Descripció (opcional)",
+          "reward_labels": "Etiquetes de recompensa",
+          "icon": "Icona (mdi:xxx)"
+        }
+      },
+      "edit_penalty": {
+        "title": "Edita la penalització",
+        "description": "Modifiqueu els detalls de la penalització seleccionada.",
+        "data": {
+          "penalty_name": "Nom de la penalització",
+          "penalty_description": "Descripció (opcional)",
+          "penalty_labels": "Etiquetes de penalització",
+          "internal_id": "ID intern",
+          "penalty_points": "Punts de penalització (negatius)",
+          "icon": "Icona (mdi:xxx)"
+        }
+      },
+      "edit_bonus": {
+        "title": "Edita la bonificació",
+        "description": "Modifiqueu els detalls del bonus seleccionat.",
+        "data": {
+          "bonus_name": "Nom de la bonificació",
+          "bonus_description": "Descripció (opcional)",
+          "bonus_labels": "Etiquetes de bonificació",
+          "internal_id": "ID intern",
+          "bonus_points": "Punts de bonificació",
+          "icon": "Icona (mdi:xxx)"
+        }
+      },
+      "edit_achievement": {
+        "title": "Definir assoliment",
+        "description": "Introdueix els detalls de cada assoliment.",
+        "data": {
+          "name": "Nom de l'assoliment",
+          "description": "Descripció (opcional)",
+          "achievement_labels": "Etiquetes d'assoliment",
+          "icon": "Icona (mdi:xxx)",
+          "assigned_kids": "Nens assignats",
+          "type": "Tipus d'assoliment",
+          "selected_chore_id": "Selecciona la tasca associada",
+          "criteria": "Criteris (opcional)",
+          "target_value": "Objectiu d'assoliment",
+          "reward_points": "Punts addicionals per completar l'assoliment",
+          "internal_id": "ID intern"
+        }
+      },
+      "edit_challenge": {
+        "title": "Defineix el repte",
+        "description": "Introdueix els detalls de cada repte.",
+        "data": {
+          "name": "Nom del repte",
+          "description": "Descripció (opcional)",
+          "challenge_labels": "Etiquetes de repte",
+          "icon": "Icona (mdi:xxx)",
+          "assigned_kids": "Nens assignats",
+          "type": "Tipus de repte",
+          "selected_chore_id": "Selecciona la tasca associada al repte (opcional)",
+          "criteria": "Criteris (opcional)",
+          "target_value": "Objectiu de reptes",
+          "reward_points": "Punts extra per completar el repte",
+          "start_date": "Data d'inici",
+          "end_date": "Data de finalització",
+          "internal_id": "ID intern"
+        }
+      },
+      "delete_kid": {
+        "title": "Suprimeix el nen/a",
+        "description": "Esteu segur que voleu eliminar el nen {kid_name}?",
+        "data": {}
+      },
+      "delete_parent": {
+        "title": "Suprimeix el pare",
+        "description": "Esteu segur que voleu suprimir el parany {parent_name}?",
+        "data": {}
+      },
+      "delete_chore": {
+        "title": "Suprimeix la tasca",
+        "description": "Esteu segur que voleu suprimir la tasca {chore_name}?",
+        "data": {}
+      },
+      "delete_badge": {
+        "title": "Suprimeix la insígnia",
+        "description": "Esteu segur que voleu suprimir la insígnia {badge_name}?",
+        "data": {}
+      },
+      "delete_reward": {
+        "title": "Suprimeix la recompensa",
+        "description": "Esteu segur que voleu suprimir la recompensa {reward_name}?",
+        "data": {}
+      },
+      "delete_penalty": {
+        "title": "Penalització per suprimir",
+        "description": "Esteu segur que voleu suprimir la penalització {penalty_name}?",
+        "data": {}
+      },
+      "delete_bonus": {
+        "title": "Elimina la bonificació",
+        "description": "Esteu segur que voleu suprimir el bonus {bonus_name}?",
+        "data": {}
+      },
+      "delete_achievement": {
+        "title": "Suprimeix l'assoliment",
+        "description": "Esteu segur que voleu suprimir l'assoliment {achievement_name}?",
+        "data": {}
+      },
+      "delete_challenge": {
+        "title": "Suprimeix el repte",
+        "description": "Esteu segur que voleu suprimir el repte {challenge_name}?",
+        "data": {}
+      },
+      "manage_general_options": {
+        "title": "Opcions generals",
+        "description": "Gestiona la configuració general de la integració de KidsChores.",
+        "data": {
+          "points_adjust_values": "Valors del botó d'ajust manual de punts",
+          "update_interval": "Interval d'actualització",
+          "calendar_show_period": "Nombre de dies que es mostraran al calendari",
+          "retention_periods": "Períodes de retenció de dades (diari | setmanal | mensual | anual)",
+          "retention_daily": "Retenció diària de dades (dies)",
+          "retention_weekly": "Retenció setmanal de dades (setmanes)",
+          "retention_monthly": "Retenció mensual de dades (mesos)",
+          "retention_yearly": "Retenció anual de dades (anys)",
+          "show_legacy_entities": "Mostra entitats addicionals",
+          "backups_max_retained": "Còpies de seguretat màximes per conservar",
+          "backup_action_selection": "Accions de còpia de seguretat"
+        },
+        "data_description": {
+          "points_adjust_values": "Llista de valors per als botons d'ajust manual de punts. Cada valor està separat per '|'.",
+          "update_interval": "Interval en minuts per actualitzar l'estat intern de KidsChores.",
+          "calendar_show_period": "Nombre de dies en el futur per mostrar les tasques i els reptes programats al calendari.",
+          "retention_periods": "Períodes de retenció de dades en format Diari|Setmanal|Mensual|Anual (per exemple, '7|4|12|3'). Cada valor ha de ser un nombre enter positiu.",
+          "retention_daily": "Nombre de dies de dades històriques diàries que cal conservar abans de la neteja. Mínim 1, màxim 90.",
+          "retention_weekly": "Nombre de setmanes de dades històriques setmanals que cal conservar abans de la neteja. Mínim 1, màxim 52.",
+          "retention_monthly": "Nombre de mesos de dades històriques mensuals que cal conservar abans de la neteja. Mínim 1, màxim 24.",
+          "retention_yearly": "Nombre d'anys de dades històriques anuals que cal conservar abans de la neteja. Mínim 1, màxim 10.",
+          "show_legacy_entities": "Mostra entitats addicionals com ara sensor i seleccions que ara estan consolidades al sensor auxiliar del tauler de control. Aquestes entitats són opcionals per a la compatibilitat amb versions anteriors de les automatitzacions existents.",
+          "backups_max_retained": "Nombre màxim de fitxers de còpia de seguretat per conservar. Les còpies de seguretat més antigues s'eliminaran automàticament. Establiu-ho a 0 per desactivar les còpies de seguretat automàtiques.",
+          "backup_action_selection": "Trieu una acció de gestió de còpies de seguretat: creeu una còpia de seguretat manual, suprimiu una còpia de seguretat o restaureu des d'una còpia de seguretat."
+        }
+      },
+      "backup_actions": {
+        "title": "Gestió de còpies de seguretat",
+        "description": "Gestiona les còpies de seguretat de les teves dades de KidsChores. Estat actual: {backup_count} còpies de seguretat amb {storage_size} MB.",
+        "data": {
+          "backup_action_selection": "Selecciona una acció"
+        },
+        "data_description": {
+          "backup_action_selection": "Trieu una acció de gestió de còpies de seguretat."
+        }
+      },
+      "backup_actions_menu": {
+        "title": "Accions de còpia de seguretat",
+        "description": "Gestiona les teves còpies de seguretat de dades de KidsChores.",
+        "data": {
+          "backup_action_selection": "Selecciona una acció"
+        },
+        "data_description": {
+          "backup_action_selection": "Trieu una acció de gestió de còpies de seguretat: crear, suprimir, restaurar o tornar al menú."
+        }
+      },
+      "create_manual_backup": {
+        "title": "Crea una còpia de seguretat manual",
+        "description": "Crea una nova còpia de seguretat de les teves dades de KidsChores.\n\nCòpies de seguretat actuals: {backup_count}\nConfiguració de retenció: {retention} còpies de seguretat",
+        "data": {
+          "confirm": "Confirma la creació de la còpia de seguretat"
+        }
+      },
+      "select_backup_to_delete": {
+        "title": "Seleccioneu Còpia de seguretat per suprimir",
+        "description": "Trieu un fitxer de còpia de seguretat per suprimir.\n\nCòpies de seguretat disponibles: {backup_count}\n\n⚠️ Les còpies de seguretat protegides (premigració, manuals) no es poden suprimir."
+      },
+      "select_backup_to_restore": {
+        "title": "Seleccioneu Còpia de seguretat per restaurar",
+        "description": "Trieu un fitxer de còpia de seguretat per restaurar-lo.\n\nCòpies de seguretat disponibles: {backup_count}\n\n⚠️ Això substituirà les vostres dades actuals!"
+      },
+      "create_backup_confirm": {
+        "title": "Crea una còpia de seguretat manual",
+        "description": "Crear una còpia de seguretat manual de les dades actuals de KidsChores?",
+        "data": {
+          "confirm": "Confirma"
+        }
+      },
+      "create_backup_success": {
+        "title": "Còpia de seguretat creada",
+        "description": "Còpia de seguretat manual creada correctament: {backup_filename}",
+        "data": {
+          "continue": "Continua"
+        }
+      },
+      "delete_backup_confirm": {
+        "title": "Confirma l'eliminació de la còpia de seguretat",
+        "description": "⚠️ Esteu a punt d'eliminar permanentment aquesta còpia de seguretat:\n\n{backup_filename}\n\nAquesta acció no es pot desfer.",
+        "data": {
+          "confirm": "Confirma l'eliminació"
+        }
+      },
+      "restore_backup_confirm": {
+        "title": "Restaurar còpia de seguretat",
+        "description": "Esteu segur que voleu restaurar aquesta còpia de seguretat?\n\nFitxer: {backup_filename}\n\nEs farà una còpia de seguretat de les vostres dades actuals abans de la restauració. La integració es tornarà a carregar després de la restauració.",
+        "data": {
+          "confirm": "Confirma la restauració"
+        }
+      }
+    },
+    "error": {
+      "a_chore_must_be_selected": "Cal seleccionar una tasca",
+      "badge_requires_assignment": "Com a mínim un nen ha de tenir assignat aquest distintiu",
+      "duplicate_achievement": "Ja existeix un assoliment amb aquest nom",
+      "duplicate_badge": "Ja existeix una insígnia amb aquest nom",
+      "duplicate_challenge": "Ja existeix un repte amb aquest nom",
+      "duplicate_chore": "Ja existeix una tasca amb aquest nom",
+      "duplicate_kid": "Ja existeix un nen amb aquest nom",
+      "duplicate_parent": "Ja existeix un pare o mare amb aquest nom",
+      "duplicate_penalty": "Ja existeix una penalització amb aquest nom",
+      "duplicate_reward": "Ja existeix una recompensa amb aquest nom",
+      "duplicate_bonus": "Ja existeix un bonus amb aquest nom",
+      "due_date_in_past": "La data de venciment ha de ser en el futur.",
+      "end_date_in_past": "La data de finalització ha de ser en el futur.",
+      "end_date_not_after_start_date": "La data de finalització ha de ser posterior a la data d'inici",
+      "invalid_badge": "Insígnia no vàlida",
+      "invalid_badge_count": "Recompte de distintius no vàlid",
+      "invalid_chore": "Tasca no vàlida",
+      "invalid_chore_count": "Recompte de tasques no vàlid",
+      "invalid_due_date": "Data de venciment no vàlida",
+      "date_required_for_frequency": "Cal una data de venciment per a aquesta freqüència recurrent. L'opció \"Esborrar dates\" només funciona amb la freqüència Cap, Diària o Setmanal.",
+      "invalid_end_date": "Data de finalització no vàlida.",
+      "invalid_kid_count": "Recompte de nens no vàlid",
+      "invalid_kid_name": "Nom de nen no vàlid",
+      "no_kids_assigned": "Com a mínim un nen ha de tenir assignat la tasca",
+      "invalid_penalty": "Penalització no vàlida",
+      "invalid_penalty_count": "Recompte de penalitzacions no vàlid",
+      "invalid_bonus": "Bonificació no vàlida",
+      "invalid_bonus_count": "Recompte de bonificacions no vàlid",
+      "invalid_reward": "Recompensa no vàlida",
+      "invalid_reward_count": "Recompte de recompenses no vàlid",
+      "invalid_start_date": "Data d'inici no vàlida.",
+      "start_date_in_past": "La data d'inici ha de ser en el futur.",
+      "points_label_required": "Cal l'etiqueta de punts",
+      "corrupt_file": "El fitxer seleccionat conté un JSON no vàlid i no es pot llegir.",
+      "invalid_structure": "Al fitxer seleccionat li falta l'estructura de dades necessària.",
+      "file_not_found": "No s'ha pogut trobar el fitxer seleccionat.",
+      "invalid_selection": "Si us plau, seleccioneu una opció vàlida."
+    },
+    "abort": {
+      "invalid_action": "Acció no vàlida",
+      "invalid_achievement": "Assoliment no vàlid",
+      "invalid_badge": "Insígnia no vàlida",
+      "invalid_challenge": "Desafiament no vàlid",
+      "invalid_chore": "Tasca no vàlida",
+      "invalid_entity": "Entitat no vàlida",
+      "invalid_kid": "Nen no vàlid",
+      "invalid_parent": "Pare no vàlid",
+      "invalid_penalty": "Penalització no vàlida",
+      "invalid_reward": "Recompensa no vàlida",
+      "invalid_bonus": "Bonificació no vàlida",
+      "no_kid": "No hi ha cap infant configurat per editar. Afegeix primer una entrada.",
+      "no_parent": "No hi ha cap pare configurat per editar. Primer afegeix una entrada.",
+      "no_chore": "No hi ha cap tasca configurada per editar. Afegeix primer una entrada.",
+      "no_badge": "No hi ha cap distintiu configurat per editar. Primer cal afegir una entrada.",
+      "no_reward": "No hi ha cap recompensa configurada per editar. Primer cal afegir una entrada.",
+      "no_penalty": "No hi ha penalitzacions configurades per a l'edició. Primer cal afegir una entrada.",
+      "no_bonus": "No hi ha cap bonificació configurada per editar. Primer cal afegir una entrada.",
+      "no_achievement": "No hi ha cap assoliment configurat per editar. Primer cal afegir una entrada.",
+      "no_challenge": "No hi ha cap repte configurat per editar. Primer cal afegir una entrada.",
+      "setup_complete": "Configuració completada",
+      "backup_restored": "Còpia de seguretat restaurada correctament. La integració s'ha tornat a carregar amb les dades restaurades."
+    }
+  },
+  "selector": {
+    "main_menu": {
+      "options": {
+        "manage_points": "Gestiona punts",
+        "manage_kid": "Gestiona el nen/a",
+        "manage_parent": "Gestiona el pare",
+        "manage_chore": "Gestiona les tasques",
+        "manage_badge": "Gestiona la insígnia",
+        "manage_reward": "Gestiona la recompensa",
+        "manage_penalty": "Gestionar la penalització",
+        "manage_bonus": "Gestiona la bonificació",
+        "manage_achievement": "Gestiona els assoliments",
+        "manage_challenge": "Gestiona el repte",
+        "general_options": "Opcions generals",
+        "done": "Finalitza la configuració"
+      }
+    },
+    "manage_actions": {
+      "options": {
+        "add": "Afegeix",
+        "edit": "Edita",
+        "delete": "Suprimeix",
+        "back": "Torna al menú principal"
+      }
+    },
+    "backup_actions_menu": {
+      "options": {
+        "select_backup_action": "Selecciona l'acció de còpia de seguretat...",
+        "create_backup": "💾 Crea una còpia de seguretat ara",
+        "delete_backup": "🗑️ Suprimeix una còpia de seguretat",
+        "restore_backup": "🔄 Restaurar des d'una còpia de seguretat",
+        "return_to_menu": "↩️ Torna al menú principal"
+      }
+    },
+    "select_backup_to_delete": {
+      "options": {
+        "cancel": "↩️ Cancel·la (torna al menú de còpia de seguretat)"
+      }
+    },
+    "select_backup_to_restore": {
+      "options": {
+        "cancel": "↩️ Cancel·la (torna al menú de còpia de seguretat)"
+      }
+    },
+    "badge_type": {
+      "options": {
+        "cumulative": "Acumulatiu",
+        "daily": "Diari",
+        "periodic": "Periòdic",
+        "achievement_linked": "Assoliment vinculat",
+        "challenge_linked": "Repte vinculat",
+        "special_occasion": "ocasió especial"
+      }
+    },
+    "target_type": {
+      "options": {
+        "points": "Punts",
+        "points_chores": "Punts de les tasques escolars",
+        "chore_count": "Recompte de tasques",
+        "days_all_chores": "Dies de tasques seleccionades completades",
+        "days_80pct_chores": "Dies 80% de les tasques seleccionades completades",
+        "days_all_chores_no_overdue": "Dies de tasques seleccionades completades (sense venciments)",
+        "days_all_due_chores": "Dies seleccionats Tasques vençudes completades",
+        "days_80pct_due_chores": "Dies 80% de les tasques seleccionades pendents completades",
+        "days_all_due_chores_no_overdue": "Dies seleccionats Tasques vençudes completades (sense venciments)",
+        "days_min_3_chores": "Dies mínim 3 tasques completades",
+        "days_min_5_chores": "Dies mínim 5 tasques completades",
+        "days_min_7_chores": "Dies mínim 7 tasques completades",
+        "streak_all_chores": "Ratxa: Tasques seleccionades completades",
+        "streak_80pct_chores": "Ratxa: 80% de les tasques seleccionades completades",
+        "streak_all_chores_no_overdue": "Ratxa: Tasques seleccionades completades (sense terminis)",
+        "streak_80pct_due_chores": "Ratxa: 80% de les tasques seleccionades completades",
+        "streak_all_due_chores_no_overdue": "Ratxa: Tasques seleccionades vençudes completades (sense vençudes)"
+      }
+    },
+    "award_items": {
+      "options": {
+        "points": "Punts",
+        "multiplier": "Multiplicador de punts"
+      }
+    },
+    "award_mode": {
+      "options": {
+        "award_none": "Cap",
+        "award_points": "Punts",
+        "award_reward": "Recompensa",
+        "award_points_reward": "Punts i recompensa"
+      }
+    },
+    "reset_type": {
+      "options": {
+        "year_end": "Final d'any",
+        "quarter": "Trimestral",
+        "monthly": "Mensual",
+        "custom_1_year": "Personalitzat: període d'1 any",
+        "custom_1_month": "Personalitzat: període d'1 mes"
+      }
+    },
+    "completion_criteria": {
+      "options": {
+        "shared_all": "Compartit amb tothom (tots els nens han de completar-ho junts)",
+        "independent": "Independent (cada nen ho completa sol)",
+        "shared_first": "Compartit amb First (la primera finalització compta)"
+      }
+    },
+    "approval_reset_type": {
+      "options": {
+        "at_midnight_once": "Permet 1 finalització - es reinicia a mitjanit",
+        "at_midnight_multi": "Permet múltiples finalitzacions: es reinicia a mitjanit",
+        "at_due_date_once": "Permet 1 finalització: es reinicia a la data de venciment",
+        "at_due_date_multi": "Permet múltiples finalitzacions: es reinicia a la data de venciment",
+        "upon_completion": "Permetre un nombre il·limitat de finalitzacions: es reinicia després de la finalització"
+      }
+    },
+    "overdue_handling_type": {
+      "options": {
+        "at_due_date": "Mostra els vençuts després de la data de venciment (fins a la finalització)",
+        "never_overdue": "No es mostra mai com a vençut",
+        "at_due_date_then_reset": "Mostra els vençuts després de la data de venciment (fins al restabliment de l'aprovació)"
+      }
+    },
+    "approval_reset_pending_claim_action": {
+      "options": {
+        "hold_pending": "Mantenir en estat de reclamació (espera d'aprovació/rebuig)",
+        "clear_pending": "Esborra totes les reclamacions pendents",
+        "auto_approve_pending": "Aprova automàticament totes les reclamacions pendents"
+      }
+    },
+    "chore_notifications": {
+      "options": {
+        "notify_on_claim": "Notificar sobre la reclamació",
+        "notify_on_approval": "Notificar en cas d'aprovació",
+        "notify_on_disapproval": "Notificar en cas de desaprovació"
+      }
+    },
+    "recurring_frequency": {
+      "options": {
+        "none": "Cap",
+        "daily": "Diari",
+        "weekly": "Setmanal",
+        "biweekly": "Quinzenal",
+        "monthly": "Mensual",
+        "quarterly": "Trimestral",
+        "yearly": "Anual",
+        "custom": "Personalitzat",
+        "custom_1_week": "Personalitzat: 1 setmana",
+        "custom_1_month": "Personalitzat: 1 mes",
+        "custom_1_quarter": "Personalitzat: 1 Quart",
+        "custom_1_year": "Personalitzat: 1 any"
+      }
+    },
+    "occasion_type": {
+      "options": {
+        "birthday": "Aniversari",
+        "holiday": "vacances",
+        "custom": "Personalitzat"
+      }
+    },
+    "custom_interval_unit": {
+      "options": {
+        "days": "Dies",
+        "weeks": "Setmanes",
+        "months": "Mesos"
+      }
+    },
+    "applicable_days": {
+      "options": {
+        "mon": "Dilluns",
+        "tue": "Dimarts",
+        "wed": "Dimecres",
+        "thu": "dijous",
+        "fri": "Divendres",
+        "sat": "dissabte",
+        "sun": "diumenge"
+      }
+    },
+    "threshold_type": {
+      "options": {
+        "points": "Punts",
+        "chore_count": "Recompte de tasques"
+      }
+    },
+    "daily_threshold_type": {
+      "options": {
+        "points": "Punts",
+        "chore_count": "Recompte de tasques"
+      }
+    },
+    "data_recovery_selection": {
+      "options": {
+        "cancel": "↩️ Cancel·la (torna al menú de còpia de seguretat)",
+        "start_fresh": "🆕 Comença de nou (crea una còpia de seguretat de les dades existents)",
+        "current_active": "📂 Utilitza el fitxer de dades actiu actual",
+        "paste_json": "📋 Enganxa JSON des d'un fitxer de dades o diagnòstic"
+      }
+    }
+  },
+  "services": {
+    "claim_chore": {
+      "name": "Tasca de reclamació",
+      "description": "Un nen reclama una tasca i la marca com a \"reclamada\" per a l'aprovació dels pares.",
+      "fields": {
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nom del nen que reclama la tasca.",
+          "example": "Alícia"
+        },
+        "chore_name": {
+          "name": "Nom de la tasca",
+          "description": "El nom de la tasca que es reclamarà.",
+          "example": "Rentar plats"
+        }
+      }
+    },
+    "approve_chore": {
+      "name": "Aprova la tasca",
+      "description": "El pare o la mare aprova la tasca i atorga punts.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom del pare/mare",
+          "description": "El pare o la mare aprovant la tasca.",
+          "example": "Mare"
+        },
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nom del nen que va fer la tasca.",
+          "example": "Alícia"
+        },
+        "chore_name": {
+          "name": "Nom de la tasca",
+          "description": "El nom de la tasca que s'aprova.",
+          "example": "Rentar plats"
+        },
+        "points_awarded": {
+          "name": "Punts atorgats",
+          "description": "Punts a atorgar (opcional; per defecte són els punts de la tasca).",
+          "example": "3"
+        }
+      }
+    },
+    "disapprove_chore": {
+      "name": "Desaprovar tasca",
+      "description": "Un pare o una mare desaprova una tasca per a un fill, i li canvia l'estat.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom del pare/mare",
+          "description": "El pare o la mare desaprovant la tasca.",
+          "example": "Mare"
+        },
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nom del nen a qui s'està desaprovant la tasca.",
+          "example": "Alícia"
+        },
+        "chore_name": {
+          "name": "Nom de la tasca",
+          "description": "El nom de la tasca que s'està rebutjant.",
+          "example": "Sala blanca"
+        }
+      }
+    },
+    "redeem_reward": {
+      "name": "Bescanvia la recompensa",
+      "description": "Un pare o una mare bescanvia una recompensa per a un fill, restant punts.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom del pare/mare",
+          "description": "El progenitor que autoritza el bescanvi de la recompensa.",
+          "example": "Mare"
+        },
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nen bescanviant la recompensa.",
+          "example": "Alícia"
+        },
+        "reward_name": {
+          "name": "Nom de la recompensa",
+          "description": "El nom de la recompensa que es vol bescanviar.",
+          "example": "Temps de pantalla addicional"
+        }
+      }
+    },
+    "approve_reward": {
+      "name": "Aprova la recompensa",
+      "description": "Un pare o una mare aprova una recompensa reclamada per un nen.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom del pare/mare",
+          "description": "El pare o la mare aprovant la recompensa.",
+          "example": "Mare"
+        },
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nen que està bescanviant la recompensa.",
+          "example": "Alícia"
+        },
+        "reward_name": {
+          "name": "Nom de la recompensa",
+          "description": "El nom de la recompensa que s'està aprovant.",
+          "example": "Temps de pantalla addicional"
+        }
+      }
+    },
+    "disapprove_reward": {
+      "name": "Rebutja la recompensa",
+      "description": "Un pare o una mare no aproven el bescanvi de recompenses per a un fill.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom del pare/mare",
+          "description": "El pare o la mare desaprovant la recompensa.",
+          "example": "Pare"
+        },
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nen el bescanvi del qual de recompensa s'està rebutjant.",
+          "example": "Alícia"
+        },
+        "reward_name": {
+          "name": "Nom de la recompensa",
+          "description": "El nom de la recompensa que s'està rebutjant.",
+          "example": "Temps de pantalla addicional"
+        }
+      }
+    },
+    "apply_penalty": {
+      "name": "Aplica la penalització",
+      "description": "Un pare o una mare aplica una penalització per restar punts.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom del pare/mare",
+          "description": "El progenitor que aplica la sanció.",
+          "example": "Pare"
+        },
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nen que rep la sanció.",
+          "example": "Alícia"
+        },
+        "penalty_name": {
+          "name": "Nom de la penalització",
+          "description": "El nom de la sanció que s'aplicarà.",
+          "example": "Cridant"
+        }
+      }
+    },
+    "apply_bonus": {
+      "name": "Aplica la bonificació",
+      "description": "Un pare aplica una bonificació a un fill, atorgant punts.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom del pare/mare",
+          "description": "El progenitor que aplica la bonificació.",
+          "example": "Mare"
+        },
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nen que rep la bonificació.",
+          "example": "Alícia"
+        },
+        "bonus_name": {
+          "name": "Nom de la bonificació",
+          "description": "El nom de la bonificació que s'aplicarà.",
+          "example": "Extra útil"
+        }
+      }
+    },
+    "reset_all_data": {
+      "name": "Restableix totes les dades",
+      "description": "Esborra completament les dades de KidsChores de l'emmagatzematge."
+    },
+    "reset_all_chores": {
+      "name": "Restableix totes les tasques",
+      "description": "Restableix manualment les tasques a l'estat pendent, eliminant reclamacions i aprovacions."
+    },
+    "reset_overdue_chores": {
+      "name": "Restableix tasques endarrerides",
+      "description": "Restableix les tasques endarrerides a l'estat Pendent i reprograma-les en funció de la seva freqüència recurrent i la data de venciment anterior. Opcionalment, pots proporcionar un chore_id (o chore_name) per restablir una tasca específica i opcionalment un kid_name per restablir la tasca només per a aquest nen.",
+      "fields": {
+        "chore_id": {
+          "name": "ID de la tasca",
+          "description": "L'ID intern de la tasca que es vol restablir (opcional si es proporciona chore_name).",
+          "example": "abc123"
+        },
+        "chore_name": {
+          "name": "Nom de la tasca",
+          "description": "El nom de la tasca que es restablirà (opcional si es proporciona chore_id).",
+          "example": "Rentar plats"
+        },
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nen que rep la sanció.",
+          "example": "Alícia"
+        }
+      }
+    },
+    "set_chore_due_date": {
+      "name": "Establir/restablir la data de venciment de les tasques",
+      "description": "Estableix (o esborra) la data de venciment d'una tasca. Proporciona el nom de la tasca i, si ho desitges, una nova data de venciment. Si no es proporciona cap data de venciment, s'esborrarà la data de venciment existent. El servei rebutjarà les dates de venciment establertes en el passat. Per a tasques independents, opcionalment, proporciona un kid_name per establir la data de venciment només per a aquest nen.",
+      "fields": {
+        "chore_name": {
+          "name": "Nom de la tasca",
+          "description": "El nom de la tasca que s'ha d'actualitzar",
+          "example": "Rentar plats"
+        },
+        "due_date": {
+          "name": "Data de venciment",
+          "description": "La nova data de venciment de la tasca. Utilitzeu el selector de data/hora per triar una data i hora vàlides (a la vostra zona horària local). Deixeu-ho en blanc per esborrar la data de venciment.",
+          "example": "2025-03-01T23:59:00Z"
+        },
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "Per a tasques independents, especifiqueu el nen per al qual voleu establir la data de venciment. Si s'omet, estableix la data de venciment per a tots els nens assignats.",
+          "example": "Alícia"
+        },
+        "kid_id": {
+          "name": "ID de nen",
+          "description": "L'ID intern del nen. Només per a usuaris avançats: feu servir kid_name en comptes d'això.",
+          "example": "abc123-def456"
+        }
+      }
+    },
+    "skip_chore_due_date": {
+      "name": "Omet la data de venciment de les tasques",
+      "description": "Omet la data de venciment actual d'una tasca recurrent. Aquest servei reprograma immediatament la data de venciment de la tasca en funció de la seva freqüència recurrent i restableix el seu estat a pendent. Qualsevol reclamació o aprovació pendent s'eliminarà. Per a tasques independents, opcionalment, proporcioneu un kid_name per ometre només per a aquest nen.",
+      "fields": {
+        "chore_id": {
+          "name": "ID de la tasca",
+          "description": "L'ID intern de la tasca que es vol restablir (opcional si es proporciona chore_name).",
+          "example": "abc123"
+        },
+        "chore_name": {
+          "name": "Nom de la tasca",
+          "description": "El nom de la tasca que es restablirà (opcional si es proporciona chore_id).",
+          "example": "Rentar plats"
+        },
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "Per a tasques independents, especifiqueu el nen per al qual voleu ometre la data de venciment. Si s'omet, omet la data de venciment per a tots els nens assignats.",
+          "example": "Alícia"
+        },
+        "kid_id": {
+          "name": "ID de nen",
+          "description": "L'ID intern del nen. Només per a usuaris avançats: feu servir kid_name en comptes d'això.",
+          "example": "abc123-def456"
+        }
+      }
+    },
+    "reset_penalties": {
+      "name": "Restablir penalitzacions",
+      "description": "Restableix totes les penalitzacions aplicades per a tots els nens. Opcionalment, proporciona el nom de la penalització per restablir una penalització específica per a tots els nens. Fes servir el nom del nen per restablir totes les penalitzacions per a un nen específic. Combina tots dos per restablir una penalització específica per a un nen específic.",
+      "fields": {
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nen per al qual es reiniciaran les penalitzacions.",
+          "example": "Alícia"
+        },
+        "penalty_name": {
+          "name": "Nom de la penalització",
+          "description": "El nom de la penalització que es reiniciarà.",
+          "example": "Cridant"
+        }
+      }
+    },
+    "reset_bonuses": {
+      "name": "Restablir bonificacions",
+      "description": "Restableix totes les bonificacions aplicades per a tots els nens. Opcionalment, proporciona un nom de bonificació per restablir una bonificació específica per a tots els nens. Fes servir el nom del nen per restablir totes les bonificacions per a un nen específic. Combina tots dos per restablir una bonificació específica per a un nen específic.",
+      "fields": {
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nen per al qual es reiniciaran les bonificacions.",
+          "example": "Alícia"
+        },
+        "bonus_name": {
+          "name": "Nom de la bonificació",
+          "description": "El nom de la bonificació que es reiniciarà.",
+          "example": "Ajudant"
+        }
+      }
+    },
+    "reset_rewards": {
+      "name": "Restableix les recompenses",
+      "description": "Restableix tots els recomptes de reclamacions i aprovacions de recompenses per a tots els nens. Opcionalment, proporciona el nom de la recompensa per restablir un recompte de recompenses específic per a tots els nens. Utilitza el nom del nen per restablir tots els recomptes de recompenses per a un nen específic. Combina tots dos per restablir una recompensa específica per a un nen específic.",
+      "fields": {
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nen per al qual compta la recompensa es reiniciarà.",
+          "example": "Alícia"
+        },
+        "reward_name": {
+          "name": "Nom de la recompensa",
+          "description": "El nom de la recompensa que es restablirà.",
+          "example": "Gelat"
+        }
+      }
+    },
+    "remove_awarded_badges": {
+      "name": "Eliminar les insígnies atorgades",
+      "description": "Elimina totes les insígnies atorgades per a tots els nens. Opcionalment, proporciona el nom de la insígnia per restablir una insígnia específica per a tots els nens. Fes servir el nom del nen per restablir totes les insígnies per a un nen específic. Combina tots dos per restablir una insígnia específica per a un nen específic.",
+      "fields": {
+        "kid_name": {
+          "name": "Nom del nen/a",
+          "description": "El nen o nena amb insígnies guardonades serà retirat/da.",
+          "example": "Bob"
+        },
+        "badge_name": {
+          "name": "Nom de la insígnia",
+          "description": "El nom de la insígnia que s'ha de retirar.",
+          "example": "Mestre de tasques"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "kid_chore_status_sensor": {
+        "name": "Estat de les tasques - {chore_name}",
+        "state": {
+          "pending": "Pendent",
+          "approved": "Aprovat",
+          "claimed": "Reclamat",
+          "overdue": "Endarrerit",
+          "unknown": "Desconegut",
+          "none": "Cap",
+          "approved_in_part": "Aprovat (en part)",
+          "claimed_in_part": "Reclamat (en part)",
+          "completed_by_other": "Completat per altres"
+        },
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_chore_status": "Estats del cicle de vida de les tasques específiques per a nens, estadístiques de rendiment i metadades de configuració"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "chore_name": {
+            "name": "Nom de la tasca"
+          },
+          "chore_icon": {
+            "name": "Icona de tasques"
+          },
+          "description": {
+            "name": "Descripció"
+          },
+          "assigned_kids": {
+            "name": "Nens assignats"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          },
+          "default_points": {
+            "name": "Punts per defecte"
+          },
+          "completion_criteria": {
+            "name": "Criteris de finalització",
+            "state": {
+              "independent": "Independent",
+              "shared_first_only": "Compartit (només el primer)",
+              "shared_all_required": "Compartit (tot obligatori)"
+            }
+          },
+          "approval_reset_type": {
+            "name": "Tipus de restabliment d'aprovació",
+            "state": {
+              "at_midnight_once": "Un cop al dia",
+              "at_midnight_multi": "Múltiples per dia",
+              "at_due_date_once": "Un cop per data de venciment",
+              "at_due_date_multi": "Múltiple per data de venciment",
+              "upon_completion": "En completar-se"
+            }
+          },
+          "recurring_frequency": {
+            "name": "Freqüència recurrent",
+            "state": {
+              "none": "Cap",
+              "daily": "Diari",
+              "weekly": "Setmanal",
+              "biweekly": "Quinzenal",
+              "monthly": "Mensual",
+              "custom": "Personalitzat"
+            }
+          },
+          "applicable_days": {
+            "name": "Dies aplicables",
+            "state": {
+              "mon": "Dilluns",
+              "tue": "Dimarts",
+              "wed": "Dimecres",
+              "thu": "dijous",
+              "fri": "Divendres",
+              "sat": "dissabte",
+              "sun": "diumenge"
+            }
+          },
+          "due_date": {
+            "name": "Data de venciment"
+          },
+          "custom_frequency_interval": {
+            "name": "Interval de freqüència personalitzat"
+          },
+          "custom_frequency_unit": {
+            "name": "Unitat de freqüència personalitzada",
+            "state": {
+              "days": "Dies",
+              "weeks": "Setmanes",
+              "months": "Mesos"
+            }
+          },
+          "chore_points_earned": {
+            "name": "Punts guanyats"
+          },
+          "chore_approvals_count": {
+            "name": "Aprovacions (de tots els temps)"
+          },
+          "chore_claims_count": {
+            "name": "Reclamacions (de tots els temps)"
+          },
+          "chore_disapproved_count": {
+            "name": "Rebuigs (de tots els temps)"
+          },
+          "chore_overdue_count": {
+            "name": "Endarrerit (de tots els temps)"
+          },
+          "chore_approvals_today": {
+            "name": "Aprovacions avui"
+          },
+          "chore_current_streak": {
+            "name": "Ratxa actual"
+          },
+          "chore_highest_streak": {
+            "name": "Ratxa més alta"
+          },
+          "chore_last_longest_streak_date": {
+            "name": "Última cita de la ratxa més llarga"
+          },
+          "last_claimed": {
+            "name": "Última reclamació"
+          },
+          "last_approved": {
+            "name": "Última aprovació"
+          },
+          "last_disapproved": {
+            "name": "Últim rebutjat"
+          },
+          "last_overdue": {
+            "name": "Últim venciment"
+          },
+          "global_state": {
+            "name": "Estat global",
+            "state": {
+              "pending": "Pendent",
+              "approved": "Aprovat",
+              "claimed": "Reclamat",
+              "overdue": "Endarrerit",
+              "unknown": "Desconegut",
+              "none": "Cap",
+              "approved_in_part": "Aprovat (en part)",
+              "claimed_in_part": "Reclamat (en part)",
+              "independent": "Independent"
+            }
+          },
+          "can_claim": {
+            "name": "Pot reclamar",
+            "state": {
+              "true": "Sí",
+              "false": "No"
+            }
+          },
+          "can_approve": {
+            "name": "Pot aprovar",
+            "state": {
+              "true": "Sí",
+              "false": "No"
+            }
+          },
+          "approve_button_eid": {
+            "name": "ID d'entitat del botó Aprova"
+          },
+          "disapprove_button_eid": {
+            "name": "ID d'entitat del botó de desaprovació"
+          },
+          "claim_button_eid": {
+            "name": "ID d'entitat del botó de reclamació"
+          }
+        }
+      },
+      "kid_points_sensor": {
+        "name": "{points}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_points": "Saldo de punts actual amb estadístiques detallades de guanys i despeses"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "point_stat_points_earned_today": {
+            "name": "Guanyat avui"
+          },
+          "point_stat_points_earned_week": {
+            "name": "Guanyat aquesta setmana"
+          },
+          "point_stat_points_earned_month": {
+            "name": "Guanyat aquest mes"
+          },
+          "point_stat_points_earned_year": {
+            "name": "Guanyat aquest any"
+          },
+          "point_stat_points_earned_all_time": {
+            "name": "Guanyat de tots els temps"
+          },
+          "point_stat_points_by_source_today": {
+            "name": "Per Source Today"
+          },
+          "point_stat_points_by_source_week": {
+            "name": "Per Source This Week"
+          },
+          "point_stat_points_by_source_month": {
+            "name": "Per la font Aquest mes"
+          },
+          "point_stat_points_by_source_year": {
+            "name": "Per font aquest any"
+          },
+          "point_stat_points_by_source_all_time": {
+            "name": "Per Source All Time"
+          },
+          "point_stat_points_spent_today": {
+            "name": "Gastat avui"
+          },
+          "point_stat_points_spent_week": {
+            "name": "Passat aquesta setmana"
+          },
+          "point_stat_points_spent_month": {
+            "name": "Gastat aquest mes"
+          },
+          "point_stat_points_spent_year": {
+            "name": "Gastat aquest any"
+          },
+          "point_stat_points_spent_all_time": {
+            "name": "Passat tot el temps"
+          },
+          "point_stat_points_net_today": {
+            "name": "Net Today"
+          },
+          "point_stat_points_net_week": {
+            "name": "Xarxa aquesta setmana"
+          },
+          "point_stat_points_net_month": {
+            "name": "Net aquest mes"
+          },
+          "point_stat_points_net_year": {
+            "name": "Net aquest any"
+          },
+          "point_stat_points_net_all_time": {
+            "name": "Net de tots els temps"
+          },
+          "point_stat_points_earning_streak_current": {
+            "name": "Ratxa de guanys actual"
+          },
+          "point_stat_points_earning_streak_longest": {
+            "name": "Ratxa de guanys més llarga"
+          },
+          "point_stat_avg_points_per_day_week": {
+            "name": "Mitjana per dia (setmana)"
+          },
+          "point_stat_avg_points_per_day_month": {
+            "name": "Mitjana per dia (mes)"
+          },
+          "point_stat_avg_points_per_chore": {
+            "name": "Mitjana per tasca"
+          },
+          "point_stat_highest_balance": {
+            "name": "El saldo més alt de la història"
+          }
+        }
+      },
+      "kid_points_max_ever_sensor": {
+        "name": "Màxim {points} Sempre"
+      },
+      "system_chore_approvals_sensor": {
+        "name": "Tasques completades - Total"
+      },
+      "system_chore_approvals_daily_sensor": {
+        "name": "Tasques completades - Diàriament"
+      },
+      "system_chore_approvals_weekly_sensor": {
+        "name": "Tasques completades - Setmanalment"
+      },
+      "system_chore_approvals_monthly_sensor": {
+        "name": "Tasques completades - Mensual"
+      },
+      "kid_chores_sensor": {
+        "name": "Tasques domèstiques",
+        "unit_of_measurement": "Tasques domèstiques",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_chores": "Total de tasques completades de tots els temps amb estadístiques detallades"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "chore_stat_approved_today": {
+            "name": "Aprovat avui"
+          },
+          "chore_stat_approved_week": {
+            "name": "Aprovat aquesta setmana"
+          },
+          "chore_stat_approved_month": {
+            "name": "Aprovat aquest mes"
+          },
+          "chore_stat_approved_year": {
+            "name": "Aprovat aquest any"
+          },
+          "chore_stat_approved_all_time": {
+            "name": "Aprovat de sempre"
+          },
+          "chore_stat_most_completed_chore_all_time": {
+            "name": "Tasca més completada (de tots els temps)"
+          },
+          "chore_stat_most_completed_chore_week": {
+            "name": "Tasca més completada (setmana)"
+          },
+          "chore_stat_most_completed_chore_month": {
+            "name": "Tasca més completada (mes)"
+          },
+          "chore_stat_most_completed_chore_year": {
+            "name": "Tasca més completada (any)"
+          },
+          "chore_stat_total_points_from_chores_today": {
+            "name": "Punts de les tasques d'avui"
+          },
+          "chore_stat_total_points_from_chores_week": {
+            "name": "Punts de les tasques d'aquesta setmana"
+          },
+          "chore_stat_total_points_from_chores_month": {
+            "name": "Punts de les tasques d'aquest mes"
+          },
+          "chore_stat_total_points_from_chores_year": {
+            "name": "Punts de les tasques d'aquest any"
+          },
+          "chore_stat_total_points_from_chores_all_time": {
+            "name": "Punts de tasques de tots els temps"
+          },
+          "chore_stat_overdue_today": {
+            "name": "Vençut avui"
+          },
+          "chore_stat_overdue_week": {
+            "name": "Endarrerit aquesta setmana"
+          },
+          "chore_stat_overdue_month": {
+            "name": "Endarrerit aquest mes"
+          },
+          "chore_stat_overdue_year": {
+            "name": "Endarrerit aquest any"
+          },
+          "chore_stat_overdue_count_all_time": {
+            "name": "Endarrerit de tots els temps"
+          },
+          "chore_stat_claimed_today": {
+            "name": "Reclamat avui"
+          },
+          "chore_stat_claimed_week": {
+            "name": "Reclamat aquesta setmana"
+          },
+          "chore_stat_claimed_month": {
+            "name": "Reclamat aquest mes"
+          },
+          "chore_stat_claimed_year": {
+            "name": "Reclamat aquest any"
+          },
+          "chore_stat_claimed_all_time": {
+            "name": "Reclamat de tots els temps"
+          },
+          "chore_stat_disapproved_today": {
+            "name": "Rebutjat avui"
+          },
+          "chore_stat_disapproved_week": {
+            "name": "Rebutjat aquesta setmana"
+          },
+          "chore_stat_disapproved_month": {
+            "name": "Rebutjat aquest mes"
+          },
+          "chore_stat_disapproved_year": {
+            "name": "Rebutjat aquest any"
+          },
+          "chore_stat_disapproved_all_time": {
+            "name": "Rebutjat de sempre"
+          },
+          "chore_stat_current_due_today": {
+            "name": "Venciment corrent avui"
+          },
+          "chore_stat_current_overdue": {
+            "name": "Actual vençut"
+          },
+          "chore_stat_current_claimed": {
+            "name": "Reclamat actualment"
+          },
+          "chore_stat_current_approved": {
+            "name": "Aprovat actualment"
+          },
+          "chore_stat_longest_streak_week": {
+            "name": "Ratxa més llarga (setmana)"
+          },
+          "chore_stat_longest_streak_month": {
+            "name": "Ratxa més llarga (mes)"
+          },
+          "chore_stat_longest_streak_year": {
+            "name": "Ratxa més llarga (any)"
+          },
+          "chore_stat_longest_streak_all_time": {
+            "name": "Ratxa més llarga (de tots els temps)"
+          },
+          "chore_stat_avg_per_day_week": {
+            "name": "Mitjana per dia (setmana)"
+          },
+          "chore_stat_avg_per_day_month": {
+            "name": "Mitjana per dia (mes)"
+          }
+        }
+      },
+      "kid_badges_sensor": {
+        "name": "Insígnies",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_kid_badges": "Insígnia més alta obtinguda i progrés acumulat en temps real, incloent-hi cicles actius i historial de premis en tots els tipus d'insígnia"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          },
+          "all_earned_badges": {
+            "name": "Totes les insígnies guanyades"
+          },
+          "highest_badge_threshold_value": {
+            "name": "Llindar més alt de la insígnia"
+          },
+          "points_to_next_badge": {
+            "name": "Punts per a la següent insígnia"
+          },
+          "current_badge_name": {
+            "name": "Nom actual de la insígnia"
+          },
+          "current_badge_eid": {
+            "name": "ID d'entitat de distintiu actual"
+          },
+          "highest_earned_badge_name": {
+            "name": "Nom de la insígnia més alta guanyada"
+          },
+          "next_higher_badge_name": {
+            "name": "Nom de la insígnia següent de nivell superior"
+          },
+          "next_higher_badge_eid": {
+            "name": "ID d'entitat de la insígnia següent de nivell superior"
+          },
+          "next_lower_badge_name": {
+            "name": "Nom de la insígnia següent"
+          },
+          "next_lower_badge_eid": {
+            "name": "ID d'entitat de la insígnia següent"
+          },
+          "badge_status": {
+            "name": "Estat de la insígnia",
+            "state": {
+              "active": "Actiu",
+              "grace": "Període de gràcia",
+              "demoted": "degradat"
+            }
+          },
+          "last_awarded_date": {
+            "name": "Data de l'última adjudicació"
+          },
+          "award_count": {
+            "name": "Recompte de premis"
+          },
+          "description": {
+            "name": "Descripció"
+          },
+          "baseline_points": {
+            "name": "Punts de referència"
+          },
+          "cycle_points": {
+            "name": "Punts de cicle"
+          },
+          "maintenance_grace_end_date": {
+            "name": "Data de finalització de la gràcia de manteniment"
+          },
+          "maintenance_points_required": {
+            "name": "Punts de manteniment necessaris"
+          },
+          "maintenance_end_date": {
+            "name": "Data de finalització del manteniment"
+          },
+          "maintenance_points_remaining": {
+            "name": "Punts de manteniment restants"
+          },
+          "reset_schedule": {
+            "name": "Restableix la programació"
+          },
+          "target": {
+            "name": "Objectiu"
+          },
+          "awards": {
+            "name": "Premis"
+          }
+        }
+      },
+      "system_badge_sensor": {
+        "name": "Insígnia - {badge_name}",
+        "unit_of_measurement": "Nens",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_badge": "Nombre de nens que han guanyat aquesta insígnia, amb la configuració de la insígnia, incloent-hi el tipus, l'objectiu, els premis i els nens assignats"
+            }
+          },
+          "badge_name": {
+            "name": "Nom de la insígnia"
+          },
+          "description": {
+            "name": "Descripció"
+          },
+          "badge_type": {
+            "name": "Tipus de distintiu",
+            "state": {
+              "cumulative": "Acumulatiu",
+              "achievement": "Assoliment",
+              "challenge": "Repte",
+              "daily": "Diari",
+              "periodic": "Periòdic",
+              "special": "Especial"
+            }
+          },
+          "labels": {
+            "name": "Etiquetes"
+          },
+          "kids_earned": {
+            "name": "Nens guanyats"
+          },
+          "kids_assigned": {
+            "name": "Nens assignats"
+          },
+          "target": {
+            "name": "Objectiu"
+          },
+          "associated_achievement": {
+            "name": "Assoliment associat"
+          },
+          "associated_challenge": {
+            "name": "Repte associat"
+          },
+          "occasion_type": {
+            "name": "Tipus d'ocasió"
+          },
+          "required_chores": {
+            "name": "Tasques obligatòries"
+          },
+          "badge_awards": {
+            "name": "Premis d'insígnies"
+          },
+          "reset_schedule": {
+            "name": "Restableix la programació"
+          }
+        }
+      },
+      "kid_badge_progress_sensor": {
+        "name": "Progrés de la insígnia - {badge_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_badge_progress": "Percentatge de progrés de la insígnia (0-100) que fa un seguiment de la finalització per obtenir aquesta insígnia, amb l'estat dels criteris, les dates i l'historial de premis"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "badge_name": {
+            "name": "Nom de la insígnia"
+          },
+          "badge_type": {
+            "name": "Tipus de distintiu",
+            "state": {
+              "cumulative": "Acumulatiu",
+              "achievement": "Assoliment",
+              "challenge": "Repte",
+              "daily": "Diari",
+              "periodic": "Periòdic",
+              "special": "Especial"
+            }
+          },
+          "status": {
+            "name": "Estat",
+            "state": {
+              "inactive": "Inactiu",
+              "active": "Actiu",
+              "completed": "Completat"
+            }
+          },
+          "target_type": {
+            "name": "Tipus d'objectiu",
+            "state": {
+              "chores": "Tasques domèstiques",
+              "points": "Punts",
+              "days": "Dies",
+              "achievement": "Assoliment",
+              "challenge": "Repte"
+            }
+          },
+          "threshold_value": {
+            "name": "Llindar objectiu"
+          },
+          "recurring_frequency": {
+            "name": "Freqüència recurrent",
+            "state": {
+              "none": "Cap",
+              "daily": "Diari",
+              "weekly": "Setmanal",
+              "biweekly": "Quinzenal",
+              "monthly": "Mensual"
+            }
+          },
+          "start_date": {
+            "name": "Data d'inici"
+          },
+          "end_date": {
+            "name": "Data de finalització"
+          },
+          "last_update_day": {
+            "name": "Dia de l'última actualització"
+          },
+          "overall_progress": {
+            "name": "Progrés general"
+          },
+          "criteria_met": {
+            "name": "Criteris complerts",
+            "state": {
+              "true": "Sí",
+              "false": "No"
+            }
+          },
+          "last_awarded": {
+            "name": "Últim premiat"
+          },
+          "award_count": {
+            "name": "Recompte de premis"
+          },
+          "description": {
+            "name": "Descripció"
+          }
+        }
+      },
+      "system_chores_pending_approval_sensor": {
+        "name": "Aprovacions de tasques pendents"
+      },
+      "system_rewards_pending_approval_sensor": {
+        "name": "Aprovacions de recompenses pendents"
+      },
+      "system_chore_shared_state_sensor": {
+        "name": "{chore_name} - Estat global",
+        "state": {
+          "pending": "Pendent",
+          "approved": "Aprovat",
+          "claimed": "Reclamat",
+          "overdue": "Endarrerit",
+          "unknown": "Desconegut",
+          "none": "Cap",
+          "approved_in_part": "Aprovat (en part)",
+          "claimed_in_part": "Reclamat (en part)",
+          "independent": "Independent"
+        },
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_shared_chore": "Estat de finalització global per a les tasques compartides amb estadístiques agregades de tots els nens assignats"
+            }
+          },
+          "chore_name": {
+            "name": "Nom de la tasca"
+          },
+          "chore_icon": {
+            "name": "Icona de tasques"
+          },
+          "description": {
+            "name": "Descripció"
+          },
+          "assigned_kids": {
+            "name": "Nens assignats"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          },
+          "default_points": {
+            "name": "Punts per defecte"
+          },
+          "completion_criteria": {
+            "name": "Criteris de finalització",
+            "state": {
+              "independent": "Independent",
+              "shared_first_only": "Compartit (només el primer)",
+              "shared_all_required": "Compartit (tot obligatori)"
+            }
+          },
+          "approval_reset_type": {
+            "name": "Tipus de restabliment d'aprovació",
+            "state": {
+              "at_midnight_once": "Un cop al dia",
+              "at_midnight_multi": "Múltiples per dia",
+              "at_due_date_once": "Un cop per data de venciment",
+              "at_due_date_multi": "Múltiple per data de venciment",
+              "upon_completion": "En completar-se"
+            }
+          },
+          "recurring_frequency": {
+            "name": "Freqüència recurrent",
+            "state": {
+              "none": "Cap",
+              "daily": "Diari",
+              "weekly": "Setmanal",
+              "biweekly": "Quinzenal",
+              "monthly": "Mensual",
+              "custom": "Personalitzat"
+            }
+          },
+          "applicable_days": {
+            "name": "Dies aplicables",
+            "state": {
+              "mon": "Dilluns",
+              "tue": "Dimarts",
+              "wed": "Dimecres",
+              "thu": "dijous",
+              "fri": "Divendres",
+              "sat": "dissabte",
+              "sun": "diumenge"
+            }
+          },
+          "due_date": {
+            "name": "Data de venciment"
+          },
+          "custom_frequency_interval": {
+            "name": "Interval de freqüència personalitzat"
+          },
+          "custom_frequency_unit": {
+            "name": "Unitat de freqüència personalitzada",
+            "state": {
+              "days": "Dies",
+              "weeks": "Setmanes",
+              "months": "Mesos"
+            }
+          },
+          "chore_approvals_today": {
+            "name": "Aprovacions avui (tots els nens)"
+          },
+          "last_claimed": {
+            "name": "Última reclamació"
+          },
+          "last_approved": {
+            "name": "Última aprovació"
+          },
+          "chore_claimed_by": {
+            "name": "Reclamat per"
+          },
+          "chore_completed_by": {
+            "name": "Completat per"
+          }
+        }
+      },
+      "kid_reward_status_sensor": {
+        "name": "Estat de la recompensa - {reward_name}",
+        "state": {
+          "not_claimed": "No reclamat",
+          "approved": "Aprovat",
+          "claimed": "Reclamat",
+          "unknown": "Desconegut",
+          "none": "Cap"
+        },
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_reward_status": "Estat del bescanvi de recompenses amb historial de reclamacions i botons d'acció"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "reward_name": {
+            "name": "Nom de la recompensa"
+          },
+          "description": {
+            "name": "Descripció"
+          },
+          "cost": {
+            "name": "Cost"
+          },
+          "reward_claims_count": {
+            "name": "Total de reclamacions"
+          },
+          "reward_approvals_count": {
+            "name": "Total d'aprovacions"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          },
+          "reward_claim_button_eid": {
+            "name": "ID d'entitat del botó de reclamació"
+          },
+          "reward_approve_button_eid": {
+            "name": "ID d'entitat del botó Aprova"
+          },
+          "reward_disapprove_button_eid": {
+            "name": "ID d'entitat del botó de desaprovació"
+          }
+        }
+      },
+      "kid_penalty_applied_sensor": {
+        "name": "Penalitzacions aplicades - {penalty_name}",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "penalty_name": {
+            "name": "Nom de la penalització"
+          },
+          "description": {
+            "name": "Descripció"
+          },
+          "penalty_points": {
+            "name": "Punts de penalització"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "kid_bonus_applied_sensor": {
+        "name": "S'aplica la bonificació - {bonus_name}",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "bonus_name": {
+            "name": "Nom de la bonificació"
+          },
+          "description": {
+            "name": "Descripció"
+          },
+          "bonus_points": {
+            "name": "Punts de bonificació"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "kid_points_earned_daily_sensor": {
+        "name": "Punts guanyats - Diaris"
+      },
+      "kid_points_earned_weekly_sensor": {
+        "name": "Punts guanyats - Setmanalment"
+      },
+      "kid_points_earned_monthly_sensor": {
+        "name": "Punts guanyats - Mensualment"
+      },
+      "system_achievement_sensor": {
+        "name": "Assoliment - {achievement_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_achievement": "Percentatge de progrés d'assoliments (0-100) agregat per a tots els nens assignats, amb configuració d'assoliments que inclou el tipus, l'objectiu, els criteris i la llista de nens que l'han aconseguit."
+            }
+          },
+          "achievement_name": {
+            "name": "Nom de l'assoliment"
+          },
+          "description": {
+            "name": "Descripció"
+          },
+          "assigned_kids": {
+            "name": "Nens assignats"
+          },
+          "type": {
+            "name": "Tipus",
+            "state": {
+              "chore_total": "Total de tasques",
+              "chore_streak": "Ratxa de tasques",
+              "daily_minimum": "Mínim diari"
+            }
+          },
+          "associated_chore": {
+            "name": "Tasca associada"
+          },
+          "criteria": {
+            "name": "Criteris"
+          },
+          "target_value": {
+            "name": "Objectiu"
+          },
+          "reward_points": {
+            "name": "Punts de recompensa"
+          },
+          "kids_earned": {
+            "name": "Guanyat per"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "system_challenge_sensor": {
+        "name": "Repte - {challenge_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_challenge": "Percentatge de progrés del repte (0-100) agregat per a tots els nens assignats dins del període de temps, amb configuració del repte que inclou el tipus, l'objectiu, els criteris, les dates i la llista de nens que l'han guanyat."
+            }
+          },
+          "challenge_name": {
+            "name": "Nom del repte"
+          },
+          "description": {
+            "name": "Descripció"
+          },
+          "assigned_kids": {
+            "name": "Nens assignats"
+          },
+          "type": {
+            "name": "Tipus",
+            "state": {
+              "total_within_window": "Total dins de la finestra",
+              "daily_minimum": "Mínim diari"
+            }
+          },
+          "associated_chore": {
+            "name": "Tasca associada"
+          },
+          "criteria": {
+            "name": "Criteris"
+          },
+          "target_value": {
+            "name": "Objectiu"
+          },
+          "reward_points": {
+            "name": "Punts de recompensa"
+          },
+          "start_date": {
+            "name": "Data d'inici"
+          },
+          "end_date": {
+            "name": "Data de finalització"
+          },
+          "kids_earned": {
+            "name": "Guanyat per"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "kid_achievement_progress_sensor": {
+        "name": "Progrés - {achievement_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_achievement_progress": "Percentatge de progrés individual de cada nen (0-100) per aconseguir aquest assoliment, amb el recompte de progrés actual en brut i l'estat del premi"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "achievement_name": {
+            "name": "Nom de l'assoliment"
+          },
+          "description": {
+            "name": "Descripció"
+          },
+          "assigned_kids": {
+            "name": "Nens assignats"
+          },
+          "type": {
+            "name": "Tipus",
+            "state": {
+              "chore_total": "Total de tasques",
+              "chore_streak": "Ratxa de tasques",
+              "daily_minimum": "Mínim diari"
+            }
+          },
+          "associated_chore": {
+            "name": "Tasca associada"
+          },
+          "criteria": {
+            "name": "Criteris"
+          },
+          "target_value": {
+            "name": "Objectiu"
+          },
+          "reward_points": {
+            "name": "Punts de recompensa"
+          },
+          "raw_progress": {
+            "name": "Progrés en brut"
+          },
+          "awarded": {
+            "name": "Premiat",
+            "state": {
+              "true": "Sí",
+              "false": "No"
+            }
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "kid_challenge_progress_sensor": {
+        "name": "Progrés - {challenge_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_challenge_progress": "Percentatge de progrés individual de cada nen (0-100) per completar aquest repte dins del període de temps, amb el recompte de progrés actual i l'estat del premi."
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "challenge_name": {
+            "name": "Nom del repte"
+          },
+          "description": {
+            "name": "Descripció"
+          },
+          "assigned_kids": {
+            "name": "Nens assignats"
+          },
+          "type": {
+            "name": "Tipus",
+            "state": {
+              "total_within_window": "Total dins de la finestra",
+              "daily_minimum": "Mínim diari"
+            }
+          },
+          "associated_chore": {
+            "name": "Tasca associada"
+          },
+          "criteria": {
+            "name": "Criteris"
+          },
+          "target_value": {
+            "name": "Objectiu"
+          },
+          "reward_points": {
+            "name": "Punts de recompensa"
+          },
+          "start_date": {
+            "name": "Data d'inici"
+          },
+          "end_date": {
+            "name": "Data de finalització"
+          },
+          "raw_progress": {
+            "name": "Progrés en brut"
+          },
+          "awarded": {
+            "name": "Premiat",
+            "state": {
+              "true": "Sí",
+              "false": "No"
+            }
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "kid_chore_streak_sensor": {
+        "name": "Ratxa de tasques més alta",
+        "state_attributes": {
+          "streaks_by_achievement": {
+            "name": "Ratxes per assoliment"
+          }
+        }
+      },
+      "kid_dashboard_helper_sensor": {
+        "name": "Ajudant del tauler de control de la interfície d'usuari",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_dashboard_helper": "Agrega totes les dades infantils per al consum del tauler de control"
+            }
+          },
+          "chores": {
+            "name": "Tasques domèstiques"
+          },
+          "rewards": {
+            "name": "Recompenses"
+          },
+          "badges": {
+            "name": "Insígnies"
+          },
+          "bonuses": {
+            "name": "Bonificacions"
+          },
+          "penalties": {
+            "name": "Penalitzacions"
+          },
+          "achievements": {
+            "name": "Assoliments"
+          },
+          "challenges": {
+            "name": "Reptes"
+          },
+          "ui_translations": {
+            "name": "Traduccions d'IU"
+          },
+          "points_buttons": {
+            "name": "Botons de punts"
+          },
+          "pending_approvals": {
+            "name": "Aprovacions pendents"
+          },
+          "core_sensors": {
+            "name": "Sensors centrals"
+          },
+          "dashboard_helpers": {
+            "name": "Ajudants del tauler de control"
+          },
+          "chores_by_label": {
+            "name": "Tasques per segell discogràfic"
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "language": {
+            "name": "Llengua"
+          }
+        }
+      }
+    },
+    "select": {
+      "kc_select_base": {
+        "name": "Selecciona la base"
+      },
+      "system_chores_select": {
+        "name": "Selecciona una tasca"
+      },
+      "system_rewards_select": {
+        "name": "Selecciona la recompensa"
+      },
+      "system_penalties_select": {
+        "name": "Selecciona la penalització"
+      },
+      "system_bonuses_select": {
+        "name": "Selecciona el bonus"
+      },
+      "kid_dashboard_helper_chores_select": {
+        "name": "Ajudant de llista de tasques del tauler de control de la interfície d'usuari",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_select_kid_chores": "Selecció de tasques infantils per al filtratge del tauler de control"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          }
+        }
+      }
+    },
+    "calendar": {
+      "kid_schedule_calendar": {
+        "name": "Calendari",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_calendar_schedule": "Calendari que mostra l'horari de les tasques dels nens i les dates de venciment"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          }
+        }
+      }
+    },
+    "datetime": {
+      "kid_dashboard_helper_datetime_picker": {
+        "name": "Ajudant de dates del tauler de control de la interfície d'usuari",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_datetime_dashboard_helper": "Assistent de selecció de dates per al filtratge i la navegació de la interfície d'usuari del tauler de control"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          }
+        }
+      }
+    },
+    "button": {
+      "kid_chore_claim_button": {
+        "name": "Reclamació de la tasca - {chore_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_button_chore_claim": "Un nen afirma haver acabat la tasca assignada"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "chore_name": {
+            "name": "Nom de la tasca"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "parent_chore_approve_button": {
+        "name": "Aprova la tasca - {chore_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_button_chore_approve": "El pare o la mare aprova la tasca reclamada"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "chore_name": {
+            "name": "Nom de la tasca"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "parent_chore_disapprove_button": {
+        "name": "Desaprovar la tasca - {chore_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_button_chore_disapprove": "El pare o la mare desaprova la tasca reclamada"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "chore_name": {
+            "name": "Nom de la tasca"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "kid_reward_redeem_button": {
+        "name": "Reclama la recompensa - {reward_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_button_reward_redeem": "El nen bescanvia la recompensa amb punts"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "reward_name": {
+            "name": "Nom de la recompensa"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "parent_reward_approve_button": {
+        "name": "Aprova la recompensa - {reward_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_button_reward_approve": "El pare o la mare aprova la recompensa bescanviada"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "reward_name": {
+            "name": "Nom de la recompensa"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "parent_reward_disapprove_button": {
+        "name": "Recompensa desaprovada - {reward_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_button_reward_disapprove": "El pare o la mare no aproven la recompensa bescanviada"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "reward_name": {
+            "name": "Nom de la recompensa"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "parent_penalty_apply_button": {
+        "name": "Aplica la penalització - {penalty_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_button_penalty_apply": "El pare aplica la penalització (resta punts)"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "penalty_name": {
+            "name": "Nom de la penalització"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "parent_bonus_apply_button": {
+        "name": "Aplica la bonificació - {bonus_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_button_bonus_apply": "El pare aplica la bonificació (afegeix punts)"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          },
+          "bonus_name": {
+            "name": "Nom de la bonificació"
+          },
+          "labels": {
+            "name": "Etiquetes"
+          }
+        }
+      },
+      "parent_points_adjust_button": {
+        "name": "{sign_label} {points_label}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Propòsit",
+            "state": {
+              "purpose_button_points_adjust": "El pare o la mare ajusta manualment els punts del nen/a"
+            }
+          },
+          "kid_name": {
+            "name": "Nom del nen/a"
+          }
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "error_msg_no_entry_found": {
+      "message": "No s'ha trobat cap entrada coincident a la configuració."
+    },
+    "not_authorized_action": {
+      "message": "No esteu autoritzat a {action} per a aquest nen."
+    },
+    "not_authorized_action_global": {
+      "message": "No esteu autoritzat a {action}."
+    },
+    "calendar_create_not_supported": {
+      "message": "No es permet la creació d'esdeveniments per a aquest calendari."
+    },
+    "calendar_delete_not_supported": {
+      "message": "No es poden suprimir esdeveniments en aquest calendari."
+    },
+    "calendar_update_not_supported": {
+      "message": "No s'admet l'actualització d'esdeveniments per a aquest calendari."
+    },
+    "not_found": {
+      "message": "{entity_type} {name} no s'ha trobat"
+    },
+    "not_assigned": {
+      "message": "{entity} no assignat a {kid}"
+    },
+    "insufficient_points": {
+      "message": "{kid} té {current} punts però necessita {required} punts"
+    },
+    "already_claimed": {
+      "message": "{entity} ja ha estat reclamat"
+    },
+    "chore_claimed_by_other": {
+      "message": "Aquesta tasca ja ha estat reclamada per {claimed_by}"
+    },
+    "chore_already_approved": {
+      "message": "Tasca ja aprovada avui. Torna-ho a provar després del període de restabliment de l'aprovació."
+    },
+    "chore_pending_claim": {
+      "message": "La tasca té una reclamació pendent que espera aprovació o desaprovació."
+    },
+    "chore_completed_by_other": {
+      "message": "Aquesta tasca ja l'ha completat un altre nen en aquest període"
+    },
+    "invalid_status": {
+      "message": "L'estat {entity} és {status}, s'esperava {expected}"
+    },
+    "entity_mismatch": {
+      "message": "{provided} no coincideix amb {expected}"
+    },
+    "invalid_frequency": {
+      "message": "La freqüència recurrent {frequency} no és vàlida"
+    },
+    "chore_overdue_for_kid": {
+      "message": "La tasca {chore_name} està endarrerida per a {kid_name}"
+    },
+    "kid_not_assigned_to_chore": {
+      "message": "El nen {kid_name} no té assignada la tasca {chore_name}"
+    },
+    "shared_chore_cannot_have_kid": {
+      "message": "No es pot especificar un nen per a la tasca compartida {chore_name}. Les tasques compartides tenen una data de venciment per a tots els nens."
+    },
+    "required_field": {
+      "message": "Cal proporcionar {field}"
+    },
+    "invalid_date_format": {
+      "message": "Format de data no vàlid. Si us plau, proporcioneu una cadena de data vàlida (per exemple, AAAA-MM-DD o data i hora ISO 8601)."
+    },
+    "date_in_past": {
+      "message": "La data de venciment no pot ser anterior. Si us plau, indiqueu una data futura."
+    },
+    "missing_chore": {
+      "message": "Heu de proporcionar l'identificador o el nom de la tasca."
+    },
+    "missing_field": {
+      "message": "Falta el camp obligatori {field} a {entity}"
+    },
+    "invalid_date": {
+      "message": "La data {field} {date} no és vàlida"
+    },
+    "date_constraint": {
+      "message": "{constraint} violació: {detail}"
+    },
+    "operation_failed": {
+      "message": "{operation} ha fallat: {reason}"
+    },
+    "configuration_error": {
+      "message": "Error de configuració: {detail}"
+    }
+  }
+}

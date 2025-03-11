@@ -1,0 +1,3295 @@
+{
+  "title": "KidsChores",
+  "config": {
+    "step": {
+      "intro": {
+        "title": "Velkommen til KidsChores",
+        "description": "Denne guide vil guide dig gennem opsætning af KidsChores."
+      },
+      "data_recovery": {
+        "title": "Muligheder for datagendannelse",
+        "description": "Eksisterende KidsChores-data fundet i:\n{storage_path}\n\nFundet {backup_count} backupfiler.\n\nHvad vil du gerne gøre?",
+        "data": {
+          "backup_selection": "Vælg mulighed"
+        }
+      },
+      "points_label": {
+        "title": "Pointmærke",
+        "description": "Vælg en etiket og et ikon for punkter.",
+        "data": {
+          "points_label": "Pointmærke",
+          "points_icon": "Pointikon"
+        }
+      },
+      "reconfigure": {
+        "title": "Omkonfigurer systemindstillinger",
+        "description": "Opdater systemindstillinger som punktmærke og ikon.",
+        "data": {
+          "points_label": "Pointmærke",
+          "points_icon": "Pointikon"
+        }
+      },
+      "kid_count": {
+        "title": "Antal børn",
+        "description": "Hvor mange børn vil du have styr på?",
+        "data": {
+          "kid_count": "Antal børn"
+        }
+      },
+      "kids": {
+        "title": "Definer barn",
+        "description": "Indtast navnet på hvert barn.",
+        "data": {
+          "kid_name": "Barnets navn",
+          "internal_id": "Internt ID",
+          "ha_user": "Hjemmeassistent-bruger",
+          "enable_mobile_notifications": "Aktivér mobilnotifikationer",
+          "mobile_notify_service": "Underret tjenesten",
+          "enable_persistent_notifications": "Aktivér vedvarende notifikationer"
+        }
+      },
+      "parent_count": {
+        "title": "Antal forældre",
+        "description": "Hvor mange forældre vil du definere i første omgang?",
+        "data": {
+          "parent_count": "Antal forældre"
+        }
+      },
+      "parents": {
+        "title": "Definer forælder",
+        "description": "Indtast oplysninger for hver forælder.",
+        "data": {
+          "parent_name": "Forældernavn",
+          "ha_user_id": "Hjemmeassistent-bruger",
+          "associated_kids": "Tilknyttede børn",
+          "enable_mobile_notifications": "Aktivér mobilnotifikationer",
+          "mobile_notify_service": "Underret tjenesten",
+          "enable_persistent_notifications": "Aktivér vedvarende notifikationer",
+          "internal_id": "Internt ID"
+        }
+      },
+      "chore_count": {
+        "title": "Antal pligter",
+        "description": "Hvor mange pligter vil du definere?",
+        "data": {
+          "chore_count": "Antal pligter"
+        }
+      },
+      "chores": {
+        "title": "Tilføj pligt",
+        "description": "Opret en ny pligt med point, opgaver og en tilbagevendende tidsplan.",
+        "data": {
+          "chore_name": "📋 Navn på huslige pligter",
+          "chore_description": "📋 Beskrivelse (valgfrit)",
+          "icon": "📋 Ikon (mdi:xxx)",
+          "chore_labels": "📋 Etiketter (valgfrit)",
+          "default_points": "💰 Tildelte point",
+          "assigned_kids": "👥 Tildelte børn",
+          "completion_criteria": "👥 Fuldførelsestype",
+          "approval_reset_type": "➡️ Tilladte fuldførelser og nulstilling af timing",
+          "approval_reset_pending_claim_action": "➡️ Afventende krav ved nulstilling",
+          "overdue_handling_type": "⏰ Forfalden: Håndteringstype",
+          "auto_approve": "✅ Automatisk godkendelse af krav?",
+          "recurring_frequency": "🔄 Tidsplan: Hyppighed",
+          "custom_interval": "🔄 Tidsplan: Brugerdefineret interval (for brugerdefineret frekvens)",
+          "custom_interval_unit": "🔄 Tidsplan: Brugerdefineret intervalenhed",
+          "applicable_days": "📅 Tidsplan: Gældende dage (valgfrit)",
+          "due_date": "📅 Tidsplan: Forfaldsdato (valgfrit)",
+          "show_on_calendar": "📅 Vis i kalenderen?",
+          "chore_notifications": "🔔 Notifikationsbegivenheder (valgfrit)"
+        },
+        "data_description": {
+          "chore_name": "Unikt navn vist i hele systemet.",
+          "chore_description": "Valgfrie instruktioner eller detaljer om, hvordan du udfører denne opgave.",
+          "icon": "Ikon for materialedesign (f.eks. mdi:kost, mdi:opvaskemaskine).",
+          "chore_labels": "Tags til at organisere pligter (f.eks. 'køkken', 'udendørs'). Lad være med at skrive et tomt felt, hvis det ikke er nødvendigt.",
+          "default_points": "Point optjent når det er gennemført.",
+          "assigned_kids": "Børn der kan se og gøre krav på denne opgave.",
+          "completion_criteria": "Sådan fungerer delte pligter: Uafhængig (hvert barn udfører opgaven separat), Delt med alle (alle skal godkende) eller Delt først (første godkendelse fuldfører opgaven).",
+          "approval_reset_type": "Styrer, hvornår denne opgave nulstilles, og hvor mange fuldførelser der er tilladt i den periode.",
+          "approval_reset_pending_claim_action": "Når denne opgave nulstilles (baseret på tidspunktet for nulstilling af færdiggørelse ovenfor), hvad sker der så med krav, der stadig venter på godkendelse?",
+          "overdue_handling_type": "Handling efter forfaldsdato: Skjul status for forfalden, forbliv forfalden indtil den er gjort krav på, eller nulstil til afventer ved næste godkendelsescyklus.",
+          "auto_approve": "Når det er aktiveret, godkendes krav øjeblikkeligt uden gennemgang fra forældre.",
+          "recurring_frequency": "Hvor ofte opgaven gentages: Dagligt, Ugentligt, Månedligt, Årligt, Brugerdefineret eller Ingen.",
+          "custom_interval": "Antal tidsenheder mellem gentagelser (f.eks. 3 for 'hver 3. uge'). Bruges kun med brugerdefineret frekvens.",
+          "custom_interval_unit": "Tidsenhed for brugerdefineret interval (dage, uger, måneder). Bruges kun med brugerdefineret frekvens.",
+          "applicable_days": "Begræns opgaven til bestemte ugedage. Lad feltet stå tomt for alle dage.",
+          "due_date": "Valgfri deadline. Kan kombineres med tilbagevendende tidsplaner.",
+          "show_on_calendar": "Vis denne opgave i kalendervisningen.",
+          "chore_notifications": "Hvornår skal notifikationer sendes: Ved krav, ved godkendelse, ved afvisning eller enhver kombination."
+        }
+      },
+      "badge_count": {
+        "title": "Antal badges",
+        "description": "Hvor mange badges vil du definere?",
+        "data": {
+          "badge_count": "Antal badges"
+        }
+      },
+      "badges": {
+        "title": "Tilføj kumulativt badge",
+        "description": "Konfigurer detaljerne for et kumulativt badge. Disse badges belønner børn for at nå livstidspointgrænser og understøtter vedligeholdelsescyklusser for at fremme løbende præstation.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "target_type": "🎯 MÅL: Måltype",
+          "threshold_value": "🎯 MÅL: Tærskelværdi",
+          "maintenance_rules": "🎯 MÅL: Vedligeholdelsespunkter (valgfrit)",
+          "occasion_type": "🎉 Anledningstype",
+          "associated_achievement": "🏆 Tilknyttet præstation",
+          "associated_challenge": "🏁 Tilknyttet udfordring",
+          "selected_chores": "🧹 Registrerede pligter (valgfrit)",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser, multiplikator (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)",
+          "points_multiplier": "🎁 PRÆMIER: Pointmultiplikator (Standard 💎 1,0x)",
+          "recurring_frequency": "🔄 VEDLIGEHOLDELSESCYKLUS: Hyppighed",
+          "custom_interval": "🔄 VEDLIGEHOLDELSESCYKLUS: Brugerdefineret interval (påkrævet for brugerdefineret frekvens)",
+          "custom_interval_unit": "🔄 VEDLIGEHOLDELSESCYKLUS: Brugerdefineret intervalenhed (påkrævet for brugerdefineret frekvens)",
+          "start_date": "🔄 NULSTIL CYKLUS: Startdato (valgfrit)",
+          "end_date": "🔄 VEDLIGEHOLDELSESCYKLUS: Slutdato (valgfrit)",
+          "grace_period_days": "🔄 VEDLIGEHOLDELSESCYKLUS: Henstandsperiode i dage (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "target_type": "Vælg typen af mål for dette badge (f.eks. point eller antal pligter).",
+          "threshold_value": "Angiv det samlede antal livstidspoint, der kræves for at optjene dette badge.",
+          "maintenance_rules": "Angiv minimumspointene under vedligeholdelsescyklussen for at beholde badget og dets aktive multiplikator (valgfrit).",
+          "occasion_type": "Vælg typen af lejlighed for dette badge (f.eks. ferie, fødselsdag).",
+          "associated_achievement": "Knyt dette badge til en præstation for sporing.",
+          "associated_challenge": "Knyt dette badge til en udfordring til sporing.",
+          "selected_chores": "Vælg de opgaver, der bidrager med point til dette badge. Lad feltet stå tomt, hvis du vil spore alle tildelte opgaver (valgfrit).",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger, bonusser eller en pointmultiplikator. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit).",
+          "points_multiplier": "Hvis multiplikatoren er en valgt belønning, skal du indstille en multiplikator for point optjent, mens dette badge er aktivt (f.eks. 1,5x).",
+          "recurring_frequency": "Aktiver vedligeholdelsescyklussen, der kræver, at de angivne minimumspoint optjenes inden periodens udgang. (f.eks. ugentligt, månedligt).",
+          "custom_interval": "Angiv ANTAL dage, uger, måneder osv. for Brugerdefineret frekvens (f.eks. 3, hvis du angiver 3 uger). Gælder kun for Brugerdefineret frekvens.",
+          "custom_interval_unit": "Vælg enheden for det brugerdefinerede interval (f.eks. dage, uger). Gælder kun for brugerdefineret frekvens.",
+          "start_date": "Angiv startdatoen (valgfrit).",
+          "end_date": "Vælg datoen for afslutningen af vedligeholdelsescyklussen. (valgfrit).",
+          "grace_period_days": "Angiv antallet af ekstra dage efter cyklussens afslutning for at børnene skal opfylde de nødvendige point før degradering (valgfrit)."
+        }
+      },
+      "reward_count": {
+        "title": "Antal belønninger",
+        "description": "Hvor mange belønninger vil du definere?",
+        "data": {
+          "reward_count": "Belønningsantal"
+        }
+      },
+      "rewards": {
+        "title": "Definer belønning",
+        "description": "Indtast oplysninger for hver belønning.",
+        "data": {
+          "reward_name": "Belønningsnavn",
+          "internal_id": "Internt ID",
+          "reward_cost": "Belønningsomkostninger",
+          "reward_description": "Beskrivelse (valgfrit)",
+          "reward_labels": "Belønningsetiketter",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "penalty_count": {
+        "title": "Antal straffe",
+        "description": "Hvor mange straffe vil du definere?",
+        "data": {
+          "penalty_count": "Antal straffe"
+        }
+      },
+      "penalties": {
+        "title": "Definer straf",
+        "description": "Indtast detaljer for hver straf.",
+        "data": {
+          "penalty_name": "Strafnavn",
+          "penalty_description": "Beskrivelse (valgfrit)",
+          "penalty_labels": "Strafmærkater",
+          "internal_id": "Internt ID",
+          "penalty_points": "Strafpoint (negative)",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "bonus_count": {
+        "title": "Antal bonusser",
+        "description": "Hvor mange bonusser vil du definere?",
+        "data": {
+          "bonus_count": "Bonusser tæller"
+        }
+      },
+      "bonuses": {
+        "title": "Definer bonus",
+        "description": "Indtast oplysninger for hver bonus.",
+        "data": {
+          "bonus_name": "Bonusnavn",
+          "bonus_description": "Beskrivelse (valgfrit)",
+          "bonus_labels": "Bonusetiketter",
+          "internal_id": "Internt ID",
+          "bonus_points": "Bonuspoint",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "achievement_count": {
+        "title": "Antal præstationer",
+        "description": "Hvor mange præstationer vil du definere?",
+        "data": {
+          "achievement_count": "Præstationsantal"
+        }
+      },
+      "achievements": {
+        "title": "Definer præstation",
+        "description": "Indtast detaljer for hver præstation.",
+        "data": {
+          "name": "Præstationsnavn",
+          "description": "Beskrivelse (valgfrit)",
+          "achievement_labels": "Præstationsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte børn",
+          "type": "Type af præstation",
+          "selected_chore_id": "Vælg tilknyttet opgave",
+          "criteria": "Kriterier (valgfrit)",
+          "target_value": "Præstationsmål",
+          "reward_points": "Ekstra point for at fuldføre præstationen",
+          "internal_id": "Internt ID"
+        }
+      },
+      "challenge_count": {
+        "title": "Antal udfordringer",
+        "description": "Hvor mange udfordringer vil du definere?",
+        "data": {
+          "challenge_count": "Udfordringsantal"
+        }
+      },
+      "challenges": {
+        "title": "Definer udfordring",
+        "description": "Indtast detaljer for hver udfordring.",
+        "data": {
+          "name": "Udfordringsnavn",
+          "description": "Beskrivelse (valgfrit)",
+          "challenge_labels": "Udfordringsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte børn",
+          "type": "Type af udfordring",
+          "selected_chore_id": "Vælg opgave tilknyttet udfordring (valgfrit)",
+          "criteria": "Kriterier (valgfrit)",
+          "target_value": "Udfordringer Mål",
+          "reward_points": "Ekstra point for at gennemføre udfordringen",
+          "start_date": "Startdato",
+          "end_date": "Slutdato",
+          "internal_id": "Internt ID"
+        }
+      },
+      "finish": {
+        "title": "Gennemgå og færdiggør",
+        "description": "Gennemgå opsætningen:\n{summary}\nKlik på Send for at færdiggøre."
+      }
+    },
+    "error": {
+      "a_chore_must_be_selected": "Der skal vælges en opgave",
+      "badge_requires_assignment": "Mindst ét barn skal have tildelt dette badge",
+      "duplicate_achievement": "En præstation med dette navn findes allerede",
+      "duplicate_badge": "Der findes allerede et badge med dette navn",
+      "duplicate_challenge": "Der findes allerede en udfordring med dette navn",
+      "duplicate_chore": "En opgave med dette navn findes allerede",
+      "duplicate_kid": "Der findes allerede et barn med dette navn",
+      "duplicate_parent": "En forælder med dette navn findes allerede",
+      "duplicate_penalty": "Der findes allerede en straf med dette navn",
+      "duplicate_reward": "Der findes allerede en belønning med dette navn",
+      "duplicate_bonus": "Der findes allerede en bonus med dette navn",
+      "due_date_in_past": "Forfaldsdatoen skal være i fremtiden.",
+      "end_date_in_past": "Slutdatoen skal være i fremtiden.",
+      "end_date_not_after_start_date": "Slutdatoen skal være senere end startdatoen",
+      "invalid_achievement_count": "Ugyldigt antal præstationer",
+      "invalid_achievement_name": "Ugyldigt præstationsnavn",
+      "invalid_badge": "Ugyldigt badge",
+      "invalid_badge_count": "Ugyldigt antal badges",
+      "invalid_badge_name": "Ugyldigt badgenavn",
+      "invalid_challenge_count": "Ugyldigt antal udfordringer",
+      "invalid_challenge_name": "Ugyldigt udfordringsnavn",
+      "invalid_chore": "Ugyldig opgave",
+      "invalid_chore_count": "Ugyldigt antal opgaver",
+      "invalid_chore_name": "Ugyldigt navn på opgave",
+      "invalid_due_date": "Ugyldig forfaldsdato",
+      "date_required_for_frequency": "En forfaldsdato er påkrævet for denne tilbagevendende frekvens. Rydning af datoer fungerer kun med Ingen, Daglig eller Ugentlig frekvens.",
+      "invalid_end_date": "Ugyldig slutdato.",
+      "invalid_kid_count": "Ugyldigt antal børn",
+      "invalid_kid_name": "Ugyldigt børnenavn",
+      "invalid_parent_count": "Ugyldigt antal overordnede",
+      "invalid_parent_name": "Ugyldigt forældrenavn",
+      "no_kids_assigned": "Mindst ét barn skal tildeles opgaven",
+      "invalid_penalty": "Ugyldig straf",
+      "invalid_penalty_count": "Ugyldigt antal straffe",
+      "invalid_penalty_name": "Ugyldigt navn på straf",
+      "invalid_reward": "Ugyldig belønning",
+      "invalid_reward_count": "Ugyldigt antal belønninger",
+      "invalid_reward_name": "Ugyldigt belønningsnavn",
+      "invalid_bonus": "Ugyldig bonus",
+      "invalid_bonus_count": "Ugyldigt bonusantal",
+      "invalid_bonus_name": "Ugyldigt bonusnavn",
+      "invalid_start_date": "Ugyldig startdato.",
+      "start_date_in_past": "Startdatoen skal være i fremtiden.",
+      "points_label_required": "Pointmærkat er påkrævet",
+      "corrupt_file": "Den valgte fil indeholder ugyldig JSON og kan ikke læses.",
+      "invalid_structure": "Den valgte fil mangler den nødvendige datastruktur.",
+      "file_not_found": "Den valgte fil kunne ikke findes.",
+      "invalid_selection": "Vælg venligst en gyldig mulighed.",
+      "invalid_input": "Det angivne input er ugyldigt. Kontroller dine indtastninger, og prøv igen.",
+      "duplicate_name": "Der findes allerede et element med dette navn. Vælg venligst et andet navn.",
+      "invalid_date_range": "Datointervallet er ugyldigt. Slutdatoen skal være efter startdatoen.",
+      "missing_required": "Obligatorisk felt mangler. Angiv venligst alle nødvendige oplysninger.",
+      "invalid_format": "Formatet er ugyldigt. Kontroller venligst din indtastning, og prøv igen.",
+      "invalid_update_interval": "Ugyldigt opdateringsinterval. Skal være et positivt heltal.",
+      "invalid_calendar_show_period": "Ugyldig kalendervisningsperiode. Skal være et positivt heltal.",
+      "invalid_retention_period": "Ugyldig opbevaringsperiode. Skal være et positivt heltal.",
+      "invalid_points_adjust_values": "Ugyldige pointjusteringsværdier. Skal være en liste."
+    },
+    "abort": {
+      "single_instance_allowed": "Kun én KidsChores-instans kan konfigureres.",
+      "already_configured": "KidsChores-data er blevet gendannet. Du kan nu genindlæse integrationen.",
+      "file_not_found": "Den valgte backupfil kunne ikke findes.",
+      "corrupt_file": "Den valgte fil indeholder ugyldig JSON og kan ikke læses.",
+      "invalid_structure": "Den valgte fil mangler den nødvendige KidsChores-datastruktur.",
+      "reconfigure_failed": "Omkonfiguration mislykkedes. Prøv igen.",
+      "reconfigure_successful": "Systemindstillingerne er blevet opdateret."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Børneopgaver Muligheder",
+        "description": "Administrer børn, pligter, badges, belønninger, straffe, bonusser eller afslut.",
+        "data": {
+          "menu_selection": "Vælg en mulighed"
+        }
+      },
+      "manage_entity": {
+        "title": "Vælg handling",
+        "description": "Tilføj, rediger eller slet muligheder.",
+        "data": {
+          "manage_action": "Vælg en handling"
+        }
+      },
+      "select_entity": {
+        "title": "Vælg {entity_type}",
+        "description": "Vælg den {entity_type} , du vil {action}.",
+        "data": {
+          "entity_name": "Navn"
+        }
+      },
+      "manage_points": {
+        "title": "Rediger punkters etiket og ikon",
+        "description": "Skift den etiket og det ikon, der bruges til at repræsentere punkter.",
+        "data": {
+          "points_label": "Pointmærke",
+          "points_icon": "Pointikon"
+        }
+      },
+      "add_kid": {
+        "title": "Tilføj barn",
+        "description": "Angiv detaljerne for det nye barn.",
+        "data": {
+          "kid_name": "Barnets navn",
+          "ha_user": "Hjemmeassistent-bruger",
+          "enable_mobile_notifications": "Aktivér mobilnotifikationer",
+          "mobile_notify_service": "Underret tjenesten",
+          "enable_persistent_notifications": "Aktivér vedvarende notifikationer",
+          "internal_id": "Internt ID"
+        }
+      },
+      "add_parent": {
+        "title": "Tilføj forælder",
+        "description": "Angiv oplysningerne for den nye forælder.",
+        "data": {
+          "parent_name": "Forældernavn",
+          "ha_user_id": "Hjemmeassistent-bruger",
+          "associated_kids": "Tilknyttede børn",
+          "enable_mobile_notifications": "Aktivér mobilnotifikationer",
+          "mobile_notify_service": "Underret tjenesten",
+          "enable_persistent_notifications": "Aktivér vedvarende notifikationer",
+          "internal_id": "Internt ID"
+        }
+      },
+      "add_chore": {
+        "title": "Tilføj pligt",
+        "description": "Opret en ny pligt med point, opgaver og en tilbagevendende tidsplan.",
+        "data": {
+          "chore_name": "📋 Navn på huslige pligter",
+          "chore_description": "📋 Beskrivelse (valgfrit)",
+          "icon": "📋 Ikon (mdi:xxx)",
+          "chore_labels": "📋 Etiketter (valgfrit)",
+          "default_points": "💰 Tildelte point",
+          "assigned_kids": "👥 Tildelte børn",
+          "completion_criteria": "👥 Fuldførelsestype",
+          "approval_reset_type": "➡️ Tilladte fuldførelser og nulstilling af timing",
+          "approval_reset_pending_claim_action": "➡️ Afventende krav ved nulstilling",
+          "overdue_handling_type": "⏰ Forfalden: Håndteringstype",
+          "auto_approve": "✅ Automatisk godkendelse af krav?",
+          "recurring_frequency": "🔄 Tidsplan: Hyppighed",
+          "custom_interval": "🔄 Tidsplan: Brugerdefineret interval (for brugerdefineret frekvens)",
+          "custom_interval_unit": "🔄 Tidsplan: Brugerdefineret intervalenhed",
+          "applicable_days": "📅 Tidsplan: Gældende dage (valgfrit)",
+          "due_date": "📅 Tidsplan: Forfaldsdato (valgfrit)",
+          "show_on_calendar": "📅 Vis i kalenderen?",
+          "chore_notifications": "🔔 Notifikationsbegivenheder (valgfrit)"
+        },
+        "data_description": {
+          "chore_name": "Unikt navn vist i hele systemet.",
+          "chore_description": "Valgfrie instruktioner eller detaljer om, hvordan du udfører denne opgave.",
+          "icon": "Ikon for materialedesign (f.eks. mdi:kost, mdi:opvaskemaskine).",
+          "chore_labels": "Tags til at organisere pligter (f.eks. 'køkken', 'udendørs'). Lad være med at skrive et tomt felt, hvis det ikke er nødvendigt.",
+          "default_points": "Point optjent når det er gennemført.",
+          "assigned_kids": "Børn der kan se og gøre krav på denne opgave.",
+          "completion_criteria": "Sådan fungerer delte pligter: Uafhængig (hvert barn udfører opgaven separat), Delt med alle (alle skal godkende) eller Delt først (første godkendelse fuldfører opgaven).",
+          "approval_reset_type": "Styrer, hvornår denne opgave nulstilles, og hvor mange fuldførelser der er tilladt i den periode.",
+          "approval_reset_pending_claim_action": "Når denne opgave nulstilles (baseret på tidspunktet for nulstilling af færdiggørelse ovenfor), hvad sker der så med krav, der stadig venter på godkendelse?",
+          "overdue_handling_type": "Handling efter forfaldsdato: Skjul status for forfalden, forbliv forfalden indtil den er gjort krav på, eller nulstil til afventer ved næste godkendelsescyklus.",
+          "auto_approve": "Når det er aktiveret, godkendes krav øjeblikkeligt uden gennemgang fra forældre.",
+          "recurring_frequency": "Hvor ofte opgaven gentages: Dagligt, Ugentligt, Månedligt, Årligt, Brugerdefineret eller Ingen.",
+          "custom_interval": "Antal tidsenheder mellem gentagelser (f.eks. 3 for 'hver 3. uge'). Bruges kun med brugerdefineret frekvens.",
+          "custom_interval_unit": "Tidsenhed for brugerdefineret interval (dage, uger, måneder). Bruges kun med brugerdefineret frekvens.",
+          "applicable_days": "Begræns opgaven til bestemte ugedage. Lad feltet stå tomt for alle dage.",
+          "due_date": "Valgfri deadline. Kan kombineres med tilbagevendende tidsplaner.",
+          "show_on_calendar": "Vis denne opgave i kalendervisningen.",
+          "chore_notifications": "Hvornår skal notifikationer sendes: Ved krav, ved godkendelse, ved afvisning eller enhver kombination."
+        }
+      },
+      "add_badge": {
+        "title": "Tilføj badge",
+        "description": "Angiv den ønskede type til det nye badge.",
+        "data": {
+          "badge_type": "Badgetype"
+        }
+      },
+      "add_badge_cumulative": {
+        "title": "Tilføj kumulativt badge",
+        "description": "Konfigurer detaljerne for et kumulativt badge. Disse badges belønner børn for at nå livstidspointgrænser og understøtter vedligeholdelsescyklusser for at fremme løbende præstation.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "target_type": "🎯 MÅL: Måltype",
+          "threshold_value": "🎯 MÅL: Tærskelværdi",
+          "maintenance_rules": "🎯 MÅL: Vedligeholdelsespunkter (valgfrit)",
+          "occasion_type": "🎉 Anledningstype",
+          "associated_achievement": "🏆 Tilknyttet præstation",
+          "associated_challenge": "🏁 Tilknyttet udfordring",
+          "selected_chores": "🧹 Registrerede pligter (valgfrit)",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser, multiplikator (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)",
+          "points_multiplier": "🎁 PRÆMIER: Pointmultiplikator (Standard 💎 1,0x)",
+          "recurring_frequency": "🔄 VEDLIGEHOLDELSESCYKLUS: Hyppighed",
+          "custom_interval": "🔄 VEDLIGEHOLDELSESCYKLUS: Brugerdefineret interval (påkrævet for brugerdefineret frekvens)",
+          "custom_interval_unit": "🔄 VEDLIGEHOLDELSESCYKLUS: Brugerdefineret intervalenhed (påkrævet for brugerdefineret frekvens)",
+          "start_date": "🔄 NULSTIL CYKLUS: Startdato (valgfrit)",
+          "end_date": "🔄 VEDLIGEHOLDELSESCYKLUS: Slutdato (valgfrit)",
+          "grace_period_days": "🔄 VEDLIGEHOLDELSESCYKLUS: Henstandsperiode i dage (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "target_type": "Vælg typen af mål for dette badge (f.eks. point eller antal pligter).",
+          "threshold_value": "Angiv det samlede antal livstidspoint, der kræves for at optjene dette badge.",
+          "maintenance_rules": "Angiv minimumspointene under vedligeholdelsescyklussen for at beholde badget og dets aktive multiplikator (valgfrit).",
+          "occasion_type": "Vælg typen af lejlighed for dette badge (f.eks. ferie, fødselsdag).",
+          "associated_achievement": "Knyt dette badge til en præstation for sporing.",
+          "associated_challenge": "Knyt dette badge til en udfordring til sporing.",
+          "selected_chores": "Vælg de opgaver, der bidrager med point til dette badge. Lad feltet stå tomt, hvis du vil spore alle tildelte opgaver (valgfrit).",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger, bonusser eller en pointmultiplikator. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit).",
+          "points_multiplier": "Hvis multiplikatoren er en valgt belønning, skal du indstille en multiplikator for point optjent, mens dette badge er aktivt (f.eks. 1,5x).",
+          "recurring_frequency": "Aktiver vedligeholdelsescyklussen, der kræver, at de angivne minimumspoint optjenes inden periodens udgang. (f.eks. ugentligt, månedligt).",
+          "custom_interval": "Angiv ANTAL dage, uger, måneder osv. for Brugerdefineret frekvens (f.eks. 3, hvis du angiver 3 uger). Gælder kun for Brugerdefineret frekvens.",
+          "custom_interval_unit": "Vælg enheden for det brugerdefinerede interval (f.eks. dage, uger). Gælder kun for brugerdefineret frekvens.",
+          "start_date": "Angiv startdatoen (valgfrit).",
+          "end_date": "Vælg datoen for afslutningen af vedligeholdelsescyklussen. (valgfrit).",
+          "grace_period_days": "Angiv antallet af ekstra dage efter cyklussens afslutning for at børnene skal opfylde de nødvendige point før degradering (valgfrit)."
+        }
+      },
+      "add_badge_daily": {
+        "title": "Tilføj daglig badge",
+        "description": "Konfigurer detaljerne for et dagligt badge. Disse badges belønner børn for at fuldføre daglige opgaver eller nå daglige grænser.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "target_type": "🎯 DAGLIGT MÅL: Måltype",
+          "threshold_value": "🎯 DAGLIGT MÅL: Tærskelværdi",
+          "selected_chores": "🧹 Registrerede pligter (valgfrit)",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser, straffe (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "target_type": "Vælg typen af dagligt mål for dette badge (f.eks. point, antal pligter eller dage).",
+          "threshold_value": "Angiv de daglige point, antal opgaver eller antal dage, der kræves for at optjene dette mærke. For måltyperne 'Dage' skal du indtaste 1, da mærket evalueres dagligt (f.eks. 1 for en dags fuldførelse af alle valgte opgaver).",
+          "selected_chores": "Vælg de opgaver, der bidrager med point til dette badge. Lad feltet stå tomt, hvis du vil spore alle tildelte opgaver (valgfrit).",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger, bonusser eller straffe. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. Straffer vil kun blive anvendt, hvis badget ikke er optjent inden slutdatoen eller nulstillingsdatoen. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit)."
+        }
+      },
+      "add_badge_periodic": {
+        "title": "Tilføj periodisk badge",
+        "description": "Konfigurer detaljerne for et periodisk badge. Disse badges belønner børn for at nå tærskler inden for en defineret tidsperiode og understøtter nulstillingscyklusser for løbende præstation.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "target_type": "🎯 MÅL: Måltype",
+          "threshold_value": "🎯 MÅL: Tærskelværdi",
+          "maintenance_rules": "🎯 MÅL: Vedligeholdelsespunkter (valgfrit)",
+          "occasion_type": "🎉 Anledningstype",
+          "associated_achievement": "🏆 Tilknyttet præstation",
+          "associated_challenge": "🏁 Tilknyttet udfordring",
+          "selected_chores": "🧹 Registrerede pligter (valgfrit)",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser, straffe (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)",
+          "recurring_frequency": "🔄 NULSTILCYKLUS: Frekvens",
+          "custom_interval": "🔄 NULSTILCYKLUS: Brugerdefineret interval (påkrævet for brugerdefineret frekvens)",
+          "custom_interval_unit": "🔄 NULSTIL CYKLUS: Brugerdefineret intervalenhed (påkrævet for brugerdefineret frekvens)",
+          "start_date": "🔄 NULSTIL CYKLUS: Startdato (valgfrit)",
+          "end_date": "🔄 NULSTIL CYKLUS: Slutdato (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "target_type": "Vælg typen af mål for dette badge (f.eks. point, antal opgaver, dage eller række).",
+          "threshold_value": "Angiv det samlede antal point, antallet af opgaver eller antallet af dage (f.eks. for serier med fuldførte opgaver), der kræves for at optjene dette mærke inden for den definerede periode.",
+          "maintenance_rules": "Angiv minimumspointene under nulstillingscyklussen for at beholde badget og dets aktive multiplikator (valgfrit).",
+          "occasion_type": "Vælg typen af lejlighed for dette badge (f.eks. ferie, fødselsdag).",
+          "associated_achievement": "Knyt dette badge til en præstation for sporing.",
+          "associated_challenge": "Knyt dette badge til en udfordring til sporing.",
+          "selected_chores": "Vælg de opgaver, der bidrager med point til dette badge. Lad feltet stå tomt, hvis du vil spore alle tildelte opgaver (valgfrit).",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger, bonusser eller straffe. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. Straffer vil kun blive anvendt, hvis badget ikke er optjent inden slutdatoen eller nulstillingsdatoen. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit).",
+          "recurring_frequency": "Definer nulstillingsplanen for dette badge (f.eks. ugentligt, månedligt).",
+          "custom_interval": "Angiv ANTAL dage, uger, måneder osv. for Brugerdefineret frekvens (f.eks. 3, hvis du angiver 3 uger).",
+          "custom_interval_unit": "Vælg enheden for det brugerdefinerede interval (f.eks. dage, uger).",
+          "start_date": "Indstil startdatoen for nulstillingscyklussen (valgfrit).",
+          "end_date": "Indstil slutdatoen for nulstillingscyklussen (valgfrit)."
+        }
+      },
+      "add_badge_achievement": {
+        "title": "Tilføj præstationsrelateret badge",
+        "description": "Konfigurer detaljerne for et badge, der er knyttet til en præstation. Disse badges belønner børn for at fuldføre specifikke præstationer.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "associated_achievement": "🏆 Tilknyttet præstation",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "associated_achievement": "Knyt dette badge til en specifik præstation for sporing.",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger eller bonusser. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. Der vil kun blive anvendt straffe, hvis badget ikke er optjent inden slutdatoen eller nulstillingsdatoen. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit)."
+        }
+      },
+      "add_badge_challenge": {
+        "title": "Tilføj badge relateret til udfordring",
+        "description": "Konfigurer detaljerne for et badge, der er knyttet til en udfordring. Disse badges belønner børn for at gennemføre specifikke udfordringer.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "associated_challenge": "🏁 Tilknyttet udfordring",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "associated_challenge": "Knyt dette badge til en specifik udfordring til sporing.",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger eller bonusser. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. Der vil kun blive anvendt straffe, hvis badget ikke er optjent inden slutdatoen eller nulstillingsdatoen. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit)."
+        }
+      },
+      "add_badge_special": {
+        "title": "Tilføj badge til særlige lejligheder",
+        "description": "Konfigurer detaljerne for et badge, der er oprettet til særlige lejligheder. Disse badges belønner børn for begivenheder som fødselsdage eller helligdage.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "occasion_type": "🎉 Anledningstype",
+          "end_date": "🎉 Dato for lejlighed",
+          "recurring_frequency": "🔄 GENTAGENDE: Hyppighed",
+          "custom_interval": "🔄 GENTAGENDE: Brugerdefineret interval (påkrævet for brugerdefineret frekvens)",
+          "custom_interval_unit": "🔄 GENTAGENDE: Brugerdefineret intervalenhed (påkrævet for brugerdefineret frekvens)",
+          "start_date": "🔄 GENTAGENDE: Startdato (valgfrit)",
+          "grace_period_days": "🔄 GENTAGENDE: Frist i dage (valgfrit)",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "occasion_type": "Vælg typen af lejlighed for dette badge (f.eks. ferie, fødselsdag).",
+          "end_date": "Sæt datoen for lejligheden.",
+          "recurring_frequency": "Definer nulstillingsplanen for dette badge (f.eks. ugentligt, månedligt).",
+          "custom_interval": "Angiv ANTAL dage, uger, måneder osv. for Brugerdefineret frekvens (f.eks. 3, hvis du angiver 3 uger).",
+          "custom_interval_unit": "Vælg enheden for det brugerdefinerede interval (f.eks. dage, uger).",
+          "start_date": "Indstil startdatoen for nulstillingscyklussen (valgfrit).",
+          "grace_period_days": "Angiv antallet af ekstra dage efter cyklussens afslutning, hvor børnene skal opfylde de nødvendige point før degradering (valgfrit).",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger eller bonusser. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. Der vil kun blive anvendt straffe, hvis badget ikke er optjent inden slutdatoen eller nulstillingsdatoen. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit)."
+        }
+      },
+      "add_reward": {
+        "title": "Tilføj belønning",
+        "description": "Angiv detaljerne for den nye belønning.",
+        "data": {
+          "reward_name": "Belønningsnavn",
+          "internal_id": "Internt ID",
+          "reward_cost": "Belønningsomkostninger",
+          "reward_description": "Beskrivelse (valgfrit)",
+          "reward_labels": "Belønningsetiketter",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "add_penalty": {
+        "title": "Tilføj straf",
+        "description": "Angiv detaljerne for den nye straf.",
+        "data": {
+          "penalty_name": "Strafnavn",
+          "penalty_description": "Beskrivelse (valgfrit)",
+          "penalty_labels": "Strafmærkater",
+          "internal_id": "Internt ID",
+          "penalty_points": "Strafpoint (negative)",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "add_bonus": {
+        "title": "Tilføj bonus",
+        "description": "Angiv detaljerne for den nye bonus.",
+        "data": {
+          "bonus_name": "Bonusnavn",
+          "bonus_description": "Beskrivelse (valgfrit)",
+          "bonus_labels": "Bonusetiketter",
+          "internal_id": "Internt ID",
+          "bonus_points": "Bonuspoint",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "add_achievement": {
+        "title": "Definer præstation",
+        "description": "Indtast detaljer for hver præstation.",
+        "data": {
+          "name": "Præstationsnavn",
+          "description": "Beskrivelse (valgfrit)",
+          "achievement_labels": "Præstationsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte børn",
+          "type": "Type af præstation",
+          "selected_chore_id": "Vælg tilknyttet opgave",
+          "criteria": "Kriterier (valgfrit)",
+          "target_value": "Præstationsmål",
+          "reward_points": "Ekstra point for at fuldføre præstationen",
+          "internal_id": "Internt ID"
+        }
+      },
+      "add_challenge": {
+        "title": "Definer udfordring",
+        "description": "Indtast detaljer for hver udfordring.",
+        "data": {
+          "name": "Udfordringsnavn",
+          "description": "Beskrivelse (valgfrit)",
+          "challenge_labels": "Udfordringsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte børn",
+          "type": "Type af udfordring",
+          "selected_chore_id": "Vælg opgave tilknyttet udfordring (valgfrit)",
+          "criteria": "Kriterier (valgfrit)",
+          "target_value": "Udfordringer Mål",
+          "reward_points": "Ekstra point for at gennemføre udfordringen",
+          "start_date": "Startdato",
+          "end_date": "Slutdato",
+          "internal_id": "Internt ID"
+        }
+      },
+      "edit_kid": {
+        "title": "Rediger barn",
+        "description": "Rediger oplysningerne for det valgte barn.",
+        "data": {
+          "kid_name": "Barnets navn",
+          "ha_user": "Hjemmeassistent-bruger",
+          "enable_mobile_notifications": "Aktivér mobilnotifikationer",
+          "mobile_notify_service": "Underret tjenesten",
+          "enable_persistent_notifications": "Aktivér vedvarende notifikationer",
+          "internal_id": "Internt ID"
+        }
+      },
+      "edit_parent": {
+        "title": "Rediger overordnet",
+        "description": "Rediger oplysningerne for den valgte forælder.",
+        "data": {
+          "parent_name": "Forældernavn",
+          "ha_user_id": "Hjemmeassistent-bruger",
+          "associated_kids": "Tilknyttede børn",
+          "enable_mobile_notifications": "Aktivér mobilnotifikationer",
+          "mobile_notify_service": "Underret tjenesten",
+          "enable_persistent_notifications": "Aktivér vedvarende notifikationer",
+          "internal_id": "Internt ID"
+        }
+      },
+      "edit_chore": {
+        "title": "Rediger opgave",
+        "description": "Rediger detaljerne for den valgte opgave.",
+        "data": {
+          "chore_name": "📋 Navn på huslige pligter",
+          "chore_description": "📋 Beskrivelse (valgfrit)",
+          "icon": "📋 Ikon (mdi:xxx)",
+          "chore_labels": "📋 Etiketter (valgfrit)",
+          "internal_id": "Internt ID",
+          "default_points": "💰 Tildelte point",
+          "assigned_kids": "👥 Tildelte børn",
+          "completion_criteria": "👥 Fuldførelsestype",
+          "approval_reset_type": "➡️ Tilladte fuldførelser og nulstilling af timing",
+          "approval_reset_pending_claim_action": "➡️ Afventende krav ved nulstilling",
+          "overdue_handling_type": "⏰ Forfalden: Håndteringstype",
+          "auto_approve": "✅ Automatisk godkendelse af krav?",
+          "recurring_frequency": "🔄 Tidsplan: Hyppighed",
+          "custom_interval": "🔄 Tidsplan: Brugerdefineret interval (for brugerdefineret frekvens)",
+          "custom_interval_unit": "🔄 Tidsplan: Brugerdefineret intervalenhed",
+          "applicable_days": "📅 Tidsplan: Gældende dage (valgfrit)",
+          "due_date": "📅 Tidsplan: Forfaldsdato (valgfrit)",
+          "show_on_calendar": "📅 Vis i kalenderen?",
+          "chore_notifications": "🔔 Notifikationsbegivenheder (valgfrit)"
+        },
+        "data_description": {
+          "chore_name": "Unikt navn vist i hele systemet.",
+          "chore_description": "Valgfrie instruktioner eller detaljer om, hvordan du udfører denne opgave.",
+          "icon": "Ikon for materialedesign (f.eks. mdi:kost, mdi:opvaskemaskine).",
+          "chore_labels": "Tags til at organisere pligter (f.eks. 'køkken', 'udendørs'). Lad være med at skrive et tomt felt, hvis det ikke er nødvendigt.",
+          "default_points": "Point optjent når det er gennemført.",
+          "assigned_kids": "Børn der kan se og gøre krav på denne opgave.",
+          "completion_criteria": "Sådan fungerer delte pligter: Uafhængig (hvert barn udfører opgaven separat), Delt med alle (alle skal godkende) eller Delt først (første godkendelse fuldfører opgaven).",
+          "approval_reset_type": "Styrer, hvornår denne opgave nulstilles, og hvor mange fuldførelser der er tilladt i den periode.",
+          "approval_reset_pending_claim_action": "Når denne opgave nulstilles (baseret på tidspunktet for nulstilling af færdiggørelse ovenfor), hvad sker der så med krav, der stadig venter på godkendelse?",
+          "overdue_handling_type": "Handling efter forfaldsdato: Skjul status for forfalden, forbliv forfalden indtil den er gjort krav på, eller nulstil til afventer ved næste godkendelsescyklus.",
+          "auto_approve": "Når det er aktiveret, godkendes krav øjeblikkeligt uden gennemgang fra forældre.",
+          "recurring_frequency": "Hvor ofte opgaven gentages: Dagligt, Ugentligt, Månedligt, Årligt, Brugerdefineret eller Ingen.",
+          "custom_interval": "Antal tidsenheder mellem gentagelser (f.eks. 3 for 'hver 3. uge'). Bruges kun med brugerdefineret frekvens.",
+          "custom_interval_unit": "Tidsenhed for brugerdefineret interval (dage, uger, måneder). Bruges kun med brugerdefineret frekvens.",
+          "applicable_days": "Begræns opgaven til bestemte ugedage. Lad feltet stå tomt for alle dage.",
+          "due_date": "Valgfri deadline. Kan kombineres med tilbagevendende skemaer. For SELVSTÆNDIGE pligter fungerer dette som en skabelon - en ekstra skærm vises, der tillader individuelle datoer pr. barn.",
+          "show_on_calendar": "Vis denne opgave i kalendervisningen.",
+          "chore_notifications": "Hvornår skal notifikationer sendes: Ved krav, ved godkendelse, ved afvisning eller enhver kombination."
+        }
+      },
+      "edit_chore_per_kid_dates": {
+        "title": "Rediger forfaldsdatoer pr. barn: {chore_name}",
+        "description": "Angiv individuelle forfaldsdatoer for hvert tildelt barn. Datofeltet på den primære redigeringsformular fungerer som en **skabelon** for nemheds skyld – brug det til hurtigt at anvende den samme dato på alle børn via afkrydsningsfeltet nedenfor, eller lad det være tomt og angiv datoer individuelt her.\n\nFelter vises for: {kid_names}. Lad feltet være tomt, hvis der ikke er nogen deadline.{template_date}",
+        "data": {
+          "apply_template_to_all": "Anvend skabelondato på alle børn"
+        },
+        "data_description": {
+          "apply_template_to_all": "Markér dette felt for at anvende den dato, der er angivet på hovedsiden for redigering af opgaver, på alle tildelte børn og overskrive deres individuelle datoer."
+        }
+      },
+      "edit_badge_cumulative": {
+        "title": "Rediger kumulativt badge",
+        "description": "Konfigurer detaljerne for et kumulativt badge. Disse badges belønner børn for at nå livstidspointgrænser og understøtter vedligeholdelsescyklusser for at fremme løbende præstation.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "target_type": "🎯 MÅL: Måltype",
+          "threshold_value": "🎯 MÅL: Tærskelværdi",
+          "maintenance_rules": "🎯 MÅL: Vedligeholdelsespunkter (valgfrit)",
+          "occasion_type": "🎉 Anledningstype",
+          "associated_achievement": "🏆 Tilknyttet præstation",
+          "associated_challenge": "🏁 Tilknyttet udfordring",
+          "selected_chores": "🧹 Registrerede pligter (valgfrit)",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser, multiplikator (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)",
+          "points_multiplier": "🎁 PRÆMIER: Pointmultiplikator (Standard 💎 1,0x)",
+          "recurring_frequency": "🔄 VEDLIGEHOLDELSESCYKLUS: Hyppighed",
+          "custom_interval": "🔄 VEDLIGEHOLDELSESCYKLUS: Brugerdefineret interval (påkrævet for brugerdefineret frekvens)",
+          "custom_interval_unit": "🔄 VEDLIGEHOLDELSESCYKLUS: Brugerdefineret intervalenhed (påkrævet for brugerdefineret frekvens)",
+          "start_date": "🔄 NULSTIL CYKLUS: Startdato (valgfrit)",
+          "end_date": "🔄 VEDLIGEHOLDELSESCYKLUS: Slutdato (valgfrit)",
+          "grace_period_days": "🔄 VEDLIGEHOLDELSESCYKLUS: Henstandsperiode i dage (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "target_type": "Vælg typen af mål for dette badge (f.eks. point eller antal pligter).",
+          "threshold_value": "Angiv det samlede antal livstidspoint, der kræves for at optjene dette badge.",
+          "maintenance_rules": "Angiv minimumspointene under vedligeholdelsescyklussen for at beholde badget og dets aktive multiplikator (valgfrit).",
+          "occasion_type": "Vælg typen af lejlighed for dette badge (f.eks. ferie, fødselsdag).",
+          "associated_achievement": "Knyt dette badge til en præstation for sporing.",
+          "associated_challenge": "Knyt dette badge til en udfordring til sporing.",
+          "selected_chores": "Vælg de opgaver, der bidrager med point til dette badge. Lad feltet stå tomt, hvis du vil spore alle tildelte opgaver (valgfrit).",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger, bonusser eller en pointmultiplikator. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit).",
+          "points_multiplier": "Hvis multiplikatoren er en valgt belønning, skal du indstille en multiplikator for point optjent, mens dette badge er aktivt (f.eks. 1,5x).",
+          "recurring_frequency": "Aktiver vedligeholdelsescyklussen, der kræver, at de angivne minimumspoint optjenes inden periodens udgang. (f.eks. ugentligt, månedligt).",
+          "custom_interval": "Angiv ANTAL dage, uger, måneder osv. for Brugerdefineret frekvens (f.eks. 3, hvis du angiver 3 uger). Gælder kun for Brugerdefineret frekvens.",
+          "custom_interval_unit": "Vælg enheden for det brugerdefinerede interval (f.eks. dage, uger). Gælder kun for brugerdefineret frekvens.",
+          "start_date": "Angiv startdatoen (valgfrit).",
+          "end_date": "Vælg datoen for afslutningen af vedligeholdelsescyklussen. (valgfrit).",
+          "grace_period_days": "Angiv antallet af ekstra dage efter cyklussens afslutning for at børnene skal opfylde de nødvendige point før degradering (valgfrit)."
+        }
+      },
+      "edit_badge_daily": {
+        "title": "Rediger daglig badge",
+        "description": "Konfigurer detaljerne for et dagligt badge. Disse badges belønner børn for at fuldføre daglige opgaver eller nå daglige grænser.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "target_type": "🎯 DAGLIGT MÅL: Måltype",
+          "threshold_value": "🎯 DAGLIGT MÅL: Tærskelværdi",
+          "selected_chores": "🧹 Registrerede pligter (valgfrit)",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser, straffe (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "target_type": "Vælg typen af dagligt mål for dette badge (f.eks. point, antal pligter eller dage).",
+          "threshold_value": "Angiv de daglige point, antal opgaver eller antal dage, der kræves for at optjene dette mærke. For måltyperne 'Dage' skal du indtaste 1, da mærket evalueres dagligt (f.eks. 1 for en dags fuldførelse af alle valgte opgaver).",
+          "selected_chores": "Vælg de opgaver, der bidrager med point til dette badge. Lad feltet stå tomt, hvis du vil spore alle tildelte opgaver (valgfrit).",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger, bonusser eller straffe. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. Straffer vil kun blive anvendt, hvis badget ikke er optjent inden slutdatoen eller nulstillingsdatoen. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit)."
+        }
+      },
+      "edit_badge_periodic": {
+        "title": "Rediger periodisk badge",
+        "description": "Konfigurer detaljerne for et periodisk badge. Disse badges belønner børn for at nå tærskler inden for en defineret tidsperiode og understøtter nulstillingscyklusser for løbende præstation.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "target_type": "🎯 MÅL: Måltype",
+          "threshold_value": "🎯 MÅL: Tærskelværdi",
+          "maintenance_rules": "🎯 MÅL: Vedligeholdelsespunkter (valgfrit)",
+          "occasion_type": "🎉 Anledningstype",
+          "associated_achievement": "🏆 Tilknyttet præstation",
+          "associated_challenge": "🏁 Tilknyttet udfordring",
+          "selected_chores": "🧹 Registrerede pligter (valgfrit)",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser, straffe (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)",
+          "recurring_frequency": "🔄 NULSTILCYKLUS: Frekvens",
+          "custom_interval": "🔄 NULSTILCYKLUS: Brugerdefineret interval (påkrævet for brugerdefineret frekvens)",
+          "custom_interval_unit": "🔄 NULSTIL CYKLUS: Brugerdefineret intervalenhed (påkrævet for brugerdefineret frekvens)",
+          "start_date": "🔄 NULSTIL CYKLUS: Startdato (valgfrit)",
+          "end_date": "🔄 NULSTIL CYKLUS: Slutdato (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "target_type": "Vælg typen af mål for dette badge (f.eks. point, antal opgaver, dage eller række).",
+          "threshold_value": "Angiv det samlede antal point, antallet af opgaver eller antallet af dage (f.eks. for serier med fuldførte opgaver), der kræves for at optjene dette mærke inden for den definerede periode.",
+          "maintenance_rules": "Angiv minimumspointene under nulstillingscyklussen for at beholde badget og dets aktive multiplikator (valgfrit).",
+          "occasion_type": "Vælg typen af lejlighed for dette badge (f.eks. ferie, fødselsdag).",
+          "associated_achievement": "Knyt dette badge til en præstation for sporing.",
+          "associated_challenge": "Knyt dette badge til en udfordring til sporing.",
+          "selected_chores": "Vælg de opgaver, der bidrager med point til dette badge. Lad feltet stå tomt, hvis du vil spore alle tildelte opgaver (valgfrit).",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger, bonusser eller straffe. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. Straffer vil kun blive anvendt, hvis badget ikke er optjent inden slutdatoen eller nulstillingsdatoen. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit).",
+          "recurring_frequency": "Definer nulstillingsplanen for dette badge (f.eks. ugentligt, månedligt).",
+          "custom_interval": "Angiv ANTAL dage, uger, måneder osv. for Brugerdefineret frekvens (f.eks. 3, hvis du angiver 3 uger).",
+          "custom_interval_unit": "Vælg enheden for det brugerdefinerede interval (f.eks. dage, uger).",
+          "start_date": "Indstil startdatoen for nulstillingscyklussen (valgfrit).",
+          "end_date": "Indstil slutdatoen for nulstillingscyklussen (valgfrit)."
+        }
+      },
+      "edit_badge_achievement": {
+        "title": "Rediger præstationsrelateret badge",
+        "description": "Konfigurer detaljerne for et badge, der er knyttet til en præstation. Disse badges belønner børn for at fuldføre specifikke præstationer.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "associated_achievement": "🏆 Tilknyttet præstation",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "associated_achievement": "Knyt dette badge til en specifik præstation for sporing.",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger eller bonusser. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. Der vil kun blive anvendt straffe, hvis badget ikke er optjent inden slutdatoen eller nulstillingsdatoen. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit)."
+        }
+      },
+      "edit_badge_challenge": {
+        "title": "Rediger badge relateret til udfordring",
+        "description": "Konfigurer detaljerne for et badge, der er knyttet til en udfordring. Disse badges belønner børn for at gennemføre specifikke udfordringer.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "associated_challenge": "🏁 Tilknyttet udfordring",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "associated_challenge": "Knyt dette badge til en specifik udfordring til sporing.",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger eller bonusser. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. Der vil kun blive anvendt straffe, hvis badget ikke er optjent inden slutdatoen eller nulstillingsdatoen. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit)."
+        }
+      },
+      "edit_badge_special": {
+        "title": "Rediger badge til særlige lejligheder",
+        "description": "Konfigurer detaljerne for et badge, der er oprettet til særlige lejligheder. Disse badges belønner børn for begivenheder som fødselsdage eller helligdage.",
+        "data": {
+          "badge_name": "Badgenavn",
+          "badge_description": "Badgebeskrivelse (valgfrit)",
+          "badge_labels": "Etiketter (valgfrit)",
+          "icon": "Badge-ikon (mdi:xxx)",
+          "occasion_type": "🎉 Anledningstype",
+          "end_date": "🎉 Dato for lejlighed",
+          "recurring_frequency": "🔄 GENTAGENDE: Hyppighed",
+          "custom_interval": "🔄 GENTAGENDE: Brugerdefineret interval (påkrævet for brugerdefineret frekvens)",
+          "custom_interval_unit": "🔄 GENTAGENDE: Brugerdefineret intervalenhed (påkrævet for brugerdefineret frekvens)",
+          "start_date": "🔄 GENTAGENDE: Startdato (valgfrit)",
+          "grace_period_days": "🔄 GENTAGENDE: Frist i dage (valgfrit)",
+          "assigned_to": "🧒 Tildelte børn (valgfrit)",
+          "award_items": "🎁 PRÆMIER: Vælg point, belønninger, bonusser (valgfrit)",
+          "award_points": "🎁 PRÆMIER: Tildelte point (valgfrit)"
+        },
+        "data_description": {
+          "badge_name": "Indtast et unikt navn til badget. Dette navn vil blive vist i systemet.",
+          "badge_description": "Angiv en beskrivelse af badgets formål eller kriterier (valgfrit).",
+          "badge_labels": "Tilføj etiketter for at kategorisere eller tagge badget (valgfrit).",
+          "icon": "Angiv et ikon til badget ved hjælp af Material Design Icons (f.eks. mdi:star).",
+          "occasion_type": "Vælg typen af lejlighed for dette badge (f.eks. ferie, fødselsdag).",
+          "end_date": "Sæt datoen for lejligheden.",
+          "recurring_frequency": "Definer nulstillingsplanen for dette badge (f.eks. ugentligt, månedligt).",
+          "custom_interval": "Angiv ANTAL dage, uger, måneder osv. for Brugerdefineret frekvens (f.eks. 3, hvis du angiver 3 uger).",
+          "custom_interval_unit": "Vælg enheden for det brugerdefinerede interval (f.eks. dage, uger).",
+          "start_date": "Indstil startdatoen for nulstillingscyklussen (valgfrit).",
+          "grace_period_days": "Angiv antallet af ekstra dage efter cyklussens afslutning, hvor børnene skal opfylde de nødvendige point før degradering (valgfrit).",
+          "assigned_to": "Tildel dette mærke til bestemte børn til sporing.",
+          "award_items": "Vælg en eller flere af point, belønninger eller bonusser. Alle valgte elementer vil blive tildelt eller anvendt, når badget er optjent. Der vil kun blive anvendt straffe, hvis badget ikke er optjent inden slutdatoen eller nulstillingsdatoen. (valgfrit)",
+          "award_points": "Hvis pointene er en valgt belønning, skal du angive antallet af point, der skal anvendes, når dette badge optjenes. (valgfrit)."
+        }
+      },
+      "edit_reward": {
+        "title": "Rediger belønning",
+        "description": "Rediger detaljerne for den valgte belønning.",
+        "data": {
+          "reward_name": "Belønningsnavn",
+          "internal_id": "Internt ID",
+          "reward_cost": "Belønningsomkostninger",
+          "reward_description": "Beskrivelse (valgfrit)",
+          "reward_labels": "Belønningsetiketter",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "edit_penalty": {
+        "title": "Rediger straf",
+        "description": "Rediger detaljerne for den valgte straf.",
+        "data": {
+          "penalty_name": "Strafnavn",
+          "penalty_description": "Beskrivelse (valgfrit)",
+          "penalty_labels": "Strafmærkater",
+          "internal_id": "Internt ID",
+          "penalty_points": "Strafpoint (negative)",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "edit_bonus": {
+        "title": "Rediger bonus",
+        "description": "Rediger detaljerne for den valgte bonus.",
+        "data": {
+          "bonus_name": "Bonusnavn",
+          "bonus_description": "Beskrivelse (valgfrit)",
+          "bonus_labels": "Bonusetiketter",
+          "internal_id": "Internt ID",
+          "bonus_points": "Bonuspoint",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "edit_achievement": {
+        "title": "Definer præstation",
+        "description": "Indtast detaljer for hver præstation.",
+        "data": {
+          "name": "Præstationsnavn",
+          "description": "Beskrivelse (valgfrit)",
+          "achievement_labels": "Præstationsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte børn",
+          "type": "Type af præstation",
+          "selected_chore_id": "Vælg tilknyttet opgave",
+          "criteria": "Kriterier (valgfrit)",
+          "target_value": "Præstationsmål",
+          "reward_points": "Ekstra point for at fuldføre præstationen",
+          "internal_id": "Internt ID"
+        }
+      },
+      "edit_challenge": {
+        "title": "Definer udfordring",
+        "description": "Indtast detaljer for hver udfordring.",
+        "data": {
+          "name": "Udfordringsnavn",
+          "description": "Beskrivelse (valgfrit)",
+          "challenge_labels": "Udfordringsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte børn",
+          "type": "Type af udfordring",
+          "selected_chore_id": "Vælg opgave tilknyttet udfordring (valgfrit)",
+          "criteria": "Kriterier (valgfrit)",
+          "target_value": "Udfordringer Mål",
+          "reward_points": "Ekstra point for at gennemføre udfordringen",
+          "start_date": "Startdato",
+          "end_date": "Slutdato",
+          "internal_id": "Internt ID"
+        }
+      },
+      "delete_kid": {
+        "title": "Slet barn",
+        "description": "Er du sikker på, at du vil slette barnet {kid_name}?",
+        "data": {}
+      },
+      "delete_parent": {
+        "title": "Slet forælder",
+        "description": "Er du sikker på, at du vil slette den overordnede {parent_name}?",
+        "data": {}
+      },
+      "delete_chore": {
+        "title": "Slet opgave",
+        "description": "Er du sikker på, at du vil slette opgaven {chore_name}?",
+        "data": {}
+      },
+      "delete_badge": {
+        "title": "Slet badge",
+        "description": "Er du sikker på, at du vil slette badget {badge_name}?",
+        "data": {}
+      },
+      "delete_reward": {
+        "title": "Slet belønning",
+        "description": "Er du sikker på, at du vil slette belønningen {reward_name}?",
+        "data": {}
+      },
+      "delete_penalty": {
+        "title": "Slet straf",
+        "description": "Er du sikker på, at du vil slette straffen {penalty_name}?",
+        "data": {}
+      },
+      "delete_bonus": {
+        "title": "Slet bonus",
+        "description": "Er du sikker på, at du vil slette bonussen {bonus_name}?",
+        "data": {}
+      },
+      "delete_achievement": {
+        "title": "Slet præstation",
+        "description": "Er du sikker på, at du vil slette præstationen {achievement_name}?",
+        "data": {}
+      },
+      "delete_challenge": {
+        "title": "Slet udfordring",
+        "description": "Er du sikker på, at du vil slette udfordringen {challenge_name}?",
+        "data": {}
+      },
+      "manage_general_options": {
+        "title": "Generelle muligheder",
+        "description": "Administrer generelle indstillinger for KidsChores-integrationen.",
+        "data": {
+          "points_adjust_values": "Værdier for knap til manuel justering af punkter",
+          "update_interval": "Opdateringsinterval",
+          "calendar_show_period": "Antal dage, der skal vises i kalenderen",
+          "retention_periods": "Dataopbevaringsperioder (dagligt|ugentligt|månedligt|årligt)",
+          "retention_daily": "Daglig dataopbevaring (dage)",
+          "retention_weekly": "Ugentlig dataopbevaring (uger)",
+          "retention_monthly": "Månedlig dataopbevaring (måneder)",
+          "retention_yearly": "Årlig dataopbevaring (år)",
+          "show_legacy_entities": "Vis ekstra enheder",
+          "backups_max_retained": "Maksimal sikkerhedskopiering at beholde",
+          "backup_action_selection": "Sikkerhedskopieringshandlinger"
+        },
+        "data_description": {
+          "points_adjust_values": "Liste over værdier for knapperne til manuel punktjustering. Hver værdi adskilt af '|'.",
+          "update_interval": "Interval i minutter for opdatering af KidsChores interne tilstand.",
+          "calendar_show_period": "Antal dage i fremtiden, hvor planlagte pligter og udfordringer skal vises i kalenderen.",
+          "retention_periods": "Dataopbevaringsperioder i formatet Dagligt|Ugentligt|Månedligt|Årligt (f.eks. '7|4|12|3'). Hver værdi skal være et positivt heltal.",
+          "retention_daily": "Antal dage med daglige historiske data, der skal gemmes før oprydning. Minimum 1, maksimum 90.",
+          "retention_weekly": "Antal uger med ugentlige historiske data, der skal opbevares før oprydning. Minimum 1, maksimum 52.",
+          "retention_monthly": "Antal måneder med månedlige historiske data, der skal opbevares før oprydning. Minimum 1, maksimum 24.",
+          "retention_yearly": "Antal år med årlige historiske data, der skal opbevares før oprydning. Minimum 1, maksimum 10.",
+          "show_legacy_entities": "Vis ekstra enheder som sensor og selects, der nu er konsolideret i dashboardhjælpersensoren. Disse enheder er valgfrie for bagudkompatibilitet med eksisterende automatiseringer.",
+          "backups_max_retained": "Maksimalt antal backupfiler, der skal gemmes. Ældre backups slettes automatisk. Indstil til 0 for at deaktivere automatiske backups.",
+          "backup_action_selection": "Vælg en handling til administration af sikkerhedskopier: opret en manuel sikkerhedskopi, slet en sikkerhedskopi eller gendan fra en sikkerhedskopi."
+        }
+      },
+      "backup_actions": {
+        "title": "Backupstyring",
+        "description": "Administrer dine KidsChores-databackups. Aktuel status: {backup_count} backups ved hjælp af {storage_size} MB.",
+        "data": {
+          "backup_action_selection": "Vælg en handling"
+        },
+        "data_description": {
+          "backup_action_selection": "Vælg en handling til administration af sikkerhedskopiering."
+        }
+      },
+      "backup_actions_menu": {
+        "title": "Sikkerhedskopieringshandlinger",
+        "description": "Administrer dine KidsChores-databackups.",
+        "data": {
+          "backup_action_selection": "Vælg en handling"
+        },
+        "data_description": {
+          "backup_action_selection": "Vælg en handling til administration af sikkerhedskopiering: opret, slet, gendan eller gå tilbage til menuen."
+        }
+      },
+      "create_manual_backup": {
+        "title": "Opret manuel sikkerhedskopi",
+        "description": "Opret en ny sikkerhedskopi af dine KidsChores-data.\n\nNuværende sikkerhedskopier: {backup_count}\nOpbevaringsindstilling: {retention} sikkerhedskopier",
+        "data": {
+          "confirm": "Bekræft oprettelse af sikkerhedskopi"
+        }
+      },
+      "select_backup_to_delete": {
+        "title": "Vælg Sikkerhedskopiering for at slette",
+        "description": "Vælg en backupfil, der skal slettes.\n\nTilgængelige backups: {backup_count}\n\n⚠️ Beskyttede backups (før migrering, manuelle) kan ikke slettes."
+      },
+      "select_backup_to_restore": {
+        "title": "Vælg Sikkerhedskopiering for at gendanne",
+        "description": "Vælg en backupfil, der skal gendannes.\n\nTilgængelige backups: {backup_count}\n\n⚠️ Dette erstatter dine nuværende data!"
+      },
+      "create_backup_confirm": {
+        "title": "Opret manuel sikkerhedskopi",
+        "description": "Vil du oprette en manuel sikkerhedskopi af dine nuværende KidsChores-data?",
+        "data": {
+          "confirm": "Bekræfte"
+        }
+      },
+      "create_backup_success": {
+        "title": "Sikkerhedskopiering oprettet",
+        "description": "Manuel sikkerhedskopi oprettet: {backup_filename}",
+        "data": {
+          "continue": "Fortsætte"
+        }
+      },
+      "delete_backup_confirm": {
+        "title": "Bekræft sletning af sikkerhedskopi",
+        "description": "⚠️ Du er ved at slette denne sikkerhedskopi permanent:\n\n{backup_filename}\n\nDenne handling kan ikke fortrydes.",
+        "data": {
+          "confirm": "Bekræft sletning"
+        }
+      },
+      "restore_backup_confirm": {
+        "title": "Gendan sikkerhedskopi",
+        "description": "Er du sikker på, at du vil gendanne denne sikkerhedskopi?\n\nFil: {backup_filename}\n\nDine nuværende data vil blive sikkerhedskopieret før gendannelse. Integrationen genindlæses efter gendannelsen.",
+        "data": {
+          "confirm": "Bekræft gendannelse"
+        }
+      }
+    },
+    "error": {
+      "a_chore_must_be_selected": "Der skal vælges en opgave",
+      "badge_requires_assignment": "Mindst ét barn skal have tildelt dette badge",
+      "duplicate_achievement": "En præstation med dette navn findes allerede",
+      "duplicate_badge": "Der findes allerede et badge med dette navn",
+      "duplicate_challenge": "Der findes allerede en udfordring med dette navn",
+      "duplicate_chore": "En opgave med dette navn findes allerede",
+      "duplicate_kid": "Der findes allerede et barn med dette navn",
+      "duplicate_parent": "En forælder med dette navn findes allerede",
+      "duplicate_penalty": "Der findes allerede en straf med dette navn",
+      "duplicate_reward": "Der findes allerede en belønning med dette navn",
+      "duplicate_bonus": "Der findes allerede en bonus med dette navn",
+      "due_date_in_past": "Forfaldsdatoen skal være i fremtiden.",
+      "end_date_in_past": "Slutdatoen skal være i fremtiden.",
+      "end_date_not_after_start_date": "Slutdatoen skal være senere end startdatoen",
+      "invalid_badge": "Ugyldigt badge",
+      "invalid_badge_count": "Ugyldigt antal badges",
+      "invalid_chore": "Ugyldig opgave",
+      "invalid_chore_count": "Ugyldigt antal opgaver",
+      "invalid_due_date": "Ugyldig forfaldsdato",
+      "date_required_for_frequency": "En forfaldsdato er påkrævet for denne tilbagevendende frekvens. Rydning af datoer fungerer kun med Ingen, Daglig eller Ugentlig frekvens.",
+      "invalid_end_date": "Ugyldig slutdato.",
+      "invalid_kid_count": "Ugyldigt antal børn",
+      "invalid_kid_name": "Ugyldigt børnenavn",
+      "no_kids_assigned": "Mindst ét barn skal tildeles opgaven",
+      "invalid_penalty": "Ugyldig straf",
+      "invalid_penalty_count": "Ugyldigt antal straffe",
+      "invalid_bonus": "Ugyldig bonus",
+      "invalid_bonus_count": "Ugyldigt bonusantal",
+      "invalid_reward": "Ugyldig belønning",
+      "invalid_reward_count": "Ugyldigt antal belønninger",
+      "invalid_start_date": "Ugyldig startdato.",
+      "start_date_in_past": "Startdatoen skal være i fremtiden.",
+      "points_label_required": "Pointmærkat er påkrævet",
+      "corrupt_file": "Den valgte fil indeholder ugyldig JSON og kan ikke læses.",
+      "invalid_structure": "Den valgte fil mangler den nødvendige datastruktur.",
+      "file_not_found": "Den valgte fil kunne ikke findes.",
+      "invalid_selection": "Vælg venligst en gyldig mulighed."
+    },
+    "abort": {
+      "invalid_action": "Ugyldig handling",
+      "invalid_achievement": "Ugyldig præstation",
+      "invalid_badge": "Ugyldigt badge",
+      "invalid_challenge": "Ugyldig udfordring",
+      "invalid_chore": "Ugyldig opgave",
+      "invalid_entity": "Ugyldig enhed",
+      "invalid_kid": "Ugyldigt barn",
+      "invalid_parent": "Ugyldig forælder",
+      "invalid_penalty": "Ugyldig straf",
+      "invalid_reward": "Ugyldig belønning",
+      "invalid_bonus": "Ugyldig bonus",
+      "no_kid": "Ingen børn er konfigureret til redigering. Tilføj én post først.",
+      "no_parent": "Ingen forældre er konfigureret til redigering. Tilføj én post først.",
+      "no_chore": "Ingen pligter er konfigureret til redigering. Tilføj én post først.",
+      "no_badge": "Ingen badges er konfigureret til redigering. Tilføj én post først.",
+      "no_reward": "Der er ikke konfigureret nogen belønninger til redigering. Tilføj én post først.",
+      "no_penalty": "Der er ikke konfigureret nogen sanktioner for redigering. Tilføj én post først.",
+      "no_bonus": "Ingen bonusser er konfigureret til redigering. Tilføj én post først.",
+      "no_achievement": "Ingen præstationer er konfigureret til redigering. Tilføj én post først.",
+      "no_challenge": "Ingen udfordringer er konfigureret til redigering. Tilføj én post først.",
+      "setup_complete": "Opsætning fuldført",
+      "backup_restored": "Sikkerhedskopien er gendannet. Integrationen er blevet genindlæst med de gendannede data."
+    }
+  },
+  "selector": {
+    "main_menu": {
+      "options": {
+        "manage_points": "Administrer point",
+        "manage_kid": "Administrer barn",
+        "manage_parent": "Administrer forælder",
+        "manage_chore": "Administrer pligter",
+        "manage_badge": "Administrer badge",
+        "manage_reward": "Administrer belønning",
+        "manage_penalty": "Håndter straf",
+        "manage_bonus": "Administrer bonus",
+        "manage_achievement": "Administrer præstation",
+        "manage_challenge": "Administrer udfordring",
+        "general_options": "Generelle muligheder",
+        "done": "Afslut opsætning"
+      }
+    },
+    "manage_actions": {
+      "options": {
+        "add": "Tilføje",
+        "edit": "Redigere",
+        "delete": "Slet",
+        "back": "Tilbage til hovedmenuen"
+      }
+    },
+    "backup_actions_menu": {
+      "options": {
+        "select_backup_action": "Vælg backuphandling...",
+        "create_backup": "💾 Opret sikkerhedskopi nu",
+        "delete_backup": "🗑️ Slet en sikkerhedskopi",
+        "restore_backup": "🔄 Gendan fra sikkerhedskopi",
+        "return_to_menu": "↩️ Tilbage til hovedmenuen"
+      }
+    },
+    "select_backup_to_delete": {
+      "options": {
+        "cancel": "↩️ Annuller (gå tilbage til backupmenuen)"
+      }
+    },
+    "select_backup_to_restore": {
+      "options": {
+        "cancel": "↩️ Annuller (gå tilbage til backupmenuen)"
+      }
+    },
+    "badge_type": {
+      "options": {
+        "cumulative": "Kumulativ",
+        "daily": "Daglig",
+        "periodic": "Periodisk",
+        "achievement_linked": "Præstationslinket",
+        "challenge_linked": "Udfordring tilknyttet",
+        "special_occasion": "Særlig lejlighed"
+      }
+    },
+    "target_type": {
+      "options": {
+        "points": "Point",
+        "points_chores": "Point fra huslige pligter",
+        "chore_count": "Antal pligter",
+        "days_all_chores": "Dage udvalgte pligter udført",
+        "days_80pct_chores": "Dage 80% af udvalgte pligter blev udført",
+        "days_all_chores_no_overdue": "Dage udvalgte pligter udført (ingen forfaldne)",
+        "days_all_due_chores": "Dage udvalgte forfaldne pligter udført",
+        "days_80pct_due_chores": "Dage 80% af udvalgte forfaldne pligter blev udført",
+        "days_all_due_chores_no_overdue": "Valgte dage forfaldne opgaver udført (ingen forfaldne)",
+        "days_min_3_chores": "Minimum 3 dage udført",
+        "days_min_5_chores": "Minimum 5 dage udført",
+        "days_min_7_chores": "Minimum 7 dage udført",
+        "streak_all_chores": "Strikke: Udvalgte opgaver udført",
+        "streak_80pct_chores": "Serie: 80% af valgte pligter udført",
+        "streak_all_chores_no_overdue": "Strikke: Udvalgte opgaver fuldført (ingen forfaldne)",
+        "streak_80pct_due_chores": "Serie: 80% af valgte opgaver afsluttet",
+        "streak_all_due_chores_no_overdue": "Strikke: Udvalgte opgaver afsluttet (ingen forfaldne)"
+      }
+    },
+    "award_items": {
+      "options": {
+        "points": "Point",
+        "multiplier": "Pointmultiplikator"
+      }
+    },
+    "award_mode": {
+      "options": {
+        "award_none": "Ingen",
+        "award_points": "Point",
+        "award_reward": "Belønne",
+        "award_points_reward": "Point og belønning"
+      }
+    },
+    "reset_type": {
+      "options": {
+        "year_end": "Årsafslutning",
+        "quarter": "Kvartalsvis",
+        "monthly": "Månedlig",
+        "custom_1_year": "Brugerdefineret: 1-års periode",
+        "custom_1_month": "Brugerdefineret: Periode på 1 måned"
+      }
+    },
+    "completion_criteria": {
+      "options": {
+        "shared_all": "Delt med alle (Alle børn skal gennemføre sammen)",
+        "independent": "Selvstændig (hvert barn klarer opgaven selv)",
+        "shared_first": "Delt med First (første fuldførelse tæller)"
+      }
+    },
+    "approval_reset_type": {
+      "options": {
+        "at_midnight_once": "Tillad 1 fuldførelse - nulstilles ved midnat",
+        "at_midnight_multi": "Tillad flere fuldførelser - nulstilles ved midnat",
+        "at_due_date_once": "Tillad 1 fuldførelse - nulstilles ved forfaldsdatoen",
+        "at_due_date_multi": "Tillad flere fuldførelser - nulstilles ved forfaldsdatoen",
+        "upon_completion": "Tillad ubegrænsede færdiggørelser - nulstilles efter færdiggørelse"
+      }
+    },
+    "overdue_handling_type": {
+      "options": {
+        "at_due_date": "Vis forfalden efter forfaldsdato (indtil færdiggørelse)",
+        "never_overdue": "Vis aldrig som forfalden",
+        "at_due_date_then_reset": "Vis forfalden efter forfaldsdato (indtil godkendelse nulstilles)"
+      }
+    },
+    "approval_reset_pending_claim_action": {
+      "options": {
+        "hold_pending": "Bevar kravstatus (afvent godkendelse/afvisning)",
+        "clear_pending": "Ryd alle ventende krav",
+        "auto_approve_pending": "Godkend alle ventende krav automatisk"
+      }
+    },
+    "chore_notifications": {
+      "options": {
+        "notify_on_claim": "Giv besked om krav",
+        "notify_on_approval": "Giv besked ved godkendelse",
+        "notify_on_disapproval": "Giv besked ved afvisning"
+      }
+    },
+    "recurring_frequency": {
+      "options": {
+        "none": "Ingen",
+        "daily": "Daglig",
+        "weekly": "Ugentlig",
+        "biweekly": "Hver anden uge",
+        "monthly": "Månedlig",
+        "quarterly": "Kvartalsvis",
+        "yearly": "Årligt",
+        "custom": "Skik",
+        "custom_1_week": "Tilpasset: 1 uge",
+        "custom_1_month": "Tilpasset: 1 måned",
+        "custom_1_quarter": "Brugerdefineret: 1 kvarter",
+        "custom_1_year": "Tilpasset: 1 år"
+      }
+    },
+    "occasion_type": {
+      "options": {
+        "birthday": "Fødselsdag",
+        "holiday": "Ferie",
+        "custom": "Skik"
+      }
+    },
+    "custom_interval_unit": {
+      "options": {
+        "days": "Dage",
+        "weeks": "Uger",
+        "months": "Måneder"
+      }
+    },
+    "applicable_days": {
+      "options": {
+        "mon": "mandag",
+        "tue": "tirsdag",
+        "wed": "onsdag",
+        "thu": "torsdag",
+        "fri": "fredag",
+        "sat": "lørdag",
+        "sun": "søndag"
+      }
+    },
+    "threshold_type": {
+      "options": {
+        "points": "Point",
+        "chore_count": "Antal pligter"
+      }
+    },
+    "daily_threshold_type": {
+      "options": {
+        "points": "Point",
+        "chore_count": "Antal pligter"
+      }
+    },
+    "data_recovery_selection": {
+      "options": {
+        "cancel": "↩️ Annuller (gå tilbage til backupmenuen)",
+        "start_fresh": "🆕 Start på en frisk (opretter sikkerhedskopi af eksisterende data)",
+        "current_active": "📂 Brug den aktuelle aktive datafil",
+        "paste_json": "📋 Indsæt JSON fra datafil eller diagnostik"
+      }
+    }
+  },
+  "services": {
+    "claim_chore": {
+      "name": "Gør krav på pligt",
+      "description": "Et barn gør krav på en pligt og markerer den som 'gjort' til forældrenes godkendelse.",
+      "fields": {
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Navnet på barnet, der tager sig af opgaven.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Navn på opgave",
+          "description": "Navnet på den opgave, der skal gøres krav på.",
+          "example": "Vask op"
+        }
+      }
+    },
+    "approve_chore": {
+      "name": "Godkend opgave",
+      "description": "Forælder godkender opgaven og giver point.",
+      "fields": {
+        "parent_name": {
+          "name": "Forældernavn",
+          "description": "Forælderen godkender opgaven.",
+          "example": "Mor"
+        },
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Navnet på barnet, der udførte opgaven.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Navn på opgave",
+          "description": "Navnet på den opgave, der godkendes.",
+          "example": "Vask op"
+        },
+        "points_awarded": {
+          "name": "Tildelte point",
+          "description": "Point at tildele (valgfrit; standardværdien er opgavens point).",
+          "example": "3"
+        }
+      }
+    },
+    "disapprove_chore": {
+      "name": "Afvis opgave",
+      "description": "Forælder misbilliger en pligt for et barn og ændrer dens status.",
+      "fields": {
+        "parent_name": {
+          "name": "Forældernavn",
+          "description": "Forælderen misbilliger opgaven.",
+          "example": "Mor"
+        },
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Navnet på det barn, hvis pligt bliver afvist.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Navn på opgave",
+          "description": "Navnet på den opgave, der afvises.",
+          "example": "Rent værelse"
+        }
+      }
+    },
+    "redeem_reward": {
+      "name": "Indløs belønning",
+      "description": "En forælder indløser en belønning til et barn og trækker point fra.",
+      "fields": {
+        "parent_name": {
+          "name": "Forældernavn",
+          "description": "Den forælder, der godkender indløsningen af belønningen.",
+          "example": "Mor"
+        },
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Barnet indløser belønningen.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belønningsnavn",
+          "description": "Navnet på den belønning, der skal indløses.",
+          "example": "Ekstra skærmtid"
+        }
+      }
+    },
+    "approve_reward": {
+      "name": "Godkend belønning",
+      "description": "Forælder godkender en belønning, som et barn har gjort krav på.",
+      "fields": {
+        "parent_name": {
+          "name": "Forældernavn",
+          "description": "Forælderen godkender belønningen.",
+          "example": "Mor"
+        },
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Barnet, der indløser belønningen.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belønningsnavn",
+          "description": "Navnet på den belønning, der godkendes.",
+          "example": "Ekstra skærmtid"
+        }
+      }
+    },
+    "disapprove_reward": {
+      "name": "Afvis belønning",
+      "description": "Forælder misbilliger en belønningsindløsning til et barn.",
+      "fields": {
+        "parent_name": {
+          "name": "Forældernavn",
+          "description": "Forælderen misbilliger belønningen.",
+          "example": "Far"
+        },
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Barnet hvis belønningsindløsning bliver afvist.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belønningsnavn",
+          "description": "Navnet på den belønning, der afvises.",
+          "example": "Ekstra skærmtid"
+        }
+      }
+    },
+    "apply_penalty": {
+      "name": "Anvend straf",
+      "description": "En forælder anvender en straf for at trække point fra.",
+      "fields": {
+        "parent_name": {
+          "name": "Forældernavn",
+          "description": "Den forælder, der anvender straffen.",
+          "example": "Far"
+        },
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Barnet får straffen.",
+          "example": "Alice"
+        },
+        "penalty_name": {
+          "name": "Strafnavn",
+          "description": "Navnet på den sanktion, der skal anvendes.",
+          "example": "Råben"
+        }
+      }
+    },
+    "apply_bonus": {
+      "name": "Ansøg bonus",
+      "description": "En forælder giver et barn en bonus og tildeler point.",
+      "fields": {
+        "parent_name": {
+          "name": "Forældernavn",
+          "description": "Den forælder, der anvender bonussen.",
+          "example": "Mor"
+        },
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Barnet, der modtager bonussen.",
+          "example": "Alice"
+        },
+        "bonus_name": {
+          "name": "Bonusnavn",
+          "description": "Navnet på den bonus, der skal anvendes.",
+          "example": "Ekstra nyttigt"
+        }
+      }
+    },
+    "reset_all_data": {
+      "name": "Nulstil alle data",
+      "description": "Rydder KidsChores-dataene fuldstændigt fra lageret."
+    },
+    "reset_all_chores": {
+      "name": "Nulstil alle pligter",
+      "description": "Nulstil manuelt opgaver til afventende tilstand, fjern krav og godkendelser."
+    },
+    "reset_overdue_chores": {
+      "name": "Nulstil forsinkede pligter",
+      "description": "Nulstil forsinkede opgaver tilbage til tilstanden Afventer, og omplanlæg dem baseret på deres tilbagevendende hyppighed og tidligere forfaldsdato. Du kan eventuelt angive et chore_id (eller chore_name) for at nulstille en bestemt opgave og eventuelt et kid_name for kun at nulstille opgaven for det pågældende barn.",
+      "fields": {
+        "chore_id": {
+          "name": "Huslige pligter-ID",
+          "description": "Det interne ID for den opgave, der skal nulstilles (valgfrit, hvis chore_name er angivet).",
+          "example": "abc123"
+        },
+        "chore_name": {
+          "name": "Navn på opgave",
+          "description": "Navnet på den opgave, der skal nulstilles (valgfrit, hvis chore_id er angivet).",
+          "example": "Vask op"
+        },
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Barnet får straffen.",
+          "example": "Alice"
+        }
+      }
+    },
+    "set_chore_due_date": {
+      "name": "Indstil/nulstil forfaldsdato for pligt",
+      "description": "Angiv (eller ryd) forfaldsdatoen for en opgave. Angiv opgavens navn og, hvis det ønskes, en ny forfaldsdato. Hvis der ikke angives nogen forfaldsdato, ryddes den eksisterende forfaldsdato. Tjenesten afviser forfaldsdatoer, der er angivet i fortiden. For uafhængige opgaver kan du eventuelt angive et barnenavn for kun at indstille forfaldsdatoen for det pågældende barn.",
+      "fields": {
+        "chore_name": {
+          "name": "Navn på opgave",
+          "description": "Navnet på den opgave, der skal opdateres",
+          "example": "Vask op"
+        },
+        "due_date": {
+          "name": "Forfaldsdato",
+          "description": "Den nye deadline for opgaven. Brug dato/tidsvælgeren til at vælge en gyldig dato og et gyldigt tidspunkt (i din lokale tidszone). Lad feltet stå tomt for at rydde deadline.",
+          "example": "2025-03-01T23:59:00Z"
+        },
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "For uafhængige pligter skal du angive det barn, som forfaldsdatoen skal indstilles for. Hvis dette udelades, indstilles forfaldsdatoen for alle tildelte børn.",
+          "example": "Alice"
+        },
+        "kid_id": {
+          "name": "Børne-ID",
+          "description": "Barnets interne ID. Kun for avancerede brugere - brug i stedet barnets_navn.",
+          "example": "abc123-def456"
+        }
+      }
+    },
+    "skip_chore_due_date": {
+      "name": "Spring over forfaldsdato for huslige pligter",
+      "description": "Spring den aktuelle forfaldsdato for en tilbagevendende opgave over. Denne tjeneste ændrer straks opgavens forfaldsdato baseret på dens tilbagevendende hyppighed og nulstiller dens status til afventende. Eventuelle afventende krav eller godkendelser vil blive fjernet. For uafhængige opgaver kan du eventuelt angive et barnenavn, der kun skal springes over for det pågældende barn.",
+      "fields": {
+        "chore_id": {
+          "name": "Huslige pligter-ID",
+          "description": "Det interne ID for den opgave, der skal nulstilles (valgfrit, hvis chore_name er angivet).",
+          "example": "abc123"
+        },
+        "chore_name": {
+          "name": "Navn på opgave",
+          "description": "Navnet på den opgave, der skal nulstilles (valgfrit, hvis chore_id er angivet).",
+          "example": "Vask op"
+        },
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "For uafhængige pligter skal du angive det barn, som deadline skal springes over for. Hvis det udelades, springes deadline over for alle tildelte børn.",
+          "example": "Alice"
+        },
+        "kid_id": {
+          "name": "Børne-ID",
+          "description": "Barnets interne ID. Kun for avancerede brugere - brug i stedet barnets_navn.",
+          "example": "abc123-def456"
+        }
+      }
+    },
+    "reset_penalties": {
+      "name": "Nulstil straffe",
+      "description": "Nulstil alle anvendte straffe for alle børn. Angiv eventuelt straffenavn for at nulstille en specifik straf på tværs af alle børn. Brug barnets navn til at nulstille alle straffe for et specifikt barn. Kombiner begge for at nulstille en specifik straf for et specifikt barn.",
+      "fields": {
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Det barn, hvis straffe vil blive nulstillet.",
+          "example": "Alice"
+        },
+        "penalty_name": {
+          "name": "Strafnavn",
+          "description": "Navnet på den straf, der skal nulstilles.",
+          "example": "Råben"
+        }
+      }
+    },
+    "reset_bonuses": {
+      "name": "Nulstil bonusser",
+      "description": "Nulstil alle anvendte bonusser for alle børn. Angiv eventuelt bonusnavn for at nulstille en specifik bonus på tværs af alle børn. Brug barnets navn til at nulstille alle bonusser for et specifikt barn. Kombiner begge for at nulstille en specifik bonus for et specifikt barn.",
+      "fields": {
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Det barn, hvis bonusser nulstilles.",
+          "example": "Alice"
+        },
+        "bonus_name": {
+          "name": "Bonusnavn",
+          "description": "Navnet på den bonus, der skal nulstilles.",
+          "example": "Hjælper"
+        }
+      }
+    },
+    "reset_rewards": {
+      "name": "Nulstil belønninger",
+      "description": "Nulstil alle antallet af belønningskrav og godkendelser for alle børn. Angiv eventuelt et navn for at nulstille et bestemt belønningsantal på tværs af alle børn. Brug barnets navn til at nulstille alle belønningsantal for et bestemt barn. Kombiner begge dele for at nulstille en specifik belønning for et bestemt barn.",
+      "fields": {
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "Det barn, som belønningen tæller for, nulstilles.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belønningsnavn",
+          "description": "Navnet på den belønning, der skal nulstilles.",
+          "example": "Flødeis"
+        }
+      }
+    },
+    "remove_awarded_badges": {
+      "name": "Fjern tildelte badges",
+      "description": "Fjern alle tildelte badges for alle børn. Angiv eventuelt badgenavnet for at nulstille et specifikt badge på tværs af alle børn. Brug barnets navn til at nulstille alle badges for et specifikt barn. Kombiner begge for at nulstille et specifikt badge for et specifikt barn.",
+      "fields": {
+        "kid_name": {
+          "name": "Barnets navn",
+          "description": "De børn, der har fået tildelt mærker, vil blive fjernet fra.",
+          "example": "Bob"
+        },
+        "badge_name": {
+          "name": "Badgenavn",
+          "description": "Navnet på det badge, der skal fjernes.",
+          "example": "Huslige pligter"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "kid_chore_status_sensor": {
+        "name": "Status for huslige pligter - {chore_name}",
+        "state": {
+          "pending": "Indtil",
+          "approved": "Godkendt",
+          "claimed": "Gjorde krav",
+          "overdue": "Forsinket",
+          "unknown": "Ukendt",
+          "none": "Ingen",
+          "approved_in_part": "Godkendt (delvist)",
+          "claimed_in_part": "Gør krav på (delvist)",
+          "completed_by_other": "Udfyldt af Anden"
+        },
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_chore_status": "Børnespecifikke opgavers livscyklustilstande, ydeevnestatistikker og konfigurationsmetadata"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "chore_name": {
+            "name": "Navn på opgave"
+          },
+          "chore_icon": {
+            "name": "Huslige pligter-ikon"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "assigned_kids": {
+            "name": "Tildelte børn"
+          },
+          "labels": {
+            "name": "Etiketter"
+          },
+          "default_points": {
+            "name": "Standardpoint"
+          },
+          "completion_criteria": {
+            "name": "Færdiggørelseskriterier",
+            "state": {
+              "independent": "Uafhængig",
+              "shared_first_only": "Delt (kun førstegangsbrugere)",
+              "shared_all_required": "Delt (alle obligatoriske)"
+            }
+          },
+          "approval_reset_type": {
+            "name": "Godkendelsesnulstillingstype",
+            "state": {
+              "at_midnight_once": "En gang om dagen",
+              "at_midnight_multi": "Flere pr. dag",
+              "at_due_date_once": "Én gang pr. forfaldsdato",
+              "at_due_date_multi": "Flere pr. forfaldsdato",
+              "upon_completion": "Ved færdiggørelse"
+            }
+          },
+          "recurring_frequency": {
+            "name": "Tilbagevendende frekvens",
+            "state": {
+              "none": "Ingen",
+              "daily": "Daglig",
+              "weekly": "Ugentlig",
+              "biweekly": "Hver anden uge",
+              "monthly": "Månedlig",
+              "custom": "Skik"
+            }
+          },
+          "applicable_days": {
+            "name": "Gældende dage",
+            "state": {
+              "mon": "mandag",
+              "tue": "tirsdag",
+              "wed": "onsdag",
+              "thu": "torsdag",
+              "fri": "fredag",
+              "sat": "lørdag",
+              "sun": "søndag"
+            }
+          },
+          "due_date": {
+            "name": "Forfaldsdato"
+          },
+          "custom_frequency_interval": {
+            "name": "Brugerdefineret frekvensinterval"
+          },
+          "custom_frequency_unit": {
+            "name": "Brugerdefineret frekvensenhed",
+            "state": {
+              "days": "Dage",
+              "weeks": "Uger",
+              "months": "Måneder"
+            }
+          },
+          "chore_points_earned": {
+            "name": "Optjente point"
+          },
+          "chore_approvals_count": {
+            "name": "Godkendelser (alle tider)"
+          },
+          "chore_claims_count": {
+            "name": "Krav (hele tiden)"
+          },
+          "chore_disapproved_count": {
+            "name": "Afvisninger (alle tider)"
+          },
+          "chore_overdue_count": {
+            "name": "Forfalden (hele tiden)"
+          },
+          "chore_approvals_today": {
+            "name": "Godkendelser i dag"
+          },
+          "chore_current_streak": {
+            "name": "Nuværende række"
+          },
+          "chore_highest_streak": {
+            "name": "Højeste række"
+          },
+          "chore_last_longest_streak_date": {
+            "name": "Dato for sidste længste serie"
+          },
+          "last_claimed": {
+            "name": "Sidst gjort krav på"
+          },
+          "last_approved": {
+            "name": "Sidst godkendt"
+          },
+          "last_disapproved": {
+            "name": "Sidst afvist"
+          },
+          "last_overdue": {
+            "name": "Sidst forfalden"
+          },
+          "global_state": {
+            "name": "Global tilstand",
+            "state": {
+              "pending": "Indtil",
+              "approved": "Godkendt",
+              "claimed": "Gjorde krav",
+              "overdue": "Forsinket",
+              "unknown": "Ukendt",
+              "none": "Ingen",
+              "approved_in_part": "Godkendt (delvist)",
+              "claimed_in_part": "Gør krav på (delvist)",
+              "independent": "Uafhængig"
+            }
+          },
+          "can_claim": {
+            "name": "Kan gøre krav",
+            "state": {
+              "true": "Ja",
+              "false": "Ingen"
+            }
+          },
+          "can_approve": {
+            "name": "Kan godkende",
+            "state": {
+              "true": "Ja",
+              "false": "Ingen"
+            }
+          },
+          "approve_button_eid": {
+            "name": "Godkend knap Enheds-ID"
+          },
+          "disapprove_button_eid": {
+            "name": "Enheds-ID for afvisningsknap"
+          },
+          "claim_button_eid": {
+            "name": "Enheds-ID for knappen \"Krav\""
+          }
+        }
+      },
+      "kid_points_sensor": {
+        "name": "{points}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_points": "Aktuel pointbalance med detaljeret indtjenings- og forbrugsstatistik"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "point_stat_points_earned_today": {
+            "name": "Optjent i dag"
+          },
+          "point_stat_points_earned_week": {
+            "name": "Optjent denne uge"
+          },
+          "point_stat_points_earned_month": {
+            "name": "Optjent denne måned"
+          },
+          "point_stat_points_earned_year": {
+            "name": "Optjent i år"
+          },
+          "point_stat_points_earned_all_time": {
+            "name": "Optjent hele tiden"
+          },
+          "point_stat_points_by_source_today": {
+            "name": "Af Kilde I Dag"
+          },
+          "point_stat_points_by_source_week": {
+            "name": "Af kilde denne uge"
+          },
+          "point_stat_points_by_source_month": {
+            "name": "Efter kilde denne måned"
+          },
+          "point_stat_points_by_source_year": {
+            "name": "Efter kilde i år"
+          },
+          "point_stat_points_by_source_all_time": {
+            "name": "Af kilde hele tiden"
+          },
+          "point_stat_points_spent_today": {
+            "name": "Brugt i dag"
+          },
+          "point_stat_points_spent_week": {
+            "name": "Brugt denne uge"
+          },
+          "point_stat_points_spent_month": {
+            "name": "Brugt denne måned"
+          },
+          "point_stat_points_spent_year": {
+            "name": "Brugt i år"
+          },
+          "point_stat_points_spent_all_time": {
+            "name": "Brugt al tid"
+          },
+          "point_stat_points_net_today": {
+            "name": "Netto i dag"
+          },
+          "point_stat_points_net_week": {
+            "name": "Netto denne uge"
+          },
+          "point_stat_points_net_month": {
+            "name": "Netto denne måned"
+          },
+          "point_stat_points_net_year": {
+            "name": "Netto i år"
+          },
+          "point_stat_points_net_all_time": {
+            "name": "Netto hele tiden"
+          },
+          "point_stat_points_earning_streak_current": {
+            "name": "Nuværende indtjeningsrække"
+          },
+          "point_stat_points_earning_streak_longest": {
+            "name": "Længste indtjeningsrække"
+          },
+          "point_stat_avg_points_per_day_week": {
+            "name": "Gennemsnit pr. dag (uge)"
+          },
+          "point_stat_avg_points_per_day_month": {
+            "name": "Gennemsnit pr. dag (måned)"
+          },
+          "point_stat_avg_points_per_chore": {
+            "name": "Gennemsnit pr. opgave"
+          },
+          "point_stat_highest_balance": {
+            "name": "Højeste saldo nogensinde"
+          }
+        }
+      },
+      "kid_points_max_ever_sensor": {
+        "name": "Maksimum {points} nogensinde"
+      },
+      "system_chore_approvals_sensor": {
+        "name": "Færdige pligter - I alt"
+      },
+      "system_chore_approvals_daily_sensor": {
+        "name": "Huslige pligter udført - Dagligt"
+      },
+      "system_chore_approvals_weekly_sensor": {
+        "name": "Huslige pligter udført - ugentligt"
+      },
+      "system_chore_approvals_monthly_sensor": {
+        "name": "Færdige pligter - Månedlig"
+      },
+      "kid_chores_sensor": {
+        "name": "Huslige pligter",
+        "unit_of_measurement": "Huslige pligter",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_chores": "Samlet antal udførte opgaver hele tiden med detaljeret statistik"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "chore_stat_approved_today": {
+            "name": "Godkendt i dag"
+          },
+          "chore_stat_approved_week": {
+            "name": "Godkendt denne uge"
+          },
+          "chore_stat_approved_month": {
+            "name": "Godkendt denne måned"
+          },
+          "chore_stat_approved_year": {
+            "name": "Godkendt i år"
+          },
+          "chore_stat_approved_all_time": {
+            "name": "Godkendt hele tiden"
+          },
+          "chore_stat_most_completed_chore_all_time": {
+            "name": "Mest fuldførte pligt (hele tiden)"
+          },
+          "chore_stat_most_completed_chore_week": {
+            "name": "Mest udførte pligt (uge)"
+          },
+          "chore_stat_most_completed_chore_month": {
+            "name": "Mest udførte pligter (måned)"
+          },
+          "chore_stat_most_completed_chore_year": {
+            "name": "Mest udførte pligt (år)"
+          },
+          "chore_stat_total_points_from_chores_today": {
+            "name": "Point fra dagens huslige pligter"
+          },
+          "chore_stat_total_points_from_chores_week": {
+            "name": "Point fra pligter denne uge"
+          },
+          "chore_stat_total_points_from_chores_month": {
+            "name": "Point fra huslige pligter denne måned"
+          },
+          "chore_stat_total_points_from_chores_year": {
+            "name": "Point fra pligter i år"
+          },
+          "chore_stat_total_points_from_chores_all_time": {
+            "name": "Point fra pligter hele tiden"
+          },
+          "chore_stat_overdue_today": {
+            "name": "Forfalden i dag"
+          },
+          "chore_stat_overdue_week": {
+            "name": "Forsinket denne uge"
+          },
+          "chore_stat_overdue_month": {
+            "name": "Forfaldne denne måned"
+          },
+          "chore_stat_overdue_year": {
+            "name": "Forsinket i år"
+          },
+          "chore_stat_overdue_count_all_time": {
+            "name": "Forsinket hele tiden"
+          },
+          "chore_stat_claimed_today": {
+            "name": "Anmodet i dag"
+          },
+          "chore_stat_claimed_week": {
+            "name": "Gjort krav på denne uge"
+          },
+          "chore_stat_claimed_month": {
+            "name": "Ansøgt denne måned"
+          },
+          "chore_stat_claimed_year": {
+            "name": "Ansøgt i år"
+          },
+          "chore_stat_claimed_all_time": {
+            "name": "Hævdet hele tiden"
+          },
+          "chore_stat_disapproved_today": {
+            "name": "Afvist i dag"
+          },
+          "chore_stat_disapproved_week": {
+            "name": "Afvist denne uge"
+          },
+          "chore_stat_disapproved_month": {
+            "name": "Afvist denne måned"
+          },
+          "chore_stat_disapproved_year": {
+            "name": "Afvist i år"
+          },
+          "chore_stat_disapproved_all_time": {
+            "name": "Afvist hele tiden"
+          },
+          "chore_stat_current_due_today": {
+            "name": "Forfaldsdato i dag"
+          },
+          "chore_stat_current_overdue": {
+            "name": "Nuværende forfalden"
+          },
+          "chore_stat_current_claimed": {
+            "name": "Nuværende påståede"
+          },
+          "chore_stat_current_approved": {
+            "name": "Nuværende godkendt"
+          },
+          "chore_stat_longest_streak_week": {
+            "name": "Længste række (uge)"
+          },
+          "chore_stat_longest_streak_month": {
+            "name": "Længste serie (måned)"
+          },
+          "chore_stat_longest_streak_year": {
+            "name": "Længste række (år)"
+          },
+          "chore_stat_longest_streak_all_time": {
+            "name": "Længste serie (hele tiden)"
+          },
+          "chore_stat_avg_per_day_week": {
+            "name": "Gennemsnit pr. dag (uge)"
+          },
+          "chore_stat_avg_per_day_month": {
+            "name": "Gennemsnit pr. dag (måned)"
+          }
+        }
+      },
+      "kid_badges_sensor": {
+        "name": "Badges",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_kid_badges": "Højest optjente badge og akkumuleret fremgang i realtid, inklusive aktive cyklusser og tildelingshistorik på tværs af alle badgetyper"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "labels": {
+            "name": "Etiketter"
+          },
+          "all_earned_badges": {
+            "name": "Alle optjente badges"
+          },
+          "highest_badge_threshold_value": {
+            "name": "Højeste badgetærskel"
+          },
+          "points_to_next_badge": {
+            "name": "Point til næste badge"
+          },
+          "current_badge_name": {
+            "name": "Nuværende badgenavn"
+          },
+          "current_badge_eid": {
+            "name": "Nuværende badge-enheds-ID"
+          },
+          "highest_earned_badge_name": {
+            "name": "Højest optjente badgenavn"
+          },
+          "next_higher_badge_name": {
+            "name": "Næste højere badgenavn"
+          },
+          "next_higher_badge_eid": {
+            "name": "Næste højere badge-enheds-ID"
+          },
+          "next_lower_badge_name": {
+            "name": "Næste nederste badgenavn"
+          },
+          "next_lower_badge_eid": {
+            "name": "Næste lavere badge-enheds-ID"
+          },
+          "badge_status": {
+            "name": "Badgestatus",
+            "state": {
+              "active": "Aktiv",
+              "grace": "Henstandsperiode",
+              "demoted": "Degraderet"
+            }
+          },
+          "last_awarded_date": {
+            "name": "Sidste tildelingsdato"
+          },
+          "award_count": {
+            "name": "Prisantal"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "baseline_points": {
+            "name": "Basispunkter"
+          },
+          "cycle_points": {
+            "name": "Cykluspunkter"
+          },
+          "maintenance_grace_end_date": {
+            "name": "Slutdato for vedligeholdelsesfrihed"
+          },
+          "maintenance_points_required": {
+            "name": "Nødvendige vedligeholdelsespunkter"
+          },
+          "maintenance_end_date": {
+            "name": "Vedligeholdelses slutdato"
+          },
+          "maintenance_points_remaining": {
+            "name": "Resterende vedligeholdelsespunkter"
+          },
+          "reset_schedule": {
+            "name": "Nulstil tidsplan"
+          },
+          "target": {
+            "name": "Mål"
+          },
+          "awards": {
+            "name": "Priser"
+          }
+        }
+      },
+      "system_badge_sensor": {
+        "name": "Badge - {badge_name}",
+        "unit_of_measurement": "Børn",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_badge": "Antal børn, der har opnået dette badge, med badgekonfiguration inklusive type, mål, priser og tildelte børn"
+            }
+          },
+          "badge_name": {
+            "name": "Badgenavn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "badge_type": {
+            "name": "Badgetype",
+            "state": {
+              "cumulative": "Kumulativ",
+              "achievement": "Præstation",
+              "challenge": "Udfordring",
+              "daily": "Daglig",
+              "periodic": "Periodisk",
+              "special": "Særlig"
+            }
+          },
+          "labels": {
+            "name": "Etiketter"
+          },
+          "kids_earned": {
+            "name": "Børn optjente"
+          },
+          "kids_assigned": {
+            "name": "Børn tildelt"
+          },
+          "target": {
+            "name": "Mål"
+          },
+          "associated_achievement": {
+            "name": "Tilknyttet præstation"
+          },
+          "associated_challenge": {
+            "name": "Tilknyttet udfordring"
+          },
+          "occasion_type": {
+            "name": "Anledningstype"
+          },
+          "required_chores": {
+            "name": "Obligatoriske pligter"
+          },
+          "badge_awards": {
+            "name": "Badge-priser"
+          },
+          "reset_schedule": {
+            "name": "Nulstil tidsplan"
+          }
+        }
+      },
+      "kid_badge_progress_sensor": {
+        "name": "Badge-status - {badge_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_badge_progress": "Badge-statusprocent (0-100), der sporer gennemførelsen af optjeningen af dette badge, med kriteriestatus, datoer og tildelingshistorik"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "badge_name": {
+            "name": "Badgenavn"
+          },
+          "badge_type": {
+            "name": "Badgetype",
+            "state": {
+              "cumulative": "Kumulativ",
+              "achievement": "Præstation",
+              "challenge": "Udfordring",
+              "daily": "Daglig",
+              "periodic": "Periodisk",
+              "special": "Særlig"
+            }
+          },
+          "status": {
+            "name": "Status",
+            "state": {
+              "inactive": "Inaktiv",
+              "active": "Aktiv",
+              "completed": "Færdiggjort"
+            }
+          },
+          "target_type": {
+            "name": "Måltype",
+            "state": {
+              "chores": "Huslige pligter",
+              "points": "Point",
+              "days": "Dage",
+              "achievement": "Præstation",
+              "challenge": "Udfordring"
+            }
+          },
+          "threshold_value": {
+            "name": "Målgrænse"
+          },
+          "recurring_frequency": {
+            "name": "Tilbagevendende frekvens",
+            "state": {
+              "none": "Ingen",
+              "daily": "Daglig",
+              "weekly": "Ugentlig",
+              "biweekly": "Hver anden uge",
+              "monthly": "Månedlig"
+            }
+          },
+          "start_date": {
+            "name": "Startdato"
+          },
+          "end_date": {
+            "name": "Slutdato"
+          },
+          "last_update_day": {
+            "name": "Sidste opdateringsdag"
+          },
+          "overall_progress": {
+            "name": "Samlet fremgang"
+          },
+          "criteria_met": {
+            "name": "Kriterier opfyldt",
+            "state": {
+              "true": "Ja",
+              "false": "Ingen"
+            }
+          },
+          "last_awarded": {
+            "name": "Sidst tildelt"
+          },
+          "award_count": {
+            "name": "Prisantal"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          }
+        }
+      },
+      "system_chores_pending_approval_sensor": {
+        "name": "Afventer godkendelser af pligter"
+      },
+      "system_rewards_pending_approval_sensor": {
+        "name": "Afventer godkendelse af belønninger"
+      },
+      "system_chore_shared_state_sensor": {
+        "name": "{chore_name} - Global status",
+        "state": {
+          "pending": "Indtil",
+          "approved": "Godkendt",
+          "claimed": "Gjorde krav",
+          "overdue": "Forsinket",
+          "unknown": "Ukendt",
+          "none": "Ingen",
+          "approved_in_part": "Godkendt (delvist)",
+          "claimed_in_part": "Gør krav på (delvist)",
+          "independent": "Uafhængig"
+        },
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_shared_chore": "Global fuldførelsesstatus for delte pligter med aggregerede statistikker på tværs af alle tildelte børn"
+            }
+          },
+          "chore_name": {
+            "name": "Navn på opgave"
+          },
+          "chore_icon": {
+            "name": "Huslige pligter-ikon"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "assigned_kids": {
+            "name": "Tildelte børn"
+          },
+          "labels": {
+            "name": "Etiketter"
+          },
+          "default_points": {
+            "name": "Standardpoint"
+          },
+          "completion_criteria": {
+            "name": "Færdiggørelseskriterier",
+            "state": {
+              "independent": "Uafhængig",
+              "shared_first_only": "Delt (kun førstegangsbrugere)",
+              "shared_all_required": "Delt (alle obligatoriske)"
+            }
+          },
+          "approval_reset_type": {
+            "name": "Godkendelsesnulstillingstype",
+            "state": {
+              "at_midnight_once": "En gang om dagen",
+              "at_midnight_multi": "Flere pr. dag",
+              "at_due_date_once": "Én gang pr. forfaldsdato",
+              "at_due_date_multi": "Flere pr. forfaldsdato",
+              "upon_completion": "Ved færdiggørelse"
+            }
+          },
+          "recurring_frequency": {
+            "name": "Tilbagevendende frekvens",
+            "state": {
+              "none": "Ingen",
+              "daily": "Daglig",
+              "weekly": "Ugentlig",
+              "biweekly": "Hver anden uge",
+              "monthly": "Månedlig",
+              "custom": "Skik"
+            }
+          },
+          "applicable_days": {
+            "name": "Gældende dage",
+            "state": {
+              "mon": "mandag",
+              "tue": "tirsdag",
+              "wed": "onsdag",
+              "thu": "torsdag",
+              "fri": "fredag",
+              "sat": "lørdag",
+              "sun": "søndag"
+            }
+          },
+          "due_date": {
+            "name": "Forfaldsdato"
+          },
+          "custom_frequency_interval": {
+            "name": "Brugerdefineret frekvensinterval"
+          },
+          "custom_frequency_unit": {
+            "name": "Brugerdefineret frekvensenhed",
+            "state": {
+              "days": "Dage",
+              "weeks": "Uger",
+              "months": "Måneder"
+            }
+          },
+          "chore_approvals_today": {
+            "name": "Godkendelser i dag (alle børn)"
+          },
+          "last_claimed": {
+            "name": "Sidst gjort krav på"
+          },
+          "last_approved": {
+            "name": "Sidst godkendt"
+          },
+          "chore_claimed_by": {
+            "name": "Gør krav på af"
+          },
+          "chore_completed_by": {
+            "name": "Færdiggjort af"
+          }
+        }
+      },
+      "kid_reward_status_sensor": {
+        "name": "Belønningsstatus - {reward_name}",
+        "state": {
+          "not_claimed": "Ikke gjort krav på",
+          "approved": "Godkendt",
+          "claimed": "Gjorde krav",
+          "unknown": "Ukendt",
+          "none": "Ingen"
+        },
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_reward_status": "Status for indløsning af belønninger med kravhistorik og handlingsknapper"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "reward_name": {
+            "name": "Belønningsnavn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "cost": {
+            "name": "Koste"
+          },
+          "reward_claims_count": {
+            "name": "Samlede krav"
+          },
+          "reward_approvals_count": {
+            "name": "Samlede godkendelser"
+          },
+          "labels": {
+            "name": "Etiketter"
+          },
+          "reward_claim_button_eid": {
+            "name": "Enheds-ID for knappen \"Krav\""
+          },
+          "reward_approve_button_eid": {
+            "name": "Godkend knap Enheds-ID"
+          },
+          "reward_disapprove_button_eid": {
+            "name": "Enheds-ID for afvisningsknap"
+          }
+        }
+      },
+      "kid_penalty_applied_sensor": {
+        "name": "Anvendte sanktioner - {penalty_name}",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "penalty_name": {
+            "name": "Strafnavn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "penalty_points": {
+            "name": "Strafpoint"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "kid_bonus_applied_sensor": {
+        "name": "Bonus gælder - {bonus_name}",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "bonus_name": {
+            "name": "Bonusnavn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "bonus_points": {
+            "name": "Bonuspoint"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "kid_points_earned_daily_sensor": {
+        "name": "Optjente point - Dagligt"
+      },
+      "kid_points_earned_weekly_sensor": {
+        "name": "Optjente point - ugentligt"
+      },
+      "kid_points_earned_monthly_sensor": {
+        "name": "Optjente point - Månedligt"
+      },
+      "system_achievement_sensor": {
+        "name": "Præstation - {achievement_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_achievement": "Præstationsfremskridtsprocent (0-100) aggregeret på tværs af alle tildelte børn, med præstationskonfiguration inklusive type, mål, kriterier og liste over børn, der har opnået den"
+            }
+          },
+          "achievement_name": {
+            "name": "Præstationsnavn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "assigned_kids": {
+            "name": "Tildelte børn"
+          },
+          "type": {
+            "name": "Type",
+            "state": {
+              "chore_total": "Total pligter",
+              "chore_streak": "Huslige pligter",
+              "daily_minimum": "Dagligt minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Tilknyttet opgave"
+          },
+          "criteria": {
+            "name": "Kriterier"
+          },
+          "target_value": {
+            "name": "Mål"
+          },
+          "reward_points": {
+            "name": "Belønningspoint"
+          },
+          "kids_earned": {
+            "name": "Optjent af"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "system_challenge_sensor": {
+        "name": "Udfordring - {challenge_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_challenge": "Procentdel af udfordringsfremskridt (0-100) aggregeret på tværs af alle tildelte børn inden for datovinduet, med udfordringskonfiguration inklusive type, mål, kriterier, datoer og liste over børn, der har opnået den"
+            }
+          },
+          "challenge_name": {
+            "name": "Udfordringsnavn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "assigned_kids": {
+            "name": "Tildelte børn"
+          },
+          "type": {
+            "name": "Type",
+            "state": {
+              "total_within_window": "Total inden for vinduet",
+              "daily_minimum": "Dagligt minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Tilknyttet opgave"
+          },
+          "criteria": {
+            "name": "Kriterier"
+          },
+          "target_value": {
+            "name": "Mål"
+          },
+          "reward_points": {
+            "name": "Belønningspoint"
+          },
+          "start_date": {
+            "name": "Startdato"
+          },
+          "end_date": {
+            "name": "Slutdato"
+          },
+          "kids_earned": {
+            "name": "Optjent af"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "kid_achievement_progress_sensor": {
+        "name": "Fremskridt - {achievement_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_achievement_progress": "Det enkelte barns fremskridtsprocent (0-100) i forhold til at opnå denne præstation, med det aktuelle antal rå fremskridt og belønningsstatus"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "achievement_name": {
+            "name": "Præstationsnavn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "assigned_kids": {
+            "name": "Tildelte børn"
+          },
+          "type": {
+            "name": "Type",
+            "state": {
+              "chore_total": "Total pligter",
+              "chore_streak": "Huslige pligter",
+              "daily_minimum": "Dagligt minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Tilknyttet opgave"
+          },
+          "criteria": {
+            "name": "Kriterier"
+          },
+          "target_value": {
+            "name": "Mål"
+          },
+          "reward_points": {
+            "name": "Belønningspoint"
+          },
+          "raw_progress": {
+            "name": "Rå fremskridt"
+          },
+          "awarded": {
+            "name": "Tildelt",
+            "state": {
+              "true": "Ja",
+              "false": "Ingen"
+            }
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "kid_challenge_progress_sensor": {
+        "name": "Fremskridt - {challenge_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_challenge_progress": "Det enkelte barns fremskridtsprocent (0-100) i forhold til at gennemføre denne udfordring inden for datovinduet, med det aktuelle antal rå fremskridt og belønningsstatus."
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "challenge_name": {
+            "name": "Udfordringsnavn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "assigned_kids": {
+            "name": "Tildelte børn"
+          },
+          "type": {
+            "name": "Type",
+            "state": {
+              "total_within_window": "Total inden for vinduet",
+              "daily_minimum": "Dagligt minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Tilknyttet opgave"
+          },
+          "criteria": {
+            "name": "Kriterier"
+          },
+          "target_value": {
+            "name": "Mål"
+          },
+          "reward_points": {
+            "name": "Belønningspoint"
+          },
+          "start_date": {
+            "name": "Startdato"
+          },
+          "end_date": {
+            "name": "Slutdato"
+          },
+          "raw_progress": {
+            "name": "Rå fremskridt"
+          },
+          "awarded": {
+            "name": "Tildelt",
+            "state": {
+              "true": "Ja",
+              "false": "Ingen"
+            }
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "kid_chore_streak_sensor": {
+        "name": "Højeste pligtrække",
+        "state_attributes": {
+          "streaks_by_achievement": {
+            "name": "Serier efter præstation"
+          }
+        }
+      },
+      "kid_dashboard_helper_sensor": {
+        "name": "Hjælper til brugergrænsefladedashboard",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_dashboard_helper": "Aggregerer alle børnedata til dashboardforbrug"
+            }
+          },
+          "chores": {
+            "name": "Huslige pligter"
+          },
+          "rewards": {
+            "name": "Belønninger"
+          },
+          "badges": {
+            "name": "Badges"
+          },
+          "bonuses": {
+            "name": "Bonusser"
+          },
+          "penalties": {
+            "name": "Straffe"
+          },
+          "achievements": {
+            "name": "Resultater"
+          },
+          "challenges": {
+            "name": "Udfordringer"
+          },
+          "ui_translations": {
+            "name": "UI-oversættelser"
+          },
+          "points_buttons": {
+            "name": "Pointknapper"
+          },
+          "pending_approvals": {
+            "name": "Afventer godkendelser"
+          },
+          "core_sensors": {
+            "name": "Kernesensorer"
+          },
+          "dashboard_helpers": {
+            "name": "Dashboard-hjælpere"
+          },
+          "chores_by_label": {
+            "name": "Huslige pligter efter label"
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "language": {
+            "name": "Sprog"
+          }
+        }
+      }
+    },
+    "select": {
+      "kc_select_base": {
+        "name": "Vælg base"
+      },
+      "system_chores_select": {
+        "name": "Vælg opgave"
+      },
+      "system_rewards_select": {
+        "name": "Vælg belønning"
+      },
+      "system_penalties_select": {
+        "name": "Vælg straf"
+      },
+      "system_bonuses_select": {
+        "name": "Vælg bonus"
+      },
+      "kid_dashboard_helper_chores_select": {
+        "name": "Hjælper til opgaver i brugergrænsefladen",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_select_kid_chores": "Børns opgaver til filtrering af dashboard"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          }
+        }
+      }
+    },
+    "calendar": {
+      "kid_schedule_calendar": {
+        "name": "Kalender",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_calendar_schedule": "Kalender, der viser barnets pligtplan og afleveringsdatoer"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          }
+        }
+      }
+    },
+    "datetime": {
+      "kid_dashboard_helper_datetime_picker": {
+        "name": "Datohjælper til brugergrænsefladedashboard",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_datetime_dashboard_helper": "Datovalgshjælper til filtrering og navigation af dashboard-brugergrænsefladen"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          }
+        }
+      }
+    },
+    "button": {
+      "kid_chore_claim_button": {
+        "name": "Gør krav på opgave - {chore_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_button_chore_claim": "Barn hævder at have udført tildelt pligt"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "chore_name": {
+            "name": "Navn på opgave"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "parent_chore_approve_button": {
+        "name": "Godkend opgave - {chore_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_button_chore_approve": "Forælder godkender påstået pligt"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "chore_name": {
+            "name": "Navn på opgave"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "parent_chore_disapprove_button": {
+        "name": "Afvis opgave - {chore_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_button_chore_disapprove": "Forælder afviser påstået huslige pligt"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "chore_name": {
+            "name": "Navn på opgave"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "kid_reward_redeem_button": {
+        "name": "Få belønning - {reward_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_button_reward_redeem": "Barn indløser belønning med point"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "reward_name": {
+            "name": "Belønningsnavn"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "parent_reward_approve_button": {
+        "name": "Godkend belønning - {reward_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_button_reward_approve": "Forælder godkender indløst belønning"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "reward_name": {
+            "name": "Belønningsnavn"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "parent_reward_disapprove_button": {
+        "name": "Afvis belønning - {reward_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_button_reward_disapprove": "Forælder afviser indløst belønning"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "reward_name": {
+            "name": "Belønningsnavn"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "parent_penalty_apply_button": {
+        "name": "Anvend straf - {penalty_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_button_penalty_apply": "Forælder anvender straf (trækker point fra)"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "penalty_name": {
+            "name": "Strafnavn"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "parent_bonus_apply_button": {
+        "name": "Anvend bonus - {bonus_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_button_bonus_apply": "Forælder anvender bonus (tilføjer point)"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          },
+          "bonus_name": {
+            "name": "Bonusnavn"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "parent_points_adjust_button": {
+        "name": "{sign_label} {points_label}",
+        "state_attributes": {
+          "purpose": {
+            "name": "Formål",
+            "state": {
+              "purpose_button_points_adjust": "Forælder justerer manuelt barnets point"
+            }
+          },
+          "kid_name": {
+            "name": "Barnets navn"
+          }
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "error_msg_no_entry_found": {
+      "message": "Ingen matchende post fundet i konfigurationen."
+    },
+    "not_authorized_action": {
+      "message": "Du har ikke tilladelse til at {action} for dette barn."
+    },
+    "not_authorized_action_global": {
+      "message": "Du er ikke autoriseret til {action}."
+    },
+    "calendar_create_not_supported": {
+      "message": "Oprettelse af begivenheder understøttes ikke for denne kalender"
+    },
+    "calendar_delete_not_supported": {
+      "message": "Sletning af begivenheder understøttes ikke for denne kalender"
+    },
+    "calendar_update_not_supported": {
+      "message": "Opdatering af begivenheder understøttes ikke for denne kalender"
+    },
+    "not_found": {
+      "message": "{entity_type} {name} ikke fundet"
+    },
+    "not_assigned": {
+      "message": "{entity} ikke tildelt til {kid}"
+    },
+    "insufficient_points": {
+      "message": "{kid} har {current} point, men mangler {required} point"
+    },
+    "already_claimed": {
+      "message": "{entity} er allerede blevet gjort krav på"
+    },
+    "chore_claimed_by_other": {
+      "message": "Denne opgave er allerede blevet gjort krav på af {claimed_by}"
+    },
+    "chore_already_approved": {
+      "message": "Opgaven er allerede godkendt i dag. Prøv igen efter nulstillingsperioden for godkendelse"
+    },
+    "chore_pending_claim": {
+      "message": "Chore har et afventende krav, der venter på godkendelse eller afvisning"
+    },
+    "chore_completed_by_other": {
+      "message": "Denne opgave er allerede blevet udført af et andet barn i denne periode"
+    },
+    "invalid_status": {
+      "message": "{entity} status er {status}, forventet {expected}"
+    },
+    "entity_mismatch": {
+      "message": "{provided} matcher ikke {expected}"
+    },
+    "invalid_frequency": {
+      "message": "Gentagelsesfrekvensen {frequency} er ikke gyldig"
+    },
+    "chore_overdue_for_kid": {
+      "message": "Opgave {chore_name} er for sent for {kid_name}"
+    },
+    "kid_not_assigned_to_chore": {
+      "message": "Barn {kid_name} er ikke tildelt opgaven {chore_name}"
+    },
+    "shared_chore_cannot_have_kid": {
+      "message": "Kan ikke angive et barn til delt opgave {chore_name}. Delte opgaver har én deadline for alle børn."
+    },
+    "required_field": {
+      "message": "Skal angive {field}"
+    },
+    "invalid_date_format": {
+      "message": "Ugyldigt datoformat. Angiv venligst en gyldig datostring (f.eks. ÅÅÅÅ-MM-DD eller ISO 8601 dato/klokkeslæt)."
+    },
+    "date_in_past": {
+      "message": "Forfaldsdatoen må ikke være i fortiden. Angiv venligst en fremtidig dato."
+    },
+    "missing_chore": {
+      "message": "Skal angive enten opgave-ID eller opgavenavn."
+    },
+    "missing_field": {
+      "message": "Det obligatoriske felt {field} mangler i {entity}"
+    },
+    "invalid_date": {
+      "message": "{field} dato {date} er ugyldig"
+    },
+    "date_constraint": {
+      "message": "{constraint} overtrædelse: {detail}"
+    },
+    "operation_failed": {
+      "message": "{operation} mislykkedes: {reason}"
+    },
+    "configuration_error": {
+      "message": "Konfigurationsfejl: {detail}"
+    }
+  }
+}

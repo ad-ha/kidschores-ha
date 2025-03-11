@@ -1,0 +1,78 @@
+{
+  "chore_assigned": {
+    "title": "KidsChores: Nieuwe klus",
+    "message": "Je hebt een nieuwe taak {chore_name} toegewezen gekregen! Inleverdatum: {due_date}"
+  },
+  "chore_claimed": {
+    "title": "KidsChores: Taak opgeëist",
+    "message": "{kid_name} heeft taak opgeëist {chore_name}"
+  },
+  "chore_approved": {
+    "title": "KidsChores: Goedgekeurde klusjes",
+    "message": "Chore {chore_name} goedgekeurd! +{points} punten"
+  },
+  "chore_disapproved": {
+    "title": "KidsChores: Klusjes afgekeurd",
+    "message": "Chore {chore_name} is niet goedgekeurd"
+  },
+  "chore_overdue": {
+    "title": "KidsChores: Klusjes die al lang hadden moeten gebeuren",
+    "message": "De klus {chore_name} is te laat! De uiterste inleverdatum was {due_date}"
+  },
+  "chore_reminder": {
+    "title": "KidsChores: Herinnering voor nog uit te voeren klusjes",
+    "message": "Herinnering: De taak {chore_name} die is geclaimd door {kid_name} wacht op goedkeuring."
+  },
+  "reward_claimed_kid": {
+    "title": "KidsChores: Beloning opgeëist",
+    "message": "Je hebt beloning {reward_name} geclaimd voor {points} punten!"
+  },
+  "reward_claimed_parent": {
+    "title": "KidsChores: Beloning opgeëist",
+    "message": "{kid_name} claimde beloning {reward_name} voor {points} punten"
+  },
+  "reward_approved": {
+    "title": "KidsChores: Beloning goedgekeurd",
+    "message": "Beloning {reward_name} goedgekeurd!"
+  },
+  "reward_disapproved": {
+    "title": "KidsChores: Beloning afgekeurd",
+    "message": "Beloning {reward_name} is niet goedgekeurd"
+  },
+  "reward_reminder": {
+    "title": "KidsChores: Herinnering voor een beloning die nog in behandeling is",
+    "message": "Herinnering: Beloning {reward_name} geclaimd door {kid_name} wacht op goedkeuring."
+  },
+  "badge_earned_kid": {
+    "title": "KidsChores: Badge verdiend",
+    "message": "Je hebt de {badge_name} badge verdiend!"
+  },
+  "badge_earned_parent": {
+    "title": "KidsChores: Badge verdiend",
+    "message": "{kid_name} heeft de {badge_name} badge verdiend!"
+  },
+  "achievement_earned_kid": {
+    "title": "KidsChores: Behaalde prestatie",
+    "message": "Je hebt prestatie {achievement_name}behaald!"
+  },
+  "achievement_earned_parent": {
+    "title": "KidsChores: Behaalde prestatie",
+    "message": "{kid_name} behaalde prestatie {achievement_name}!"
+  },
+  "challenge_completed_kid": {
+    "title": "KidsChores: Uitdaging voltooid",
+    "message": "Je hebt uitdaging {challenge_name}voltooid!"
+  },
+  "challenge_completed_parent": {
+    "title": "KidsChores: Uitdaging voltooid",
+    "message": "{kid_name} voltooide uitdaging {challenge_name}!"
+  },
+  "penalty_applied": {
+    "title": "Kinderklusjes: Straf toegepast",
+    "message": "Straf {penalty_name} toegepast: -{points} punten"
+  },
+  "bonus_applied": {
+    "title": "KidsChorks: Bonus toegepast",
+    "message": "Bonus {bonus_name} toegepast: +{points} punten"
+  }
+}

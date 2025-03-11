@@ -1,0 +1,78 @@
+{
+  "chore_assigned": {
+    "title": "Tarefas para Crianças: Nova Tarefa",
+    "message": "Uma nova tarefa {chore_name} foi-lhe atribuída! Data de entrega: {due_date}"
+  },
+  "chore_claimed": {
+    "title": "KidsChores: Tarefa Reivindicada",
+    "message": "{kid_name} tarefa reivindicada {chore_name}"
+  },
+  "chore_approved": {
+    "title": "Tarefas para Crianças: Aprovadas",
+    "message": "Tarefa {chore_name} aprovada! +{points} pontos"
+  },
+  "chore_disapproved": {
+    "title": "Tarefas para Crianças: Tarefas Não Aprovadas",
+    "message": "A tarefa {chore_name} não foi aprovada."
+  },
+  "chore_overdue": {
+    "title": "Tarefas para Crianças: Tarefas Atrasadas",
+    "message": "A tarefa {chore_name} está atrasada! A data de validade era {due_date}"
+  },
+  "chore_reminder": {
+    "title": "KidsChores: Lembrete para Tarefas Pendentes",
+    "message": "Lembrete: A tarefa {chore_name} reivindicada por {kid_name} está a aguardar aprovação."
+  },
+  "reward_claimed_kid": {
+    "title": "Tarefas para Crianças: Recompensa Resgatada",
+    "message": "Reivindicou a recompensa de {reward_name} por {points} pontos!"
+  },
+  "reward_claimed_parent": {
+    "title": "Tarefas para Crianças: Recompensa Resgatada",
+    "message": "{kid_name} reivindicou recompensa {reward_name} por {points} pontos"
+  },
+  "reward_approved": {
+    "title": "Tarefas para Crianças: Recompensa Aprovada",
+    "message": "Recompensa {reward_name} aprovada!"
+  },
+  "reward_disapproved": {
+    "title": "Tarefas para Crianças: Recompensa Não Aprovada",
+    "message": "A recompensa {reward_name} não foi aprovada."
+  },
+  "reward_reminder": {
+    "title": "KidsChores: Lembrete para recompensa pendente",
+    "message": "Lembrete: A recompensa {reward_name} reivindicada por {kid_name} está a aguardar aprovação."
+  },
+  "badge_earned_kid": {
+    "title": "Tarefas para Crianças: Distintivo Conquistado",
+    "message": "Ganhou o crachá {badge_name} !"
+  },
+  "badge_earned_parent": {
+    "title": "Tarefas para Crianças: Distintivo Conquistado",
+    "message": "{kid_name} ganhou o crachá {badge_name} !"
+  },
+  "achievement_earned_kid": {
+    "title": "Tarefas para Crianças: Conquista Obtida",
+    "message": "Conquistaste a conquista {achievement_name}!"
+  },
+  "achievement_earned_parent": {
+    "title": "Tarefas para Crianças: Conquista Obtida",
+    "message": "{kid_name} conquista merecida {achievement_name}!"
+  },
+  "challenge_completed_kid": {
+    "title": "Tarefas para Crianças: Desafio Concluído",
+    "message": "Concluiu o desafio {challenge_name}!"
+  },
+  "challenge_completed_parent": {
+    "title": "Tarefas para Crianças: Desafio Concluído",
+    "message": "{kid_name} desafio concluído {challenge_name}!"
+  },
+  "penalty_applied": {
+    "title": "Tarefas para Crianças: Penalização Aplicada",
+    "message": "Penalidade {penalty_name} aplicada: -{points} pontos"
+  },
+  "bonus_applied": {
+    "title": "Tarefas para Crianças: Bónus Aplicado",
+    "message": "Bônus {bonus_name} aplicado: +{points} pontos"
+  }
+}

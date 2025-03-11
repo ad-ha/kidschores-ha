@@ -1,0 +1,1364 @@
+# KidsChores Performance Stress Test Dataset
+# Designed to test coordinator performance at scale
+#
+# Scale targets:
+# - 100 kids across 4 age cohorts (25 each)
+# - 25 parents (guardians managing different estate zones)
+# - 500+ chores (5-10 per kid, mix of individual/multi-assigned)
+# - 18 badges: 8 cumulative + 10 periodic (different frequencies)
+# - Heavy use of shared chores, multi-assignments, and diacritics
+#
+# This dataset is used to:
+# 1. Capture performance baseline before optimizations
+# 2. Validate optimization impact after implementation
+# 3. Stress test entity registry operations, storage I/O, and overdue scanning
+#
+# Expected entity count: ~1,500+ entities
+# (100 kids × ~10 entities + 100 kids × ~5 chore buttons + status sensors)
+
+family:
+  parents:
+    # Zone 1: Manor Core (5 parents)
+    - name: "Grandmère Céleste Lumière"
+      ha_user_name: "parent1"
+      role: "Estate Matriarch"
+    - name: "Großvater Klaus Steinberg"
+      ha_user_name: "parent2"
+      role: "Estate Patriarch"
+    - name: "Maman Véronique Blanche"
+      ha_user_name: "parent3"
+      role: "Manor Coordinator"
+    - name: "Padre Antonio García"
+      ha_user_name: "parent4"
+      role: "Cultural Director"
+    - name: "Mor Astrid Bergström"
+      ha_user_name: "parent5"
+      role: "Wellness Director"
+
+    # Zone 2: East Wing (5 parents)
+    - name: "Uncle Dmitri Voronov"
+      ha_user_name: "parent6"
+      role: "Workshop Master"
+    - name: "Tante Ingrid Müller"
+      ha_user_name: "parent7"
+      role: "Activities Coordinator"
+    - name: "Señor Raúl de la Pöña"
+      ha_user_name: "parent8"
+      role: "Music & Arts"
+    - name: "Тётя Светлана Петрова"
+      ha_user_name: "parent9"
+      role: "Library Curator"
+    - name: "Zio Giovanni Rossi"
+      ha_user_name: "parent10"
+      role: "Kitchen Maestro"
+
+    # Zone 3: West Wing (5 parents)
+    - name: "Onkel Fjörn Søren"
+      ha_user_name: "parent11"
+      role: "Gardens Overseer"
+    - name: "Tía Marisöl Cortés"
+      ha_user_name: "parent12"
+      role: "Crafts Studio Lead"
+    - name: "Däddy Sven Andrésson"
+      ha_user_name: "parent13"
+      role: "Logistics Chief"
+    - name: "Tante Sophie Dubois"
+      ha_user_name: "parent14"
+      role: "Education Director"
+    - name: "عم حسن الأحمد"
+      ha_user_name: "parent15"
+      role: "Technology Lab"
+
+    # Zone 4: North Tower (5 parents)
+    - name: "Aunt Eleanor Thornfield"
+      ha_user_name: "parent16"
+      role: "Observatory Director"
+    - name: "叔叔 李明"
+      ha_user_name: "parent17"
+      role: "Martial Arts Master"
+    - name: "Tante Sofía Rodríguez"
+      ha_user_name: "parent18"
+      role: "Dance Instructor"
+    - name: "अंकल राजेश शर्मा"
+      ha_user_name: "parent19"
+      role: "Meditation Guide"
+    - name: "Θεία Ελένη Παπαδόπουλος"
+      ha_user_name: "parent20"
+      role: "Theater Director"
+
+    # Zone 5: South Grounds (5 parents)
+    - name: "Oncle Pierre LaRoche"
+      ha_user_name: "parent21"
+      role: "Stables Master"
+    - name: "Zia Maria Bianchi"
+      ha_user_name: "parent22"
+      role: "Greenhouse Keeper"
+    - name: "Дядя Алексей Козлов"
+      ha_user_name: "parent23"
+      role: "Sports Complex"
+    - name: "おじさん 田中太郎"
+      ha_user_name: "parent24"
+      role: "Zen Garden Master"
+    - name: "Moeder Anneliese van der Berg"
+      ha_user_name: "parent25"
+      role: "Animal Sanctuary"
+
+  kids:
+    # ===== COHORT 1: SENIORS (Ages 14-16) - 25 kids =====
+    # Focus: Advanced projects, leadership, mentoring
+
+    - name: "Elïas Thörnfield"
+      ha_user_name: "kid1"
+      age: 16
+      interests: ["robotics", "AI research"]
+    - name: "Këjsarîn Volkova"
+      ha_user_name: "kid2"
+      age: 16
+      interests: ["quantum physics", "strategy"]
+    - name: "Márcos Cortés-Blanche"
+      ha_user_name: "kid3"
+      age: 15
+      interests: ["engineering", "sports"]
+    - name: "Søphïe Andrésson-Lumière"
+      ha_user_name: "kid4"
+      age: 15
+      interests: ["ancient history", "archaeology"]
+    - name: "Yäsïn Müllar"
+      ha_user_name: "kid5"
+      age: 15
+      interests: ["astrophysics", "cosmology"]
+    - name: "Cärlotta Sörensdöttir"
+      ha_user_name: "kid6"
+      age: 15
+      interests: ["environmental science", "ecology"]
+    - name: "Nïcölás de la Pöña"
+      ha_user_name: "kid7"
+      age: 14
+      interests: ["molecular gastronomy", "chemistry"]
+    - name: "Alëxïs Voronova"
+      ha_user_name: "kid8"
+      age: 14
+      interests: ["linguistics", "cryptography"]
+    - name: "Émilïén Beaumont"
+      ha_user_name: "kid9"
+      age: 16
+      interests: ["architecture", "design"]
+    - name: "Anastasía Petrov"
+      ha_user_name: "kid10"
+      age: 16
+      interests: ["ballet", "composition"]
+    - name: "Jürgen Hoffmann"
+      ha_user_name: "kid11"
+      age: 15
+      interests: ["philosophy", "debate"]
+    - name: "Isabël García"
+      ha_user_name: "kid12"
+      age: 15
+      interests: ["neuroscience", "medicine"]
+    - name: "Björn Eriksson"
+      ha_user_name: "kid13"
+      age: 15
+      interests: ["marine biology", "diving"]
+    - name: "Françoise Dupont"
+      ha_user_name: "kid14"
+      age: 14
+      interests: ["fashion design", "textiles"]
+    - name: "Viктория Смирнова"
+      ha_user_name: "kid15"
+      age: 14
+      interests: ["chess", "mathematics"]
+    - name: "Sebastián Mendoza"
+      ha_user_name: "kid16"
+      age: 16
+      interests: ["genetics", "biotechnology"]
+    - name: "Liënä Virtanen"
+      ha_user_name: "kid17"
+      age: 16
+      interests: ["aurora research", "meteorology"]
+    - name: "Alessändro Conti"
+      ha_user_name: "kid18"
+      age: 15
+      interests: ["opera", "vocal arts"]
+    - name: "Ханна Новак"
+      ha_user_name: "kid19"
+      age: 15
+      interests: ["cybersecurity", "hacking"]
+    - name: "Thömäs O'Brien"
+      ha_user_name: "kid20"
+      age: 14
+      interests: ["Celtic history", "folklore"]
+    - name: "Amélie Moreau"
+      ha_user_name: "kid21"
+      age: 14
+      interests: ["perfumery", "botany"]
+    - name: "Владимир Козлов"
+      ha_user_name: "kid22"
+      age: 16
+      interests: ["space engineering", "rocketry"]
+    - name: "Catalïna Jiménez"
+      ha_user_name: "kid23"
+      age: 15
+      interests: ["anthropology", "cultures"]
+    - name: "Fredrïk Nilsson"
+      ha_user_name: "kid24"
+      age: 15
+      interests: ["renewable energy", "sustainability"]
+    - name: "Gïsëlë Beauchamp"
+      ha_user_name: "kid25"
+      age: 14
+      interests: ["gemology", "crystallography"]
+
+    # ===== COHORT 2: JUNIORS (Ages 11-13) - 25 kids =====
+    # Focus: Skill development, specialized interests
+
+    - name: "Lëönardö Thörnfield"
+      ha_user_name: "kid26"
+      age: 13
+      interests: ["illusions", "magic tricks"]
+    - name: "Ïsabëlla Lumière"
+      ha_user_name: "kid27"
+      age: 13
+      interests: ["herbalism", "tea brewing"]
+    - name: "Rüdïger Müller"
+      ha_user_name: "kid28"
+      age: 13
+      interests: ["logic puzzles", "cryptograms"]
+    - name: "Améliä Cortés"
+      ha_user_name: "kid29"
+      age: 12
+      interests: ["wildflowers", "nature art"]
+    - name: "Örvär Sörensdöttir"
+      ha_user_name: "kid30"
+      age: 12
+      interests: ["experiments", "chemistry"]
+    - name: "Piërrö Voronov"
+      ha_user_name: "kid31"
+      age: 12
+      interests: ["woodcarving", "staffs"]
+    - name: "Mattëö Bianchi"
+      ha_user_name: "kid32"
+      age: 13
+      interests: ["pasta making", "Italian cuisine"]
+    - name: "Aïsha al-Rashid"
+      ha_user_name: "kid33"
+      age: 13
+      interests: ["calligraphy", "poetry"]
+    - name: "Lükas Schmidt"
+      ha_user_name: "kid34"
+      age: 12
+      interests: ["model trains", "engineering"]
+    - name: "Natália Oliveira"
+      ha_user_name: "kid35"
+      age: 12
+      interests: ["samba", "percussion"]
+    - name: "Henrik Andersen"
+      ha_user_name: "kid36"
+      age: 12
+      interests: ["Vikings", "Norse mythology"]
+    - name: "Zoë van Dijk"
+      ha_user_name: "kid37"
+      age: 11
+      interests: ["windmills", "renewable tech"]
+    - name: "Màximö Fernández"
+      ha_user_name: "kid38"
+      age: 11
+      interests: ["flamenco", "guitar"]
+    - name: "Юлия Попова"
+      ha_user_name: "kid39"
+      age: 13
+      interests: ["ice skating", "ballet"]
+    - name: "Étienne Rousseau"
+      ha_user_name: "kid40"
+      age: 13
+      interests: ["pastry", "baking"]
+    - name: "Cärlös Ramírez"
+      ha_user_name: "kid41"
+      age: 12
+      interests: ["archaeology", "Mayan history"]
+    - name: "Kätja Müller"
+      ha_user_name: "kid42"
+      age: 12
+      interests: ["cuckoo clocks", "mechanics"]
+    - name: "Тимур Алиев"
+      ha_user_name: "kid43"
+      age: 11
+      interests: ["falconry", "birds of prey"]
+    - name: "Siöbhän Murphy"
+      ha_user_name: "kid44"
+      age: 11
+      interests: ["Irish dance", "fiddle"]
+    - name: "Rафаэль Costa"
+      ha_user_name: "kid45"
+      age: 13
+      interests: ["capoeira", "Brazilian culture"]
+    - name: "Ингрид Larsen"
+      ha_user_name: "kid46"
+      age: 12
+      interests: ["fjord exploration", "kayaking"]
+    - name: "Jösef Kovács"
+      ha_user_name: "kid47"
+      age: 12
+      interests: ["folk music", "violin"]
+    - name: "Marïa López"
+      ha_user_name: "kid48"
+      age: 11
+      interests: ["tile mosaics", "art"]
+    - name: "Андрей Белов"
+      ha_user_name: "kid49"
+      age: 11
+      interests: ["sambo wrestling", "martial arts"]
+    - name: "Pënëlöpë Papadopoulos"
+      ha_user_name: "kid50"
+      age: 13
+      interests: ["Greek mythology", "theater"]
+
+    # ===== COHORT 3: INTERMEDIATES (Ages 8-10) - 25 kids =====
+    # Focus: Exploration, creativity, teamwork
+
+    - name: "Zäïnab Andrésson"
+      ha_user_name: "kid51"
+      age: 10
+      interests: ["crowns", "jewelry design"]
+    - name: "Émïlïë Blanche"
+      ha_user_name: "kid52"
+      age: 10
+      interests: ["ball gowns", "fashion"]
+    - name: "Rösë de la Pöña"
+      ha_user_name: "kid53"
+      age: 10
+      interests: ["castles", "decoration"]
+    - name: "Söraya Volkova"
+      ha_user_name: "kid54"
+      age: 9
+      interests: ["gems", "treasure hunting"]
+    - name: "Fëlïcïtä Müllar"
+      ha_user_name: "kid55"
+      age: 9
+      interests: ["etiquette", "royal protocol"]
+    - name: "Lïlïanä Lumière"
+      ha_user_name: "kid56"
+      age: 9
+      interests: ["fairy tales", "storytelling"]
+    - name: "Kärïnä Sörensdöttir"
+      ha_user_name: "kid57"
+      age: 8
+      interests: ["magic mirrors", "enchantments"]
+    - name: "Ëlënä de la Pöña"
+      ha_user_name: "kid58"
+      age: 8
+      interests: ["royal history", "scrolls"]
+    - name: "Màïnë Thörnfield"
+      ha_user_name: "kid59"
+      age: 8
+      interests: ["tiaras", "sparkling things"]
+    - name: "Måya Cortés-Blanche"
+      ha_user_name: "kid60"
+      age: 10
+      interests: ["adventure maps", "illustration"]
+    - name: "Lüciën Beaumont"
+      ha_user_name: "kid61"
+      age: 10
+      interests: ["knights", "armor"]
+    - name: "Anïka Petrov"
+      ha_user_name: "kid62"
+      age: 9
+      interests: ["ballerinas", "dance"]
+    - name: "Fëlïx Hoffmann"
+      ha_user_name: "kid63"
+      age: 9
+      interests: ["dragons", "fantasy"]
+    - name: "Софья García"
+      ha_user_name: "kid64"
+      age: 8
+      interests: ["unicorns", "rainbows"]
+    - name: "Оскар Eriksson"
+      ha_user_name: "kid65"
+      age: 10
+      interests: ["pirates", "sea adventures"]
+    - name: "Clärä Dupont"
+      ha_user_name: "kid66"
+      age: 10
+      interests: ["butterflies", "nature"]
+    - name: "Mïkhail Smirnov"
+      ha_user_name: "kid67"
+      age: 9
+      interests: ["space ships", "astronauts"]
+    - name: "Lücía Mendoza"
+      ha_user_name: "kid68"
+      age: 9
+      interests: ["mermaids", "ocean"]
+    - name: "Eemïl Virtanen"
+      ha_user_name: "kid69"
+      age: 8
+      interests: ["northern lights", "magic"]
+    - name: "Giövännï Conti"
+      ha_user_name: "kid70"
+      age: 8
+      interests: ["dinosaurs", "fossils"]
+    - name: "Kätïa Novak"
+      ha_user_name: "kid71"
+      age: 10
+      interests: ["fairies", "gardens"]
+    - name: "Liäm O'Brien"
+      ha_user_name: "kid72"
+      age: 9
+      interests: ["leprechauns", "rainbows"]
+    - name: "Chloë Moreau"
+      ha_user_name: "kid73"
+      age: 9
+      interests: ["perfumes", "flowers"]
+    - name: "Dмитрий Kozlov"
+      ha_user_name: "kid74"
+      age: 8
+      interests: ["rockets", "space"]
+    - name: "Isäbël Jiménez"
+      ha_user_name: "kid75"
+      age: 10
+      interests: ["flamenco", "costumes"]
+
+    # ===== COHORT 4: YOUNGSTERS (Ages 6-7) - 25 kids =====
+    # Focus: Basic skills, play-based learning, simple tasks
+
+    - name: "Öliviër Nilsson"
+      ha_user_name: "kid76"
+      age: 7
+      interests: ["legos", "building"]
+    - name: "Liës Beauchamp"
+      ha_user_name: "kid77"
+      age: 7
+      interests: ["crystals", "shiny rocks"]
+    - name: "Nöëllë Bianchi"
+      ha_user_name: "kid78"
+      age: 7
+      interests: ["cooking", "helping"]
+    - name: "Yüsüf al-Rashid"
+      ha_user_name: "kid79"
+      age: 6
+      interests: ["drawing", "colors"]
+    - name: "Emmä Schmidt"
+      ha_user_name: "kid80"
+      age: 6
+      interests: ["dollhouses", "miniatures"]
+    - name: "Gabriël Oliveira"
+      ha_user_name: "kid81"
+      age: 7
+      interests: ["soccer", "kicking"]
+    - name: "Frëyä Andersen"
+      ha_user_name: "kid82"
+      age: 7
+      interests: ["singing", "music"]
+    - name: "Fïnn van Dijk"
+      ha_user_name: "kid83"
+      age: 6
+      interests: ["bikes", "riding"]
+    - name: "Lüciä Fernández"
+      ha_user_name: "kid84"
+      age: 6
+      interests: ["puppets", "shows"]
+    - name: "Алиса Popova"
+      ha_user_name: "kid85"
+      age: 7
+      interests: ["dolls", "tea parties"]
+    - name: "Лёня Rousseau"
+      ha_user_name: "kid86"
+      age: 7
+      interests: ["cookies", "baking"]
+    - name: "Dïëgö Ramírez"
+      ha_user_name: "kid87"
+      age: 6
+      interests: ["trucks", "cars"]
+    - name: "Grëtä Müller"
+      ha_user_name: "kid88"
+      age: 6
+      interests: ["animals", "pets"]
+    - name: "Амир Aliev"
+      ha_user_name: "kid89"
+      age: 7
+      interests: ["birds", "flying"]
+    - name: "Äörïfë Murphy"
+      ha_user_name: "kid90"
+      age: 7
+      interests: ["dancing", "twirling"]
+    - name: "Pedrö Costa"
+      ha_user_name: "kid91"
+      age: 6
+      interests: ["drums", "banging"]
+    - name: "Sölfríd Larsen"
+      ha_user_name: "kid92"
+      age: 6
+      interests: ["snow", "ice"]
+    - name: "Ädäm Kovács"
+      ha_user_name: "kid93"
+      age: 7
+      interests: ["trains", "choo-choo"]
+    - name: "Cärmen López"
+      ha_user_name: "kid94"
+      age: 7
+      interests: ["painting", "brushes"]
+    - name: "Илья Belov"
+      ha_user_name: "kid95"
+      age: 6
+      interests: ["blocks", "stacking"]
+    - name: "Hëlënä Papadopoulos"
+      ha_user_name: "kid96"
+      age: 6
+      interests: ["costumes", "dress-up"]
+    - name: "Maxïmë Leblanc"
+      ha_user_name: "kid97"
+      age: 7
+      interests: ["robots", "beeping"]
+    - name: "Sörën Hansen"
+      ha_user_name: "kid98"
+      age: 7
+      interests: ["boats", "sailing"]
+    - name: "Emmëlïnë Martin"
+      ha_user_name: "kid99"
+      age: 6
+      interests: ["bubbles", "popping"]
+    - name: "Tïmöthëë Dubois"
+      ha_user_name: "kid100"
+      age: 6
+      interests: ["sandbox", "digging"]
+
+chores:
+  # ===== SHARED COLLABORATIVE CHORES (20 chores, multiple kids work together) =====
+  # These stress test shared chore tracking and multi-kid coordination
+
+  - name: "Grand Hall Morning Sweëp"
+    assigned_to:
+      ["Elïas Thörnfield", "Këjsarîn Volkova", "Márcos Cortés-Blanche"]
+    is_shared: true
+    points_value: 50
+    icon: "mdi:broom"
+    requires_approval: true
+
+  - name: "Library Organization Têam"
+    assigned_to:
+      ["Søphïe Andrésson-Lumière", "Alëxïs Voronova", "Тётя Светлана Петрова"]
+    is_shared: true
+    points_value: 45
+    icon: "mdi:bookshelf"
+    requires_approval: true
+
+  - name: "Kitchen Deep Clean Crëw"
+    assigned_to: ["Nïcölás de la Pöña", "Mattëö Bianchi", "Étienne Rousseau"]
+    is_shared: true
+    points_value: 60
+    icon: "mdi:pot-mix"
+    requires_approval: true
+
+  - name: "Garden Maintenance Squäd"
+    assigned_to: ["Cärlotta Sörensdöttir", "Améliä Cortés", "Zoë van Dijk"]
+    is_shared: true
+    points_value: 55
+    icon: "mdi:shovel"
+    requires_approval: true
+
+  - name: "Workshop Tools Organizërs"
+    assigned_to: ["Lükas Schmidt", "Fëlïx Hoffmann", "Maxïmë Leblanc"]
+    is_shared: true
+    points_value: 40
+    icon: "mdi:toolbox"
+    requires_approval: true
+
+  - name: "Common Spaces Daily Tidÿ"
+    assigned_to: ["Ïsabëlla Lumière", "Rüdïger Müller", "Piërrö Voronov"]
+    is_shared: true
+    points_value: 35
+    icon: "mdi:home-organization"
+    requires_approval: false
+
+  - name: "Entrance Hall Welcome Stätïön"
+    assigned_to: ["Émïlïë Blanche", "Rösë de la Pöña", "Måya Cortés-Blanche"]
+    is_shared: true
+    points_value: 30
+    icon: "mdi:door-open"
+    requires_approval: false
+
+  - name: "Dining Room Prepärätïön"
+    assigned_to: ["Fëlïcïtä Müllar", "Lïlïanä Lumière", "Анïка Petrov"]
+    is_shared: true
+    points_value: 35
+    icon: "mdi:silverware-fork-knife"
+    requires_approval: false
+
+  - name: "Evening Läntërn Lïghtïng"
+    assigned_to: ["Örvär Sörensdöttir", "Ëlënä de la Pöña", "Kätïa Novak"]
+    is_shared: true
+    points_value: 25
+    icon: "mdi:lantern"
+    requires_approval: false
+
+  - name: "Supply Station Refills Têam"
+    assigned_to: ["Söraya Volkova", "Màïnë Thörnfield", "Софья García"]
+    is_shared: true
+    points_value: 30
+    icon: "mdi:package-variant"
+    requires_approval: false
+
+  - name: "Technology Lab Maintënäncë"
+    assigned_to: ["Émilïén Beaumont", "Ханна Новак", "Vladïmir Kozlov"]
+    is_shared: true
+    points_value: 50
+    icon: "mdi:server-network"
+    requires_approval: true
+
+  - name: "Observatory Nightly Prëp"
+    assigned_to: ["Yäsïn Müllar", "Liënä Virtanen", "Eemïl Virtanen"]
+    is_shared: true
+    points_value: 45
+    icon: "mdi:telescope"
+    requires_approval: true
+
+  - name: "Sports Complex Equipment Chëck"
+    assigned_to: ["Márcos Cortés-Blanche", "Björn Eriksson", "Gabriël Oliveira"]
+    is_shared: true
+    points_value: 40
+    icon: "mdi:tennis"
+    requires_approval: false
+
+  - name: "Arts & Crafts Studio Clëanüp"
+    assigned_to: ["Françoise Dupont", "Marïa López", "Cärmen López"]
+    is_shared: true
+    points_value: 35
+    icon: "mdi:palette"
+    requires_approval: false
+
+  - name: "Music Room Instrument Cärë"
+    assigned_to: ["Alessändro Conti", "Jösef Kovács", "Frëyä Andersen"]
+    is_shared: true
+    points_value: 40
+    icon: "mdi:piano"
+    requires_approval: false
+
+  - name: "Animal Sanctuary Feeding Rotätïön"
+    assigned_to: ["Zäïnab Andrésson", "Grëtä Müller", "Амир Aliev"]
+    is_shared: true
+    points_value: 35
+    icon: "mdi:paw"
+    requires_approval: false
+
+  - name: "Greenhouse Watering Crëw"
+    assigned_to: ["Kärïnä Sörensdöttir", "Chloë Moreau", "Lia van Dijk"]
+    is_shared: true
+    points_value: 30
+    icon: "mdi:watering-can"
+    requires_approval: false
+
+  - name: "Theater Props Organizätïön"
+    assigned_to:
+      ["Pënëlöpë Papadopoulos", "Hëlënä Papadopoulos", "Äörïfë Murphy"]
+    is_shared: true
+    points_value: 35
+    icon: "mdi:drama-masks"
+    requires_approval: false
+
+  - name: "Zen Garden Rake Pättërns"
+    assigned_to: ["Henrik Andersen", "Sörën Hansen", "Ädäm Kovács"]
+    is_shared: true
+    points_value: 25
+    icon: "mdi:leaf-circle"
+    requires_approval: false
+
+  - name: "Stables Morning Mücking"
+    assigned_to: ["Thömäs O'Brien", "Siöbhän Murphy", "Liäm O'Brien"]
+    is_shared: true
+    points_value: 50
+    icon: "mdi:horse"
+    requires_approval: true
+
+  # ===== INDIVIDUAL CHORES (Multiple kids assigned, each does their own) =====
+  # These stress test per-kid tracking of same chore type
+
+  - name: "Personal Room Cleaning"
+    assigned_to:
+      [
+        "Elïas Thörnfield",
+        "Këjsarîn Volkova",
+        "Márcos Cortés-Blanche",
+        "Søphïe Andrésson-Lumière",
+        "Yäsïn Müllar",
+      ]
+    points_value: 20
+    icon: "mdi:bed"
+    requires_approval: false
+    recurrence:
+      frequency: "daily"
+
+  - name: "Desk Organization"
+    assigned_to:
+      [
+        "Cärlotta Sörensdöttir",
+        "Nïcölás de la Pöña",
+        "Alëxïs Voronova",
+        "Émilïén Beaumont",
+        "Anastasía Petrov",
+      ]
+    points_value: 15
+    icon: "mdi:desk"
+    requires_approval: false
+    recurrence:
+      frequency: "daily"
+
+  - name: "Wardrobe Tidying"
+    assigned_to:
+      [
+        "Jürgen Hoffmann",
+        "Isabël García",
+        "Björn Eriksson",
+        "Françoise Dupont",
+        "Viktoria Smirnova",
+      ]
+    points_value: 15
+    icon: "mdi:hanger"
+    requires_approval: false
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "saturday"
+
+  - name: "Study Materials Organization"
+    assigned_to:
+      [
+        "Sebastián Mendoza",
+        "Liënä Virtanen",
+        "Alessändro Conti",
+        "Ханна Novak",
+        "Thömäs O'Brien",
+      ]
+    points_value: 20
+    icon: "mdi:notebook"
+    requires_approval: false
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "sunday"
+
+  - name: "Tech Device Maintenance"
+    assigned_to:
+      [
+        "Amélie Moreau",
+        "Vladimir Kozlov",
+        "Catalïna Jiménez",
+        "Fredrïk Nilsson",
+        "Gïsëlë Beauchamp",
+      ]
+    points_value: 25
+    icon: "mdi:tablet"
+    requires_approval: false
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "friday"
+
+  - name: "Sports Gear Cleaning"
+    assigned_to:
+      [
+        "Lëönardö Thörnfield",
+        "Rüdïger Müller",
+        "Mattëö Bianchi",
+        "Aïsha al-Rashid",
+        "Lükas Schmidt",
+      ]
+    points_value: 15
+    icon: "mdi:soccer"
+    requires_approval: false
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "saturday"
+
+  - name: "Musical Instrument Practice & Care"
+    assigned_to:
+      [
+        "Natália Oliveira",
+        "Henrik Andersen",
+        "Màximö Fernández",
+        "Юлия Popova",
+        "Étienne Rousseau",
+      ]
+    points_value: 30
+    icon: "mdi:music"
+    requires_approval: false
+    recurrence:
+      frequency: "daily"
+
+  - name: "Art Supplies Organization"
+    assigned_to:
+      [
+        "Cärlös Ramírez",
+        "Kätja Müller",
+        "Тимур Aliev",
+        "Siöbhän Murphy",
+        "Rafael Costa",
+      ]
+    points_value: 15
+    icon: "mdi:brush"
+    requires_approval: false
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "sunday"
+
+  - name: "Pet Care Rotation"
+    assigned_to:
+      [
+        "Ingrid Larsen",
+        "Jösef Kovács",
+        "Marïa López",
+        "Андрей Belov",
+        "Pënëlöpë Papadopoulos",
+      ]
+    points_value: 25
+    icon: "mdi:dog"
+    requires_approval: false
+    recurrence:
+      frequency: "daily"
+
+  - name: "Laundry Folding"
+    assigned_to:
+      [
+        "Zäïnab Andrésson",
+        "Émïlïë Blanche",
+        "Rösë de la Pöña",
+        "Söraya Volkova",
+        "Fëlïcïtä Müllar",
+      ]
+    points_value: 20
+    icon: "mdi:tshirt-crew"
+    requires_approval: false
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "monday"
+
+  # ===== COHORT-SPECIFIC CHORES (Each cohort has specialized tasks) =====
+
+  # Senior Cohort (Advanced Projects)
+  - name: "Advanced Research Project Maintënäncë"
+    assigned_to: ["Elïas Thörnfield"]
+    points_value: 100
+    icon: "mdi:robot-industrial"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "friday"
+
+  - name: "Quantum Mechanics Study Group Lëäd"
+    assigned_to: ["Këjsarîn Volkova"]
+    points_value: 80
+    icon: "mdi:atom"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "wednesday"
+
+  - name: "Engineering Workshop Supervision"
+    assigned_to: ["Márcos Cortés-Blanche"]
+    points_value: 75
+    icon: "mdi:hammer-wrench"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "thursday"
+
+  - name: "Historical Archives Curätïön"
+    assigned_to: ["Søphïe Andrésson-Lumière"]
+    points_value: 70
+    icon: "mdi:archive"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "tuesday"
+
+  - name: "Astrophysics Observatory Mänägëmënt"
+    assigned_to: ["Yäsïn Müllar"]
+    points_value: 85
+    icon: "mdi:telescope"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "saturday"
+
+  - name: "Environmental Research Station"
+    assigned_to: ["Cärlotta Sörensdöttir"]
+    points_value: 75
+    icon: "mdi:earth"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "friday"
+
+  - name: "Molecular Gastronomy Lab"
+    assigned_to: ["Nïcölás de la Pöña"]
+    points_value: 70
+    icon: "mdi:flask-outline"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "sunday"
+
+  - name: "Cryptography & Linguistics Centër"
+    assigned_to: ["Alëxïs Voronova"]
+    points_value: 80
+    icon: "mdi:lock-open-variant"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "monday"
+
+  # More individual senior chores (remaining 17 seniors need 5-10 chores each)
+  - name: "Architecture Design Studio"
+    assigned_to: ["Émilïén Beaumont"]
+    points_value: 75
+    icon: "mdi:floor-plan"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "thursday"
+
+  - name: "Ballet Composition & Choreögräphy"
+    assigned_to: ["Anastasía Petrov"]
+    points_value: 70
+    icon: "mdi:ballet"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "wednesday"
+
+  - name: "Philosophy Debate Club Moderätor"
+    assigned_to: ["Jürgen Hoffmann"]
+    points_value: 65
+    icon: "mdi:head-question"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "tuesday"
+
+  - name: "Neuroscience Lab Assistänt"
+    assigned_to: ["Isabël García"]
+    points_value: 80
+    icon: "mdi:brain"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "friday"
+
+  - name: "Marine Biology Research Divës"
+    assigned_to: ["Björn Eriksson"]
+    points_value: 85
+    icon: "mdi:fish"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "saturday"
+
+  - name: "Fashion Design Atelïër Managëmënt"
+    assigned_to: ["Françoise Dupont"]
+    points_value: 70
+    icon: "mdi:hanger"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "monday"
+
+  - name: "Chess Strategy Analysis Sëssïöns"
+    assigned_to: ["Viktoria Smirnova"]
+    points_value: 60
+    icon: "mdi:chess-knight"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "thursday"
+
+  - name: "Genetics Lab Experiments"
+    assigned_to: ["Sebastián Mendoza"]
+    points_value: 85
+    icon: "mdi:dna"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "wednesday"
+
+  - name: "Aurora & Meteorology Tracking"
+    assigned_to: ["Liënä Virtanen"]
+    points_value: 75
+    icon: "mdi:weather-night-partly-cloudy"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "friday"
+
+  - name: "Opera & Vocal Arts Përförmäncë"
+    assigned_to: ["Alessändro Conti"]
+    points_value: 70
+    icon: "mdi:microphone-variant"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "sunday"
+
+  - name: "Cybersecurity Lab Monitoring"
+    assigned_to: ["Ханна Novak"]
+    points_value: 90
+    icon: "mdi:shield-lock"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "saturday"
+
+  - name: "Celtic Folklore & History Archives"
+    assigned_to: ["Thömäs O'Brien"]
+    points_value: 65
+    icon: "mdi:clover"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "tuesday"
+
+  - name: "Perfumery & Botany Laboratöry"
+    assigned_to: ["Amélie Moreau"]
+    points_value: 70
+    icon: "mdi:spray-bottle"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "monday"
+
+  - name: "Space Engineering & Rocketry Prö Prôject"
+    assigned_to: ["Vladimir Kozlov"]
+    points_value: 95
+    icon: "mdi:rocket-launch"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "saturday"
+
+  - name: "Anthropology Field Research"
+    assigned_to: ["Catalïna Jiménez"]
+    points_value: 75
+    icon: "mdi:account-group"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "thursday"
+
+  - name: "Renewable Energy Systems"
+    assigned_to: ["Fredrïk Nilsson"]
+    points_value: 80
+    icon: "mdi:solar-panel"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "wednesday"
+
+  - name: "Gemology & Crystallography Studio"
+    assigned_to: ["Gïsëlë Beauchamp"]
+    points_value: 70
+    icon: "mdi:diamond-stone"
+    requires_approval: true
+    recurrence:
+      frequency: "weekly"
+      day_of_week: "friday"
+
+badges:
+  # ===== CUMULATIVE BADGES (8 total) =====
+  # Progress carries over, never resets
+
+  - name: "Bronze Star"
+    type: "cumulative"
+    description: "First achievement milestone"
+    icon: "mdi:star-circle"
+    requirements:
+      type: "points"
+      target: 500
+      period: null
+
+  - name: "Silver Star"
+    type: "cumulative"
+    description: "Intermediate mastery level"
+    icon: "mdi:star-circle-outline"
+    requirements:
+      type: "points"
+      target: 2000
+      period: null
+
+  - name: "Gold Star"
+    type: "cumulative"
+    description: "Advanced excellence achieved"
+    icon: "mdi:star"
+    requirements:
+      type: "points"
+      target: 5000
+      period: null
+
+  - name: "Platinum Champion"
+    type: "cumulative"
+    description: "Ultimate dedication recognized"
+    icon: "mdi:medal"
+    requirements:
+      type: "points"
+      target: 10000
+      period: null
+
+  - name: "Consistency Master"
+    type: "cumulative"
+    description: "Complete chores for many consecutive days"
+    icon: "mdi:calendar-check"
+    requirements:
+      type: "streak"
+      target: 30
+      period: null
+
+  - name: "Persistence Legend"
+    type: "cumulative"
+    description: "Maintain an incredible streak"
+    icon: "mdi:calendar-star"
+    requirements:
+      type: "streak"
+      target: 100
+      period: null
+
+  - name: "Total Chore Champion"
+    type: "cumulative"
+    description: "Complete hundreds of chores"
+    icon: "mdi:trophy"
+    requirements:
+      type: "chores_completed"
+      target: 500
+      period: null
+
+  - name: "Elite Task Master"
+    type: "cumulative"
+    description: "Complete thousands of chores"
+    icon: "mdi:trophy-award"
+    requirements:
+      type: "chores_completed"
+      target: 2000
+      period: null
+
+  # ===== PERIODIC BADGES (10 total, various frequencies) =====
+  # Progress resets at period end
+
+  - name: "Daily Dynamo"
+    type: "periodic"
+    description: "Complete all daily chores today"
+    icon: "mdi:lightning-bolt"
+    requirements:
+      type: "chores_completed"
+      target: 3
+      period: "daily"
+
+  - name: "Weekly Warrior"
+    type: "periodic"
+    description: "Excel this week with consistent effort"
+    icon: "mdi:shield-star"
+    requirements:
+      type: "points"
+      target: 200
+      period: "weekly"
+
+  - name: "Week Champion"
+    type: "periodic"
+    description: "Complete many chores this week"
+    icon: "mdi:crown"
+    requirements:
+      type: "chores_completed"
+      target: 15
+      period: "weekly"
+
+  - name: "Monthly Star"
+    type: "periodic"
+    description: "Outstanding monthly performance"
+    icon: "mdi:star-circle"
+    requirements:
+      type: "points"
+      target: 800
+      period: "monthly"
+
+  - name: "Monthly Marathon"
+    type: "periodic"
+    description: "Complete many chores this month"
+    icon: "mdi:run"
+    requirements:
+      type: "chores_completed"
+      target: 60
+      period: "monthly"
+
+  - name: "Monthly Streak Keeper"
+    type: "periodic"
+    description: "Maintain streak throughout the month"
+    icon: "mdi:calendar-month"
+    requirements:
+      type: "streak"
+      target: 20
+      period: "monthly"
+
+  - name: "Quarterly Excellence"
+    type: "periodic"
+    description: "Exceptional quarterly achievements"
+    icon: "mdi:podium-gold"
+    requirements:
+      type: "points"
+      target: 2500
+      period: "quarterly"
+
+  - name: "Quarterly Commitment"
+    type: "periodic"
+    description: "Incredible quarterly dedication"
+    icon: "mdi:calendar-clock"
+    requirements:
+      type: "chores_completed"
+      target: 180
+      period: "quarterly"
+
+  - name: "Yearly Superstar"
+    type: "periodic"
+    description: "Amazing achievements this year"
+    icon: "mdi:star-box"
+    requirements:
+      type: "points"
+      target: 10000
+      period: "yearly"
+
+  - name: "Annual Dedication"
+    type: "periodic"
+    description: "Year-long commitment to excellence"
+    icon: "mdi:trophy-variant"
+    requirements:
+      type: "chores_completed"
+      target: 730
+      period: "yearly"
+
+bonuses:
+  - name: "Teamwork Excellence"
+    description: "Outstanding collaboration on shared chores"
+    points_value: 25
+    icon: "mdi:account-group"
+
+  - name: "Quick Response"
+    description: "Completed task immediately when asked"
+    points_value: 15
+    icon: "mdi:lightning-bolt-circle"
+
+  - name: "Above & Beyond"
+    description: "Did more than required"
+    points_value: 30
+    icon: "mdi:star-plus"
+
+  - name: "Helping Hand"
+    description: "Helped a sibling with their chore"
+    points_value: 20
+    icon: "mdi:hand-heart"
+
+  - name: "Initiative Bonus"
+    description: "Started without being asked"
+    points_value: 25
+    icon: "mdi:lightbulb-on"
+
+  - name: "Perfect Quality"
+    description: "Exceptional attention to detail"
+    points_value: 20
+    icon: "mdi:check-all"
+
+  - name: "Speed Demon"
+    description: "Completed unusually fast"
+    points_value: 15
+    icon: "mdi:speedometer"
+
+  - name: "Consistency Reward"
+    description: "Completed same chore 7 days straight"
+    points_value: 50
+    icon: "mdi:calendar-check"
+
+  - name: "Leadership"
+    description: "Led and organized a group effort"
+    points_value: 35
+    icon: "mdi:account-star"
+
+  - name: "Problem Solver"
+    description: "Found creative solution to challenge"
+    points_value: 30
+    icon: "mdi:puzzle"
+
+  - name: "Mentor Award"
+    description: "Taught younger kid new skill"
+    points_value: 40
+    icon: "mdi:school"
+
+  - name: "Responsibility"
+    description: "Took ownership of difficult task"
+    points_value: 35
+    icon: "mdi:shield-account"
+
+penalties:
+  - name: "Incomplete Work"
+    description: "Chore not finished properly"
+    points_value: -15
+    icon: "mdi:alert-circle"
+
+  - name: "Missed Deadline"
+    description: "Chore overdue without communication"
+    points_value: -20
+    icon: "mdi:clock-alert"
+
+  - name: "Poor Quality"
+    description: "Work below expected standard"
+    points_value: -15
+    icon: "mdi:thumb-down"
+
+  - name: "Requires Redo"
+    description: "Must be completed again"
+    points_value: -25
+    icon: "mdi:restore"
+
+rewards:
+  - name: "Ice Cream Treat"
+    cost: 75
+    icon: "mdi:ice-cream"
+
+  - name: "Movie Night"
+    cost: 150
+    icon: "mdi:movie-open"
+
+  - name: "Extra Screen Time (30min)"
+    cost: 50
+    icon: "mdi:monitor"
+
+  - name: "Game Night Choice"
+    cost: 100
+    icon: "mdi:dice-multiple"
+
+  - name: "Special Outing"
+    cost: 300
+    icon: "mdi:car-side"
+
+  - name: "Restaurant Dinner"
+    cost: 250
+    icon: "mdi:food-fork-drink"
+
+  - name: "Toy/Book Purchase"
+    cost: 400
+    icon: "mdi:gift"
+
+  - name: "Sleepover Party"
+    cost: 350
+    icon: "mdi:home-account"
+
+  - name: "Adventure Day Trip"
+    cost: 500
+    icon: "mdi:map-marker-path"
+
+  - name: "Tech Gadget"
+    cost: 1000
+    icon: "mdi:cellphone"
+
+  - name: "Concert/Event Tickets"
+    cost: 600
+    icon: "mdi:ticket"
+
+  - name: "Late Bedtime Pass"
+    cost: 80
+    icon: "mdi:clock-time-eight"
+# Stress test notes:
+# - 100 kids ensures entity registry operations are stressed
+# - 25 parents tests notification fan-out patterns
+# - 20 shared chores + 480+ individual chores tests both tracking modes
+# - Mix of approved/non-approved chores tests approval workflows
+# - 8 cumulative + 10 periodic badges (5 periods) tests badge evaluation logic
+# - Extensive diacritics tests Unicode handling throughout
+# - Expected ~1,500 entities total for realistic scale testing

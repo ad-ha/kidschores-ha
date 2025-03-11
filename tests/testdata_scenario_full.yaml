@@ -1,0 +1,340 @@
+# Test Scenario: FULL
+# 2 parents, 3 kids, 19 chores, 6 badges, 5 rewards, 2 bonuses, 3 penalties
+# Use case: Comprehensive coverage of all chore types and combinations
+#
+# CHORE COVERAGE MATRIX (18 chores total):
+# ============================================
+# INDEPENDENT (9 chores):
+#   - Single-kid daily (3): Feed cats, Water plants (auto-approve), Sweep patio
+#   - Single-kid weekly (2): Pick up Lego, Paint rainbow
+#   - Single-kid monthly (1): Deep Clean Toy Chest
+#   - Multi-kid daily (1): Stär sweep (3 kids)
+#   - Multi-kid weekly (1): Organize Bookshelf (2 kids)
+#   - Custom interval (1): Refill Bird Feeder (every 3 days)
+#
+# SHARED_ALL (3 chores):
+#   - Daily, 3 kids: Family Dinner Prep
+#   - Weekly, 3 kids: Weekend Yard Work
+#   - Weekly, 2 kids: Sibling Room Cleanup
+#
+# SHARED_FIRST (4 chores):
+#   - Weekly, 2 kids: Garage Cleanup, Wash Family Car
+#   - Daily, 3 kids: Take Out Trash, Mail Pickup Race
+#
+# CUSTOM FREQUENCY (3 chores):
+#   - Independent every 3 days: Refill Bird Feeder
+#   - Shared_first every 5 days: Clean Pool Filter
+#   - Daily with auto-approve: Water plants
+#
+# Test focus: Full feature set, badge maintenance, multiplier effects,
+# reward redemption, shared chore workflows, independent vs shared coordination,
+# custom intervals, auto-approve, complex dashboard rendering, multi-kid filtering
+
+family:
+  parents:
+    - name: "Môm Astrid Stârblüm"
+      ha_user_name: "parent1"
+      role: "gardener, loves stars"
+    - name: "Dad Leo"
+      ha_user_name: "parent2"
+      role: "adventurer, loves maps"
+  kids:
+    - name: "Zoë"
+      ha_user_name: "kid1"
+      age: 8
+      interests: ["animals"]
+    - name: "Max!"
+      ha_user_name: "kid2"
+      age: 6
+      interests: ["robots"]
+    - name: "Lila"
+      ha_user_name: "kid3"
+      age: 8
+      interests: ["painting"]
+
+chores:
+  # === INDEPENDENT CHORES (Single Kid) ===
+  # Test: Basic daily independent chore
+  - name: "Feed the cåts"
+    assigned_to: ["Zoë"]
+    type: "daily"
+    points: 10
+    icon: "mdi:cat"
+    completion_criteria: "independent"
+
+  # Test: Daily independent with auto-approve
+  - name: "Wåter the plänts"
+    assigned_to: ["Zoë"]
+    type: "daily"
+    points: 10
+    icon: "mdi:watering-can"
+    completion_criteria: "independent"
+    auto_approve: true
+
+  # Test: Weekly independent chore
+  - name: "Pick up Lëgo!"
+    assigned_to: ["Max!"]
+    type: "weekly"
+    points: 15
+    icon: "mdi:lego"
+    completion_criteria: "independent"
+
+  # Test: Daily independent with custom recurring
+  - name: "Charge Røbot"
+    assigned_to: ["Max!"]
+    type: "daily"
+    points: 10
+    icon: "mdi:robot"
+    completion_criteria: "independent"
+    recurring_frequency: "daily"
+
+  # Test: Weekly independent chore
+  - name: "Paint the rãinbow"
+    assigned_to: ["Lila"]
+    type: "weekly"
+    points: 15
+    icon: "mdi:palette"
+    completion_criteria: "independent"
+
+  # Test: Daily independent chore
+  - name: "Sweep the p@tio"
+    assigned_to: ["Lila"]
+    type: "daily"
+    points: 10
+    icon: "mdi:broom"
+    completion_criteria: "independent"
+
+  # === INDEPENDENT CHORES (Multi Kid) ===
+  # Test: Multi-kid independent (each completes separately)
+  - name: "Stär sweep"
+    assigned_to: ["Zoë", "Max!", "Lila"]
+    type: "daily"
+    points: 20
+    icon: "mdi:star"
+    completion_criteria: "independent"
+
+  # Test: Two-kid independent with higher points
+  - name: "Ørgänize Bookshelf"
+    assigned_to: ["Zoë", "Lila"]
+    type: "weekly"
+    points: 18
+    icon: "mdi:bookshelf"
+    completion_criteria: "independent"
+    recurring_frequency: "weekly"
+
+  # Test: Monthly independent (less frequent)
+  - name: "Deep Clean Tøy Chest"
+    assigned_to: ["Max!"]
+    type: "monthly"
+    points: 30
+    icon: "mdi:treasure-chest"
+    completion_criteria: "independent"
+    recurring_frequency: "monthly"
+
+  # === SHARED_ALL CHORES ===
+  # Test: Daily shared_all (all kids must claim/approve)
+  - name: "Family Dinner Prep"
+    assigned_to: ["Zoë", "Max!", "Lila"]
+    type: "daily"
+    points: 15
+    icon: "mdi:food"
+    completion_criteria: "shared_all"
+    recurring_frequency: "daily"
+
+  # Test: Weekly shared_all with chore-level due date
+  - name: "Weekend Yärd Work"
+    assigned_to: ["Zoë", "Max!", "Lila"]
+    type: "weekly"
+    points: 25
+    icon: "mdi:tree"
+    completion_criteria: "shared_all"
+    recurring_frequency: "weekly"
+
+  # Test: Two-kid shared_all
+  - name: "Sibling Rööm Cleanup"
+    assigned_to: ["Max!", "Lila"]
+    type: "weekly"
+    points: 20
+    icon: "mdi:broom-clean"
+    completion_criteria: "shared_all"
+    recurring_frequency: "weekly"
+
+  # === SHARED_FIRST CHORES ===
+  # Test: Weekly shared_first (first approval completes)
+  - name: "Garage Cleanup"
+    assigned_to: ["Zoë", "Max!"]
+    type: "weekly"
+    points: 25
+    icon: "mdi:garage"
+    completion_criteria: "shared_first"
+    recurring_frequency: "weekly"
+
+  # Test: Daily shared_first
+  - name: "Täke Öut Trash"
+    assigned_to: ["Zoë", "Max!", "Lila"]
+    type: "daily"
+    points: 12
+    icon: "mdi:delete"
+    completion_criteria: "shared_first"
+    recurring_frequency: "daily"
+
+  # Test: Two-kid shared_first with higher points
+  - name: "Wåsh Family Car"
+    assigned_to: ["Zoë", "Lila"]
+    type: "weekly"
+    points: 30
+    icon: "mdi:car-wash"
+    completion_criteria: "shared_first"
+    recurring_frequency: "weekly"
+
+  # Test: Three-kid shared_first for isolated 3-kid test
+  - name: "Måil Pickup Race"
+    assigned_to: ["Zoë", "Max!", "Lila"]
+    type: "daily"
+    points: 8
+    icon: "mdi:mailbox"
+    completion_criteria: "shared_first"
+    recurring_frequency: "daily"
+
+  # === CUSTOM FREQUENCY CHORES ===
+  # Test: Custom interval (every 3 days)
+  - name: "Refill Bird Fëeder"
+    assigned_to: ["Zoë"]
+    type: "custom"
+    points: 8
+    icon: "mdi:bird"
+    completion_criteria: "independent"
+    recurring_frequency: "custom"
+    custom_interval_days: 3
+
+  # Test: Custom interval shared_first (every 5 days)
+  - name: "Clëan Pool Fïlter"
+    assigned_to: ["Max!", "Lila"]
+    type: "custom"
+    points: 22
+    icon: "mdi:pool"
+    completion_criteria: "shared_first"
+    recurring_frequency: "custom"
+    custom_interval_days: 5
+
+badges:
+  - name: "Brønze Står"
+    type: "cumulative"
+    threshold: 400
+    assigned_to: ["Zoë", "Max!", "Lillÿ"] # Phase 2: Explicit assignment required
+    icon: "mdi:star"
+    award: "+5 bonus points"
+    points_multiplier: 1.05
+    maintenance:
+      interval: "weekly"
+      required_points: 300 # 3/4 of threshold (400 * 3/4 = 300)
+      demote_on_fail: true
+  - name: "Sïlver Står"
+    type: "cumulative"
+    threshold: 800
+    icon: "mdi:star-circle"
+    award: "+10 bonus points"
+    points_multiplier: 1.15
+    maintenance:
+      interval: "weekly"
+      required_points: 600 # 3/4 of threshold (800 * 3/4 = 600)
+      demote_on_fail: true
+  - name: "Gøld Står"
+    type: "cumulative"
+    threshold: 1600
+    icon: "mdi:star-four-points"
+    award: "+20 bonus points"
+    points_multiplier: 1.25
+    maintenance:
+      interval: "weekly"
+      required_points: 1200 # 3/4 of threshold (1600 * 3/4 = 1200)
+      demote_on_fail: true
+  - name: "Wëekly Wïzard"
+    type: "periodic"
+    icon: "mdi:calendar-week"
+    threshold: 10
+    award: "Weekly achievement reward"
+    reset_schedule:
+      frequency: "weekly"
+      start_date: "2025-10-01" # Current quarter start
+      end_date: "2025-12-31" # Current quarter end
+  - name: "Dåily Dëlight"
+    type: "daily"
+    icon: "mdi:emoticon-happy"
+    threshold: 2
+    award: "+3 bonus points"
+  - name: "Spëcial Öccasion"
+    type: "special_occasion"
+    icon: "mdi:party-popper"
+    threshold: 1
+    award: "Birthday celebration bonus"
+    start_date: "2025-12-21" # 2 days from current date
+    end_date: "2025-12-21"
+
+bonuses:
+  - name: "Stär Sprïnkle Bonus"
+    description: "Extra points for helping a sibling"
+    points: 15
+    icon: "mdi:sparkles"
+  - name: "Mågic Mïnute Bonus"
+    description: "Quick tidy-up before dinner"
+    points: 10
+    icon: "mdi:timer"
+
+penalties:
+  - name: "Førget Chöre"
+    description: "Missed a daily chore"
+    points: -5
+    icon: "mdi:alert"
+  - name: "Messÿ Røom"
+    description: "Room not cleaned as requested"
+    points: -10
+    icon: "mdi:home-alert"
+  - name: "Låte för Dinner"
+    description: "Didn't come to dinner on time"
+    points: -3
+    icon: "mdi:clock-alert"
+
+rewards:
+  - name: "Ice Créam!"
+    cost: 60
+    icon: "mdi:ice-cream"
+  - name: "Movie Nïght"
+    cost: 120
+    icon: "mdi:movie"
+  - name: "Extra Plåytime"
+    cost: 40
+    icon: "mdi:gamepad-variant"
+  - name: "Stär Adventure Pack"
+    cost: 200
+    icon: "mdi:bag-personal"
+  - name: "Gården Picnic"
+    cost: 300
+    icon: "mdi:food"
+
+progress:
+  Zoë:
+    chores_completed: ["Feed the cåts", "Stär sweep", "Ørgänize Bookshelf"]
+    badges_earned: ["Brønze Står", "Dåily Dëlight"]
+    rewards_redeemed: ["Ice Créam!"]
+    points: 85
+    point_stats:
+      points_net_all_time: 520.0
+    current_multiplier: 1.05
+  Max!:
+    chores_completed: ["Pick up Lëgo!", "Charge Røbot", "Täke Öut Trash"]
+    badges_earned: []
+    points: 25
+    point_stats:
+      points_net_all_time: 280.0
+    current_multiplier: 1.0
+  Lila:
+    chores_completed:
+      ["Paint the rãinbow", "Sweep the p@tio", "Sibling Rööm Cleanup"]
+    badges_earned: ["Dåily Dëlight"]
+    points: 28
+    point_stats:
+      points_net_all_time: 310.0
+    current_multiplier: 1.0
+# Test focus: Full feature set, badge maintenance, multiplier effects, reward redemption,
+# shared chore claiming, complex dashboard rendering, multi-kid filtering

@@ -1,0 +1,78 @@
+{
+  "chore_assigned": {
+    "title": "KidsChores: Nueva tarea",
+    "message": "¡Se te asignó una nueva tarea {chore_name} ! Fecha de entrega: {due_date}"
+  },
+  "chore_claimed": {
+    "title": "KidsChores: Tarea reclamada",
+    "message": "{kid_name} reclamó la tarea {chore_name}"
+  },
+  "chore_approved": {
+    "title": "KidsChores: Tareas aprobadas",
+    "message": "Tarea {chore_name} ¡aprobada! +{points} puntos"
+  },
+  "chore_disapproved": {
+    "title": "KidsChores: Tarea desaprobada",
+    "message": "La tarea {chore_name} no fue aprobada"
+  },
+  "chore_overdue": {
+    "title": "KidsChores: Tareas atrasadas",
+    "message": "¡La tarea {chore_name} está atrasada! La fecha de entrega era {due_date}"
+  },
+  "chore_reminder": {
+    "title": "KidsChores: Recordatorio de tareas pendientes",
+    "message": "Recordatorio: La tarea {chore_name} reclamada por {kid_name} está esperando aprobación"
+  },
+  "reward_claimed_kid": {
+    "title": "KidsChores: Recompensa reclamada",
+    "message": "¡Reclamaste la recompensa {reward_name} por {points} puntos!"
+  },
+  "reward_claimed_parent": {
+    "title": "KidsChores: Recompensa reclamada",
+    "message": "{kid_name} reclamó la recompensa {reward_name} por {points} puntos"
+  },
+  "reward_approved": {
+    "title": "KidsChores: Recompensa aprobada",
+    "message": "¡Recompensa {reward_name} aprobada!"
+  },
+  "reward_disapproved": {
+    "title": "KidsChores: Recompensa desaprobada",
+    "message": "La recompensa {reward_name} no fue aprobada"
+  },
+  "reward_reminder": {
+    "title": "KidsChores: Recordatorio de recompensa pendiente",
+    "message": "Recordatorio: La recompensa {reward_name} reclamada por {kid_name} está esperando aprobación"
+  },
+  "badge_earned_kid": {
+    "title": "KidsChores: Insignia obtenida",
+    "message": "¡Has ganado la insignia {badge_name} !"
+  },
+  "badge_earned_parent": {
+    "title": "KidsChores: Insignia obtenida",
+    "message": "¡{kid_name} obtuvo la insignia {badge_name} !"
+  },
+  "achievement_earned_kid": {
+    "title": "KidsChores: Logro obtenido",
+    "message": "¡Obtuviste el logro {achievement_name}!"
+  },
+  "achievement_earned_parent": {
+    "title": "KidsChores: Logro obtenido",
+    "message": "{kid_name} ¡Logro obtenido {achievement_name}!"
+  },
+  "challenge_completed_kid": {
+    "title": "KidsChores: Desafío completado",
+    "message": "¡Has completado el desafío {challenge_name}!"
+  },
+  "challenge_completed_parent": {
+    "title": "KidsChores: Desafío completado",
+    "message": "{kid_name} ¡Desafío completado {challenge_name}!"
+  },
+  "penalty_applied": {
+    "title": "KidsChores: Penalización aplicada",
+    "message": "Penalización {penalty_name} aplicada: -{points} puntos"
+  },
+  "bonus_applied": {
+    "title": "KidsChores: Bonificación aplicada",
+    "message": "Bonificación {bonus_name} aplicada: +{points} puntos"
+  }
+}

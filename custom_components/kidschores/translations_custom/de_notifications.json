@@ -1,0 +1,78 @@
+{
+  "chore_assigned": {
+    "title": "Kinderaufgaben: Neue Aufgabe",
+    "message": "Neue Aufgabe {chore_name} wurde dir zugewiesen! Fällig: {due_date}"
+  },
+  "chore_claimed": {
+    "title": "Kinderaufgaben: Aufgabe übernommen",
+    "message": "{kid_name} beanspruchte Aufgabe {chore_name}"
+  },
+  "chore_approved": {
+    "title": "KidsChores: Von der Hausarbeit geprüft",
+    "message": "Aufgabe {chore_name} genehmigt! +{points} Punkte"
+  },
+  "chore_disapproved": {
+    "title": "Kinderaufgaben: Aufgaben missbilligt",
+    "message": "Aufgabe {chore_name} wurde nicht genehmigt"
+  },
+  "chore_overdue": {
+    "title": "Kinderaufgaben: Überfällige Aufgabe",
+    "message": "Aufgabe {chore_name} ist überfällig! Fälligkeitsdatum war {due_date}"
+  },
+  "chore_reminder": {
+    "title": "Kinderaufgaben: Erinnerung an anstehende Aufgaben",
+    "message": "Hinweis: Die von {kid_name} beanspruchte Aufgabe {chore_name} wartet auf Genehmigung"
+  },
+  "reward_claimed_kid": {
+    "title": "KidsChore: Belohnung abgeholt",
+    "message": "Sie haben die Belohnung {reward_name} für {points} Punkte beansprucht!"
+  },
+  "reward_claimed_parent": {
+    "title": "KidsChore: Belohnung abgeholt",
+    "message": "{kid_name} hat die Belohnung {reward_name} für {points} Punkte erhalten"
+  },
+  "reward_approved": {
+    "title": "KidsChore's: Belohnungsfähig",
+    "message": "Belohnung {reward_name} genehmigt!"
+  },
+  "reward_disapproved": {
+    "title": "KidsChore's: Belohnung nicht genehmigt",
+    "message": "Die Belohnung {reward_name} wurde nicht genehmigt"
+  },
+  "reward_reminder": {
+    "title": "Kinderaufgaben: Erinnerung an die ausstehende Belohnung",
+    "message": "Hinweis: Die von {kid_name} beanspruchte Prämie {reward_name} wartet auf die Genehmigung."
+  },
+  "badge_earned_kid": {
+    "title": "KidsChore's: Abzeichen erhalten",
+    "message": "Du hast dir das {badge_name} -Abzeichen verdient!"
+  },
+  "badge_earned_parent": {
+    "title": "KidsChore's: Abzeichen erhalten",
+    "message": "{kid_name} hat das {badge_name} -Abzeichen erhalten!"
+  },
+  "achievement_earned_kid": {
+    "title": "KidsChors: Errungenschaft erhalten",
+    "message": "Du hast die Errungenschaft {achievement_name}erreicht!"
+  },
+  "achievement_earned_parent": {
+    "title": "KidsChors: Errungenschaft erhalten",
+    "message": "{kid_name} Errungenschaft {achievement_name}erreicht!"
+  },
+  "challenge_completed_kid": {
+    "title": "KidsChors: Herausforderung abgeschlossen",
+    "message": "Du hast die Herausforderung {challenge_name}abgeschlossen!"
+  },
+  "challenge_completed_parent": {
+    "title": "KidsChors: Herausforderung abgeschlossen",
+    "message": "{kid_name} Herausforderung abgeschlossen {challenge_name}!"
+  },
+  "penalty_applied": {
+    "title": "KidsChore-Aufgaben: Strafe verhängt",
+    "message": "Strafe {penalty_name} angewendet: -{points} Punkte"
+  },
+  "bonus_applied": {
+    "title": "KidsChore's: Bonus angewendet",
+    "message": "Bonus {bonus_name} angewendet: +{points} Punkte"
+  }
+}

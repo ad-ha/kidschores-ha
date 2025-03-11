@@ -6,25 +6,14 @@ the state is preserved across restarts. This includes data for kids, chores,
 badges, rewards, penalties, and their statuses.
 """
 
-import os
+from __future__ import annotations
 
+from typing import Any
+
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
-from .const import (
-    DATA_ACHIEVEMENTS,
-    DATA_BADGES,
-    DATA_BONUSES,
-    DATA_CHALLENGES,
-    DATA_CHORES,
-    DATA_KIDS,
-    DATA_PARENTS,
-    DATA_PENALTIES,
-    DATA_PENDING_CHORE_APPROVALS,
-    DATA_PENDING_REWARD_APPROVALS,
-    DATA_REWARDS,
-    LOGGER,
-    STORAGE_KEY,
-    STORAGE_VERSION,
-)
+
+from . import const
 
 
 class KidsChoresStorageManager:
@@ -33,174 +22,273 @@ class KidsChoresStorageManager:
     Utilizes internal_id as the primary key for all entities.
     """
 
-    def __init__(self, hass, storage_key=STORAGE_KEY):
+    def __init__(
+        self, hass: HomeAssistant, storage_key: str = const.STORAGE_KEY
+    ) -> None:
         """Initialize the storage manager.
 
         Args:
             hass: Home Assistant core object.
-            storage_key: Key to identify storage location (default: STORAGE_KEY).
+            storage_key: Key to identify storage location (default: const.STORAGE_KEY).
 
         """
         self.hass = hass
         self._storage_key = storage_key
-        self._store = Store(hass, STORAGE_VERSION, storage_key)
-        self._data = {}  # In-memory data cache for quick access.
+        self._store: Store = Store(hass, const.STORAGE_VERSION, storage_key)
+        self._data: dict[str, Any] = {}  # In-memory data cache for quick access.
 
-    async def async_initialize(self):
+    def _get_default_structure(self) -> dict[str, Any]:
+        """Get the default empty data structure.
+
+        Returns:
+            dict: Default structure with all data keys initialized.
+        """
+        from datetime import datetime
+
+        from homeassistant.util import dt as dt_util
+
+        return {
+            const.DATA_META: {
+                const.DATA_META_SCHEMA_VERSION: const.DEFAULT_ZERO,  # Will be set by migration
+                const.DATA_META_LAST_MIGRATION_DATE: datetime.now(
+                    dt_util.UTC
+                ).isoformat(),
+                const.DATA_META_MIGRATIONS_APPLIED: [],
+            },
+            const.DATA_SCHEMA_VERSION: const.DEFAULT_ZERO,  # Top-level schema version for backward compatibility
+            const.DATA_KIDS: {},
+            const.DATA_CHORES: {},
+            const.DATA_BADGES: {},
+            const.DATA_REWARDS: {},
+            const.DATA_PENALTIES: {},
+            const.DATA_BONUSES: {},
+            const.DATA_PARENTS: {},
+            const.DATA_ACHIEVEMENTS: {},
+            const.DATA_CHALLENGES: {},
+            # Legacy queues removed in v0.4.0 - computed from timestamps/reward_data
+        }
+
+    async def async_initialize(self) -> None:
         """Load data from storage during startup.
 
         If no data exists, initializes with an empty structure.
         """
-        LOGGER.debug("KidsChoresStorageManager: Loading data from storage")
+        const.LOGGER.debug("DEBUG: KidsChoresStorageManager: Loading data from storage")
         existing_data = await self._store.async_load()
+
+        # DEBUG: Check what async_load returned
+        if existing_data:
+            const.LOGGER.debug(
+                "DEBUG: async_load() returned keys: %s", list(existing_data.keys())[:5]
+            )
 
         if existing_data is None:
             # No existing data, create a new default structure.
-            LOGGER.info("No existing storage found; initializing new data")
-            self._data = {
-                DATA_KIDS: {},  # Dictionary of kids keyed by internal_id.
-                DATA_CHORES: {},  # Dictionary of chores keyed by internal_id.
-                DATA_BADGES: {},  # Dictionary of badges keyed by internal_id.
-                DATA_REWARDS: {},  # Dictionary of rewards keyed by internal_id.
-                DATA_PENALTIES: {},  # Dictionary of penalties keyed by internal_id.
-                DATA_BONUSES: {},  # Dictionary of bonuses keyed by internal_id.
-                DATA_PARENTS: {},  # Dictionary of parents keyed by internal_id.
-                DATA_ACHIEVEMENTS: {},  # Dictionary of achievements keyed by internal_id.
-                DATA_CHALLENGES: {},  # Dictionary of challenges keyed by internal_id.
-                DATA_PENDING_CHORE_APPROVALS: [],  # List of pending chore approvals keyed by internal_id.
-                DATA_PENDING_REWARD_APPROVALS: [],  # List of pending rewar approvals keyed by internal_id.
-            }
+            const.LOGGER.info("INFO: No existing storage found. Initializing new data")
+            self._data = self._get_default_structure()
+            const.LOGGER.debug(
+                "DEBUG: Initialized with default structure: %s keys",
+                len(self._data.keys()),
+            )
         else:
             # Load existing data into memory.
             self._data = existing_data
-            LOGGER.info("Storage data loaded successfully")
+            const.LOGGER.debug(
+                "DEBUG: Loaded existing data from storage: %s entities",
+                {
+                    "kids": len(self._data.get(const.DATA_KIDS, {})),
+                    "chores": len(self._data.get(const.DATA_CHORES, {})),
+                    "badges": len(self._data.get(const.DATA_BADGES, {})),
+                    "total_keys": len(self._data.keys()),
+                },
+            )
 
     @property
-    def data(self):
+    def data(self) -> dict[str, Any]:
         """Retrieve the in-memory data cache."""
+        const.LOGGER.debug(
+            "DEBUG: Storage manager data property accessed: %s entities",
+            {
+                "kids": len(self._data.get(const.DATA_KIDS, {})),
+                "chores": len(self._data.get(const.DATA_CHORES, {})),
+                "badges": len(self._data.get(const.DATA_BADGES, {})),
+                "total_keys": len(self._data.keys()),
+            },
+        )
         return self._data
 
-    def get_data(self):
-        """Retrieve the data structure (alternative getter)."""
-        return self._data
+    def get_storage_path(self) -> str:
+        """Get the storage file path.
 
-    def set_data(self, new_data: dict):
+        Returns:
+            str: The absolute path to the storage file.
+        """
+        return self._store.path
+
+    def set_data(self, new_data: dict[str, Any]) -> None:
         """Replace the entire in-memory data structure."""
+        const.LOGGER.debug(
+            "DEBUG: Storage manager set_data called with: %s entities",
+            {
+                "kids": len(new_data.get(const.DATA_KIDS, {})),
+                "chores": len(new_data.get(const.DATA_CHORES, {})),
+                "badges": len(new_data.get(const.DATA_BADGES, {})),
+                "total_keys": len(new_data.keys()),
+            },
+        )
         self._data = new_data
 
-    def get_kids(self):
+    def get_kids(self) -> dict[str, Any]:
         """Retrieve the kids data."""
-        return self._data.get(DATA_KIDS, {})
+        return self._data.get(const.DATA_KIDS, {})
 
-    def get_parents(self):
+    def get_parents(self) -> dict[str, Any]:
         """Retrieve the parents data."""
-        return self._data.get(DATA_PARENTS, {})
+        return self._data.get(const.DATA_PARENTS, {})
 
-    def get_chores(self):
+    def get_chores(self) -> dict[str, Any]:
         """Retrieve the chores data."""
-        return self._data.get(DATA_CHORES, {})
+        return self._data.get(const.DATA_CHORES, {})
 
-    def get_badges(self):
+    def get_badges(self) -> dict[str, Any]:
         """Retrieve the badges data."""
-        return self._data.get(DATA_BADGES, {})
+        return self._data.get(const.DATA_BADGES, {})
 
-    def get_rewards(self):
+    def get_rewards(self) -> dict[str, Any]:
         """Retrieve the rewards data."""
-        return self._data.get(DATA_REWARDS, {})
+        return self._data.get(const.DATA_REWARDS, {})
 
-    def get_penalties(self):
+    def get_penalties(self) -> dict[str, Any]:
         """Retrieve the penalties data."""
-        return self._data.get(DATA_PENALTIES, {})
+        return self._data.get(const.DATA_PENALTIES, {})
 
-    def get_bonuses(self):
+    def get_bonuses(self) -> dict[str, Any]:
         """Retrieve the bonuses data."""
-        return self._data.get(DATA_BONUSES, {})
+        return self._data.get(const.DATA_BONUSES, {})
 
-    def get_achievements(self):
+    def get_achievements(self) -> dict[str, Any]:
         """Retrieve the achievements data."""
-        return self._data.get(DATA_ACHIEVEMENTS, {})
+        return self._data.get(const.DATA_ACHIEVEMENTS, {})
 
-    def get_challenges(self):
+    def get_challenges(self) -> dict[str, Any]:
         """Retrieve the challenges data."""
-        return self._data.get(DATA_CHALLENGES, {})
+        return self._data.get(const.DATA_CHALLENGES, {})
 
-    def get_pending_chore_approvals(self):
-        """Retrieve the pending chore approvals data."""
-        return self._data.get(DATA_PENDING_CHORE_APPROVALS, [])
+    # get_pending_chore_approvals removed - use coordinator.pending_chore_approvals
+    # which computes from timestamps dynamically
 
-    def get_pending_reward_aprovals(self):
-        """Retrieve the pending reward approvals data."""
-        return self._data.get(DATA_PENDING_REWARD_APPROVALS, [])
+    # get_pending_reward_approvals removed - use coordinator.pending_reward_approvals
+    # which computes from reward_data dynamically
 
-    async def link_user_to_kid(self, user_id, kid_id):
+    async def link_user_to_kid(self, user_id: str, kid_id: str) -> None:
         """Link a Home Assistant user ID to a specific kid by internal_id."""
 
-        if "linked_users" not in self._data:
-            self._data["linked_users"] = {}
-        self._data["linked_users"][user_id] = kid_id
-        await self._save()
+        if const.STORAGE_KEY_LINKED_USERS not in self._data:
+            self._data[const.STORAGE_KEY_LINKED_USERS] = {}
+        self._data[const.STORAGE_KEY_LINKED_USERS][user_id] = kid_id
+        await self.async_save()
 
-    async def unlink_user(self, user_id):
+    async def unlink_user(self, user_id: str) -> None:
         """Unlink a Home Assistant user ID from any kid."""
 
-        if "linked_users" in self._data and user_id in self._data["linked_users"]:
-            del self._data["linked_users"][user_id]
-            await self._save()
+        if (
+            const.STORAGE_KEY_LINKED_USERS in self._data
+            and user_id in self._data[const.STORAGE_KEY_LINKED_USERS]
+        ):
+            del self._data[const.STORAGE_KEY_LINKED_USERS][user_id]
+            await self.async_save()
 
-    async def get_linked_kids(self):
+    async def get_linked_kids(self) -> dict[str, str]:
         """Get all linked users and their associated kids."""
 
-        return self._data.get("linked_users", {})
+        return self._data.get(const.STORAGE_KEY_LINKED_USERS, {})
 
-    async def async_save(self):
-        """Save the current data structure to storage asynchronously."""
+    async def async_save(self) -> None:
+        """Save the current data structure to storage asynchronously.
+
+        Raises:
+            No exceptions raised - errors are logged but do not stop execution.
+            OSError: Logged when file system issues prevent saving.
+            TypeError: Logged when data contains non-serializable types.
+            ValueError: Logged when data is invalid for JSON serialization.
+        """
         try:
             await self._store.async_save(self._data)
-            LOGGER.info("Data saved successfully to storage")
-        except Exception as e:
-            LOGGER.error("Failed to save data to storage: %s", e)
+            const.LOGGER.debug("DEBUG: Data saved successfully to storage")
+        except OSError as err:
+            const.LOGGER.error(
+                "ERROR: Failed to save storage due to file system error: %s. "
+                "Check disk space and file permissions for %s",
+                err,
+                self._store.path,
+            )
+        except TypeError as err:
+            const.LOGGER.error(
+                "ERROR: Failed to save storage due to non-serializable data: %s. "
+                "Data contains types that cannot be converted to JSON",
+                err,
+            )
+        except ValueError as err:
+            const.LOGGER.error(
+                "ERROR: Failed to save storage due to invalid data format: %s. "
+                "Data structure may be corrupted",
+                err,
+            )
 
-    async def async_clear_data(self):
+    async def async_clear_data(self) -> None:
         """Clear all stored data and reset to default structure."""
 
-        LOGGER.warning("Clearing all KidsChores data and resetting storage")
-        self._data = {
-            DATA_KIDS: {},
-            DATA_CHORES: {},
-            DATA_BADGES: {},
-            DATA_REWARDS: {},
-            DATA_PARENTS: {},
-            DATA_PENALTIES: {},
-            DATA_BONUSES: {},
-            DATA_ACHIEVEMENTS: {},
-            DATA_CHALLENGES: {},
-            DATA_PENDING_REWARD_APPROVALS: [],
-            DATA_PENDING_CHORE_APPROVALS: [],
-        }
+        const.LOGGER.warning(
+            "WARNING: Clearing all KidsChores data and resetting storage"
+        )
+        # Completely clear any existing data.
+        self._data.clear()
+
+        # Set the default empty structure
+        self._data = self._get_default_structure()
         await self.async_save()
 
     async def async_delete_storage(self) -> None:
-        """Delete the storage file completely from disk."""
+        """Delete the storage file completely from disk.
 
+        This clears all in-memory data and removes the storage file using
+        Home Assistant's Store API for proper file handling.
+        """
         # First clear in-memory data
         await self.async_clear_data()
 
-        # Remove the file if it exists
-        if os.path.isfile(self._store._path):
-            try:
-                os.remove(self._store._path)
-                LOGGER.info("Storage file removed: %s", self._store._path)
-            except Exception as e:
-                LOGGER.error("Failed to remove storage file: %s", e)
-        else:
-            LOGGER.info("Storage file not found: %s", self._store._path)
+        # Remove the file using Store API
+        try:
+            await self._store.async_remove()
+            const.LOGGER.info(
+                "INFO: Storage file removed successfully: %s",
+                self._store.path,
+            )
+        except OSError as err:
+            const.LOGGER.error(
+                "ERROR: Failed to remove storage file %s: %s. Check file permissions",
+                self._store.path,
+                err,
+            )
 
-    async def async_update_data(self, key, value):
-        """Update a specific section of the data structure."""
+    async def async_update_data(self, key: str, value: Any) -> None:
+        """Update a specific section of the data structure.
 
+        Args:
+            key: The data key to update (e.g., const.DATA_KIDS, const.DATA_CHORES).
+            value: The new value for the specified key.
+
+        Note:
+            If the key doesn't exist, a warning is logged and no update occurs.
+            Valid keys are defined in const.py (DATA_KIDS, DATA_CHORES, etc.).
+        """
         if key in self._data:
-            LOGGER.debug("Updating data for key: %s", key)
+            const.LOGGER.debug("DEBUG: Updating data for key: %s", key)
             self._data[key] = value
             await self.async_save()
         else:
-            LOGGER.warning("Attempted to update unknown data key: %s", key)
+            const.LOGGER.warning(
+                "WARNING: Attempted to update unknown data key '%s'. Valid keys: %s",
+                key,
+                ", ".join(self._data.keys()),
+            )

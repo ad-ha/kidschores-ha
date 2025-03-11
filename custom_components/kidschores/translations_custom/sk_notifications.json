@@ -1,0 +1,78 @@
+{
+  "chore_assigned": {
+    "title": "Detské práce: Nová práca",
+    "message": "Bola vám pridelená nová úloha {chore_name} ! Termín: {due_date}"
+  },
+  "chore_claimed": {
+    "title": "KidsChores: Domáce práce nárokované",
+    "message": "{kid_name} prevzatá úloha {chore_name}"
+  },
+  "chore_approved": {
+    "title": "KidsChores: Schválené domáce práce",
+    "message": "Domáca úloha {chore_name} schválená! +{points} bodov"
+  },
+  "chore_disapproved": {
+    "title": "Domáce práce pre deti: Domáce práce zamietnuté",
+    "message": "Úloha {chore_name} nebola schválená"
+  },
+  "chore_overdue": {
+    "title": "Detské domáce práce: Domáce práce po termíne",
+    "message": "Domáca úloha {chore_name} je po termíne! Dátum odovzdania bol {due_date}"
+  },
+  "chore_reminder": {
+    "title": "KidsChores: Pripomienka na čakajúcu domácu úlohu",
+    "message": "Pripomienka: Domáca úloha {chore_name} nárokovaná používateľom {kid_name} čaká na schválenie"
+  },
+  "reward_claimed_kid": {
+    "title": "KidsChores: Odmena bola uplatnená",
+    "message": "Získali ste odmenu {reward_name} v hodnote {points} bodov!"
+  },
+  "reward_claimed_parent": {
+    "title": "KidsChores: Odmena bola uplatnená",
+    "message": "{kid_name} získal odmenu {reward_name} za {points} bodov"
+  },
+  "reward_approved": {
+    "title": "KidsChores: Odmena schválená",
+    "message": "Odmena {reward_name} schválená!"
+  },
+  "reward_disapproved": {
+    "title": "KidsChores: Odmena zamietnutá",
+    "message": "Odmena {reward_name} nebola schválená"
+  },
+  "reward_reminder": {
+    "title": "KidsChores: Pripomienka čakajúcej odmeny",
+    "message": "Pripomienka: Odmena {reward_name} , ktorú si nárokoval používateľ {kid_name} , čaká na schválenie."
+  },
+  "badge_earned_kid": {
+    "title": "KidsChores: Získaný odznak",
+    "message": "Získali ste odznak {badge_name} !"
+  },
+  "badge_earned_parent": {
+    "title": "KidsChores: Získaný odznak",
+    "message": "{kid_name} získal odznak {badge_name} !"
+  },
+  "achievement_earned_kid": {
+    "title": "KidsChores: Získané úspechy",
+    "message": "Získali ste úspech {achievement_name}!"
+  },
+  "achievement_earned_parent": {
+    "title": "KidsChores: Získané úspechy",
+    "message": "{kid_name} získaný úspech {achievement_name}!"
+  },
+  "challenge_completed_kid": {
+    "title": "Detské práce: Výzva splnená",
+    "message": "Splnili ste výzvu {challenge_name}!"
+  },
+  "challenge_completed_parent": {
+    "title": "Detské práce: Výzva splnená",
+    "message": "{kid_name} dokončená výzva {challenge_name}!"
+  },
+  "penalty_applied": {
+    "title": "Detské práce: Uplatnená pokuta",
+    "message": "Použitý trest {penalty_name} : -{points} bodov"
+  },
+  "bonus_applied": {
+    "title": "Detské práce: Uplatnený bonus",
+    "message": "Použitý bonus {bonus_name} : +{points} bodov"
+  }
+}

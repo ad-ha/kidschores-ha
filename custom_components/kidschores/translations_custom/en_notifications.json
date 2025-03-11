@@ -1,0 +1,78 @@
+{
+  "chore_assigned": {
+    "title": "KidsChores: New Chore",
+    "message": "New chore {chore_name} was assigned to you! Due: {due_date}"
+  },
+  "chore_claimed": {
+    "title": "KidsChores: Chore Claimed",
+    "message": "{kid_name} claimed chore {chore_name}"
+  },
+  "chore_approved": {
+    "title": "KidsChores: Chore Approved",
+    "message": "Chore {chore_name} approved! +{points} points"
+  },
+  "chore_disapproved": {
+    "title": "KidsChores: Chore Disapproved",
+    "message": "Chore {chore_name} was not approved"
+  },
+  "chore_overdue": {
+    "title": "KidsChores: Chore Overdue",
+    "message": "Chore {chore_name} is overdue! Due date was {due_date}"
+  },
+  "chore_reminder": {
+    "title": "KidsChores: Reminder for Pending Chore",
+    "message": "Reminder: Chore {chore_name} claimed by {kid_name} is waiting for approval"
+  },
+  "reward_claimed_kid": {
+    "title": "KidsChores: Reward Claimed",
+    "message": "You claimed reward {reward_name} for {points} points!"
+  },
+  "reward_claimed_parent": {
+    "title": "KidsChores: Reward Claimed",
+    "message": "{kid_name} claimed reward {reward_name} for {points} points"
+  },
+  "reward_approved": {
+    "title": "KidsChores: Reward Approved",
+    "message": "Reward {reward_name} approved!"
+  },
+  "reward_disapproved": {
+    "title": "KidsChores: Reward Disapproved",
+    "message": "Reward {reward_name} was not approved"
+  },
+  "reward_reminder": {
+    "title": "KidsChores: Reminder for Pending Reward",
+    "message": "Reminder: Reward {reward_name} claimed by {kid_name} is waiting for approval"
+  },
+  "badge_earned_kid": {
+    "title": "KidsChores: Badge Earned",
+    "message": "You earned the {badge_name} badge!"
+  },
+  "badge_earned_parent": {
+    "title": "KidsChores: Badge Earned",
+    "message": "{kid_name} earned the {badge_name} badge!"
+  },
+  "achievement_earned_kid": {
+    "title": "KidsChores: Achievement Earned",
+    "message": "You earned achievement {achievement_name}!"
+  },
+  "achievement_earned_parent": {
+    "title": "KidsChores: Achievement Earned",
+    "message": "{kid_name} earned achievement {achievement_name}!"
+  },
+  "challenge_completed_kid": {
+    "title": "KidsChores: Challenge Completed",
+    "message": "You completed challenge {challenge_name}!"
+  },
+  "challenge_completed_parent": {
+    "title": "KidsChores: Challenge Completed",
+    "message": "{kid_name} completed challenge {challenge_name}!"
+  },
+  "penalty_applied": {
+    "title": "KidsChores: Penalty Applied",
+    "message": "Penalty {penalty_name} applied: -{points} points"
+  },
+  "bonus_applied": {
+    "title": "KidsChores: Bonus Applied",
+    "message": "Bonus {bonus_name} applied: +{points} points"
+  }
+}
