@@ -13,8 +13,7 @@ from typing import Optional
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-
-from .const import DOMAIN, LOGGER
+from . import const
 
 
 async def async_send_notification(
@@ -43,10 +42,10 @@ async def async_send_notification(
         else:
             domain, service = notify_service.split(".", 1)
         await hass.services.async_call(domain, service, payload, blocking=True)
-        LOGGER.debug("Notification sent via '%s': %s", notify_service, payload)
+        const.LOGGER.debug("Notification sent via '%s': %s", notify_service, payload)
 
     except Exception as err:
-        LOGGER.error(
+        const.LOGGER.error(
             "Failed to send notification via '%s': %s. Payload: %s",
             notify_service,
             err,

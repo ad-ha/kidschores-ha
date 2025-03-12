@@ -6,7 +6,7 @@ from homeassistant.auth.models import User
 from homeassistant.helpers.label_registry import async_get
 from typing import Optional
 
-from .const import LOGGER, DOMAIN
+from . import const
 from .coordinator import KidsChoresDataCoordinator
 
 
@@ -15,7 +15,7 @@ def _get_kidschores_coordinator(
     hass: HomeAssistant,
 ) -> KidsChoresDataCoordinator | None:
     """Retrieve KidsChores coordinator from hass.data."""
-    domain_entries = hass.data.get(DOMAIN, {})
+    domain_entries = hass.data.get(const.DOMAIN, {})
     if not domain_entries:
         return None
 
@@ -48,7 +48,7 @@ async def is_user_authorized_for_global_action(
 
     user: User = await hass.auth.async_get_user(user_id)
     if not user:
-        LOGGER.warning("%s: Invalid user ID '%s'", action, user_id)
+        const.LOGGER.warning("%s: Invalid user ID '%s'", action, user_id)
         return False
 
     if user.is_admin:
@@ -61,7 +61,7 @@ async def is_user_authorized_for_global_action(
             if parent.get("ha_user_id") == user.id:
                 return True
 
-    LOGGER.warning(
+    const.LOGGER.warning(
         "%s: Non-admin user '%s' is not authorized in this logic", action, user.name
     )
     return False
@@ -85,7 +85,7 @@ async def is_user_authorized_for_kid(
 
     user: User = await hass.auth.async_get_user(user_id)
     if not user:
-        LOGGER.warning("Authorization: Invalid user ID '%s'", user_id)
+        const.LOGGER.warning("Authorization: Invalid user ID '%s'", user_id)
         return False
 
     # Admin => automatically allowed
@@ -101,12 +101,12 @@ async def is_user_authorized_for_kid(
 
     coordinator: KidsChoresDataCoordinator = _get_kidschores_coordinator(hass)
     if not coordinator:
-        LOGGER.warning("Authorization: No KidsChores coordinator found")
+        const.LOGGER.warning("Authorization: No KidsChores coordinator found")
         return False
 
     kid_info = coordinator.kids_data.get(kid_id)
     if not kid_info:
-        LOGGER.warning(
+        const.LOGGER.warning(
             "Authorization: Kid ID '%s' not found in coordinator data", kid_id
         )
         return False
@@ -115,7 +115,7 @@ async def is_user_authorized_for_kid(
     if linked_ha_id and linked_ha_id == user.id:
         return True
 
-    LOGGER.warning(
+    const.LOGGER.warning(
         "Authorization: Non-admin user '%s' attempted to manage kid '%s' but is not linked",
         user.name,
         kid_info.get("name"),

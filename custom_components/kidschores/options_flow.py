@@ -11,44 +11,8 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers import selector
 from homeassistant.util import dt as dt_util
+from . import const
 
-from .const import (
-    ACHIEVEMENT_TYPE_STREAK,
-    BADGE_TYPE_ACHIEVEMENT_LINKED,
-    BADGE_TYPE_CHALLENGE_LINKED,
-    BADGE_TYPE_CUMULATIVE,
-    BADGE_TYPE_DAILY,
-    BADGE_TYPE_PERIODIC,
-    BADGE_TYPE_SPECIAL_OCCASION,
-    CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
-    CONF_APPLICABLE_DAYS,
-    CONF_ACHIEVEMENTS,
-    CONF_BADGE_MAINTENANCE_RULES,
-    CONF_BADGE_RESET_GRACE_PERIOD,
-    CONF_BADGE_RESET_PERIOD,
-    CONF_BADGE_RESET_PERIODICALLY,
-    CONF_BADGES,
-    CONF_CHALLENGES,
-    CONF_CHORES,
-    CONF_KIDS,
-    CONF_NOTIFY_ON_APPROVAL,
-    CONF_NOTIFY_ON_CLAIM,
-    CONF_NOTIFY_ON_DISAPPROVAL,
-    CONF_PARENTS,
-    CONF_PENALTIES,
-    CONF_POINTS_ICON,
-    CONF_POINTS_LABEL,
-    CONF_REWARDS,
-    CONF_BONUSES,
-    DEFAULT_APPLICABLE_DAYS,
-    DEFAULT_NOTIFY_ON_APPROVAL,
-    DEFAULT_NOTIFY_ON_CLAIM,
-    DEFAULT_NOTIFY_ON_DISAPPROVAL,
-    DEFAULT_POINTS_ICON,
-    DEFAULT_POINTS_LABEL,
-    FREQUENCY_CUSTOM,
-    LOGGER,
-)
 from .flow_helpers import (
     build_achievement_schema,
     build_badge_achievement_schema,
@@ -109,17 +73,17 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 return self.async_abort(reason="setup_complete")
 
         main_menu = [
-            "manage_points",
-            "manage_kid",
-            "manage_parent",
-            "manage_chore",
-            "manage_badge",
-            "manage_reward",
-            "manage_penalty",
-            "manage_bonus",
-            "manage_achievement",
-            "manage_challenge",
-            "done",
+            const.OPTIONS_FLOW_POINTS,
+            const.OPTIONS_FLOW_KIDS,
+            const.OPTIONS_FLOW_PARENTS,
+            const.OPTIONS_FLOW_CHORES,
+            const.OPTIONS_FLOW_BADGES,
+            const.OPTIONS_FLOW_REWARDS,
+            const.OPTIONS_FLOW_BONUSES,
+            const.OPTIONS_FLOW_PENALTIES,
+            const.OPTIONS_FLOW_ACHIEVEMENTS,
+            const.OPTIONS_FLOW_CHALLENGES,
+            const.OPTIONS_FLOW_FINISH,
         ]
 
         return self.async_show_form(
@@ -140,13 +104,15 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_manage_points(self, user_input=None):
         """Let user edit the points label/icon after initial setup."""
         if user_input is not None:
-            new_label = user_input.get(CONF_POINTS_LABEL, DEFAULT_POINTS_LABEL)
-            new_icon = user_input.get(CONF_POINTS_ICON, DEFAULT_POINTS_ICON)
+            new_label = user_input.get(
+                const.CONF_POINTS_LABEL, const.DEFAULT_POINTS_LABEL
+            )
+            new_icon = user_input.get(const.CONF_POINTS_ICON, const.DEFAULT_POINTS_ICON)
 
             self._entry_options = dict(self.config_entry.options)
-            self._entry_options[CONF_POINTS_LABEL] = new_label
-            self._entry_options[CONF_POINTS_ICON] = new_icon
-            LOGGER.debug(
+            self._entry_options[const.CONF_POINTS_LABEL] = new_label
+            self._entry_options[const.CONF_POINTS_ICON] = new_icon
+            const.LOGGER.debug(
                 "Before saving points, entry_options = %s", self._entry_options
             )
             await self._update_and_reload()
@@ -154,8 +120,12 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_init()
 
         # Get existing values from entry options
-        current_label = self._entry_options.get(CONF_POINTS_LABEL, DEFAULT_POINTS_LABEL)
-        current_icon = self._entry_options.get(CONF_POINTS_ICON, DEFAULT_POINTS_ICON)
+        current_label = self._entry_options.get(
+            const.CONF_POINTS_LABEL, const.DEFAULT_POINTS_LABEL
+        )
+        current_icon = self._entry_options.get(
+            const.CONF_POINTS_ICON, const.DEFAULT_POINTS_ICON
+        )
 
         # Build the form
         points_schema = build_points_schema(
@@ -210,7 +180,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_select_entity(self, user_input=None):
         """Select an entity (kid, chore, etc.) to edit or delete based on internal_id."""
         if self._action not in ["edit", "delete"]:
-            LOGGER.error("Invalid action '%s' for select_entity step", self._action)
+            const.LOGGER.error(
+                "Invalid action '%s' for select_entity step", self._action
+            )
             return self.async_abort(reason="invalid_action")
 
         entity_dict = self._get_entity_dict()
@@ -227,7 +199,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 None,
             )
             if not internal_id:
-                LOGGER.error("Selected entity '%s' not found", selected_name)
+                const.LOGGER.error("Selected entity '%s' not found", selected_name)
                 return self.async_abort(reason="invalid_entity")
 
             # Store internal_id in context for later use
@@ -263,19 +235,19 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
     def _get_entity_dict(self):
         """Retrieve the appropriate entity dictionary based on entity_type."""
         entity_type_to_conf = {
-            "kid": CONF_KIDS,
-            "parent": CONF_PARENTS,
-            "chore": CONF_CHORES,
-            "badge": CONF_BADGES,
-            "reward": CONF_REWARDS,
-            "penalty": CONF_PENALTIES,
-            "achievement": CONF_ACHIEVEMENTS,
-            "challenge": CONF_CHALLENGES,
-            "bonus": CONF_BONUSES,
+            "kid": const.CONF_KIDS,
+            "parent": const.CONF_PARENTS,
+            "chore": const.CONF_CHORES,
+            "badge": const.CONF_BADGES,
+            "reward": const.CONF_REWARDS,
+            "bonus": const.CONF_BONUSES,
+            "penalty": const.CONF_PENALTIES,
+            "achievement": const.CONF_ACHIEVEMENTS,
+            "challenge": const.CONF_CHALLENGES,
         }
         key = entity_type_to_conf.get(self._entity_type)
         if key is None:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Unknown entity_type '%s'. Cannot retrieve entity dictionary",
                 self._entity_type,
             )
@@ -288,7 +260,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        kids_dict = self._entry_options.setdefault(CONF_KIDS, {})
+        kids_dict = self._entry_options.setdefault(const.CONF_KIDS, {})
 
         if user_input is not None:
             kid_name = user_input["kid_name"].strip()
@@ -311,9 +283,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "use_persistent_notifications": enable_persist,
                     "internal_id": internal_id,
                 }
-                self._entry_options[CONF_KIDS] = kids_dict
+                self._entry_options[const.CONF_KIDS] = kids_dict
 
-                LOGGER.debug("Added kid '%s' with ID: %s", kid_name, internal_id)
+                const.LOGGER.debug("Added kid '%s' with ID: %s", kid_name, internal_id)
                 await self._update_and_reload()
                 return await self.async_step_init()
 
@@ -337,7 +309,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        parents_dict = self._entry_options.setdefault(CONF_PARENTS, {})
+        parents_dict = self._entry_options.setdefault(const.CONF_PARENTS, {})
 
         if user_input is not None:
             parent_name = user_input["parent_name"].strip()
@@ -365,9 +337,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "use_persistent_notifications": enable_persist,
                     "internal_id": internal_id,
                 }
-                self._entry_options[CONF_PARENTS] = parents_dict
+                self._entry_options[const.CONF_PARENTS] = parents_dict
 
-                LOGGER.debug("Added parent '%s' with ID: %s", parent_name, internal_id)
+                const.LOGGER.debug(
+                    "Added parent '%s' with ID: %s", parent_name, internal_id
+                )
                 await self._update_and_reload()
                 return await self.async_step_init()
 
@@ -375,7 +349,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         users = await self.hass.auth.async_get_users()
         kids_dict = {
             kid_data["name"]: kid_id
-            for kid_id, kid_data in self._entry_options.get(CONF_KIDS, {}).items()
+            for kid_id, kid_data in self._entry_options.get(const.CONF_KIDS, {}).items()
         }
 
         parent_schema = build_parent_schema(
@@ -399,7 +373,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        chores_dict = self._entry_options.setdefault(CONF_CHORES, {})
+        chores_dict = self._entry_options.setdefault(const.CONF_CHORES, {})
 
         if user_input is not None:
             chore_name = user_input["chore_name"].strip()
@@ -426,14 +400,16 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             if errors:
                 kids_dict = {
                     data["name"]: eid
-                    for eid, data in self._entry_options.get(CONF_KIDS, {}).items()
+                    for eid, data in self._entry_options.get(
+                        const.CONF_KIDS, {}
+                    ).items()
                 }
                 schema = build_chore_schema(kids_dict, default=user_input)
                 return self.async_show_form(
                     step_id="add_chore", data_schema=schema, errors=errors
                 )
 
-            if user_input.get("recurring_frequency") != FREQUENCY_CUSTOM:
+            if user_input.get("recurring_frequency") != const.FREQUENCY_CUSTOM:
                 user_input.pop("custom_interval", None)
                 user_input.pop("custom_interval_unit", None)
 
@@ -454,23 +430,24 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 "custom_interval_unit": user_input.get("custom_interval_unit"),
                 "due_date": due_date_str,
                 "applicable_days": user_input.get(
-                    CONF_APPLICABLE_DAYS, DEFAULT_APPLICABLE_DAYS
+                    const.CONF_APPLICABLE_DAYS, const.DEFAULT_APPLICABLE_DAYS
                 ),
                 "notify_on_claim": user_input.get(
-                    CONF_NOTIFY_ON_CLAIM, DEFAULT_NOTIFY_ON_CLAIM
+                    const.CONF_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM
                 ),
                 "notify_on_approval": user_input.get(
-                    CONF_NOTIFY_ON_APPROVAL, DEFAULT_NOTIFY_ON_APPROVAL
+                    const.CONF_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
                 ),
                 "notify_on_disapproval": user_input.get(
-                    CONF_NOTIFY_ON_DISAPPROVAL, DEFAULT_NOTIFY_ON_DISAPPROVAL
+                    const.CONF_NOTIFY_ON_DISAPPROVAL,
+                    const.DEFAULT_NOTIFY_ON_DISAPPROVAL,
                 ),
                 "internal_id": internal_id,
             }
-            self._entry_options[CONF_CHORES] = chores_dict
+            self._entry_options[const.CONF_CHORES] = chores_dict
 
-            LOGGER.debug("Added chore '%s' with ID: %s", chore_name, internal_id)
-            LOGGER.debug(
+            const.LOGGER.debug("Added chore '%s' with ID: %s", chore_name, internal_id)
+            const.LOGGER.debug(
                 "Final stored 'due_date' for chore '%s': %s",
                 chore_name,
                 due_date_str,
@@ -481,7 +458,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         # Use flow_helpers.build_chore_schema, passing current kids
         kids_dict = {
             data["name"]: eid
-            for eid, data in self._entry_options.get(CONF_KIDS, {}).items()
+            for eid, data in self._entry_options.get(const.CONF_KIDS, {}).items()
         }
         schema = build_chore_schema(kids_dict)
         return self.async_show_form(
@@ -493,29 +470,29 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             badge_type = user_input["badge_type"]
             self.context["badge_type"] = badge_type
-            if badge_type == BADGE_TYPE_CUMULATIVE:
+            if badge_type == const.BADGE_TYPE_CUMULATIVE:
                 return await self.async_step_add_badge_cumulative()
-            elif badge_type == BADGE_TYPE_DAILY:
+            elif badge_type == const.BADGE_TYPE_DAILY:
                 return await self.async_step_add_badge_daily()
-            elif badge_type == BADGE_TYPE_PERIODIC:
+            elif badge_type == const.BADGE_TYPE_PERIODIC:
                 return await self.async_step_add_badge_periodic()
-            elif badge_type == BADGE_TYPE_ACHIEVEMENT_LINKED:
+            elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
                 return await self.async_step_add_badge_achievement()
-            elif badge_type == BADGE_TYPE_CHALLENGE_LINKED:
+            elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
                 return await self.async_step_add_badge_challenge()
-            elif badge_type == BADGE_TYPE_SPECIAL_OCCASION:
+            elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
                 return await self.async_step_add_badge_special()
             else:
                 # Fallback to cumulative if unknown.
                 return await self.async_step_add_badge_cumulative()
 
         badge_type_options = [
-            BADGE_TYPE_CUMULATIVE,
-            BADGE_TYPE_DAILY,
-            BADGE_TYPE_PERIODIC,
-            BADGE_TYPE_ACHIEVEMENT_LINKED,
-            BADGE_TYPE_CHALLENGE_LINKED,
-            BADGE_TYPE_SPECIAL_OCCASION,
+            const.BADGE_TYPE_CUMULATIVE,
+            const.BADGE_TYPE_DAILY,
+            const.BADGE_TYPE_PERIODIC,
+            const.BADGE_TYPE_ACHIEVEMENT_LINKED,
+            const.BADGE_TYPE_CHALLENGE_LINKED,
+            const.BADGE_TYPE_SPECIAL_OCCASION,
         ]
         schema = vol.Schema(
             {
@@ -536,7 +513,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         self._entry_options = dict(self.config_entry.options)
         errors = {}
-        badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
+        badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
 
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
@@ -555,23 +532,23 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "threshold_value": user_input["threshold_value"],
                     "points_multiplier": user_input["points_multiplier"],
                     # Periodic reset settings for maintenance (if enabled)
-                    CONF_BADGE_RESET_PERIODICALLY: user_input.get(
-                        CONF_BADGE_RESET_PERIODICALLY, False
+                    const.CONF_BADGE_RESET_PERIODICALLY: user_input.get(
+                        const.CONF_BADGE_RESET_PERIODICALLY, False
                     ),
-                    CONF_BADGE_RESET_PERIOD: user_input.get(
-                        CONF_BADGE_RESET_PERIOD, "year_end"
+                    const.CONF_BADGE_RESET_PERIOD: user_input.get(
+                        const.CONF_BADGE_RESET_PERIOD, "year_end"
                     ),
-                    CONF_BADGE_RESET_GRACE_PERIOD: user_input.get(
-                        CONF_BADGE_RESET_GRACE_PERIOD, 0
+                    const.CONF_BADGE_RESET_GRACE_PERIOD: user_input.get(
+                        const.CONF_BADGE_RESET_GRACE_PERIOD, 0
                     ),
-                    CONF_BADGE_MAINTENANCE_RULES: user_input.get(
-                        CONF_BADGE_MAINTENANCE_RULES, ""
+                    const.CONF_BADGE_MAINTENANCE_RULES: user_input.get(
+                        const.CONF_BADGE_MAINTENANCE_RULES, ""
                     ),
-                    "badge_type": BADGE_TYPE_CUMULATIVE,
+                    "badge_type": const.BADGE_TYPE_CUMULATIVE,
                     "internal_id": internal_id,
                 }
-                self._entry_options[CONF_BADGES] = badges_dict
-                LOGGER.debug(
+                self._entry_options[const.CONF_BADGES] = badges_dict
+                const.LOGGER.debug(
                     "Added cumulative badge '%s' with ID: %s", badge_name, internal_id
                 )
                 await self._update_and_reload()
@@ -586,7 +563,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Add a new daily badge."""
         self._entry_options = dict(self.config_entry.options)
         errors = {}
-        badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
+        badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
             internal_id = user_input.get("internal_id", str(uuid.uuid4()))
@@ -602,11 +579,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "icon": user_input.get("icon", ""),
                     "daily_threshold": user_input["daily_threshold"],
                     "reward": user_input["reward"],
-                    "badge_type": BADGE_TYPE_DAILY,
+                    "badge_type": const.BADGE_TYPE_DAILY,
                     "internal_id": internal_id,
                 }
-                self._entry_options[CONF_BADGES] = badges_dict
-                LOGGER.debug(
+                self._entry_options[const.CONF_BADGES] = badges_dict
+                const.LOGGER.debug(
                     "Added daily badge '%s' with ID: %s", badge_name, internal_id
                 )
                 await self._update_and_reload()
@@ -621,7 +598,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Add a new periodic badge."""
         self._entry_options = dict(self.config_entry.options)
         errors = {}
-        badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
+        badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
             internal_id = user_input.get("internal_id", str(uuid.uuid4()))
@@ -641,11 +618,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "reset_criteria": user_input.get(
                         "reset_criteria", "Sunday midnight"
                     ),
-                    "badge_type": BADGE_TYPE_PERIODIC,
+                    "badge_type": const.BADGE_TYPE_PERIODIC,
                     "internal_id": internal_id,
                 }
-                self._entry_options[CONF_BADGES] = badges_dict
-                LOGGER.debug(
+                self._entry_options[const.CONF_BADGES] = badges_dict
+                const.LOGGER.debug(
                     "Added periodic badge '%s' with ID: %s", badge_name, internal_id
                 )
                 await self._update_and_reload()
@@ -660,7 +637,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Add a new achievement-linked badge."""
         self._entry_options = dict(self.config_entry.options)
         errors = {}
-        badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
+        badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
             internal_id = user_input.get("internal_id", str(uuid.uuid4()))
@@ -678,11 +655,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         "associated_achievement", ""
                     ),
                     "one_time_reward": user_input.get("one_time_reward", ""),
-                    "badge_type": BADGE_TYPE_ACHIEVEMENT_LINKED,
+                    "badge_type": const.BADGE_TYPE_ACHIEVEMENT_LINKED,
                     "internal_id": internal_id,
                 }
-                self._entry_options[CONF_BADGES] = badges_dict
-                LOGGER.debug(
+                self._entry_options[const.CONF_BADGES] = badges_dict
+                const.LOGGER.debug(
                     "Added achievement-linked badge '%s' with ID: %s",
                     badge_name,
                     internal_id,
@@ -699,7 +676,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Add a new challenge-linked badge."""
         self._entry_options = dict(self.config_entry.options)
         errors = {}
-        badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
+        badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
             internal_id = user_input.get("internal_id", str(uuid.uuid4()))
@@ -715,11 +692,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "icon": user_input.get("icon", ""),
                     "associated_challenge": user_input.get("associated_challenge", ""),
                     "one_time_reward": user_input.get("one_time_reward", ""),
-                    "badge_type": BADGE_TYPE_CHALLENGE_LINKED,
+                    "badge_type": const.BADGE_TYPE_CHALLENGE_LINKED,
                     "internal_id": internal_id,
                 }
-                self._entry_options[CONF_BADGES] = badges_dict
-                LOGGER.debug(
+                self._entry_options[const.CONF_BADGES] = badges_dict
+                const.LOGGER.debug(
                     "Added challenge-linked badge '%s' with ID: %s",
                     badge_name,
                     internal_id,
@@ -736,7 +713,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Add a new special occasion badge."""
         self._entry_options = dict(self.config_entry.options)
         errors = {}
-        badges_dict = self._entry_options.setdefault(CONF_BADGES, {})
+        badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
             internal_id = user_input.get("internal_id", str(uuid.uuid4()))
@@ -752,11 +729,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "icon": user_input.get("icon", ""),
                     "occasion_type": user_input.get("occasion_type", "holiday"),
                     "trigger_info": user_input.get("trigger_info", ""),
-                    "badge_type": BADGE_TYPE_SPECIAL_OCCASION,
+                    "badge_type": const.BADGE_TYPE_SPECIAL_OCCASION,
                     "internal_id": internal_id,
                 }
-                self._entry_options[CONF_BADGES] = badges_dict
-                LOGGER.debug(
+                self._entry_options[const.CONF_BADGES] = badges_dict
+                const.LOGGER.debug(
                     "Added special occasion badge '%s' with ID: %s",
                     badge_name,
                     internal_id,
@@ -773,7 +750,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        rewards_dict = self._entry_options.setdefault(CONF_REWARDS, {})
+        rewards_dict = self._entry_options.setdefault(const.CONF_REWARDS, {})
 
         if user_input is not None:
             reward_name = user_input["reward_name"].strip()
@@ -793,9 +770,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "icon": user_input.get("icon", ""),
                     "internal_id": internal_id,
                 }
-                self._entry_options[CONF_REWARDS] = rewards_dict
+                self._entry_options[const.CONF_REWARDS] = rewards_dict
 
-                LOGGER.debug("Added reward '%s' with ID: %s", reward_name, internal_id)
+                const.LOGGER.debug(
+                    "Added reward '%s' with ID: %s", reward_name, internal_id
+                )
                 await self._update_and_reload()
                 return await self.async_step_init()
 
@@ -809,7 +788,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        penalties_dict = self._entry_options.setdefault(CONF_PENALTIES, {})
+        penalties_dict = self._entry_options.setdefault(const.CONF_PENALTIES, {})
 
         if user_input is not None:
             penalty_name = user_input["penalty_name"].strip()
@@ -830,9 +809,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "icon": user_input.get("icon", ""),
                     "internal_id": internal_id,
                 }
-                self._entry_options[CONF_PENALTIES] = penalties_dict
+                self._entry_options[const.CONF_PENALTIES] = penalties_dict
 
-                LOGGER.debug(
+                const.LOGGER.debug(
                     "Added penalty '%s' with ID: %s", penalty_name, internal_id
                 )
                 await self._update_and_reload()
@@ -848,7 +827,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        bonuses_dict = self._entry_options.setdefault(CONF_BONUSES, {})
+        bonuses_dict = self._entry_options.setdefault(const.CONF_BONUSES, {})
 
         if user_input is not None:
             bonus_name = user_input["bonus_name"].strip()
@@ -868,9 +847,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     "icon": user_input.get("icon", ""),
                     "internal_id": internal_id,
                 }
-                self._entry_options[CONF_BONUSES] = bonuses_dict
+                self._entry_options[const.CONF_BONUSES] = bonuses_dict
 
-                LOGGER.debug("Added bonus '%s' with ID: %s", bonus_name, internal_id)
+                const.LOGGER.debug(
+                    "Added bonus '%s' with ID: %s", bonus_name, internal_id
+                )
                 await self._update_and_reload()
                 return await self.async_step_init()
 
@@ -884,9 +865,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        achievements_dict = self._entry_options.setdefault(CONF_ACHIEVEMENTS, {})
+        achievements_dict = self._entry_options.setdefault(const.CONF_ACHIEVEMENTS, {})
 
-        chores_dict = self._entry_options.get(CONF_CHORES, {})
+        chores_dict = self._entry_options.get(const.CONF_CHORES, {})
 
         if user_input is not None:
             achievement_name = user_input["name"].strip()
@@ -899,7 +880,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
                 chore_id = ""
 
-                if _type == ACHIEVEMENT_TYPE_STREAK:
+                if _type == const.ACHIEVEMENT_TYPE_STREAK:
                     c = user_input.get("selected_chore_id") or ""
                     if not c or c == "None":
                         errors["selected_chore_id"] = "a_chore_must_be_selected"
@@ -922,7 +903,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         "progress": {},
                     }
                     self._entry_options["achievements"] = achievements_dict
-                    LOGGER.debug(
+                    const.LOGGER.debug(
                         "Added achievement '%s' with ID: %s",
                         achievement_name,
                         internal_id,
@@ -932,7 +913,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         kids_dict = {
             kid_data["name"]: kid_id
-            for kid_id, kid_data in self._entry_options.get(CONF_KIDS, {}).items()
+            for kid_id, kid_data in self._entry_options.get(const.CONF_KIDS, {}).items()
         }
         achievement_schema = build_achievement_schema(
             kids_dict=kids_dict, chores_dict=chores_dict, default=None
@@ -946,9 +927,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        challenges_dict = self._entry_options.setdefault(CONF_CHALLENGES, {})
+        challenges_dict = self._entry_options.setdefault(const.CONF_CHALLENGES, {})
 
-        chores_dict = self._entry_options.get(CONF_CHORES, {})
+        chores_dict = self._entry_options.get(const.CONF_CHORES, {})
 
         if user_input is not None:
             challenge_name = user_input["name"].strip()
@@ -958,7 +939,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 _type = user_input["type"]
 
                 chore_id = ""
-                if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
+                if _type == const.CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
                     c = user_input.get("selected_chore_id") or ""
                     if not c or c == "None":
                         errors["selected_chore_id"] = "a_chore_must_be_selected"
@@ -1014,8 +995,8 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         "internal_id": internal_id,
                         "progress": {},
                     }
-                    self._entry_options[CONF_CHALLENGES] = challenges_dict
-                    LOGGER.debug(
+                    self._entry_options[const.CONF_CHALLENGES] = challenges_dict
+                    const.LOGGER.debug(
                         "Added challenge '%s' with ID: %s", challenge_name, internal_id
                     )
                     await self._update_and_reload()
@@ -1023,7 +1004,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         kids_dict = {
             kid_data["name"]: kid_id
-            for kid_id, kid_data in self._entry_options.get(CONF_KIDS, {}).items()
+            for kid_id, kid_data in self._entry_options.get(const.CONF_KIDS, {}).items()
         }
         challenge_schema = build_challenge_schema(
             kids_dict=kids_dict, chores_dict=chores_dict, default=user_input
@@ -1038,11 +1019,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        kids_dict = self._entry_options.get(CONF_KIDS, {})
+        kids_dict = self._entry_options.get(const.CONF_KIDS, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in kids_dict:
-            LOGGER.error("Edit kid: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Edit kid: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_kid")
 
         kid_data = kids_dict[internal_id]
@@ -1067,9 +1048,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 kid_data["mobile_notify_service"] = mobile_notify_service
                 kid_data["use_persistent_notifications"] = use_persistent
 
-                self._entry_options[CONF_KIDS] = kids_dict
+                self._entry_options[const.CONF_KIDS] = kids_dict
 
-                LOGGER.debug("Edited kid '%s' with ID: %s", new_name, internal_id)
+                const.LOGGER.debug("Edited kid '%s' with ID: %s", new_name, internal_id)
                 await self._update_and_reload()
                 return await self.async_step_init()
 
@@ -1098,11 +1079,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        parents_dict = self._entry_options.get(CONF_PARENTS, {})
+        parents_dict = self._entry_options.get(const.CONF_PARENTS, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in parents_dict:
-            LOGGER.error("Edit parent: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Edit parent: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_parent")
 
         parent_data = parents_dict[internal_id]
@@ -1129,9 +1110,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 parent_data["mobile_notify_service"] = mobile_notify_service
                 parent_data["use_persistent_notifications"] = use_persistent
 
-                self._entry_options[CONF_PARENTS] = parents_dict
+                self._entry_options[const.CONF_PARENTS] = parents_dict
 
-                LOGGER.debug("Edited parent '%s' with ID: %s", new_name, internal_id)
+                const.LOGGER.debug(
+                    "Edited parent '%s' with ID: %s", new_name, internal_id
+                )
                 await self._update_and_reload()
                 return await self.async_step_init()
 
@@ -1139,7 +1122,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         users = await self.hass.auth.async_get_users()
         kids_dict = {
             kid_data["name"]: kid_id
-            for kid_id, kid_data in self._entry_options.get(CONF_KIDS, {}).items()
+            for kid_id, kid_data in self._entry_options.get(const.CONF_KIDS, {}).items()
         }
 
         parent_schema = build_parent_schema(
@@ -1167,11 +1150,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        chores_dict = self._entry_options.get(CONF_CHORES, {})
+        chores_dict = self._entry_options.get(const.CONF_CHORES, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in chores_dict:
-            LOGGER.error("Edit chore: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Edit chore: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_chore")
 
         chore_data = chores_dict[internal_id]
@@ -1187,7 +1170,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             ):
                 errors["chore_name"] = "duplicate_chore"
             else:
-                if user_input.get("recurring_frequency") != FREQUENCY_CUSTOM:
+                if user_input.get("recurring_frequency") != const.FREQUENCY_CUSTOM:
                     user_input.pop("custom_interval", None)
                     user_input.pop("custom_interval_unit", None)
 
@@ -1226,7 +1209,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         errors["due_date"] = "invalid_due_date"
                 else:
                     chore_data["due_date"] = None
-                    LOGGER.debug("No date/time provided; defaulting to None")
+                    const.LOGGER.debug("No date/time provided; defaulting to None")
 
                 chore_data["applicable_days"] = user_input.get("applicable_days", [])
                 chore_data["notify_on_claim"] = user_input.get("notify_on_claim", True)
@@ -1240,7 +1223,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             if errors:
                 kids_dict = {
                     data["name"]: eid
-                    for eid, data in self._entry_options.get(CONF_KIDS, {}).items()
+                    for eid, data in self._entry_options.get(
+                        const.CONF_KIDS, {}
+                    ).items()
                 }
                 default_data = user_input.copy()
                 return self.async_show_form(
@@ -1251,16 +1236,16 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     errors=errors,
                 )
 
-            self._entry_options[CONF_CHORES] = chores_dict
+            self._entry_options[const.CONF_CHORES] = chores_dict
 
-            LOGGER.debug("Edited chore '%s' with ID: %s", new_name, internal_id)
+            const.LOGGER.debug("Edited chore '%s' with ID: %s", new_name, internal_id)
             await self._update_and_reload()
             return await self.async_step_init()
 
         # Use flow_helpers.build_chore_schema, passing current kids
         kids_dict = {
             data["name"]: eid
-            for eid, data in self._entry_options.get(CONF_KIDS, {}).items()
+            for eid, data in self._entry_options.get(const.CONF_KIDS, {}).items()
         }
 
         # Convert stored string to datetime for DateTimeSelector
@@ -1277,12 +1262,12 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 existing_due_date = dt_util.as_local(parsed_date).strftime(
                     "%Y-%m-%d %H:%M:%S"
                 )
-                LOGGER.debug(
+                const.LOGGER.debug(
                     "Processed existing_due_date for DateTimeSelector: %s",
                     existing_due_date,
                 )
             except ValueError as e:
-                LOGGER.error(
+                const.LOGGER.error(
                     "Failed to parse existing_due_date '%s': %s", existing_due_str, e
                 )
 
@@ -1296,15 +1281,15 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_edit_badge(self, user_input=None):
         """Edit an existing badge."""
         self._entry_options = dict(self.config_entry.options)
-        badges_dict = self._entry_options.get(CONF_BADGES, {})
+        badges_dict = self._entry_options.get(const.CONF_BADGES, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in badges_dict:
-            LOGGER.error("Edit badge: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Edit badge: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_badge")
 
         badge_data = badges_dict[internal_id]
-        badge_type = badge_data.get("badge_type", BADGE_TYPE_CUMULATIVE)
+        badge_type = badge_data.get("badge_type", const.BADGE_TYPE_CUMULATIVE)
 
         errors = {}
 
@@ -1326,31 +1311,31 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 badge_data["icon"] = user_input.get("icon", badge_data.get("icon", ""))
 
                 # Update type-specific fields:
-                if badge_type == BADGE_TYPE_CUMULATIVE:
+                if badge_type == const.BADGE_TYPE_CUMULATIVE:
                     badge_data["threshold_value"] = user_input.get(
                         "threshold_value", badge_data.get("threshold_value")
                     )
                     badge_data["points_multiplier"] = user_input.get(
                         "points_multiplier", badge_data.get("points_multiplier")
                     )
-                    badge_data[CONF_BADGE_RESET_PERIODICALLY] = user_input.get(
-                        CONF_BADGE_RESET_PERIODICALLY,
-                        badge_data.get(CONF_BADGE_RESET_PERIODICALLY, False),
+                    badge_data[const.CONF_BADGE_RESET_PERIODICALLY] = user_input.get(
+                        const.CONF_BADGE_RESET_PERIODICALLY,
+                        badge_data.get(const.CONF_BADGE_RESET_PERIODICALLY, False),
                     )
-                    badge_data[CONF_BADGE_RESET_PERIOD] = user_input.get(
-                        CONF_BADGE_RESET_PERIOD,
-                        badge_data.get(CONF_BADGE_RESET_PERIOD, "year_end"),
+                    badge_data[const.CONF_BADGE_RESET_PERIOD] = user_input.get(
+                        const.CONF_BADGE_RESET_PERIOD,
+                        badge_data.get(const.CONF_BADGE_RESET_PERIOD, "year_end"),
                     )
-                    badge_data[CONF_BADGE_RESET_GRACE_PERIOD] = user_input.get(
-                        CONF_BADGE_RESET_GRACE_PERIOD,
-                        badge_data.get(CONF_BADGE_RESET_GRACE_PERIOD, 0),
+                    badge_data[const.CONF_BADGE_RESET_GRACE_PERIOD] = user_input.get(
+                        const.CONF_BADGE_RESET_GRACE_PERIOD,
+                        badge_data.get(const.CONF_BADGE_RESET_GRACE_PERIOD, 0),
                     )
-                    badge_data[CONF_BADGE_MAINTENANCE_RULES] = user_input.get(
-                        CONF_BADGE_MAINTENANCE_RULES,
-                        badge_data.get(CONF_BADGE_MAINTENANCE_RULES, ""),
+                    badge_data[const.CONF_BADGE_MAINTENANCE_RULES] = user_input.get(
+                        const.CONF_BADGE_MAINTENANCE_RULES,
+                        badge_data.get(const.CONF_BADGE_MAINTENANCE_RULES, ""),
                     )
 
-                elif badge_type == BADGE_TYPE_DAILY:
+                elif badge_type == const.BADGE_TYPE_DAILY:
                     badge_data["daily_threshold"] = user_input.get(
                         "daily_threshold", badge_data.get("daily_threshold")
                     )
@@ -1358,7 +1343,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         "reward", badge_data.get("reward")
                     )
 
-                elif badge_type == BADGE_TYPE_PERIODIC:
+                elif badge_type == const.BADGE_TYPE_PERIODIC:
                     badge_data["period"] = user_input.get(
                         "period", badge_data.get("period", "weekly")
                     )
@@ -1373,7 +1358,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         badge_data.get("reset_criteria", "Sunday midnight"),
                     )
 
-                elif badge_type == BADGE_TYPE_ACHIEVEMENT_LINKED:
+                elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
                     badge_data["associated_achievement"] = user_input.get(
                         "associated_achievement",
                         badge_data.get("associated_achievement", ""),
@@ -1382,7 +1367,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         "one_time_reward", badge_data.get("one_time_reward", "")
                     )
 
-                elif badge_type == BADGE_TYPE_CHALLENGE_LINKED:
+                elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
                     badge_data["associated_challenge"] = user_input.get(
                         "associated_challenge",
                         badge_data.get("associated_challenge", ""),
@@ -1391,7 +1376,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         "one_time_reward", badge_data.get("one_time_reward", "")
                     )
 
-                elif badge_type == BADGE_TYPE_SPECIAL_OCCASION:
+                elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
                     badge_data["occasion_type"] = user_input.get(
                         "occasion_type", badge_data.get("occasion_type", "holiday")
                     )
@@ -1400,9 +1385,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     )
 
                 badges_dict[internal_id] = badge_data
-                self._entry_options[CONF_BADGES] = badges_dict
+                self._entry_options[const.CONF_BADGES] = badges_dict
 
-                LOGGER.debug(
+                const.LOGGER.debug(
                     "Edited badge '%s' with ID: %s",
                     badge_data["badge_name"],
                     internal_id,
@@ -1412,17 +1397,17 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 return await self.async_step_init()
 
         # Build the schema based on badge_type:
-        if badge_type == BADGE_TYPE_CUMULATIVE:
+        if badge_type == const.BADGE_TYPE_CUMULATIVE:
             schema = build_badge_cumulative_schema(default=badge_data)
-        elif badge_type == BADGE_TYPE_DAILY:
+        elif badge_type == const.BADGE_TYPE_DAILY:
             schema = build_badge_daily_schema(default=badge_data)
-        elif badge_type == BADGE_TYPE_PERIODIC:
+        elif badge_type == const.BADGE_TYPE_PERIODIC:
             schema = build_badge_periodic_schema(default=badge_data)
-        elif badge_type == BADGE_TYPE_ACHIEVEMENT_LINKED:
+        elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
             schema = build_badge_achievement_schema(default=badge_data)
-        elif badge_type == BADGE_TYPE_CHALLENGE_LINKED:
+        elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
             schema = build_badge_challenge_schema(default=badge_data)
-        elif badge_type == BADGE_TYPE_SPECIAL_OCCASION:
+        elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
             schema = build_badge_special_occasions_schema(default=badge_data)
         else:
             schema = build_badge_cumulative_schema(default=badge_data)
@@ -1436,11 +1421,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        rewards_dict = self._entry_options.get(CONF_REWARDS, {})
+        rewards_dict = self._entry_options.get(const.CONF_REWARDS, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in rewards_dict:
-            LOGGER.error("Edit reward: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Edit reward: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_reward")
 
         reward_data = rewards_dict[internal_id]
@@ -1461,9 +1446,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 reward_data["reward_labels"] = user_input.get("reward_labels", [])
                 reward_data["icon"] = user_input.get("icon", "")
 
-                self._entry_options[CONF_REWARDS] = rewards_dict
+                self._entry_options[const.CONF_REWARDS] = rewards_dict
 
-                LOGGER.debug("Edited reward '%s' with ID: %s", new_name, internal_id)
+                const.LOGGER.debug(
+                    "Edited reward '%s' with ID: %s", new_name, internal_id
+                )
                 await self._update_and_reload()
                 return await self.async_step_init()
 
@@ -1477,11 +1464,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        penalties_dict = self._entry_options.get(CONF_PENALTIES, {})
+        penalties_dict = self._entry_options.get(const.CONF_PENALTIES, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in penalties_dict:
-            LOGGER.error("Edit penalty: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Edit penalty: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_penalty")
 
         penalty_data = penalties_dict[internal_id]
@@ -1505,9 +1492,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 )  # Ensure points are negative
                 penalty_data["icon"] = user_input.get("icon", "")
 
-                self._entry_options[CONF_PENALTIES] = penalties_dict
+                self._entry_options[const.CONF_PENALTIES] = penalties_dict
 
-                LOGGER.debug("Edited penalty '%s' with ID: %s", new_name, internal_id)
+                const.LOGGER.debug(
+                    "Edited penalty '%s' with ID: %s", new_name, internal_id
+                )
                 await self._update_and_reload()
                 return await self.async_step_init()
 
@@ -1524,11 +1513,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        bonuses_dict = self._entry_options.get(CONF_BONUSES, {})
+        bonuses_dict = self._entry_options.get(const.CONF_BONUSES, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in bonuses_dict:
-            LOGGER.error("Edit bonus: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Edit bonus: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_bonus")
 
         bonus_data = bonuses_dict[internal_id]
@@ -1550,9 +1539,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 bonus_data["points"] = abs(bonus_points)  # Ensure points are positive
                 bonus_data["icon"] = user_input.get("icon", "")
 
-                self._entry_options[CONF_BONUSES] = bonuses_dict
+                self._entry_options[const.CONF_BONUSES] = bonuses_dict
 
-                LOGGER.debug("Edited bonus '%s' with ID: %s", new_name, internal_id)
+                const.LOGGER.debug(
+                    "Edited bonus '%s' with ID: %s", new_name, internal_id
+                )
                 await self._update_and_reload()
                 return await self.async_step_init()
 
@@ -1569,11 +1560,13 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         errors = {}
-        achievements_dict = self._entry_options.get(CONF_ACHIEVEMENTS, {})
+        achievements_dict = self._entry_options.get(const.CONF_ACHIEVEMENTS, {})
 
         internal_id = self.context.get("internal_id")
         if not internal_id or internal_id not in achievements_dict:
-            LOGGER.error("Edit achievement: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error(
+                "Edit achievement: Invalid internal_id '%s'", internal_id
+            )
             return self.async_abort(reason="invalid_achievement")
 
         achievement_data = achievements_dict[internal_id]
@@ -1589,7 +1582,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 _type = user_input["type"]
 
                 chore_id = ""
-                if _type == ACHIEVEMENT_TYPE_STREAK:
+                if _type == const.ACHIEVEMENT_TYPE_STREAK:
                     c = user_input.get("selected_chore_id") or ""
                     if not c or c == "None":
                         errors["selected_chore_id"] = "a_chore_must_be_selected"
@@ -1611,8 +1604,8 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     achievement_data["target_value"] = user_input["target_value"]
                     achievement_data["reward_points"] = user_input["reward_points"]
                     achievements_dict[internal_id] = achievement_data
-                    self._entry_options[CONF_ACHIEVEMENTS] = achievements_dict
-                    LOGGER.debug(
+                    self._entry_options[const.CONF_ACHIEVEMENTS] = achievements_dict
+                    const.LOGGER.debug(
                         "Edited achievement '%s' with ID: %s", new_name, internal_id
                     )
                     await self._update_and_reload()
@@ -1620,9 +1613,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         kids_dict = {
             kid_data["name"]: kid_id
-            for kid_id, kid_data in self._entry_options.get(CONF_KIDS, {}).items()
+            for kid_id, kid_data in self._entry_options.get(const.CONF_KIDS, {}).items()
         }
-        chores_dict = self._entry_options.get(CONF_CHORES, {})
+        chores_dict = self._entry_options.get(const.CONF_CHORES, {})
 
         achievement_schema = build_achievement_schema(
             kids_dict=kids_dict, chores_dict=chores_dict, default=achievement_data
@@ -1635,11 +1628,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Edit an existing challenge."""
         self._entry_options = dict(self.config_entry.options)
         errors = {}
-        challenges_dict = self._entry_options.get(CONF_CHALLENGES, {})
+        challenges_dict = self._entry_options.get(const.CONF_CHALLENGES, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in challenges_dict:
-            LOGGER.error("Edit challenge: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Edit challenge: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_challenge")
 
         challenge_data = challenges_dict[internal_id]
@@ -1647,9 +1640,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is None:
             kids_dict = {
                 data["name"]: kid_id
-                for kid_id, data in self._entry_options.get(CONF_KIDS, {}).items()
+                for kid_id, data in self._entry_options.get(const.CONF_KIDS, {}).items()
             }
-            chores_dict = self._entry_options.get(CONF_CHORES, {})
+            chores_dict = self._entry_options.get(const.CONF_CHORES, {})
             # Convert stored start/end dates to a display format (e.g. local time string)
             default_data = {
                 **challenge_data,
@@ -1710,7 +1703,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 _type = user_input["type"]
 
                 chore_id = ""
-                if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
+                if _type == const.CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
                     c = user_input.get("selected_chore_id") or ""
                     if not c or c == "None":
                         errors["selected_chore_id"] = "a_chore_must_be_selected"
@@ -1731,7 +1724,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     challenge_data["reward_points"] = user_input["reward_points"]
                     challenge_data["start_date"] = new_start_date
                     challenge_data["end_date"] = new_end_date
-                    LOGGER.debug(
+                    const.LOGGER.debug(
                         "Edited challenge '%s' with ID: %s", new_name, internal_id
                     )
                     await self._update_and_reload()
@@ -1739,9 +1732,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         kids_dict = {
             kid_data["name"]: kid_id
-            for kid_id, kid_data in self._entry_options.get(CONF_KIDS, {}).items()
+            for kid_id, kid_data in self._entry_options.get(const.CONF_KIDS, {}).items()
         }
-        chores_dict = self._entry_options.get(CONF_CHORES, {})
+        chores_dict = self._entry_options.get(const.CONF_CHORES, {})
 
         default_data = {
             **challenge_data,
@@ -1760,11 +1753,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Delete a kid."""
         self._entry_options = dict(self.config_entry.options)
 
-        kids_dict = self._entry_options.get(CONF_KIDS, {})
+        kids_dict = self._entry_options.get(const.CONF_KIDS, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in kids_dict:
-            LOGGER.error("Delete kid: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Delete kid: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_kid")
 
         kid_name = kids_dict[internal_id]["name"]
@@ -1772,9 +1765,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             kids_dict.pop(internal_id, None)
 
-            self._entry_options[CONF_KIDS] = kids_dict
+            self._entry_options[const.CONF_KIDS] = kids_dict
 
-            LOGGER.debug("Deleted kid '%s' with ID: %s", kid_name, internal_id)
+            const.LOGGER.debug("Deleted kid '%s' with ID: %s", kid_name, internal_id)
             await self._update_and_reload()
             return await self.async_step_init()
 
@@ -1788,11 +1781,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Delete a parent."""
         self._entry_options = dict(self.config_entry.options)
 
-        parents_dict = self._entry_options.get(CONF_PARENTS, {})
+        parents_dict = self._entry_options.get(const.CONF_PARENTS, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in parents_dict:
-            LOGGER.error("Delete parent: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Delete parent: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_parent")
 
         parent_name = parents_dict[internal_id]["name"]
@@ -1800,9 +1793,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             parents_dict.pop(internal_id, None)
 
-            self._entry_options[CONF_PARENTS] = parents_dict
+            self._entry_options[const.CONF_PARENTS] = parents_dict
 
-            LOGGER.debug("Deleted parent '%s' with ID: %s", parent_name, internal_id)
+            const.LOGGER.debug(
+                "Deleted parent '%s' with ID: %s", parent_name, internal_id
+            )
             await self._update_and_reload()
             return await self.async_step_init()
 
@@ -1816,11 +1811,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Delete a chore."""
         self._entry_options = dict(self.config_entry.options)
 
-        chores_dict = self._entry_options.get(CONF_CHORES, {})
+        chores_dict = self._entry_options.get(const.CONF_CHORES, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in chores_dict:
-            LOGGER.error("Delete chore: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Delete chore: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_chore")
 
         chore_name = chores_dict[internal_id]["name"]
@@ -1828,9 +1823,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             chores_dict.pop(internal_id, None)
 
-            self._entry_options[CONF_CHORES] = chores_dict
+            self._entry_options[const.CONF_CHORES] = chores_dict
 
-            LOGGER.debug("Deleted chore '%s' with ID: %s", chore_name, internal_id)
+            const.LOGGER.debug(
+                "Deleted chore '%s' with ID: %s", chore_name, internal_id
+            )
             await self._update_and_reload()
             return await self.async_step_init()
 
@@ -1844,11 +1841,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Delete a badge."""
         self._entry_options = dict(self.config_entry.options)
 
-        badges_dict = self._entry_options.get(CONF_BADGES, {})
+        badges_dict = self._entry_options.get(const.CONF_BADGES, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in badges_dict:
-            LOGGER.error("Delete badge: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Delete badge: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_badge")
 
         badge_name = badges_dict[internal_id]["name"]
@@ -1856,9 +1853,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             badges_dict.pop(internal_id, None)
 
-            self._entry_options[CONF_BADGES] = badges_dict
+            self._entry_options[const.CONF_BADGES] = badges_dict
 
-            LOGGER.debug("Deleted badge '%s' with ID: %s", badge_name, internal_id)
+            const.LOGGER.debug(
+                "Deleted badge '%s' with ID: %s", badge_name, internal_id
+            )
             await self._update_and_reload()
             return await self.async_step_init()
 
@@ -1872,11 +1871,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Delete a reward."""
         self._entry_options = dict(self.config_entry.options)
 
-        rewards_dict = self._entry_options.get(CONF_REWARDS, {})
+        rewards_dict = self._entry_options.get(const.CONF_REWARDS, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in rewards_dict:
-            LOGGER.error("Delete reward: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Delete reward: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_reward")
 
         reward_name = rewards_dict[internal_id]["name"]
@@ -1884,9 +1883,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             rewards_dict.pop(internal_id, None)
 
-            self._entry_options[CONF_REWARDS] = rewards_dict
+            self._entry_options[const.CONF_REWARDS] = rewards_dict
 
-            LOGGER.debug("Deleted reward '%s' with ID: %s", reward_name, internal_id)
+            const.LOGGER.debug(
+                "Deleted reward '%s' with ID: %s", reward_name, internal_id
+            )
             await self._update_and_reload()
             return await self.async_step_init()
 
@@ -1900,11 +1901,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Delete a penalty."""
         self._entry_options = dict(self.config_entry.options)
 
-        penalties_dict = self._entry_options.get(CONF_PENALTIES, {})
+        penalties_dict = self._entry_options.get(const.CONF_PENALTIES, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in penalties_dict:
-            LOGGER.error("Delete penalty: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Delete penalty: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_penalty")
 
         penalty_name = penalties_dict[internal_id]["name"]
@@ -1912,9 +1913,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             penalties_dict.pop(internal_id, None)
 
-            self._entry_options[CONF_PENALTIES] = penalties_dict
+            self._entry_options[const.CONF_PENALTIES] = penalties_dict
 
-            LOGGER.debug("Deleted penalty '%s' with ID: %s", penalty_name, internal_id)
+            const.LOGGER.debug(
+                "Deleted penalty '%s' with ID: %s", penalty_name, internal_id
+            )
             await self._update_and_reload()
             return await self.async_step_init()
 
@@ -1928,18 +1931,20 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Delete an achievement."""
         self._entry_options = dict(self.config_entry.options)
 
-        achievements_dict = self._entry_options.get(CONF_ACHIEVEMENTS, {})
+        achievements_dict = self._entry_options.get(const.CONF_ACHIEVEMENTS, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in achievements_dict:
-            LOGGER.error("Delete achievement: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error(
+                "Delete achievement: Invalid internal_id '%s'", internal_id
+            )
             return self.async_abort(reason="invalid_achievement")
 
         achievement_name = achievements_dict[internal_id]["name"]
         if user_input is not None:
             achievements_dict.pop(internal_id, None)
-            self._entry_options[CONF_ACHIEVEMENTS] = achievements_dict
-            LOGGER.debug(
+            self._entry_options[const.CONF_ACHIEVEMENTS] = achievements_dict
+            const.LOGGER.debug(
                 "Deleted achievement '%s' with ID: %s", achievement_name, internal_id
             )
 
@@ -1956,18 +1961,20 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Delete a challenge."""
         self._entry_options = dict(self.config_entry.options)
 
-        challenges_dict = self._entry_options.get(CONF_CHALLENGES, {})
+        challenges_dict = self._entry_options.get(const.CONF_CHALLENGES, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in challenges_dict:
-            LOGGER.error("Delete challenge: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error(
+                "Delete challenge: Invalid internal_id '%s'", internal_id
+            )
             return self.async_abort(reason="invalid_challenge")
 
         challenge_name = challenges_dict[internal_id]["name"]
         if user_input is not None:
             challenges_dict.pop(internal_id, None)
-            self._entry_options[CONF_CHALLENGES] = challenges_dict
-            LOGGER.debug(
+            self._entry_options[const.CONF_CHALLENGES] = challenges_dict
+            const.LOGGER.debug(
                 "Deleted challenge '%s' with ID: %s", challenge_name, internal_id
             )
 
@@ -1984,11 +1991,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Delete a bonus."""
         self._entry_options = dict(self.config_entry.options)
 
-        bonuses_dict = self._entry_options.get(CONF_BONUSES, {})
+        bonuses_dict = self._entry_options.get(const.CONF_BONUSES, {})
         internal_id = self.context.get("internal_id")
 
         if not internal_id or internal_id not in bonuses_dict:
-            LOGGER.error("Delete bonus: Invalid internal_id '%s'", internal_id)
+            const.LOGGER.error("Delete bonus: Invalid internal_id '%s'", internal_id)
             return self.async_abort(reason="invalid_bonus")
 
         bonus_name = bonuses_dict[internal_id]["name"]
@@ -1996,9 +2003,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             bonuses_dict.pop(internal_id, None)
 
-            self._entry_options[CONF_BONUSES] = bonuses_dict
+            self._entry_options[const.CONF_BONUSES] = bonuses_dict
 
-            LOGGER.debug("Deleted bonus '%s' with ID: %s", bonus_name, internal_id)
+            const.LOGGER.debug(
+                "Deleted bonus '%s' with ID: %s", bonus_name, internal_id
+            )
             await self._update_and_reload()
             return await self.async_step_init()
 
@@ -2017,8 +2026,8 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self.hass.config_entries.async_update_entry(
             self.config_entry, data=new_data, options=self._entry_options
         )
-        LOGGER.debug(
+        const.LOGGER.debug(
             "Called update_entry. Now reloading entry: %s", self.config_entry.entry_id
         )
         await self.hass.config_entries.async_reload(self.config_entry.entry_id)
-        LOGGER.debug("Options updated and integration reloaded")
+        const.LOGGER.debug("Options updated and integration reloaded")

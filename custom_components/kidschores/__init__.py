@@ -19,13 +19,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .const import (
-    DOMAIN,
-    LOGGER,
-    NOTIFICATION_EVENT,
-    STORAGE_KEY,
-    PLATFORMS,
-)
+from . import const
 from .coordinator import KidsChoresDataCoordinator
 from .notification_action_handler import async_handle_notification_action
 from .storage_manager import KidsChoresStorageManager
@@ -34,10 +28,10 @@ from .services import async_setup_services, async_unload_services
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the integration from a config entry."""
-    LOGGER.info("Starting setup for KidsChores entry: %s", entry.entry_id)
+    const.LOGGER.info("Starting setup for KidsChores entry: %s", entry.entry_id)
 
     # Initialize the storage manager to handle persistent data.
-    storage_manager = KidsChoresStorageManager(hass, STORAGE_KEY)
+    storage_manager = KidsChoresStorageManager(hass, const.STORAGE_KEY)
     # Initialize new file.
     await storage_manager.async_initialize()
 
@@ -48,11 +42,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Perform the first refresh to load data.
         await coordinator.async_config_entry_first_refresh()
     except ConfigEntryNotReady as e:
-        LOGGER.error("Failed to refresh coordinator data: %s", e)
+        const.LOGGER.error("Failed to refresh coordinator data: %s", e)
         raise ConfigEntryNotReady from e
 
     # Store the coordinator and data manager in hass.data.
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
+    hass.data.setdefault(const.DOMAIN, {})[entry.entry_id] = {
         "coordinator": coordinator,
         "storage_manager": storage_manager,
     }
@@ -61,17 +55,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async_setup_services(hass)
 
     # Forward the setup to supported platforms (sensors, buttons, etc.).
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups(entry, const.PLATFORMS)
 
     # Listen for notification actions from the companion app.
     hass.bus.async_listen(
-        NOTIFICATION_EVENT,
+        const.NOTIFICATION_EVENT,
         lambda event: asyncio.run_coroutine_threadsafe(
             async_handle_notification_action(hass, event), hass.loop
         ),
     )
 
-    LOGGER.info("KidsChores setup complete for entry: %s", entry.entry_id)
+    const.LOGGER.info("KidsChores setup complete for entry: %s", entry.entry_id)
     return True
 
 
@@ -83,13 +77,13 @@ async def async_unload_entry(hass, entry):
         entry: Config entry to unload.
 
     """
-    LOGGER.info("Unloading KidsChores entry: %s", entry.entry_id)
+    const.LOGGER.info("Unloading KidsChores entry: %s", entry.entry_id)
 
     # Unload platforms
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, const.PLATFORMS)
 
     if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
+        hass.data[const.DOMAIN].pop(entry.entry_id)
 
         # Await service unloading
         await async_unload_services(hass)
@@ -99,13 +93,13 @@ async def async_unload_entry(hass, entry):
 
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle removal of a config entry."""
-    LOGGER.info("Removing KidsChores entry: %s", entry.entry_id)
+    const.LOGGER.info("Removing KidsChores entry: %s", entry.entry_id)
 
     # Safely check if data exists before attempting to access it
-    if DOMAIN in hass.data and entry.entry_id in hass.data[DOMAIN]:
-        storage_manager: KidsChoresStorageManager = hass.data[DOMAIN][entry.entry_id][
-            "storage_manager"
-        ]
+    if const.DOMAIN in hass.data and entry.entry_id in hass.data[const.DOMAIN]:
+        storage_manager: KidsChoresStorageManager = hass.data[const.DOMAIN][
+            entry.entry_id
+        ]["storage_manager"]
         await storage_manager.async_delete_storage()
 
-    LOGGER.info("KidsChores entry data cleared: %s", entry.entry_id)
+    const.LOGGER.info("KidsChores entry data cleared: %s", entry.entry_id)

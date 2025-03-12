@@ -19,31 +19,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import (
-    ATTR_LABELS,
-    BUTTON_BONUS_PREFIX,
-    BUTTON_DISAPPROVE_CHORE_PREFIX,
-    BUTTON_DISAPPROVE_REWARD_PREFIX,
-    BUTTON_PENALTY_PREFIX,
-    BUTTON_REWARD_PREFIX,
-    CONF_POINTS_LABEL,
-    DATA_PENDING_CHORE_APPROVALS,
-    DATA_PENDING_REWARD_APPROVALS,
-    DEFAULT_BONUS_ICON,
-    DEFAULT_CHORE_APPROVE_ICON,
-    DEFAULT_CHORE_CLAIM_ICON,
-    DEFAULT_DISAPPROVE_ICON,
-    DEFAULT_PENALTY_ICON,
-    DEFAULT_POINTS_ADJUST_MINUS_ICON,
-    DEFAULT_POINTS_ADJUST_MINUS_MULTIPLE_ICON,
-    DEFAULT_POINTS_ADJUST_PLUS_ICON,
-    DEFAULT_POINTS_ADJUST_PLUS_MULTIPLE_ICON,
-    DEFAULT_POINTS_LABEL,
-    DEFAULT_REWARD_ICON,
-    DOMAIN,
-    ERROR_NOT_AUTHORIZED_ACTION_FMT,
-    LOGGER,
-)
+from . import const
 from .coordinator import KidsChoresDataCoordinator
 from .kc_helpers import (
     is_user_authorized_for_global_action,
@@ -66,10 +42,12 @@ async def async_setup_entry(
     - Approve Reward Workflow
 
     """
-    data = hass.data[DOMAIN][entry.entry_id]
+    data = hass.data[const.DOMAIN][entry.entry_id]
     coordinator: KidsChoresDataCoordinator = data["coordinator"]
 
-    points_label = entry.options.get(CONF_POINTS_LABEL, DEFAULT_POINTS_LABEL)
+    points_label = entry.options.get(
+        const.CONF_POINTS_LABEL, const.DEFAULT_POINTS_LABEL
+    )
 
     entities = []
 
@@ -79,9 +57,9 @@ async def async_setup_entry(
         assigned_kids_ids = chore_info.get("assigned_kids", [])
 
         # If user defined an icon, use it; else fallback to default for chore claim
-        chore_claim_icon = chore_info.get("icon", DEFAULT_CHORE_CLAIM_ICON)
+        chore_claim_icon = chore_info.get("icon", const.DEFAULT_CHORE_CLAIM_ICON)
         # For "approve," use a distinct icon
-        chore_approve_icon = chore_info.get("icon", DEFAULT_CHORE_APPROVE_ICON)
+        chore_approve_icon = chore_info.get("icon", const.DEFAULT_CHORE_APPROVE_ICON)
 
         for kid_id in assigned_kids_ids:
             kid_name = coordinator._get_kid_name_by_id(kid_id) or f"Kid {kid_id}"
@@ -125,8 +103,8 @@ async def async_setup_entry(
     for kid_id, kid_info in coordinator.kids_data.items():
         kid_name = kid_info.get("name", f"Kid {kid_id}")
         for reward_id, reward_info in coordinator.rewards_data.items():
-            # If no user-defined icon, fallback to DEFAULT_REWARD_ICON
-            reward_icon = reward_info.get("icon", DEFAULT_REWARD_ICON)
+            # If no user-defined icon, fallback to const.DEFAULT_REWARD_ICON
+            reward_icon = reward_info.get("icon", const.DEFAULT_REWARD_ICON)
             # Redeem Reward Button
             entities.append(
                 RewardButton(
@@ -148,7 +126,7 @@ async def async_setup_entry(
                     kid_name=kid_name,
                     reward_id=reward_id,
                     reward_name=reward_info.get("name", f"Reward {reward_id}"),
-                    icon=reward_info.get("icon", DEFAULT_REWARD_ICON),
+                    icon=reward_info.get("icon", const.DEFAULT_REWARD_ICON),
                 )
             )
             # Disapprove Reward Button
@@ -167,8 +145,8 @@ async def async_setup_entry(
     for kid_id, kid_info in coordinator.kids_data.items():
         kid_name = kid_info.get("name", f"Kid {kid_id}")
         for penalty_id, penalty_info in coordinator.penalties_data.items():
-            # If no user-defined icon, fallback to DEFAULT_PENALTY_ICON
-            penalty_icon = penalty_info.get("icon", DEFAULT_PENALTY_ICON)
+            # If no user-defined icon, fallback to const.DEFAULT_PENALTY_ICON
+            penalty_icon = penalty_info.get("icon", const.DEFAULT_PENALTY_ICON)
             entities.append(
                 PenaltyButton(
                     coordinator=coordinator,
@@ -185,8 +163,8 @@ async def async_setup_entry(
     for kid_id, kid_info in coordinator.kids_data.items():
         kid_name = kid_info.get("name", f"Kid {kid_id}")
         for bonus_id, bonus_info in coordinator.bonuses_data.items():
-            # If no user-defined icon, fallback to DEFAULT_BONUS_ICON
-            bonus_icon = bonus_info.get("icon", DEFAULT_BONUS_ICON)
+            # If no user-defined icon, fallback to const.DEFAULT_BONUS_ICON
+            bonus_icon = bonus_info.get("icon", const.DEFAULT_BONUS_ICON)
             entities.append(
                 BonusButton(
                     coordinator=coordinator,
@@ -259,7 +237,7 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
                 self.hass, user_id, self._kid_id
             ):
                 raise HomeAssistantError(
-                    ERROR_NOT_AUTHORIZED_ACTION_FMT.format("claim chores")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("claim chores")
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
@@ -270,7 +248,7 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
                 chore_id=self._chore_id,
                 user_name=user_name,
             )
-            LOGGER.info(
+            const.LOGGER.info(
                 "Chore '%s' claimed by kid '%s' (user: %s)",
                 self._chore_name,
                 self._kid_name,
@@ -279,14 +257,14 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
             await self.coordinator.async_request_refresh()
 
         except HomeAssistantError as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Authorization failed to claim chore '%s' for kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Failed to claim chore '%s' for kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
@@ -303,7 +281,7 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
         ]
 
         attributes = {
-            ATTR_LABELS: friendly_labels,
+            const.ATTR_LABELS: friendly_labels,
         }
 
         return attributes
@@ -349,7 +327,7 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
                 self.hass, user_id, "approve_chore"
             ):
                 raise HomeAssistantError(
-                    ERROR_NOT_AUTHORIZED_ACTION_FMT.format("approve chores")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("approve chores")
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
@@ -360,7 +338,7 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
                 kid_id=self._kid_id,
                 chore_id=self._chore_id,
             )
-            LOGGER.info(
+            const.LOGGER.info(
                 "Chore '%s' approved for kid '%s'",
                 self._chore_name,
                 self._kid_name,
@@ -368,14 +346,14 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
             await self.coordinator.async_request_refresh()
 
         except HomeAssistantError as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Authorization failed to approve chore '%s' for kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Failed to approve chore '%s' for kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
@@ -392,7 +370,7 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
         ]
 
         attributes = {
-            ATTR_LABELS: friendly_labels,
+            const.ATTR_LABELS: friendly_labels,
         }
 
         return attributes
@@ -412,7 +390,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
         kid_name: str,
         chore_id: str,
         chore_name: str,
-        icon: str = DEFAULT_DISAPPROVE_ICON,
+        icon: str = const.DEFAULT_DISAPPROVE_ICON,
     ):
         """Initialize the disapprove chore button."""
 
@@ -421,9 +399,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
         self._kid_name = kid_name
         self._chore_id = chore_id
         self._chore_name = chore_name
-        self._attr_unique_id = (
-            f"{entry.entry_id}_{BUTTON_DISAPPROVE_CHORE_PREFIX}{kid_id}_{chore_id}"
-        )
+        self._attr_unique_id = f"{entry.entry_id}_{const.BUTTON_DISAPPROVE_CHORE_PREFIX}{kid_id}_{chore_id}"
         self._attr_icon = icon
         self._attr_translation_placeholders = {
             "kid_name": kid_name,
@@ -436,7 +412,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
         try:
             # Check if there's a pending approval for this kid and chore.
             pending_approvals = self.coordinator._data.get(
-                DATA_PENDING_CHORE_APPROVALS, []
+                const.DATA_PENDING_CHORE_APPROVALS, []
             )
             if not any(
                 approval["kid_id"] == self._kid_id
@@ -452,7 +428,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
                 self.hass, user_id, "disapprove_chore"
             ):
                 raise HomeAssistantError(
-                    ERROR_NOT_AUTHORIZED_ACTION_FMT.format("disapprove chores")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("disapprove chores")
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
@@ -463,7 +439,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
                 kid_id=self._kid_id,
                 chore_id=self._chore_id,
             )
-            LOGGER.info(
+            const.LOGGER.info(
                 "Chore '%s' disapproved for kid '%s' by parent '%s'",
                 self._chore_name,
                 self._kid_name,
@@ -472,14 +448,14 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
             await self.coordinator.async_request_refresh()
 
         except HomeAssistantError as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Authorization failed to disapprove chore '%s' for kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Failed to disapprove chore '%s' for kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
@@ -496,7 +472,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
         ]
 
         attributes = {
-            ATTR_LABELS: friendly_labels,
+            const.ATTR_LABELS: friendly_labels,
         }
 
         return attributes
@@ -527,7 +503,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
         self._reward_id = reward_id
         self._reward_name = reward_name
         self._attr_unique_id = (
-            f"{entry.entry_id}_{BUTTON_REWARD_PREFIX}{kid_id}_{reward_id}"
+            f"{entry.entry_id}_{const.BUTTON_REWARD_PREFIX}{kid_id}_{reward_id}"
         )
         self._attr_icon = icon
         self._attr_translation_placeholders = {
@@ -544,7 +520,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
                 self.hass, user_id, self._kid_id
             ):
                 raise HomeAssistantError(
-                    ERROR_NOT_AUTHORIZED_ACTION_FMT.format("redeem rewards")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("redeem rewards")
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
@@ -555,7 +531,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
                 kid_id=self._kid_id,
                 reward_id=self._reward_id,
             )
-            LOGGER.info(
+            const.LOGGER.info(
                 "Reward '%s' redeemed for kid '%s' by parent '%s'",
                 self._reward_name,
                 self._kid_name,
@@ -564,14 +540,14 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
             await self.coordinator.async_request_refresh()
 
         except HomeAssistantError as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Authorization failed to redeem reward '%s' for kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Failed to redeem reward '%s' for kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
@@ -588,7 +564,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
         ]
 
         attributes = {
-            ATTR_LABELS: friendly_labels,
+            const.ATTR_LABELS: friendly_labels,
         }
 
         return attributes
@@ -637,7 +613,7 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
                 self.hass, user_id, "approve_reward"
             ):
                 raise HomeAssistantError(
-                    ERROR_NOT_AUTHORIZED_ACTION_FMT.format("approve rewards")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("approve rewards")
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
@@ -650,7 +626,7 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
                 reward_id=self._reward_id,
             )
 
-            LOGGER.info(
+            const.LOGGER.info(
                 "Reward '%s' approved for kid '%s' by parent '%s'",
                 self._reward_name,
                 self._kid_name,
@@ -659,7 +635,7 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
             await self.coordinator.async_request_refresh()
 
         except HomeAssistantError as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Authorization failed to approve reward '%s' for kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
@@ -673,7 +649,7 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
                     notification_id=f"approve_reward_error_{self._reward_id}",
                 )
         except Exception as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Failed to approve reward '%s' for kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
@@ -697,7 +673,7 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
         ]
 
         attributes = {
-            ATTR_LABELS: friendly_labels,
+            const.ATTR_LABELS: friendly_labels,
         }
 
         return attributes
@@ -717,7 +693,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
         kid_name: str,
         reward_id: str,
         reward_name: str,
-        icon: str = DEFAULT_DISAPPROVE_ICON,
+        icon: str = const.DEFAULT_DISAPPROVE_ICON,
     ):
         """Initialize the disapprove reward button."""
 
@@ -726,9 +702,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
         self._kid_name = kid_name
         self._reward_id = reward_id
         self._reward_name = reward_name
-        self._attr_unique_id = (
-            f"{entry.entry_id}_{BUTTON_DISAPPROVE_REWARD_PREFIX}{kid_id}_{reward_id}"
-        )
+        self._attr_unique_id = f"{entry.entry_id}_{const.BUTTON_DISAPPROVE_REWARD_PREFIX}{kid_id}_{reward_id}"
         self._attr_icon = icon
         self._attr_translation_placeholders = {
             "kid_name": kid_name,
@@ -741,7 +715,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
         try:
             # Check if there's a pending approval for this kid and reward.
             pending_approvals = self.coordinator._data.get(
-                DATA_PENDING_REWARD_APPROVALS, []
+                const.DATA_PENDING_REWARD_APPROVALS, []
             )
             if not any(
                 approval["kid_id"] == self._kid_id
@@ -757,7 +731,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
                 self.hass, user_id, "disapprove_reward"
             ):
                 raise HomeAssistantError(
-                    ERROR_NOT_AUTHORIZED_ACTION_FMT.format("disapprove rewards")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("disapprove rewards")
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
@@ -768,7 +742,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
                 kid_id=self._kid_id,
                 reward_id=self._reward_id,
             )
-            LOGGER.info(
+            const.LOGGER.info(
                 "Reward '%s' disapproved for kid '%s' by parent '%s'",
                 self._reward_name,
                 self._kid_name,
@@ -777,14 +751,14 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
             await self.coordinator.async_request_refresh()
 
         except HomeAssistantError as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Authorization failed to disapprove reward '%s' for kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Failed to disapprove reward '%s' for kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
@@ -801,7 +775,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
         ]
 
         attributes = {
-            ATTR_LABELS: friendly_labels,
+            const.ATTR_LABELS: friendly_labels,
         }
 
         return attributes
@@ -836,7 +810,7 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
         self._penalty_id = penalty_id
         self._penalty_name = penalty_name
         self._attr_unique_id = (
-            f"{entry.entry_id}_{BUTTON_PENALTY_PREFIX}{kid_id}_{penalty_id}"
+            f"{entry.entry_id}_{const.BUTTON_PENALTY_PREFIX}{kid_id}_{penalty_id}"
         )
         self._attr_icon = icon
         self._attr_translation_placeholders = {
@@ -853,7 +827,7 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
                 self.hass, user_id, "apply_penalty"
             ):
                 raise HomeAssistantError(
-                    ERROR_NOT_AUTHORIZED_ACTION_FMT.format("apply penalties")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("apply penalties")
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
@@ -864,7 +838,7 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
                 kid_id=self._kid_id,
                 penalty_id=self._penalty_id,
             )
-            LOGGER.info(
+            const.LOGGER.info(
                 "Penalty '%s' applied to kid '%s' by '%s'",
                 self._penalty_name,
                 self._kid_name,
@@ -873,14 +847,14 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
             await self.coordinator.async_request_refresh()
 
         except HomeAssistantError as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Authorization failed to apply penalty '%s' for kid '%s': %s",
                 self._penalty_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Failed to apply penalty '%s' for kid '%s': %s",
                 self._penalty_name,
                 self._kid_name,
@@ -897,7 +871,7 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
         ]
 
         attributes = {
-            ATTR_LABELS: friendly_labels,
+            const.ATTR_LABELS: friendly_labels,
         }
 
         return attributes
@@ -944,15 +918,15 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
 
         # Decide the icon based on whether delta is positive or negative
         if delta >= 2:
-            self._attr_icon = DEFAULT_POINTS_ADJUST_PLUS_MULTIPLE_ICON
+            self._attr_icon = const.DEFAULT_POINTS_ADJUST_PLUS_MULTIPLE_ICON
         elif delta > 0:
-            self._attr_icon = DEFAULT_POINTS_ADJUST_PLUS_ICON
+            self._attr_icon = const.DEFAULT_POINTS_ADJUST_PLUS_ICON
         elif delta <= -2:
-            self._attr_icon = DEFAULT_POINTS_ADJUST_MINUS_MULTIPLE_ICON
+            self._attr_icon = const.DEFAULT_POINTS_ADJUST_MINUS_MULTIPLE_ICON
         elif delta < 0:
-            self._attr_icon = DEFAULT_POINTS_ADJUST_MINUS_ICON
+            self._attr_icon = const.DEFAULT_POINTS_ADJUST_MINUS_ICON
         else:
-            self._attr_icon = DEFAULT_POINTS_ADJUST_PLUS_ICON
+            self._attr_icon = const.DEFAULT_POINTS_ADJUST_PLUS_ICON
 
     async def async_press(self):
         """Handle the button press event."""
@@ -962,7 +936,7 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
                 self.hass, user_id, "adjust_points"
             ):
                 raise HomeAssistantError(
-                    ERROR_NOT_AUTHORIZED_ACTION_FMT.format("adjust points")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("adjust points")
                 )
 
             current_points = self.coordinator.kids_data[self._kid_id]["points"]
@@ -971,7 +945,7 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
                 kid_id=self._kid_id,
                 new_points=new_points,
             )
-            LOGGER.info(
+            const.LOGGER.info(
                 "Adjusted points for kid '%s' by %d => total %d",
                 self._kid_name,
                 self._delta,
@@ -980,14 +954,14 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
             await self.coordinator.async_request_refresh()
 
         except HomeAssistantError as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Authorization failed to adjust points for kid '%s' by %d: %s",
                 self._kid_name,
                 self._delta,
                 e,
             )
         except Exception as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Failed to adjust points for kid '%s' by %d: %s",
                 self._kid_name,
                 self._delta,
@@ -1022,7 +996,7 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
         self._bonus_id = bonus_id
         self._bonus_name = bonus_name
         self._attr_unique_id = (
-            f"{entry.entry_id}_{BUTTON_BONUS_PREFIX}{kid_id}_{bonus_id}"
+            f"{entry.entry_id}_{const.BUTTON_BONUS_PREFIX}{kid_id}_{bonus_id}"
         )
         self._attr_icon = icon
         self._attr_translation_placeholders = {
@@ -1039,7 +1013,7 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
                 self.hass, user_id, "apply_bonus"
             ):
                 raise HomeAssistantError(
-                    ERROR_NOT_AUTHORIZED_ACTION_FMT.format("apply bonus")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("apply bonus")
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
@@ -1050,7 +1024,7 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
                 kid_id=self._kid_id,
                 bonus_id=self._bonus_id,
             )
-            LOGGER.info(
+            const.LOGGER.info(
                 "Bonus '%s' applied to kid '%s' by '%s'",
                 self._bonus_name,
                 self._kid_name,
@@ -1059,14 +1033,14 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
             await self.coordinator.async_request_refresh()
 
         except HomeAssistantError as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Authorization failed to apply bonus '%s' for kid '%s': %s",
                 self._bonus_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
-            LOGGER.error(
+            const.LOGGER.error(
                 "Failed to apply bonus '%s' for kid '%s': %s",
                 self._bonus_name,
                 self._kid_name,
@@ -1083,7 +1057,7 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
         ]
 
         attributes = {
-            ATTR_LABELS: friendly_labels,
+            const.ATTR_LABELS: friendly_labels,
         }
 
         return attributes
