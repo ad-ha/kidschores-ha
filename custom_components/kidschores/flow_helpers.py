@@ -5,52 +5,12 @@ Provides schema builders and input-processing logic for internal_id-based manage
 """
 
 import datetime
+from . import const
 import uuid
 import voluptuous as vol
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector, config_validation as cv
 from homeassistant.util import dt as dt_util
-
-from .const import (
-    ACHIEVEMENT_TYPE_DAILY_MIN,
-    ACHIEVEMENT_TYPE_STREAK,
-    ACHIEVEMENT_TYPE_TOTAL,
-    BADGE_TYPE_ACHIEVEMENT_LINKED,
-    BADGE_TYPE_CHALLENGE_LINKED,
-    BADGE_TYPE_CUMULATIVE,
-    BADGE_TYPE_DAILY,
-    BADGE_TYPE_PERIODIC,
-    BADGE_TYPE_SPECIAL_OCCASION,
-    CHALLENGE_TYPE_DAILY_MIN,
-    CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
-    CONF_APPLICABLE_DAYS,
-    CONF_BADGE_MAINTENANCE_RULES,
-    CONF_BADGE_RESET_GRACE_PERIOD,
-    CONF_BADGE_RESET_PERIOD,
-    CONF_BADGE_RESET_PERIODICALLY,
-    CONF_ENABLE_MOBILE_NOTIFICATIONS,
-    CONF_ENABLE_PERSISTENT_NOTIFICATIONS,
-    CONF_MOBILE_NOTIFY_SERVICE,
-    CONF_NOTIFY_ON_APPROVAL,
-    CONF_NOTIFY_ON_CLAIM,
-    CONF_NOTIFY_ON_DISAPPROVAL,
-    CONF_POINTS_LABEL,
-    CONF_POINTS_ICON,
-    DEFAULT_APPLICABLE_DAYS,
-    DEFAULT_NOTIFY_ON_APPROVAL,
-    DEFAULT_NOTIFY_ON_CLAIM,
-    DEFAULT_NOTIFY_ON_DISAPPROVAL,
-    DEFAULT_POINTS_MULTIPLIER,
-    DEFAULT_POINTS_LABEL,
-    DEFAULT_POINTS_ICON,
-    FREQUENCY_BIWEEKLY,
-    FREQUENCY_CUSTOM,
-    FREQUENCY_DAILY,
-    FREQUENCY_MONTHLY,
-    FREQUENCY_NONE,
-    FREQUENCY_WEEKLY,
-    WEEKDAY_OPTIONS,
-)
 
 # ----------------------------------------------------------------------------------
 # POINTS SCHEMA
@@ -58,14 +18,14 @@ from .const import (
 
 
 def build_points_schema(
-    default_label=DEFAULT_POINTS_LABEL, default_icon=DEFAULT_POINTS_ICON
+    default_label=const.DEFAULT_POINTS_LABEL, default_icon=const.DEFAULT_POINTS_ICON
 ):
     """Build a schema for points label & icon."""
     return vol.Schema(
         {
-            vol.Required(CONF_POINTS_LABEL, default=default_label): str,
+            vol.Required(const.CONF_POINTS_LABEL, default=default_label): str,
             vol.Optional(
-                CONF_POINTS_ICON, default=default_icon
+                const.CONF_POINTS_ICON, default=default_icon
             ): selector.IconSelector(),
         }
     )
@@ -79,7 +39,7 @@ def build_points_schema(
 def build_kid_schema(
     hass,
     users,
-    default_kid_name="",
+    default_kid_name=const.CONF_EMPTY,
     default_ha_user_id=None,
     internal_id=None,
     default_enable_mobile_notifications=False,
@@ -87,16 +47,18 @@ def build_kid_schema(
     default_enable_persistent_notifications=False,
 ):
     """Build a Voluptuous schema for adding/editing a Kid, keyed by internal_id in the dict."""
-    user_options = [{"value": "", "label": "None"}] + [
+    user_options = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}] + [
         {"value": user.id, "label": user.name} for user in users
     ]
-    notify_options = [{"value": "", "label": "None"}] + _get_notify_services(hass)
+    notify_options = [
+        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
+    ] + _get_notify_services(hass)
 
     return vol.Schema(
         {
-            vol.Required("kid_name", default=default_kid_name): str,
+            vol.Required(const.CONF_KIDNAME, default=default_kid_name): str,
             vol.Optional(
-                "ha_user", default=default_ha_user_id or ""
+                const.CONF_HA_USER, default=default_ha_user_id or const.CONF_EMPTY
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=user_options,
@@ -105,11 +67,12 @@ def build_kid_schema(
                 )
             ),
             vol.Required(
-                CONF_ENABLE_MOBILE_NOTIFICATIONS,
+                const.CONF_ENABLE_MOBILE_NOTIFICATIONS,
                 default=default_enable_mobile_notifications,
             ): selector.BooleanSelector(),
             vol.Optional(
-                CONF_MOBILE_NOTIFY_SERVICE, default=default_mobile_notify_service or ""
+                const.CONF_MOBILE_NOTIFY_SERVICE,
+                default=default_mobile_notify_service or const.CONF_EMPTY,
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=notify_options,
@@ -118,10 +81,12 @@ def build_kid_schema(
                 )
             ),
             vol.Required(
-                CONF_ENABLE_PERSISTENT_NOTIFICATIONS,
+                const.CONF_ENABLE_PERSISTENT_NOTIFICATIONS,
                 default=default_enable_persistent_notifications,
             ): selector.BooleanSelector(),
-            vol.Required("internal_id", default=internal_id or str(uuid.uuid4())): str,
+            vol.Required(
+                const.CONF_INTERNAL_ID, default=internal_id or str(uuid.uuid4())
+            ): str,
         }
     )
 
@@ -135,7 +100,7 @@ def build_parent_schema(
     hass,
     users,
     kids_dict,
-    default_parent_name="",
+    default_parent_name=const.CONF_EMPTY,
     default_ha_user_id=None,
     default_associated_kids=None,
     default_enable_mobile_notifications=False,
@@ -144,19 +109,21 @@ def build_parent_schema(
     internal_id=None,
 ):
     """Build a Voluptuous schema for adding/editing a Parent, keyed by internal_id in the dict."""
-    user_options = [{"value": "", "label": "None"}] + [
+    user_options = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}] + [
         {"value": user.id, "label": user.name} for user in users
     ]
     kid_options = [
         {"value": kid_id, "label": kid_name} for kid_name, kid_id in kids_dict.items()
     ]
-    notify_options = [{"value": "", "label": "None"}] + _get_notify_services(hass)
+    notify_options = [
+        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
+    ] + _get_notify_services(hass)
 
     return vol.Schema(
         {
-            vol.Required("parent_name", default=default_parent_name): str,
+            vol.Required(const.CONF_PARENT_NAME, default=default_parent_name): str,
             vol.Optional(
-                "ha_user_id", default=default_ha_user_id or ""
+                const.CONF_HA_USER_ID, default=default_ha_user_id or const.CONF_EMPTY
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=user_options,
@@ -165,20 +132,22 @@ def build_parent_schema(
                 )
             ),
             vol.Optional(
-                "associated_kids", default=default_associated_kids or []
+                const.CONF_ASSOCIATED_KIDS,
+                default=default_associated_kids or const.DEFAULT_EMPTY_LIST,
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=kid_options,
-                    translation_key="associated_kids",
+                    translation_key=const.TRANS_KEY_ASSOCIATED_KIDS,
                     multiple=True,
                 )
             ),
             vol.Required(
-                CONF_ENABLE_MOBILE_NOTIFICATIONS,
+                const.CONF_ENABLE_MOBILE_NOTIFICATIONS,
                 default=default_enable_mobile_notifications,
             ): selector.BooleanSelector(),
             vol.Optional(
-                CONF_MOBILE_NOTIFY_SERVICE, default=default_mobile_notify_service or ""
+                const.CONF_MOBILE_NOTIFY_SERVICE,
+                default=default_mobile_notify_service or const.CONF_EMPTY,
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=notify_options,
@@ -187,10 +156,12 @@ def build_parent_schema(
                 )
             ),
             vol.Required(
-                CONF_ENABLE_PERSISTENT_NOTIFICATIONS,
+                const.CONF_ENABLE_PERSISTENT_NOTIFICATIONS,
                 default=default_enable_persistent_notifications,
             ): selector.BooleanSelector(),
-            vol.Required("internal_id", default=internal_id or str(uuid.uuid4())): str,
+            vol.Required(
+                const.CONF_INTERNAL_ID, default=internal_id or str(uuid.uuid4())
+            ): str,
         }
     )
 
@@ -206,22 +177,25 @@ def build_chore_schema(kids_dict, default=None):
     Uses internal_id for entity management.
     """
     default = default or {}
-    chore_name_default = default.get("name", "")
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+    chore_name_default = default.get(const.CONF_NAME, const.CONF_EMPTY)
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     kid_choices = {k: k for k in kids_dict}
 
     return vol.Schema(
         {
-            vol.Required("chore_name", default=chore_name_default): str,
+            vol.Required(const.CONF_CHORE_NAME, default=chore_name_default): str,
             vol.Optional(
-                "chore_description", default=default.get("description", "")
+                const.CONF_CHORE_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
             ): str,
             vol.Optional(
-                "chore_labels", default=default.get("chore_labels", [])
+                const.CONF_CHORE_LABELS,
+                default=default.get(const.CONF_CHORE_LABELS, const.DEFAULT_EMPTY_LIST),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Required(
-                "default_points", default=default.get("default_points", 5)
+                const.CONF_DEFAULT_POINTS,
+                default=default.get(const.CONF_DEFAULT_POINTS, const.DEFAULT_POINTS),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -230,39 +204,38 @@ def build_chore_schema(kids_dict, default=None):
                 )
             ),
             vol.Required(
-                "assigned_kids", default=default.get("assigned_kids", [])
+                const.CONF_ASSIGNED_KIDS,
+                default=default.get(const.CONF_ASSIGNED_KIDS, const.DEFAULT_EMPTY_LIST),
             ): cv.multi_select(kid_choices),
             vol.Required(
-                "shared_chore", default=default.get("shared_chore", False)
+                const.CONF_SHARED_CHORE,
+                default=default.get(const.CONF_SHARED_CHORE, False),
             ): selector.BooleanSelector(),
             vol.Required(
-                "allow_multiple_claims_per_day",
-                default=default.get("allow_multiple_claims_per_day", False),
+                const.CONF_ALLOW_MULTIPLE_CLAIMS_PER_DAY,
+                default=default.get(const.CONF_ALLOW_MULTIPLE_CLAIMS_PER_DAY, False),
             ): selector.BooleanSelector(),
             vol.Required(
-                "partial_allowed", default=default.get("partial_allowed", False)
+                const.CONF_PARTIAL_ALLOWED,
+                default=default.get(const.CONF_PARTIAL_ALLOWED, False),
             ): selector.BooleanSelector(),
             vol.Optional(
-                "icon", default=default.get("icon", "")
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
             vol.Required(
-                "recurring_frequency",
-                default=default.get("recurring_frequency", FREQUENCY_NONE),
+                const.CONF_RECURRING_FREQUENCY,
+                default=default.get(
+                    const.CONF_RECURRING_FREQUENCY, const.FREQUENCY_NONE
+                ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=[
-                        FREQUENCY_NONE,
-                        FREQUENCY_DAILY,
-                        FREQUENCY_WEEKLY,
-                        FREQUENCY_BIWEEKLY,
-                        FREQUENCY_MONTHLY,
-                        FREQUENCY_CUSTOM,
-                    ],
-                    translation_key="recurring_frequency",
+                    options=const.FREQUENCY_OPTIONS,
+                    translation_key=const.TRANS_KEY_RECURRING_FREQUENCY,
                 )
             ),
             vol.Optional(
-                "custom_interval", default=default.get("custom_interval", None)
+                const.CONF_CUSTOM_INTERVAL,
+                default=default.get(const.CONF_CUSTOM_INTERVAL, None),
             ): vol.Any(
                 None,
                 selector.NumberSelector(
@@ -272,52 +245,57 @@ def build_chore_schema(kids_dict, default=None):
                 ),
             ),
             vol.Optional(
-                "custom_interval_unit",
-                default=default.get("custom_interval_unit", None),
+                const.CONF_CUSTOM_INTERVAL_UNIT,
+                default=default.get(const.CONF_CUSTOM_INTERVAL_UNIT, None),
             ): vol.Any(
                 None,
                 selector.SelectSelector(
                     selector.SelectSelectorConfig(
-                        options=["", "days", "weeks", "months"],
-                        translation_key="custom_interval_unit",
+                        options=const.CUSTOM_INTERVAL_UNIT_OPTIONS,
+                        translation_key=const.TRANS_KEY_CUSTOM_INTERVAL_UNIT,
                         multiple=False,
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
             ),
             vol.Optional(
-                CONF_APPLICABLE_DAYS,
-                default=default.get(CONF_APPLICABLE_DAYS, DEFAULT_APPLICABLE_DAYS),
+                const.CONF_APPLICABLE_DAYS,
+                default=default.get(
+                    const.CONF_APPLICABLE_DAYS, const.DEFAULT_APPLICABLE_DAYS
+                ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[
-                        {"value": key, "label": WEEKDAY_OPTIONS[key]}
-                        for key in WEEKDAY_OPTIONS
+                        {"value": key, "label": const.WEEKDAY_OPTIONS[key]}
+                        for key in const.WEEKDAY_OPTIONS
                     ],
                     multiple=True,
-                    translation_key="applicable_days",
+                    translation_key=const.TRANS_KEY_APPLICABLE_DAYS,
                 )
             ),
-            vol.Optional("due_date", default=default.get("due_date")): vol.Any(
-                None, selector.DateTimeSelector()
-            ),
             vol.Optional(
-                CONF_NOTIFY_ON_CLAIM,
-                default=default.get(CONF_NOTIFY_ON_CLAIM, DEFAULT_NOTIFY_ON_CLAIM),
-            ): selector.BooleanSelector(),
+                const.CONF_DUE_DATE, default=default.get(const.CONF_DUE_DATE)
+            ): vol.Any(None, selector.DateTimeSelector()),
             vol.Optional(
-                CONF_NOTIFY_ON_APPROVAL,
+                const.CONF_NOTIFY_ON_CLAIM,
                 default=default.get(
-                    CONF_NOTIFY_ON_APPROVAL, DEFAULT_NOTIFY_ON_APPROVAL
+                    const.CONF_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM
                 ),
             ): selector.BooleanSelector(),
             vol.Optional(
-                CONF_NOTIFY_ON_DISAPPROVAL,
+                const.CONF_NOTIFY_ON_APPROVAL,
                 default=default.get(
-                    CONF_NOTIFY_ON_DISAPPROVAL, DEFAULT_NOTIFY_ON_DISAPPROVAL
+                    const.CONF_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
                 ),
             ): selector.BooleanSelector(),
-            vol.Required("internal_id", default=internal_id_default): str,
+            vol.Optional(
+                const.CONF_NOTIFY_ON_DISAPPROVAL,
+                default=default.get(
+                    const.CONF_NOTIFY_ON_DISAPPROVAL,
+                    const.DEFAULT_NOTIFY_ON_DISAPPROVAL,
+                ),
+            ): selector.BooleanSelector(),
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
 
@@ -330,23 +308,33 @@ def build_chore_schema(kids_dict, default=None):
 def build_badge_cumulative_schema(default: dict = None, rewards_list: list = None):
     """Build schema for cumulative badges (by points or chore count)."""
     default = default or {}
-    rewards_list = rewards_list or [{"value": "", "label": "Select Reward"}]
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+    rewards_list = rewards_list or [
+        {"value": const.CONF_EMPTY, "label": "Select Reward"}
+    ]
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     return vol.Schema(
         {
-            vol.Required("badge_name", default=default.get("name", "")): str,
-            vol.Optional(
-                "badge_description", default=default.get("description", "")
+            vol.Required(
+                const.CONF_BADGE_NAME,
+                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
             ): str,
             vol.Optional(
-                "badge_labels", default=default.get("badge_labels", [])
+                const.CONF_BADGE_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
+            ): str,
+            vol.Optional(
+                const.CONF_BADGE_LABELS,
+                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
-                "icon", default=default.get("icon", "")
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
             vol.Required(
-                "threshold_value", default=default.get("threshold_value", 250)
+                const.CONF_BADGE_THRESOLD_VALUE,
+                default=default.get(
+                    const.CONF_BADGE_THRESOLD_VALUE, const.DEFAULT_BADGE_THRESHOLD_VALUE
+                ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -355,15 +343,21 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
                 )
             ),
             vol.Required(
-                "award_mode", default=default.get("award_mode", "points")
+                const.CONF_BADGE_AWARD_MODE,
+                default=default.get(
+                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+                ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=["points", "reward"],
-                    translation_key="award_mode",
+                    options=const.AWARD_MODE_OPTIONS,
+                    translation_key=const.TRANS_KEY_AWARD_MODE,
                 )
             ),
             vol.Required(
-                "points_multiplier", default=default.get("points_multiplier", 1.1)
+                const.CONF_BADGE_POINTS_MULTIPLIER,
+                default=default.get(
+                    const.CONF_BADGE_POINTS_MULTIPLIER, const.DEFAULT_POINTS_MULTIPLIER
+                ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -372,30 +366,34 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
                 )
             ),
             vol.Optional(
-                "award_reward", default=default.get("award_reward", "")
+                const.CONF_BADGE_AWARD_REWARD,
+                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="award_reward",
+                    translation_key=const.TRANS_KEY_AWARD_REWARD,
                 )
             ),
             vol.Required(
-                CONF_BADGE_RESET_PERIODICALLY,
-                default=default.get(CONF_BADGE_RESET_PERIODICALLY, False),
+                const.CONF_BADGE_RESET_PERIODICALLY,
+                default=default.get(const.CONF_BADGE_RESET_PERIODICALLY, False),
             ): selector.BooleanSelector(),
             vol.Optional(
-                CONF_BADGE_RESET_PERIOD,
-                default=default.get(CONF_BADGE_RESET_PERIOD, "year_end"),
+                const.CONF_BADGE_RESET_PERIOD,
+                default=default.get(const.CONF_BADGE_RESET_PERIOD, const.CONF_YEAR_END),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=["year_end", "custom"],
-                    translation_key="reset_period",
+                    options=const.BADGE_CUMULATIVE_RESET_PERIOD_OPTIONS,
+                    translation_key=const.TRANS_KEY_RESET_PERIOD,
                 )
             ),
             vol.Optional(
-                CONF_BADGE_RESET_GRACE_PERIOD,
-                default=default.get(CONF_BADGE_RESET_GRACE_PERIOD, 0),
+                const.CONF_BADGE_RESET_GRACE_PERIOD,
+                default=default.get(
+                    const.CONF_BADGE_RESET_GRACE_PERIOD,
+                    const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
+                ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -404,13 +402,16 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
                 )
             ),
             vol.Optional(
-                CONF_BADGE_MAINTENANCE_RULES,
-                default=default.get(CONF_BADGE_MAINTENANCE_RULES, ""),
+                const.CONF_BADGE_MAINTENANCE_RULES,
+                default=default.get(
+                    const.CONF_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY
+                ),
             ): str,
             vol.Required(
-                "badge_type", default=default.get("badge_type", BADGE_TYPE_CUMULATIVE)
+                const.CONF_BADGE_TYPE,
+                default=default.get(const.CONF_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE),
             ): str,
-            vol.Required("internal_id", default=internal_id_default): str,
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
 
@@ -418,32 +419,46 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
 def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
     """Build schema for daily badges that reset every day."""
     default = default or {}
-    rewards_list = rewards_list or [{"value": "", "label": "Select Reward"}]
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+    rewards_list = rewards_list or [
+        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
+    ]
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     return vol.Schema(
         {
-            vol.Required("badge_name", default=default.get("name", "")): str,
-            vol.Optional(
-                "badge_description", default=default.get("description", "")
+            vol.Required(
+                const.CONF_BADGE_NAME,
+                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
             ): str,
             vol.Optional(
-                "badge_labels", default=default.get("badge_labels", [])
+                const.CONF_BADGE_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
+            ): str,
+            vol.Optional(
+                const.CONF_BADGE_LABELS,
+                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
-                "icon", default=default.get("icon", "")
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
             vol.Required(
-                "daily_threshold_type",
-                default=default.get("daily_threshold_type", "points"),
+                const.CONF_BADGE_DAILY_THRESHOLD_TYPE,
+                default=default.get(
+                    const.CONF_BADGE_DAILY_THRESHOLD_TYPE,
+                    const.DEFAULT_BADGE_THRESOLD_TYPE,
+                ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=["points", "chore_count"],
-                    translation_key="daily_threshold_type",
+                    options=const.THRESHOLD_TYPE_OPTIONS,
+                    translation_key=const.TRANS_KEY_DAILY_THRESHOLD_TYPE,
                 )
             ),
             vol.Required(
-                "daily_threshold", default=default.get("daily_threshold", 15)
+                const.CONF_BADGE_DAILY_THRESHOLD,
+                default=default.get(
+                    const.CONF_BADGE_DAILY_THRESHOLD,
+                    const.DEFAULT_BADGE_DAILY_THRESHOLD,
+                ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -452,15 +467,21 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
                 )
             ),
             vol.Required(
-                "award_mode", default=default.get("award_mode", "points")
+                const.CONF_BADGE_AWARD_MODE,
+                default=default.get(
+                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+                ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=["points", "reward"],
-                    translation_key="award_mode",
+                    options=const.AWARD_MODE_OPTIONS,
+                    translation_key=const.TRANS_KEY_AWARD_MODE,
                 )
             ),
             vol.Optional(
-                "award_points", default=default.get("award_points", 5)
+                const.CONF_BADGE_AWARD_POINTS,
+                default=default.get(
+                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
+                ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -469,18 +490,20 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
                 )
             ),
             vol.Optional(
-                "award_reward", default=default.get("award_reward", "")
+                const.CONF_BADGE_AWARD_REWARD,
+                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="award_reward",
+                    translation_key=const.TRANS_KEY_AWARD_REWARD,
                 )
             ),
             vol.Required(
-                "badge_type", default=default.get("badge_type", BADGE_TYPE_DAILY)
+                const.CONF_BADGE_TYPE,
+                default=default.get(const.CONF_BADGE_TYPE, const.BADGE_TYPE_DAILY),
             ): str,
-            vol.Required("internal_id", default=internal_id_default): str,
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
 
@@ -488,45 +511,61 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
 def build_badge_periodic_schema(default: dict = None, rewards_list: list = None):
     """Build schema for periodic badges (e.g. weekly or monthly)."""
     default = default or {}
-    rewards_list = rewards_list or [{"value": "", "label": "Select Reward"}]
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+    rewards_list = rewards_list or [
+        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
+    ]
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     return vol.Schema(
         {
-            vol.Required("badge_name", default=default.get("name", "")): str,
-            vol.Optional(
-                "badge_description", default=default.get("description", "")
+            vol.Required(
+                const.CONF_BADGE_NAME,
+                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
             ): str,
             vol.Optional(
-                "badge_labels", default=default.get("badge_labels", [])
+                const.CONF_BADGE_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
+            ): str,
+            vol.Optional(
+                const.CONF_BADGE_LABELS,
+                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
-                "icon", default=default.get("icon", "")
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
             vol.Required(
-                "period", default=default.get("period", "weekly")
+                const.CONF_BADGE_PERIOD,
+                default=default.get(const.CONF_BADGE_PERIOD, const.CONF_WEEKLY),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=["weekly", "monthly", "custom"],
-                    translation_key="period",
+                    options=const.BADGE_PERIOD_OPTIONS,
+                    translation_key=const.TRANS_KEY_PERIOD,
                 )
             ),
             vol.Optional(
-                "start_date", default=default.get("start_date", "")
+                const.CONF_BADGE_START_DATE,
+                default=default.get(const.CONF_BADGE_START_DATE, const.CONF_EMPTY),
             ): selector.DateSelector(),
             vol.Optional(
-                "end_date", default=default.get("end_date", "")
+                const.CONF_BADGE_END_DATE,
+                default=default.get(const.CONF_BADGE_END_DATE, const.CONF_EMPTY),
             ): selector.DateSelector(),
             vol.Required(
-                "threshold_type", default=default.get("threshold_type", "points")
+                const.CONF_BADGE_THRESHOLD_TYPE,
+                default=default.get(
+                    const.CONF_BADGE_THRESHOLD_TYPE, const.DEFAULT_BADGE_THRESOLD_TYPE
+                ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=["points", "chore_count"],
-                    translation_key="threshold_type",
+                    options=const.THRESHOLD_TYPE_OPTIONS,
+                    translation_key=const.TRANS_KEY_THRESHOLD_TYPE,
                 )
             ),
             vol.Required(
-                "threshold_value", default=default.get("threshold_value", 200)
+                const.CONF_BADGE_THRESOLD_VALUE,
+                default=default.get(
+                    const.CONF_BADGE_THRESOLD_VALUE, const.DEFAULT_BADGE_THRESHOLD_VALUE
+                ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -535,15 +574,21 @@ def build_badge_periodic_schema(default: dict = None, rewards_list: list = None)
                 )
             ),
             vol.Required(
-                "award_mode", default=default.get("award_mode", "points")
+                const.CONF_BADGE_AWARD_MODE,
+                default=default.get(
+                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+                ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=["points", "reward"],
-                    translation_key="award_mode",
+                    options=const.AWARD_MODE_OPTIONS,
+                    translation_key=const.TRANS_KEY_AWARD_MODE,
                 )
             ),
             vol.Optional(
-                "award_points", default=default.get("award_points", 15)
+                const.CONF_BADGE_AWARD_POINTS,
+                default=default.get(
+                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
+                ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -552,27 +597,29 @@ def build_badge_periodic_schema(default: dict = None, rewards_list: list = None)
                 )
             ),
             vol.Optional(
-                "award_reward", default=default.get("award_reward", "")
+                const.CONF_BADGE_AWARD_REWARD,
+                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="award_reward",
+                    translation_key=const.TRANS_KEY_AWARD_REWARD,
                 )
             ),
             vol.Required(
-                "reset_criteria",
+                const.CONF_BADGE_RESET_CRITERIA,
                 default=default.get(
-                    "reset_criteria",
+                    const.CONF_BADGE_RESET_CRITERIA,
                     "Sunday midnight"
-                    if default.get("period", "weekly") == "weekly"
+                    if default.get(const.CONF_BADGE_PERIOD, "weekly") == "weekly"
                     else "1st day of month",
                 ),
             ): str,
             vol.Required(
-                "badge_type", default=default.get("badge_type", BADGE_TYPE_PERIODIC)
+                const.CONF_BADGE_TYPE,
+                default=default.get(const.CONF_BADGE_TYPE, const.BADGE_TYPE_PERIODIC),
             ): str,
-            vol.Required("internal_id", default=internal_id_default): str,
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
 
@@ -582,47 +629,59 @@ def build_badge_achievement_schema(
 ):
     """Build schema for achievement‑linked badges."""
     default = default or {}
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
     achievements_list = achievements_list or [
-        {"value": "", "label": "Select Achievement"}
+        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
     ]
-    rewards_list = rewards_list or [{"value": "", "label": "Select Reward"}]
+    rewards_list = rewards_list or [
+        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
+    ]
     return vol.Schema(
         {
-            vol.Required("badge_name", default=default.get("name", "")): str,
-            vol.Optional(
-                "badge_description", default=default.get("description", "")
+            vol.Required(
+                const.CONF_BADGE_NAME,
+                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
             ): str,
             vol.Optional(
-                "badge_labels", default=default.get("badge_labels", [])
+                const.CONF_BADGE_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
+            ): str,
+            vol.Optional(
+                const.CONF_BADGE_LABELS,
+                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
-                "icon", default=default.get("icon", "")
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
             vol.Required(
-                "associated_achievement",
-                default=default.get("associated_achievement", ""),
+                const.CONF_BADGE_ASSOCIATED_ACHIEVEMENT,
+                default=default.get(
+                    const.CONF_BADGE_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY
+                ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=achievements_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="associated_achievement",
+                    translation_key=const.TRANS_KEY_ASSOCIATED_ACHIEVEMENT,
                 )
             ),
             vol.Required(
-                "one_time_reward", default=default.get("one_time_reward", "")
+                const.CONF_BADGE_ONE_TIME_REWARD,
+                default=default.get(const.CONF_BADGE_ONE_TIME_REWARD, const.CONF_EMPTY),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="one_time_reward",
+                    translation_key=const.TRANS_KEY_ONE_TIME_REWARD,
                 )
             ),
             vol.Required(
-                "badge_type",
-                default=default.get("badge_type", BADGE_TYPE_ACHIEVEMENT_LINKED),
+                const.CONF_BADGE_TYPE,
+                default=default.get(
+                    const.CONF_BADGE_TYPE, const.BADGE_TYPE_ACHIEVEMENT_LINKED
+                ),
             ): str,
-            vol.Required("internal_id", default=internal_id_default): str,
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
 
@@ -632,44 +691,59 @@ def build_badge_challenge_schema(
 ):
     """Build schema for challenge‑linked badges."""
     default = default or {}
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
-    challenges_list = challenges_list or [{"value": "", "label": "Select Challenge"}]
-    rewards_list = rewards_list or [{"value": "", "label": "Select Reward"}]
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
+    challenges_list = challenges_list or [
+        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
+    ]
+    rewards_list = rewards_list or [
+        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
+    ]
     return vol.Schema(
         {
-            vol.Required("badge_name", default=default.get("name", "")): str,
-            vol.Optional(
-                "badge_description", default=default.get("description", "")
+            vol.Required(
+                const.CONF_BADGE_NAME,
+                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
             ): str,
             vol.Optional(
-                "badge_labels", default=default.get("badge_labels", [])
+                const.CONF_BADGE_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
+            ): str,
+            vol.Optional(
+                const.CONF_BADGE_LABELS,
+                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
-                "icon", default=default.get("icon", "")
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
             vol.Required(
-                "associated_challenge", default=default.get("associated_challenge", "")
+                const.CONF_BADGE_ASSOCIATED_CHALLENGE,
+                default=default.get(
+                    const.CONF_BADGE_ASSOCIATED_CHALLENGE, const.CONF_EMPTY
+                ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=challenges_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="associated_challenge",
+                    translation_key=const.TRANS_KEY_ASSOCIATED_CHALLENGE,
                 )
             ),
             vol.Required(
-                "one_time_reward", default=default.get("one_time_reward", "")
+                const.CONF_BADGE_ONE_TIME_REWARD,
+                default=default.get(const.CONF_BADGE_ONE_TIME_REWARD, const.CONF_EMPTY),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="one_time_reward",
+                    translation_key=const.TRANS_KEY_ONE_TIME_REWARD,
                 )
             ),
             vol.Required(
-                "badge_type",
-                default=default.get("badge_type", BADGE_TYPE_CHALLENGE_LINKED),
+                const.CONF_BADGE_TYPE,
+                default=default.get(
+                    const.CONF_BADGE_TYPE, const.BADGE_TYPE_CHALLENGE_LINKED
+                ),
             ): str,
-            vol.Required("internal_id", default=internal_id_default): str,
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
 
@@ -677,37 +751,49 @@ def build_badge_challenge_schema(
 def build_badge_special_occasions_schema(default: dict = None):
     """Build schema for special occasion badges."""
     default = default or {}
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
     return vol.Schema(
         {
-            vol.Required("badge_name", default=default.get("name", "")): str,
-            vol.Optional(
-                "badge_description", default=default.get("description", "")
+            vol.Required(
+                const.CONF_BADGE_NAME,
+                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
             ): str,
             vol.Optional(
-                "badge_labels", default=default.get("badge_labels", [])
+                const.CONF_BADGE_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
+            ): str,
+            vol.Optional(
+                const.CONF_BADGE_LABELS,
+                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
-                "icon", default=default.get("icon", "")
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
             vol.Required(
-                "occasion_type", default=default.get("occasion_type", "holiday")
+                const.CONF_BADGE_OCCASION_TYPE,
+                default=default.get(const.CONF_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=["holiday", "birthday", "other"],
+                    options=const.OCCASION_TYPE_OPTIONS,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="occasion_type",
+                    translation_key=const.TRANS_KEY_OCCASION_TYPE,
                 )
             ),
             vol.Required(
-                "occasion_date", default=default.get("occasion_date", "")
+                const.CONF_BADGE_OCCASION_DATE,
+                default=default.get(const.CONF_BADGE_OCCASION_DATE, const.CONF_EMPTY),
             ): selector.DateSelector(),
-            vol.Required("trigger_info", default=default.get("trigger_info", "")): str,
             vol.Required(
-                "badge_type",
-                default=default.get("badge_type", BADGE_TYPE_SPECIAL_OCCASION),
+                const.CONF_BADGE_TRIGGER_INFO,
+                default=default.get(const.CONF_BADGE_TRIGGER_INFO, const.CONF_EMPTY),
             ): str,
-            vol.Required("internal_id", default=internal_id_default): str,
+            vol.Required(
+                const.CONF_BADGE_TYPE,
+                default=default.get(
+                    const.CONF_BADGE_TYPE, const.BADGE_TYPE_SPECIAL_OCCASION
+                ),
+            ): str,
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
 
@@ -720,20 +806,23 @@ def build_badge_special_occasions_schema(default: dict = None):
 def build_reward_schema(default=None):
     """Build a schema for rewards, keyed by internal_id in the dict."""
     default = default or {}
-    reward_name_default = default.get("name", "")
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+    reward_name_default = default.get(const.CONF_NAME, const.CONF_EMPTY)
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     return vol.Schema(
         {
-            vol.Required("reward_name", default=reward_name_default): str,
+            vol.Required(const.CONF_REWARD_NAME, default=reward_name_default): str,
             vol.Optional(
-                "reward_description", default=default.get("description", "")
+                const.CONF_REWARD_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
             ): str,
             vol.Optional(
-                "reward_labels", default=default.get("reward_labels", [])
+                const.CONF_REWARD_LABELS,
+                default=default.get(const.CONF_REWARD_LABELS, const.DEFAULT_EMPTY_LIST),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Required(
-                "reward_cost", default=default.get("cost", 10.0)
+                const.CONF_REWARD_COST,
+                default=default.get(const.CONF_COST, const.DEFAULT_REWARD_COST),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -742,259 +831,9 @@ def build_reward_schema(default=None):
                 )
             ),
             vol.Optional(
-                "icon", default=default.get("icon", "")
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
-            vol.Required("internal_id", default=internal_id_default): str,
-        }
-    )
-
-
-# ----------------------------------------------------------------------------------
-# ACHIEVEMENTS SCHEMA
-# ----------------------------------------------------------------------------------
-
-
-def build_achievement_schema(kids_dict, chores_dict, default=None):
-    """Build a schema for achievements, keyed by internal_id."""
-    default = default or {}
-    achievement_name_default = default.get("name", "")
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
-
-    kid_options = [
-        {"value": kid_id, "label": kid_name} for kid_name, kid_id in kids_dict.items()
-    ]
-
-    chore_options = [{"value": "", "label": "None"}]
-    for chore_id, chore_data in chores_dict.items():
-        chore_name = chore_data.get("name", f"Chore {chore_id[:6]}")
-        chore_options.append({"value": chore_id, "label": chore_name})
-
-    default_selected_chore = default.get("selected_chore_id", "")
-    if not default_selected_chore or default_selected_chore not in [
-        option["value"] for option in chore_options
-    ]:
-        pass
-
-    default_criteria = default.get("criteria", "")
-    default_assigned_kids = default.get("assigned_kids", [])
-    if not isinstance(default_assigned_kids, list):
-        default_assigned_kids = [default_assigned_kids]
-
-    return vol.Schema(
-        {
-            vol.Required("name", default=achievement_name_default): str,
-            vol.Optional("description", default=default.get("description", "")): str,
-            vol.Optional(
-                "achievement_labels", default=default.get("achievement_labels", [])
-            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
-            vol.Optional(
-                "icon", default=default.get("icon", "")
-            ): selector.IconSelector(),
-            vol.Required(
-                "assigned_kids", default=default_assigned_kids
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=kid_options,
-                    translation_key="assigned_kids",
-                    multiple=True,
-                )
-            ),
-            vol.Required(
-                "type", default=default.get("type", ACHIEVEMENT_TYPE_STREAK)
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=[
-                        {"value": ACHIEVEMENT_TYPE_STREAK, "label": "Chore Streak"},
-                        {"value": ACHIEVEMENT_TYPE_TOTAL, "label": "Chore Total"},
-                        {
-                            "value": ACHIEVEMENT_TYPE_DAILY_MIN,
-                            "label": "Daily Minimum Chores",
-                        },
-                    ],
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
-            ),
-            # If type == "chore_streak", let the user choose the chore to track:
-            vol.Optional(
-                "selected_chore_id", default=default_selected_chore
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=chore_options,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    multiple=False,
-                )
-            ),
-            # For non-streak achievements the user can type criteria freely:
-            vol.Optional("criteria", default=default_criteria): str,
-            vol.Required(
-                "target_value", default=default.get("target_value", 1)
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=0.1,
-                )
-            ),
-            vol.Required(
-                "reward_points", default=default.get("reward_points", 0)
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=0.1,
-                )
-            ),
-            vol.Required("internal_id", default=internal_id_default): str,
-        }
-    )
-
-
-# ----------------------------------------------------------------------------------
-# CHALLENGES SCHEMA
-# ----------------------------------------------------------------------------------
-
-
-def build_challenge_schema(kids_dict, chores_dict, default=None):
-    """Build a schema for challenges, keyed by internal_id."""
-    default = default or {}
-    challenge_name_default = default.get("name", "")
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
-
-    kid_options = [
-        {"value": kid_id, "label": kid_name} for kid_name, kid_id in kids_dict.items()
-    ]
-
-    chore_options = [{"value": "", "label": ""}]
-    for chore_id, chore_data in chores_dict.items():
-        chore_name = chore_data.get("name", f"Chore {chore_id[:6]}")
-        chore_options.append({"value": chore_id, "label": chore_name})
-
-    default_selected_chore = default.get("selected_chore_id", "")
-    available_values = [option["value"] for option in chore_options]
-    if default_selected_chore not in available_values:
-        default_selected_chore = ""
-
-    default_criteria = default.get("criteria", "")
-    default_assigned_kids = default.get("assigned_kids", [])
-    if not isinstance(default_assigned_kids, list):
-        default_assigned_kids = [default_assigned_kids]
-
-    return vol.Schema(
-        {
-            vol.Required("name", default=challenge_name_default): str,
-            vol.Optional("description", default=default.get("description", "")): str,
-            vol.Optional(
-                "challenge_labels", default=default.get("challenge_labels", [])
-            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
-            vol.Optional(
-                "icon", default=default.get("icon", "")
-            ): selector.IconSelector(),
-            vol.Required(
-                "assigned_kids", default=default_assigned_kids
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=kid_options,
-                    translation_key="assigned_kids",
-                    multiple=True,
-                )
-            ),
-            vol.Required(
-                "type", default=default.get("type", CHALLENGE_TYPE_DAILY_MIN)
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=[
-                        {
-                            "value": CHALLENGE_TYPE_DAILY_MIN,
-                            "label": "Minimum Chores per Day",
-                        },
-                        {
-                            "value": CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
-                            "label": "Total Chores within Period",
-                        },
-                    ],
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
-            ),
-            # If type == "chore_streak", let the user choose the chore to track:
-            vol.Optional(
-                "selected_chore_id", default=default_selected_chore
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=chore_options,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    multiple=False,
-                )
-            ),
-            # For non-streak achievements the user can type criteria freely:
-            vol.Optional("criteria", default=default_criteria): str,
-            vol.Required(
-                "target_value", default=default.get("target_value", 1)
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=0.1,
-                )
-            ),
-            vol.Required(
-                "reward_points", default=default.get("reward_points", 0)
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=0.1,
-                )
-            ),
-            vol.Required(
-                "start_date", default=default.get("start_date")
-            ): selector.DateTimeSelector(),
-            vol.Required(
-                "end_date", default=default.get("end_date")
-            ): selector.DateTimeSelector(),
-            vol.Required("internal_id", default=internal_id_default): str,
-        }
-    )
-
-
-# ----------------------------------------------------------------------------------
-# PENALTIES SCHEMA
-# ----------------------------------------------------------------------------------
-
-
-def build_penalty_schema(default=None):
-    """Build a schema for penalties, keyed by internal_id in the dict.
-
-    Stores penalty_points as positive in the form, converted to negative internally.
-    """
-    default = default or {}
-    penalty_name_default = default.get("name", "")
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
-
-    # Display penalty points as positive for user input
-    display_points = abs(default.get("points", 1)) if default else 1
-
-    return vol.Schema(
-        {
-            vol.Required("penalty_name", default=penalty_name_default): str,
-            vol.Optional(
-                "penalty_description", default=default.get("description", "")
-            ): str,
-            vol.Optional(
-                "penalty_labels", default=default.get("penalty_labels", [])
-            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
-            vol.Required(
-                "penalty_points", default=display_points
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=0.1,
-                )
-            ),
-            vol.Optional(
-                "icon", default=default.get("icon", "")
-            ): selector.IconSelector(),
-            vol.Required("internal_id", default=internal_id_default): str,
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
 
@@ -1010,23 +849,29 @@ def build_bonus_schema(default=None):
     Stores bonus_points as positive in the form, converted to negative internally.
     """
     default = default or {}
-    bonus_name_default = default.get("name", "")
-    internal_id_default = default.get("internal_id", str(uuid.uuid4()))
+    bonus_name_default = default.get(const.CONF_NAME, const.CONF_EMPTY)
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     # Display bonus points as positive for user input
-    display_points = abs(default.get("points", 1)) if default else 1
+    display_points = (
+        abs(default.get(const.CONF_POINTS, const.DEFAULT_BONUS_POINTS))
+        if default
+        else const.DEFAULT_BONUS_POINTS
+    )
 
     return vol.Schema(
         {
-            vol.Required("bonus_name", default=bonus_name_default): str,
+            vol.Required(const.CONF_BONUS_NAME, default=bonus_name_default): str,
             vol.Optional(
-                "bonus_description", default=default.get("description", "")
+                const.CONF_BONUS_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
             ): str,
             vol.Optional(
-                "bonus_labels", default=default.get("bonus_labels", [])
+                const.CONF_BONUS_LABELS,
+                default=default.get(const.CONF_BONUS_LABELS, const.DEFAULT_EMPTY_LIST),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Required(
-                "bonus_points", default=display_points
+                const.CONF_BONUS_POINTS, default=display_points
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -1035,9 +880,296 @@ def build_bonus_schema(default=None):
                 )
             ),
             vol.Optional(
-                "icon", default=default.get("icon", "")
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
-            vol.Required("internal_id", default=internal_id_default): str,
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
+        }
+    )
+
+
+# ----------------------------------------------------------------------------------
+# PENALTIES SCHEMA
+# ----------------------------------------------------------------------------------
+
+
+def build_penalty_schema(default=None):
+    """Build a schema for penalties, keyed by internal_id in the dict.
+
+    Stores penalty_points as positive in the form, converted to negative internally.
+    """
+    default = default or {}
+    penalty_name_default = default.get(const.CONF_NAME, const.CONF_EMPTY)
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
+
+    # Display penalty points as positive for user input
+    display_points = (
+        abs(default.get(const.CONF_POINTS, const.DEFAULT_PENALTY_POINTS))
+        if default
+        else const.DEFAULT_PENALTY_POINTS
+    )
+
+    return vol.Schema(
+        {
+            vol.Required(const.CONF_PENALTY_NAME, default=penalty_name_default): str,
+            vol.Optional(
+                const.CONF_PENALTY_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
+            ): str,
+            vol.Optional(
+                const.CONF_PENALTY_LABELS,
+                default=default.get(
+                    const.CONF_PENALTY_LABELS, const.DEFAULT_EMPTY_LIST
+                ),
+            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
+            vol.Required(
+                const.CONF_PENALTY_POINTS, default=display_points
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=0.1,
+                )
+            ),
+            vol.Optional(
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
+            ): selector.IconSelector(),
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
+        }
+    )
+
+
+# ----------------------------------------------------------------------------------
+# ACHIEVEMENTS SCHEMA
+# ----------------------------------------------------------------------------------
+
+
+def build_achievement_schema(kids_dict, chores_dict, default=None):
+    """Build a schema for achievements, keyed by internal_id."""
+    default = default or {}
+    achievement_name_default = default.get(const.CONF_NAME, const.CONF_EMPTY)
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
+
+    kid_options = [
+        {"value": kid_id, "label": kid_name} for kid_name, kid_id in kids_dict.items()
+    ]
+
+    chore_options = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}]
+    for chore_id, chore_data in chores_dict.items():
+        chore_name = chore_data.get(const.CONF_NAME, f"Chore {chore_id[:6]}")
+        chore_options.append({"value": chore_id, "label": chore_name})
+
+    default_selected_chore = default.get(
+        const.CONF_ACHIEVEMENT_SELECTED_CHORE_ID, const.CONF_EMPTY
+    )
+    if not default_selected_chore or default_selected_chore not in [
+        option["value"] for option in chore_options
+    ]:
+        pass
+
+    default_criteria = default.get(const.CONF_ACHIEVEMENT_CRITERIA, const.CONF_EMPTY)
+    default_assigned_kids = default.get(
+        const.CONF_ACHIEVEMENT_ASSIGNED_KIDS, const.DEFAULT_EMPTY_LIST
+    )
+    if not isinstance(default_assigned_kids, list):
+        default_assigned_kids = [default_assigned_kids]
+
+    return vol.Schema(
+        {
+            vol.Required(const.CONF_NAME, default=achievement_name_default): str,
+            vol.Optional(
+                const.CONF_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
+            ): str,
+            vol.Optional(
+                const.CONF_ACHIEVEMENT_LABELS,
+                default=default.get(
+                    const.CONF_ACHIEVEMENT_LABELS, const.DEFAULT_EMPTY_LIST
+                ),
+            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
+            vol.Optional(
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
+            ): selector.IconSelector(),
+            vol.Required(
+                const.CONF_ACHIEVEMENT_ASSIGNED_KIDS, default=default_assigned_kids
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=kid_options,
+                    translation_key=const.TRANS_KEY_ASSIGNED_KIDS,
+                    multiple=True,
+                )
+            ),
+            vol.Required(
+                const.CONF_ACHIEVEMENT_TYPE,
+                default=default.get(
+                    const.CONF_ACHIEVEMENT_TYPE, const.ACHIEVEMENT_TYPE_STREAK
+                ),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=const.ACHIEVEMENT_TYPE_OPTIONS,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                )
+            ),
+            # If type == "chore_streak", let the user choose the chore to track:
+            vol.Optional(
+                const.CONF_ACHIEVEMENT_SELECTED_CHORE_ID, default=default_selected_chore
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=chore_options,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    multiple=False,
+                )
+            ),
+            # For non-streak achievements the user can type criteria freely:
+            vol.Optional(
+                const.CONF_ACHIEVEMENT_CRITERIA, default=default_criteria
+            ): str,
+            vol.Required(
+                const.CONF_ACHIEVEMENT_TARGET_VALUE,
+                default=default.get(
+                    const.CONF_ACHIEVEMENT_TARGET_VALUE,
+                    const.DEFAULT_ACHIEVEMENT_TARGET,
+                ),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=0.1,
+                )
+            ),
+            vol.Required(
+                const.CONF_ACHIEVEMENT_REWARD_POINTS,
+                default=default.get(
+                    const.CONF_ACHIEVEMENT_REWARD_POINTS,
+                    const.DEFAULT_ACHIEVEMENT_REWARD_POINTS,
+                ),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=0.1,
+                )
+            ),
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
+        }
+    )
+
+
+# ----------------------------------------------------------------------------------
+# CHALLENGES SCHEMA
+# ----------------------------------------------------------------------------------
+
+
+def build_challenge_schema(kids_dict, chores_dict, default=None):
+    """Build a schema for challenges, keyed by internal_id."""
+    default = default or {}
+    challenge_name_default = default.get(const.CONF_NAME, const.CONF_EMPTY)
+    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
+
+    kid_options = [
+        {"value": kid_id, "label": kid_name} for kid_name, kid_id in kids_dict.items()
+    ]
+
+    chore_options = [{"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}]
+    for chore_id, chore_data in chores_dict.items():
+        chore_name = chore_data.get(const.CONF_NAME, f"Chore {chore_id[:6]}")
+        chore_options.append({"value": chore_id, "label": chore_name})
+
+    default_selected_chore = default.get(
+        const.CONF_CHALLENGE_SELECTED_CHORE_ID, const.CONF_EMPTY
+    )
+    available_values = [option["value"] for option in chore_options]
+    if default_selected_chore not in available_values:
+        default_selected_chore = ""
+
+    default_criteria = default.get(const.CONF_CHALLENGE_CRITERIA, const.CONF_EMPTY)
+    default_assigned_kids = default.get(
+        const.CONF_CHALLENGE_ASSIGNED_KIDS, const.DEFAULT_EMPTY_LIST
+    )
+    if not isinstance(default_assigned_kids, list):
+        default_assigned_kids = [default_assigned_kids]
+
+    return vol.Schema(
+        {
+            vol.Required(const.CONF_NAME, default=challenge_name_default): str,
+            vol.Optional(
+                const.CONF_DESCRIPTION,
+                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
+            ): str,
+            vol.Optional(
+                const.CONF_CHALLENGE_LABELS,
+                default=default.get(
+                    const.CONF_CHALLENGE_LABELS, const.DEFAULT_EMPTY_LIST
+                ),
+            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
+            vol.Optional(
+                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
+            ): selector.IconSelector(),
+            vol.Required(
+                const.CONF_CHALLENGE_ASSIGNED_KIDS, default=default_assigned_kids
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=kid_options,
+                    translation_key=const.TRANS_KEY_ASSIGNED_KIDS,
+                    multiple=True,
+                )
+            ),
+            vol.Required(
+                const.CONF_CHALLENGE_TYPE,
+                default=default.get(
+                    const.CONF_CHALLENGE_TYPE, const.CHALLENGE_TYPE_DAILY_MIN
+                ),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=const.CHALLENGE_TYPE_OPTIONS,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                )
+            ),
+            # If type == "chore_streak", let the user choose the chore to track:
+            vol.Optional(
+                const.CONF_CHALLENGE_SELECTED_CHORE_ID, default=default_selected_chore
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=chore_options,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    multiple=False,
+                )
+            ),
+            # For non-streak achievements the user can type criteria freely:
+            vol.Optional(const.CONF_CHALLENGE_CRITERIA, default=default_criteria): str,
+            vol.Required(
+                const.CONF_CHALLENGE_TARGET_VALUE,
+                default=default.get(
+                    const.CONF_CHALLENGE_TARGET_VALUE, const.DEFAULT_CHALLENGE_TARGET
+                ),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=0.1,
+                )
+            ),
+            vol.Required(
+                const.CONF_CHALLENGE_REWARD_POINTS,
+                default=default.get(
+                    const.CONF_CHALLENGE_REWARD_POINTS,
+                    const.DEFAULT_CHALLENGE_REWARD_POINTS,
+                ),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=0.1,
+                )
+            ),
+            vol.Required(
+                const.CONF_CHALLENGE_START_DATE,
+                default=default.get(const.CONF_CHALLENGE_START_DATE),
+            ): selector.DateTimeSelector(),
+            vol.Required(
+                const.CONF_CHALLENGE_END_DATE,
+                default=default.get(const.CONF_CHALLENGE_END_DATE),
+            ): selector.DateTimeSelector(),
+            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
 
@@ -1058,7 +1190,7 @@ def process_penalty_form_input(user_input: dict) -> dict:
 # Get notify services from HA
 def _get_notify_services(hass: HomeAssistant) -> list[dict[str, str]]:
     """Return a list of all notify.* services as"""
-    services_list = []
+    services_list = const.DEFAULT_EMPTY_LIST
     all_services = hass.services.async_services()
     if "notify" in all_services:
         for service_name in all_services["notify"].keys():

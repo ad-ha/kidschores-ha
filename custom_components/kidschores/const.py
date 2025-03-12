@@ -11,9 +11,14 @@ import logging
 
 from homeassistant.const import Platform
 
-# -------------------- General --------------------
-# Integration Domain and Logging
+# --------------------------------------------------------------------
+# General / Integration Information
+# --------------------------------------------------------------------
+
+# Integration Domain
 DOMAIN = "kidschores"
+
+# Logger
 LOGGER = logging.getLogger(__package__)
 
 # Supported Platforms
@@ -31,32 +36,34 @@ STORAGE_VERSION = 1  # Storage version
 # Update Interval
 UPDATE_INTERVAL = 5  # Update interval for coordinator (in minutes)
 
-# -------------------- Configuration --------------------
+# --------------------------------------------------------------------
 # Configuration Keys
-CONF_ACHIEVEMENTS = "achievements"  # Key for achievements configuration
-CONF_APPLICABLE_DAYS = "applicable_days"  # Key for applicable days configuration
-CONF_BADGES = "badges"  # Key for badges configuration
-CONF_CHALLENGES = "challenges"  # Key for challenges configuration
-CONF_CHORES = "chores"  # Key for chores configuration
-CONF_GLOBAL = "global"  # Key for global configuration
-CONF_KIDS = "kids"  # Key for kids configuration
-CONF_PARENTS = "parents"  # Key for parents configuration
-CONF_PENALTIES = "penalties"  # Key for penalties configuration
-CONF_POINTS_ICON = "points_icon"  # Custom icon for points
-CONF_POINTS_LABEL = "points_label"  # Custom label for points
-CONF_REWARDS = "rewards"  # Key for rewards configuration
-CONF_BONUSES = "bonuses"  # Key for bonuses configuration
+# --------------------------------------------------------------------
 
-# Options Flow Management
-OPTIONS_FLOW_ACHIEVEMENTS = "manage_achievements"  # Edit achivements step
-OPTIONS_FLOW_BADGES = "manage_badges"  # Edit badges step
-OPTIONS_FLOW_CHALLENGES = "manage_challenges"  # Edit challenges step
-OPTIONS_FLOW_CHORES = "manage_chores"  # Edit chores step
-OPTIONS_FLOW_KIDS = "manage_kids"  # Edit kids step
-OPTIONS_FLOW_PARENTS = "manage_parents"  # Edit parents step
-OPTIONS_FLOW_PENALTIES = "manage_penalties"  # Edit penalties step
-OPTIONS_FLOW_REWARDS = "manage_rewards"  # Edit rewards step
-OPTIONS_FLOW_BONUSES = "manage_bonuses"  # Edit bonuses step
+# OptionsFlow Configuration Keys
+CONF_ACHIEVEMENTS = "achievements"
+CONF_BADGES = "badges"
+CONF_BONUSES = "bonuses"
+CONF_CHALLENGES = "challenges"
+CONF_CHORES = "chores"
+CONF_GLOBAL = "global"
+CONF_KIDS = "kids"
+CONF_PARENTS = "parents"
+CONF_PENALTIES = "penalties"
+CONF_REWARDS = "rewards"
+
+# Options Flow Management Menus
+OPTIONS_FLOW_ACHIEVEMENTS = "manage_achievement"
+OPTIONS_FLOW_BADGES = "manage_badge"
+OPTIONS_FLOW_BONUSES = "manage_bonus"
+OPTIONS_FLOW_CHALLENGES = "manage_challenge"
+OPTIONS_FLOW_CHORES = "manage_chore"
+OPTIONS_FLOW_FINISH = "done"
+OPTIONS_FLOW_KIDS = "manage_kid"
+OPTIONS_FLOW_PARENTS = "manage_parent"
+OPTIONS_FLOW_PENALTIES = "manage_penalty"
+OPTIONS_FLOW_POINTS = "manage_points"
+OPTIONS_FLOW_REWARDS = "manage_reward"
 
 # Validation Keys
 VALIDATION_DUE_DATE = "due_date"  # Optional due date for chores
@@ -64,101 +71,274 @@ VALIDATION_PARTIAL_ALLOWED = "partial_allowed"  # Allow partial points in chores
 VALIDATION_THRESHOLD_TYPE = "threshold_type"  # Badge criteria type
 VALIDATION_THRESHOLD_VALUE = "threshold_value"  # Badge criteria value
 
+# Global configuration keys
+CONF_DESCRIPTION = "description"
+CONF_EMPTY = ""
+CONF_INTERNAL_ID = "internal_id"
+CONF_ICON = "icon"
+CONF_NAME = "name"
+CONF_COST = "cost"
+CONF_DAYS = "days"
+CONF_WEEKS = "weeks"
+CONF_MONTHS = "months"
+CONF_POINTS = "points"
+CONF_WEEKLY = "weekly"
+CONF_MONTHLY = "monthly"
+CONF_CUSTOM = "custom"
+CONF_BIWEEKLY = "biweekly"
+CONF_YEAR_END = "year_end"
+CONF_HOLIDAY = "holiday"
+CONF_BIRTHDAY = "birthday"
+
+# Points configuration keys
+CONF_POINTS_ICON = "points_icon"
+CONF_POINTS_LABEL = "points_label"
+
+# Kids configuration keys
+CONF_KIDNAME = "kid_name"
+CONF_HA_USER = "ha_user"
+
+# Parents configuration keys
+CONF_HA_USER_ID = "ha_user_id"
+CONF_PARENT_NAME = "parent_name"
+CONF_ASSOCIATED_KIDS = "associated_kids"
+
+# Chores configuration keys
+CONF_ALLOW_MULTIPLE_CLAIMS_PER_DAY = "allow_multiple_claims_per_day"
+CONF_APPLICABLE_DAYS = "applicable_days"
+CONF_ASSIGNED_KIDS = "assigned_kids"
+CONF_CHORE_DESCRIPTION = "chore_description"
+CONF_CHORE_LABELS = "chore_labels"
+CONF_CHORE_NAME = "chore_name"
+CONF_CUSTOM_INTERVAL = "custom_interval"
+CONF_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
+CONF_DEFAULT_POINTS = "default_points"
+CONF_DUE_DATE = "due_date"
+CONF_PARTIAL_ALLOWED = "partial_allowed"
+CONF_RECURRING_FREQUENCY = "recurring_frequency"
+CONF_SHARED_CHORE = "shared_chore"
+
+
 # Notification configuration keys
-CONF_ENABLE_MOBILE_NOTIFICATIONS = "enable_mobile_notifications"
-CONF_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
-CONF_ENABLE_PERSISTENT_NOTIFICATIONS = "enable_persistent_notifications"
-CONF_NOTIFY_ON_CLAIM = "notify_on_claim"
-CONF_NOTIFY_ON_APPROVAL = "notify_on_approval"
-CONF_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
 CONF_CHORE_NOTIFY_SERVICE = "chore_notify_service"
+CONF_ENABLE_MOBILE_NOTIFICATIONS = "enable_mobile_notifications"
+CONF_ENABLE_PERSISTENT_NOTIFICATIONS = "enable_persistent_notifications"
+CONF_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
+CONF_NOTIFY_ON_APPROVAL = "notify_on_approval"
+CONF_NOTIFY_ON_CLAIM = "notify_on_claim"
+CONF_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
 
 NOTIFICATION_EVENT = "mobile_app_notification_action"
 
+# Badge configuration keys
+CONF_BADGE_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
+CONF_BADGE_ASSOCIATED_CHALLENGE = "associated_challenge"
+CONF_BADGE_AWARD_MODE = "award_mode"
+CONF_BADGE_AWARD_POINTS = "award_points"
+CONF_BADGE_AWARD_REWARD = "award_reward"
+CONF_BADGE_DESCRIPTION = "badge_description"
+CONF_BADGE_DAILY_THRESHOLD = "daily_threshold"
+CONF_BADGE_DAILY_THRESHOLD_TYPE = "daily_threshold_type"
+CONF_BADGE_END_DATE = "end_date"
+CONF_BADGE_LABELS = "badge_labels"
+CONF_BADGE_MAINTENANCE_RULES = "maintenance_rules"
+CONF_BADGE_NAME = "badge_name"
+CONF_BADGE_OCCASION_DATE = "occasion_date"
+CONF_BADGE_OCCASION_TYPE = "occasion_type"
+CONF_BADGE_ONE_TIME_REWARD = "one_time_reward"
+CONF_BADGE_PERIOD = "period"
+CONF_BADGE_POINTS_MULTIPLIER = "points_multiplier"
+CONF_BADGE_RESET_CRITERIA = "reset_criteria"
+CONF_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"
+CONF_BADGE_RESET_PERIOD = "reset_period"
+CONF_BADGE_RESET_PERIODICALLY = "reset_periodically"
+CONF_BADGE_START_DATE = "start_date"
+CONF_BADGE_THRESHOLD_TYPE = "threshold_type"
+CONF_BADGE_THRESOLD_VALUE = "threshold_value"
+CONF_BADGE_TRIGGER_INFO = "trigger_info"
+CONF_BADGE_TYPE = "badge_type"
+
 # Badge types
+BADGE_TYPE_ACHIEVEMENT_LINKED = "achievement_linked"
+BADGE_TYPE_CHALLENGE_LINKED = "challenge_linked"
 BADGE_TYPE_CUMULATIVE = "cumulative"
 BADGE_TYPE_DAILY = "daily"
 BADGE_TYPE_PERIODIC = "periodic"
-BADGE_TYPE_ACHIEVEMENT_LINKED = "achievement_linked"
-BADGE_TYPE_CHALLENGE_LINKED = "challenge_linked"
 BADGE_TYPE_SPECIAL_OCCASION = "special_occasions"
 
-# Badge configuration keys
-CONF_BADGE_RESET_PERIODICALLY = "reset_periodically"  # Reset badges periodically
-CONF_BADGE_RESET_PERIOD = "reset_period"  # e.g. "year_end", "custom"
-CONF_BADGE_RESET_GRACE_PERIOD = (
-    "reset_grace_period"  # Optional grace period (minutes/hours/days)
-)
-CONF_BADGE_MAINTENANCE_RULES = "maintenance_rules"  # Maintenance rules for badges
+# Reward configuration keys
+CONF_REWARD_COST = "reward_cost"
+CONF_REWARD_DESCRIPTION = "reward_description"
+CONF_REWARD_LABELS = "reward_labels"
+CONF_REWARD_NAME = "reward_name"
+
+# Bonus configuration keys
+CONF_BONUS_DESCRIPTION = "bonus_description"
+CONF_BONUS_LABELS = "bonus_labels"
+CONF_BONUS_NAME = "bonus_name"
+CONF_BONUS_POINTS = "bonus_points"
+
+# Penalty configuration keys
+CONF_PENALTY_DESCRIPTION = "penalty_description"
+CONF_PENALTY_LABELS = "penalty_labels"
+CONF_PENALTY_NAME = "penalty_name"
+CONF_PENALTY_POINTS = "penalty_points"
+
+# Achievement configuration keys
+CONF_ACHIEVEMENT_ASSIGNED_KIDS = "assigned_kids"
+CONF_ACHIEVEMENT_CRITERIA = "criteria"
+CONF_ACHIEVEMENT_LABELS = "achievement_labels"
+CONF_ACHIEVEMENT_REWARD_POINTS = "reward_points"
+CONF_ACHIEVEMENT_SELECTED_CHORE_ID = "selected_chore_id"
+CONF_ACHIEVEMENT_TARGET_VALUE = "target_value"
+CONF_ACHIEVEMENT_TYPE = "type"
 
 # Achievement types
-ACHIEVEMENT_TYPE_STREAK = "chore_streak"  # e.g., "Make bed 20 days in a row"
-ACHIEVEMENT_TYPE_TOTAL = "chore_total"  # e.g., "Complete 100 chores overall"
-ACHIEVEMENT_TYPE_DAILY_MIN = (
-    "daily_minimum"  # e.g., "Complete minimum 5 chores in one day"
-)
+ACHIEVEMENT_TYPE_DAILY_MIN = "daily_minimum"
+ACHIEVEMENT_TYPE_STREAK = "chore_streak"
+ACHIEVEMENT_TYPE_TOTAL = "chore_total"
+
+# Challenge configuration keys
+CONF_CHALLENGE_ASSIGNED_KIDS = "assigned_kids"
+CONF_CHALLENGE_CRITERIA = "criteria"
+CONF_CHALLENGE_END_DATE = "end_date"
+CONF_CHALLENGE_LABELS = "challenge_labels"
+CONF_CHALLENGE_REWARD_POINTS = "reward_points"
+CONF_CHALLENGE_SELECTED_CHORE_ID = "selected_chore_id"
+CONF_CHALLENGE_START_DATE = "start_date"
+CONF_CHALLENGE_TARGET_VALUE = "target_value"
+CONF_CHALLENGE_TYPE = "type"
 
 # Challenge types
-CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW = (
-    "total_within_window"  # e.g., "Complete 50 chores in 30 days"
-)
-CHALLENGE_TYPE_DAILY_MIN = "daily_minimum"  # e.g., "Do 2 chores each day for 14 days"
+CHALLENGE_TYPE_DAILY_MIN = "daily_minimum"
+CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW = "total_within_window"
 
 
-# -------------------- Defaults --------------------
+# --------------------------------------------------------------------
+# Data Keys
+# --------------------------------------------------------------------
+DATA_ACHIEVEMENTS = "achievements"
+DATA_ACHIEVEMENT_LABELS = "achievement_labels"
+DATA_ACHIEVEMENT_NAME = "achievement_name"
+DATA_APPLICABLE_DAYS = "applicable_days"
+DATA_ASSIGNED_KIDS = "assigned_kids"
+DATA_BONUSES = "bonuses"
+DATA_BONUS_LABELS = "bonus_labels"
+DATA_BONUS_NAME = "bonus_name"
+DATA_BONUS_POINTS = "bonus_points"
+DATA_BADGES = "badges"
+DATA_BADGE_LABELS = "badge_labels"
+DATA_BADGE_NAME = "badge_name"
+DATA_BADGE_THRESHOLD_TYPE = "threshold_type"
+DATA_BADGE_THRESHOLD_VALUE = "threshold_value"
+DATA_CHALLENGES = "challenges"
+DATA_CHALLENGE_LABELS = "challenge_labels"
+DATA_CHALLENGE_NAME = "challenge_name"
+DATA_CHORE_LABELS = "chore_labels"
+DATA_CHORE_NAME = "name"
+DATA_CHORES = "chores"
+DATA_CRITERIA = "criteria"
+DATA_CUSTOM_INTERVAL = "custom_interval"
+DATA_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
+DATA_DEFAULT_POINTS = "default_points"
+DATA_DUE_DATE = "due_date"
+DATA_ENABLE_NOTIFICATIONS = "enable_notifications"
+DATA_HA_USER = "ha_user"
+DATA_HA_USER_ID = "ha_user_id"
+DATA_INTERNAL_ID = "internal_id"
+DATA_KID_NAME = "kid_name"
+DATA_KIDS = "kids"
+DATA_LAST_CHORE_DATE = "last_chore_date"
+DATA_MAX_POINTS_EVER = "max_points_ever"
+DATA_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
+DATA_NOTIFY_ON_APPROVAL = "notify_on_approval"
+DATA_NOTIFY_ON_CLAIM = "notify_on_claim"
+DATA_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
+DATA_OVERALL_CHORE_STREAK = "overall_chore_streak"
+DATA_OVERDUE_CHORES = "overdue_chores"
+DATA_OVERDUE_NOTIFICATIONS = "overdue_notifications"
+DATA_PARENT_NAME = "parent_name"
+DATA_PARENTS = "parents"
+DATA_PENALTY_APPLIES = "penalty_applies"
+DATA_PENALTIES = "penalties"
+DATA_POINTS_EARNED_MONTHLY = "points_earned_monthly"
+DATA_POINTS_EARNED_TODAY = "points_earned_today"
+DATA_POINTS_EARNED_WEEKLY = "points_earned_weekly"
+DATA_RECURRING_FREQUENCY = "recurring_frequency"
+DATA_REWARD_APPROVALS = "reward_approvals"
+DATA_REWARD_CLAIMS = "reward_claims"
+DATA_REWARDS = "rewards"
+DATA_SELECTED_CHORE_ID = "selected_chore_id"
+
+# Runtime Data Keys
+DATA_CHORE_APPROVALS = "chore_approvals"
+DATA_CHORE_CLAIMS = "chore_claims"
+DATA_PENDING_CHORE_APPROVALS = "pending_chore_approvals"
+DATA_PENDING_REWARD_APPROVALS = "pending_reward_approvals"
+
+
+# --------------------------------------------------------------------
 # Default Icons
-DEFAULT_ACHIEVEMENTS_ICON = "mdi:trophy-award"  # Default icon for achievements
-DEFAULT_BADGE_ICON = "mdi:shield-star-outline"  # Default icon for badges
-DEFAULT_CALENDAR_ICON = "mdi:calendar"  # Default icon for calendar sensors
-DEFAULT_CHALLENGES_ICON = "mdi:trophy"  # Default icon for achievements
+# --------------------------------------------------------------------
+DEFAULT_ACHIEVEMENTS_ICON = "mdi:trophy-award"
+DEFAULT_BADGE_ICON = "mdi:shield-star-outline"
+DEFAULT_BONUS_ICON = "mdi:seal"
+DEFAULT_CALENDAR_ICON = "mdi:calendar"
+DEFAULT_CHALLENGES_ICON = "mdi:trophy"
 DEFAULT_CHORE_APPROVE_ICON = "mdi:checkbox-marked-circle-outline"
-DEFAULT_CHORE_BINARY_ICON = (
-    "mdi:checkbox-blank-circle-outline"  # For chore status binary sensor
-)
+DEFAULT_CHORE_BINARY_ICON = "mdi:checkbox-blank-circle-outline"
 DEFAULT_CHORE_CLAIM_ICON = "mdi:clipboard-check-outline"
-DEFAULT_CHORE_SENSOR_ICON = (
-    "mdi:checkbox-blank-circle-outline"  # For chore status sensor
-)
-DEFAULT_DISAPPROVE_ICON = (
-    "mdi:close-circle-outline"  # Default icon for disapprove buttons
-)
-DEFAULT_ICON = "mdi:star-outline"  # Default icon for general points display
-DEFAULT_PENALTY_ICON = "mdi:alert-outline"  # Default icon for penalties
+DEFAULT_CHORE_SENSOR_ICON = "mdi:checkbox-blank-circle-outline"
+DEFAULT_DISAPPROVE_ICON = "mdi:close-circle-outline"
+DEFAULT_ICON = "mdi:star-outline"
+DEFAULT_PENALTY_ICON = "mdi:alert-outline"
 DEFAULT_POINTS_ADJUST_MINUS_ICON = "mdi:minus-circle-outline"
-DEFAULT_POINTS_ADJUST_PLUS_ICON = "mdi:plus-circle-outline"
 DEFAULT_POINTS_ADJUST_MINUS_MULTIPLE_ICON = "mdi:minus-circle-multiple-outline"
+DEFAULT_POINTS_ADJUST_PLUS_ICON = "mdi:plus-circle-outline"
 DEFAULT_POINTS_ADJUST_PLUS_MULTIPLE_ICON = "mdi:plus-circle-multiple-outline"
-DEFAULT_POINTS_ICON = "mdi:star-outline"  # Default icon for points
-DEFAULT_STREAK_ICON = "mdi:blur-linear"  # Default icon for streaks
-DEFAULT_BONUS_ICON = "mdi:seal"  # Default icon for bonuses
-DEFAULT_REWARD_ICON = "mdi:gift-outline"  # Default icon for rewards
-DEFAULT_TROPHY_ICON = "mdi:trophy"  # For highest-badge sensor fallback
+DEFAULT_POINTS_ICON = "mdi:star-outline"
+DEFAULT_STREAK_ICON = "mdi:blur-linear"
+DEFAULT_REWARD_ICON = "mdi:gift-outline"
+DEFAULT_TROPHY_ICON = "mdi:trophy"
 DEFAULT_TROPHY_OUTLINE = "mdi:trophy-outline"
 
+
+# --------------------------------------------------------------------
 # Default Values
-DEFAULT_APPLICABLE_DAYS = []  # Empty means the chore applies every day.
-DEFAULT_BADGE_THRESHOLD = 50  # Default points threshold for badges
-DEFAULT_MULTIPLE_CLAIMS_PER_DAY = False  # Allow only one chore claim per day
-DEFAULT_PARTIAL_ALLOWED = False  # Partial points not allowed by default
-DEFAULT_POINTS = 5  # Default points awarded for each chore
-DEFAULT_POINTS_MULTIPLIER = 1  # Default points multiplier for badges
-DEFAULT_POINTS_LABEL = "Points"  # Default label for points displayed in UI
-DEFAULT_PENALTY_POINTS = 2  # Default points deducted for each penalty
-DEFAULT_BONUS_POINTS = 2  # Default points added for each bonus
-DEFAULT_REMINDER_DELAY = 30  # Default reminder delay in minutes
-DEFAULT_REWARD_COST = 10  # Default cost for each reward
-DEFAULT_DAILY_RESET_TIME = {
-    "hour": 0,
-    "minute": 0,
-    "second": 0,
-}  # Daily reset at midnight
-DEFAULT_MONTHLY_RESET_DAY = 1  # Monthly reset on the 1st day
-DEFAULT_WEEKLY_RESET_DAY = 0  # Weekly reset on Monday (0 = Monday, 6 = Sunday)
+# --------------------------------------------------------------------
+DEFAULT_ACHIEVEMENT_REWARD_POINTS = 0
+DEFAULT_ACHIEVEMENT_TARGET = 1
+DEFAULT_APPLICABLE_DAYS = []
+DEFAULT_BADGE_AWARD_MODE = "points"
+DEFAULT_BADGE_AWARD_POINTS = 5
+DEFAULT_BADGE_DAILY_THRESHOLD = 5
+DEFAULT_BADGE_RESET_GRACE_PERIOD = 0
+DEFAULT_BADGE_THRESOLD_TYPE = "points"
+DEFAULT_BADGE_THRESHOLD_VALUE = 50
+DEFAULT_BONUS_POINTS = 1
+DEFAULT_CHALLENGE_REWARD_POINTS = 0
+DEFAULT_CHALLENGE_TARGET = 1
+DEFAULT_DAILY_RESET_TIME = {"hour": 0, "minute": 0, "second": 0}
+DEFAULT_EMPTY_LIST = []
+DEFAULT_MULTIPLE_CLAIMS_PER_DAY = False
+DEFAULT_NOTIFICATIONS = True
 DEFAULT_NOTIFY_ON_CLAIM = True
 DEFAULT_NOTIFY_ON_APPROVAL = True
 DEFAULT_NOTIFY_ON_DISAPPROVAL = True
+DEFAULT_PARTIAL_ALLOWED = False
+DEFAULT_POINTS = 5
+DEFAULT_POINTS_LABEL = "Points"
+DEFAULT_POINTS_MULTIPLIER = 1
+DEFAULT_PENALTY_POINTS = 1
+DEFAULT_REWARD_COST = 10
+DEFAULT_REMINDER_DELAY = 30
+DEFAULT_MONTHLY_RESET_DAY = 1
+DEFAULT_WEEKLY_RESET_DAY = 0
 
-# -------------------- Recurring Frequencies --------------------
+
+# --------------------------------------------------------------------
+# Frequencies
+# --------------------------------------------------------------------
 FREQUENCY_BIWEEKLY = "biweekly"
 FREQUENCY_CUSTOM = "custom"
 FREQUENCY_DAILY = "daily"
@@ -166,51 +346,46 @@ FREQUENCY_MONTHLY = "monthly"
 FREQUENCY_NONE = "none"
 FREQUENCY_WEEKLY = "weekly"
 
-# -------------------- Data Keys --------------------
-# Data Keys for Coordinator and Storage
-DATA_ACHIEVEMENTS = "achievements"  # Key for storing achievements data
-DATA_BADGES = "badges"  # Key for storing badges data
-DATA_CHALLENGES = "challenges"  # Key for storing challenges data
-DATA_CHORES = "chores"  # Key for storing chores data
-DATA_KIDS = "kids"  # Key for storing kids data in storage
-DATA_PARENTS = "parents"  # Key for storing parent data
-DATA_PENDING_CHORE_APPROVALS = "pending_chore_approvals"  # Pending chore approvals
-DATA_PENDING_REWARD_APPROVALS = "pending_reward_approvals"  # Pending reward approvals
-DATA_PENALTIES = "penalties"  # Key for storing penalties data
-DATA_REWARDS = "rewards"  # Key for storing rewards data
-DATA_BONUSES = "bonuses"  # Key for storing bonuses data
 
-# -------------------- States --------------------
+# --------------------------------------------------------------------
 # Badge Threshold Types
-BADGE_THRESHOLD_TYPE_CHORE_COUNT = (
-    "chore_count"  # Badges for completing a number of chores
-)
-BADGE_THRESHOLD_TYPE_POINTS = "points"  # Badges awarded for reaching points
+# --------------------------------------------------------------------
+BADGE_THRESHOLD_TYPE_CHORE_COUNT = "chore_count"
+BADGE_THRESHOLD_TYPE_POINTS = "points"
+
+
+# --------------------------------------------------------------------
+# States
+# --------------------------------------------------------------------
 
 # Chore States
-CHORE_STATE_APPROVED = "approved"  # Chore fully approved
-CHORE_STATE_APPROVED_IN_PART = "approved_in_part"  # Chore approved for some kids
-CHORE_STATE_CLAIMED = "claimed"  # Chore claimed by a kid
-CHORE_STATE_CLAIMED_IN_PART = "claimed_in_part"  # Chore claimed by some kids
-CHORE_STATE_INDEPENDENT = "independent"  # Chore is not shared
-CHORE_STATE_OVERDUE = "overdue"  # Chore not completed before the due date
-CHORE_STATE_PARTIAL = "partial"  # Chore approved with partial points
-CHORE_STATE_PENDING = "pending"  # Default state: chore pending approval
-CHORE_STATE_UNKNOWN = "unknown"  # Unknown chore state
-
+CHORE_STATE_APPROVED = "approved"
+CHORE_STATE_APPROVED_IN_PART = "approved_in_part"
+CHORE_STATE_CLAIMED = "claimed"
+CHORE_STATE_CLAIMED_IN_PART = "claimed_in_part"
+CHORE_STATE_INDEPENDENT = "independent"
+CHORE_STATE_OVERDUE = "overdue"
+CHORE_STATE_PARTIAL = "partial"
+CHORE_STATE_PENDING = "pending"
+CHORE_STATE_UNKNOWN = "unknown"
 
 # Reward States
-REWARD_STATE_APPROVED = "approved"  # Reward fully approved
-REWARD_STATE_CLAIMED = "claimed"  # Reward claimed by a kid
-REWARD_STATE_NOT_CLAIMED = "not_claimed"  # Default state: reward not claimed
-REWARD_STATE_UNKNOWN = "unknown"  # Unknown reward state
+REWARD_STATE_APPROVED = "approved"
+REWARD_STATE_CLAIMED = "claimed"
+REWARD_STATE_NOT_CLAIMED = "not_claimed"
+REWARD_STATE_UNKNOWN = "unknown"
 
-# -------------------- Events --------------------
-# Event Names
-EVENT_CHORE_COMPLETED = "kidschores_chore_completed"  # Event for chore completion
-EVENT_REWARD_REDEEMED = "kidschores_reward_redeemed"  # Event for redeeming a reward
+# --------------------------------------------------------------------
+# Events
+# --------------------------------------------------------------------
+EVENT_CHORE_COMPLETED = "kidschores_chore_completed"
+EVENT_REWARD_REDEEMED = "kidschores_reward_redeemed"
 
-# -------------------- Actions --------------------
+
+# --------------------------------------------------------------------
+# Actions
+# --------------------------------------------------------------------
+
 # Action titles for notifications
 ACTION_TITLE_APPROVE = "Approve"
 ACTION_TITLE_DISAPPROVE = "Disapprove"
@@ -218,13 +393,15 @@ ACTION_TITLE_REMIND_30 = "Remind in 30 mins"
 
 # Action identifiers
 ACTION_APPROVE_CHORE = "APPROVE_CHORE"
-ACTION_DISAPPROVE_CHORE = "DISAPPROVE_CHORE"
 ACTION_APPROVE_REWARD = "APPROVE_REWARD"
+ACTION_DISAPPROVE_CHORE = "DISAPPROVE_CHORE"
 ACTION_DISAPPROVE_REWARD = "DISAPPROVE_REWARD"
 ACTION_REMIND_30 = "REMIND_30"
 
-# -------------------- Sensors --------------------
+
+# --------------------------------------------------------------------
 # Sensor Attributes
+# --------------------------------------------------------------------
 ATTR_ACHIEVEMENT_NAME = "achievement_name"
 ATTR_ALL_EARNED_BADGES = "all_earned_badges"
 ATTR_ALLOW_MULTIPLE_CLAIMS_PER_DAY = "allow_multiple_claims_per_day"
@@ -233,6 +410,14 @@ ATTR_AWARDED = "awarded"
 ATTR_ASSIGNED_KIDS = "assigned_kids"
 ATTR_ASSOCIATED_CHORE = "associated_chore"
 ATTR_BADGES = "badges"
+ATTR_BONUS_NAME = "bonus_name"
+ATTR_BONUS_POINTS = "bonus_points"
+ATTR_CAL_ALL_DAY = "all_day"
+ATTR_CAL_DESCRIPTION = "description"
+ATTR_CAL_END = "end"
+ATTR_CAL_MANUFACTURER = "manufacturer"
+ATTR_CAL_START = "start"
+ATTR_CAL_SUMMARY = "summary"
 ATTR_CHALLENGE_NAME = "challenge_name"
 ATTR_CHALLENGE_TYPE = "challenge_type"
 ATTR_CHORE_APPROVALS_COUNT = "chore_approvals_count"
@@ -270,70 +455,56 @@ ATTR_REWARD_APPROVALS_COUNT = "reward_approvals_count"
 ATTR_REWARD_CLAIMS_COUNT = "reward_claims_count"
 ATTR_REWARD_NAME = "reward_name"
 ATTR_REWARD_POINTS = "reward_points"
-ATTR_BONUS_NAME = "bonus_name"
-ATTR_BONUS_POINTS = "bonus_points"
 ATTR_START_DATE = "start_date"
 ATTR_SHARED_CHORE = "shared_chore"
 ATTR_TARGET_VALUE = "target_value"
 ATTR_THRESHOLD_TYPE = "threshold_type"
 ATTR_TYPE = "type"
 
-# Calendar Attributes
-ATTR_CAL_SUMMARY = "summary"
-ATTR_CAL_START = "start"
-ATTR_CAL_END = "end"
-ATTR_CAL_ALL_DAY = "all_day"
-ATTR_CAL_DESCRIPTION = "description"
-ATTR_CAL_MANUFACTURER = "manufacturer"
 
+# --------------------------------------------------------------------
 # Sensor Types
-SENSOR_TYPE_BADGES = "badges"  # Sensor tracking earned badges
-SENSOR_TYPE_CHORE_APPROVALS = "chore_approvals"  # Chore approvals sensor
-SENSOR_TYPE_CHORE_CLAIMS = "chore_claims"  # Chore claims sensor
-SENSOR_TYPE_COMPLETED_DAILY = (
-    "completed_daily"  # Sensor tracking daily chores completed
-)
-SENSOR_TYPE_COMPLETED_MONTHLY = (
-    "completed_monthly"  # Sensor tracking monthly chores completed
-)
-SENSOR_TYPE_COMPLETED_WEEKLY = (
-    "completed_weekly"  # Sensor tracking weekly chores completed
-)
-SENSOR_TYPE_PENALTY_APPLIES = "penalty_applies"  # Penalty applies sensor
-SENSOR_TYPE_POINTS = "points"  # Sensor tracking total points
-SENSOR_TYPE_PENDING_CHORE_APPROVALS = (
-    "pending_chore_approvals"  # Pending chore approvals
-)
-SENSOR_TYPE_PENDING_REWARD_APPROVALS = (
-    "pending_reward_approvals"  # Pending reward approvals
-)
-SENSOR_TYPE_REWARD_APPROVALS = "reward_approvals"  # Reward approvals sensor
-SENSOR_TYPE_REWARD_CLAIMS = "reward_claims"  # Reward claims sensor
-SENSOR_TYPE_BONUS_APPLIES = "bonus_applies"  # Bonus applies sensor
+# --------------------------------------------------------------------
+SENSOR_TYPE_BADGES = "badges"
+SENSOR_TYPE_BONUS_APPLIES = "bonus_applies"
+SENSOR_TYPE_CHORE_APPROVALS = "chore_approvals"
+SENSOR_TYPE_CHORE_CLAIMS = "chore_claims"
+SENSOR_TYPE_COMPLETED_DAILY = "completed_daily"
+SENSOR_TYPE_COMPLETED_MONTHLY = "completed_monthly"
+SENSOR_TYPE_COMPLETED_WEEKLY = "completed_weekly"
+SENSOR_TYPE_PENDING_CHORE_APPROVALS = "pending_chore_approvals"
+SENSOR_TYPE_PENDING_REWARD_APPROVALS = "pending_reward_approvals"
+SENSOR_TYPE_PENALTY_APPLIES = "penalty_applies"
+SENSOR_TYPE_POINTS = "points"
+SENSOR_TYPE_REWARD_APPROVALS = "reward_approvals"
+SENSOR_TYPE_REWARD_CLAIMS = "reward_claims"
 
 
-# -------------------- Services --------------------
-# Custom Services
-SERVICE_APPLY_PENALTY = "apply_penalty"  # Apply penalty service
-SERVICE_APPROVE_CHORE = "approve_chore"  # Approve chore service
-SERVICE_APPROVE_REWARD = "approve_reward"  # Approve reward service
-SERVICE_CLAIM_CHORE = "claim_chore"  # Claim chore service
-SERVICE_DISAPPROVE_CHORE = "disapprove_chore"  # Disapprove chore service
-SERVICE_DISAPPROVE_REWARD = "disapprove_reward"  # Disapprove reward service
-SERVICE_REDEEM_REWARD = "redeem_reward"  # Redeem reward service
-SERVICE_RESET_ALL_CHORES = "reset_all_chores"  # Reset all chores service
-SERVICE_RESET_ALL_DATA = "reset_all_data"  # Reset all data service
-SERVICE_RESET_OVERDUE_CHORES = "reset_overdue_chores"  # Reset overdue chores
-SERVICE_SET_CHORE_DUE_DATE = "set_chore_due_date"  # Set or reset chores due date
-SERVICE_SKIP_CHORE_DUE_DATE = (
-    "skip_chore_due_date"  # Skip chores due date and reschedule
-)
-SERVICE_APPLY_BONUS = "apply_bonus"  # Apply bonus service
-SERVICE_RESET_PENALTIES = "reset_penalties"  # Reset penalties service
-SERVICE_RESET_BONUSES = "reset_bonuses"  # Reset bonuses service
-SERVICE_RESET_REWARDS = "reset_rewards"  # Reset rewards service
+# --------------------------------------------------------------------
+# Services
+# --------------------------------------------------------------------
+SERVICE_APPLY_BONUS = "apply_bonus"
+SERVICE_APPLY_PENALTY = "apply_penalty"
+SERVICE_APPROVE_CHORE = "approve_chore"
+SERVICE_APPROVE_REWARD = "approve_reward"
+SERVICE_CLAIM_CHORE = "claim_chore"
+SERVICE_DISAPPROVE_CHORE = "disapprove_chore"
+SERVICE_DISAPPROVE_REWARD = "disapprove_reward"
+SERVICE_REDEEM_REWARD = "redeem_reward"
+SERVICE_RESET_ALL_CHORES = "reset_all_chores"
+SERVICE_RESET_ALL_DATA = "reset_all_data"
+SERVICE_RESET_BONUSES = "reset_bonuses"
+SERVICE_RESET_OVERDUE_CHORES = "reset_overdue_chores"
+SERVICE_RESET_PENALTIES = "reset_penalties"
+SERVICE_RESET_REWARDS = "reset_rewards"
+SERVICE_SET_CHORE_DUE_DATE = "set_chore_due_date"
+SERVICE_SKIP_CHORE_DUE_DATE = "skip_chore_due_date"
 
-# Field Names (for consistency across services)
+
+# --------------------------------------------------------------------
+# Field Names (for service calls)
+# --------------------------------------------------------------------
+FIELD_BONUS_NAME = "bonus_name"
 FIELD_CHORE_ID = "chore_id"
 FIELD_CHORE_NAME = "chore_name"
 FIELD_DUE_DATE = "due_date"
@@ -342,50 +513,47 @@ FIELD_PARENT_NAME = "parent_name"
 FIELD_PENALTY_NAME = "penalty_name"
 FIELD_POINTS_AWARDED = "points_awarded"
 FIELD_REWARD_NAME = "reward_name"
-FIELD_BONUS_NAME = "bonus_name"
 
-# -------------------- Labels --------------------
-# Labels for Sensors and UI
+
+# --------------------------------------------------------------------
+# Labels
+# --------------------------------------------------------------------
 LABEL_BADGES = "Badges"
 LABEL_COMPLETED_DAILY = "Daily Completed Chores"
 LABEL_COMPLETED_MONTHLY = "Monthly Completed Chores"
 LABEL_COMPLETED_WEEKLY = "Weekly Completed Chores"
+LABEL_NONE = "None"
 LABEL_POINTS = "Points"
 
-# -------------------- Buttons --------------------
-# Button Prefixes for Dynamic Creation
-BUTTON_DISAPPROVE_CHORE_PREFIX = "disapprove_chore_button_"  # Disapprove chore button
-BUTTON_DISAPPROVE_REWARD_PREFIX = (
-    "disapprove_reward_button_"  # Disapprove reward button
-)
-BUTTON_PENALTY_PREFIX = (
-    "penalty_button_"  # Prefix for dynamically created penalty buttons
-)
-BUTTON_REWARD_PREFIX = "reward_button_"  # Prefix for dynamically created reward buttons
-BUTTON_BONUS_PREFIX = "bonus_button_"  # Prefix for dynamically created bonus buttons
 
-# -------------------- Errors and Warnings --------------------
+# --------------------------------------------------------------------
+# Button Prefixes
+# --------------------------------------------------------------------
+BUTTON_BONUS_PREFIX = "bonus_button_"
+BUTTON_DISAPPROVE_CHORE_PREFIX = "disapprove_chore_button_"
+BUTTON_DISAPPROVE_REWARD_PREFIX = "disapprove_reward_button_"
+BUTTON_PENALTY_PREFIX = "penalty_button_"
+BUTTON_REWARD_PREFIX = "reward_button_"
+
+
+# --------------------------------------------------------------------
+# Errors and Warnings
+# --------------------------------------------------------------------
 DUE_DATE_NOT_SET = "Not Set"
-ERROR_CHORE_NOT_FOUND = "Chore not found."  # Error for missing chore
-ERROR_CHORE_NOT_FOUND_FMT = "Chore '{}' not found"  # Error format for missing chore
-ERROR_INVALID_POINTS = "Invalid points."  # Error for invalid points input
-ERROR_KID_NOT_FOUND = "Kid not found."  # Error for non-existent kid
-ERROR_KID_NOT_FOUND_FMT = "Kid '{}' not found"  # Error format for missing kid
-ERROR_NOT_AUTHORIZED_ACTION_FMT = "Not authorized to {}."  # Auth error format
-ERROR_NOT_AUTHORIZED_FMT = (
-    "User not authorized to {} for this kid."  # Auth error format
-)
-ERROR_PENALTY_NOT_FOUND = "Penalty not found."  # Error for missing penalty
-ERROR_PENALTY_NOT_FOUND_FMT = (
-    "Penalty '{}' not found"  # Error format for missing penalty
-)
-ERROR_REWARD_NOT_FOUND = "Reward not found."  # Error for missing reward
-ERROR_REWARD_NOT_FOUND_FMT = "Reward '{}' not found"  # Error format for missing reward
-ERROR_BONUS_NOT_FOUND = "Bonus not found."  # Error for missing bonus
-ERROR_BONUS_NOT_FOUND_FMT = "Bonus '{}' not found"  # Error format for missing bonus
-ERROR_USER_NOT_AUTHORIZED = (
-    "User is not authorized to perform this action."  # Auth error
-)
+ERROR_BONUS_NOT_FOUND = "Bonus not found."
+ERROR_BONUS_NOT_FOUND_FMT = "Bonus '{}' not found"
+ERROR_CHORE_NOT_FOUND = "Chore not found."
+ERROR_CHORE_NOT_FOUND_FMT = "Chore '{}' not found"
+ERROR_INVALID_POINTS = "Invalid points."
+ERROR_KID_NOT_FOUND = "Kid not found."
+ERROR_KID_NOT_FOUND_FMT = "Kid '{}' not found"
+ERROR_NOT_AUTHORIZED_ACTION_FMT = "Not authorized to {}."
+ERROR_NOT_AUTHORIZED_FMT = "User not authorized to {} for this kid."
+ERROR_PENALTY_NOT_FOUND = "Penalty not found."
+ERROR_PENALTY_NOT_FOUND_FMT = "Penalty '{}' not found"
+ERROR_REWARD_NOT_FOUND = "Reward not found."
+ERROR_REWARD_NOT_FOUND_FMT = "Reward '{}' not found"
+ERROR_USER_NOT_AUTHORIZED = "User is not authorized to perform this action."
 MSG_NO_ENTRY_FOUND = "No KidsChores entry found"
 
 # Unknown States
@@ -393,12 +561,63 @@ UNKNOWN_CHORE = "Unknown Chore"  # Error for unknown chore
 UNKNOWN_KID = "Unknown Kid"  # Error for unknown kid
 UNKNOWN_REWARD = "Unknown Reward"  # Error for unknown reward
 
-# -------------------- Parent Approval Workflow --------------------
+# --------------------------------------------------------------------
+# Parent Approval Workflow
+# --------------------------------------------------------------------
 PARENT_APPROVAL_REQUIRED = True  # Enable parent approval for certain actions
 HA_USERNAME_LINK_ENABLED = True  # Enable linking kids to HA usernames
 
 
-# ---------------------------- Weekdays -----------------------------
+# --------------------------------------------------------------------
+# Calendar Attributes
+# --------------------------------------------------------------------
+ATTR_CAL_ALL_DAY = "all_day"
+ATTR_CAL_DESCRIPTION = "description"
+ATTR_CAL_END = "end"
+ATTR_CAL_MANUFACTURER = "manufacturer"
+ATTR_CAL_START = "start"
+ATTR_CAL_SUMMARY = "summary"
+
+
+# --------------------------------------------------------------------
+# Translation Keys
+# --------------------------------------------------------------------
+TRANS_KEY_APPLICABLE_DAYS = "applicable_days"
+TRANS_KEY_ASSIGNED_KIDS = "assigned_kids"
+TRANS_KEY_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
+TRANS_KEY_ASSOCIATED_CHALLENGE = "associated_challenge"
+TRANS_KEY_ASSOCIATED_KIDS = "associated_kids"
+TRANS_KEY_AWARD_MODE = "award_mode"
+TRANS_KEY_AWARD_REWARD = "award_reward"
+TRANS_KEY_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
+TRANS_KEY_DAILY_THRESHOLD_TYPE = "daily_threshold_type"
+TRANS_KEY_MAIN_MENU = "main_menu"
+TRANS_KEY_MANAGE_ACTIONS = "manage_actions"
+TRANS_KEY_OCCASION_TYPE = "occasion_type"
+TRANS_KEY_ONE_TIME_REWARD = "one_time_reward"
+TRANS_KEY_PERIOD = "period"
+TRANS_KEY_RECURRING_FREQUENCY = "recurring_frequency"
+TRANS_KEY_RESET_CRITERIA = "reset_criteria"
+TRANS_KEY_RESET_PERIOD = "reset_period"
+TRANS_KEY_SELECTED_CHORE_ID = "selected_chore_id"
+TRANS_KEY_THRESHOLD_TYPE = "threshold_type"
+
+
+# --------------------------------------------------------------------
+# List Keys
+# --------------------------------------------------------------------
+
+# Recurring Frequency
+FREQUENCY_OPTIONS = [
+    FREQUENCY_NONE,
+    FREQUENCY_DAILY,
+    FREQUENCY_WEEKLY,
+    FREQUENCY_BIWEEKLY,
+    FREQUENCY_MONTHLY,
+    FREQUENCY_CUSTOM,
+]
+
+# Weekday Options
 WEEKDAY_OPTIONS = {
     "mon": "Monday",
     "tue": "Tuesday",
@@ -408,3 +627,37 @@ WEEKDAY_OPTIONS = {
     "sat": "Saturday",
     "sun": "Sunday",
 }
+
+# Chore Custom Interval Reset Periods
+CUSTOM_INTERVAL_UNIT_OPTIONS = [CONF_EMPTY, CONF_DAYS, CONF_WEEKS, CONF_MONTHS]
+
+# Badge Award Mode
+AWARD_MODE_OPTIONS = ["points", "reward"]
+
+# Badge Threshold Type
+THRESHOLD_TYPE_OPTIONS = ["points", "chore_count"]
+
+# Badge Cumulative Reset Period
+BADGE_CUMULATIVE_RESET_PERIOD_OPTIONS = [CONF_YEAR_END, CONF_CUSTOM]
+
+# Badge Reset Period
+BADGE_PERIOD_OPTIONS = [CONF_WEEKLY, CONF_BIWEEKLY, CONF_MONTHLY, CONF_CUSTOM]
+
+# Badge Special Occasion Types
+OCCASION_TYPE_OPTIONS = [CONF_BIRTHDAY, CONF_HOLIDAY, CONF_CUSTOM]
+
+# Achievement Type Options
+ACHIEVEMENT_TYPE_OPTIONS = [
+    {"value": ACHIEVEMENT_TYPE_STREAK, "label": "Chore Streak"},
+    {"value": ACHIEVEMENT_TYPE_TOTAL, "label": "Chore Total"},
+    {"value": ACHIEVEMENT_TYPE_DAILY_MIN, "label": "Daily Minimum Chores"},
+]
+
+# Challenge Type Options
+CHALLENGE_TYPE_OPTIONS = [
+    {"value": CHALLENGE_TYPE_DAILY_MIN, "label": "Minimum Chores per Day"},
+    {
+        "value": CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
+        "label": "Total Chores within Period",
+    },
+]
