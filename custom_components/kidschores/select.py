@@ -15,7 +15,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, LOGGER
+from . import const
 from .coordinator import KidsChoresDataCoordinator
 
 
@@ -32,7 +32,7 @@ async def async_setup_entry(
       3) PenaltiesSelect: lists all penalty names
 
     """
-    data = hass.data[DOMAIN][entry.entry_id]
+    data = hass.data[const.DOMAIN][entry.entry_id]
     coordinator: KidsChoresDataCoordinator = data["coordinator"]
 
     # Create one global select entity for each category
@@ -74,7 +74,7 @@ class KidsChoresSelectBase(CoordinatorEntity, SelectEntity):
         By default, no further action is taken.
         """
         self._selected_option = option
-        LOGGER.debug(
+        const.LOGGER.debug(
             "%s: User selected option '%s'",
             self._attr_name,
             option,
