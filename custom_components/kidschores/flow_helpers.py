@@ -5,9 +5,9 @@ Provides schema builders and input-processing logic for internal_id-based manage
 """
 
 import datetime
-from . import const
 import uuid
 import voluptuous as vol
+from . import const
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector, config_validation as cv
 from homeassistant.util import dt as dt_util
@@ -133,7 +133,7 @@ def build_parent_schema(
             ),
             vol.Optional(
                 const.CONF_ASSOCIATED_KIDS,
-                default=default_associated_kids or const.DEFAULT_EMPTY_LIST,
+                default=default_associated_kids or [],
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=kid_options,
@@ -191,7 +191,7 @@ def build_chore_schema(kids_dict, default=None):
             ): str,
             vol.Optional(
                 const.CONF_CHORE_LABELS,
-                default=default.get(const.CONF_CHORE_LABELS, const.DEFAULT_EMPTY_LIST),
+                default=default.get(const.CONF_CHORE_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Required(
                 const.CONF_DEFAULT_POINTS,
@@ -205,7 +205,7 @@ def build_chore_schema(kids_dict, default=None):
             ),
             vol.Required(
                 const.CONF_ASSIGNED_KIDS,
-                default=default.get(const.CONF_ASSIGNED_KIDS, const.DEFAULT_EMPTY_LIST),
+                default=default.get(const.CONF_ASSIGNED_KIDS, []),
             ): cv.multi_select(kid_choices),
             vol.Required(
                 const.CONF_SHARED_CHORE,
@@ -309,7 +309,7 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
     """Build schema for cumulative badges (by points or chore count)."""
     default = default or {}
     rewards_list = rewards_list or [
-        {"value": const.CONF_EMPTY, "label": "Select Reward"}
+        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
     ]
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
@@ -325,7 +325,7 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
             ): str,
             vol.Optional(
                 const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
+                default=default.get(const.CONF_BADGE_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
                 const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
@@ -420,7 +420,7 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
     """Build schema for daily badges that reset every day."""
     default = default or {}
     rewards_list = rewards_list or [
-        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
+        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
     ]
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
@@ -436,7 +436,7 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
             ): str,
             vol.Optional(
                 const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
+                default=default.get(const.CONF_BADGE_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
                 const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
@@ -512,7 +512,7 @@ def build_badge_periodic_schema(default: dict = None, rewards_list: list = None)
     """Build schema for periodic badges (e.g. weekly or monthly)."""
     default = default or {}
     rewards_list = rewards_list or [
-        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
+        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
     ]
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
@@ -528,7 +528,7 @@ def build_badge_periodic_schema(default: dict = None, rewards_list: list = None)
             ): str,
             vol.Optional(
                 const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
+                default=default.get(const.CONF_BADGE_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
                 const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
@@ -631,10 +631,10 @@ def build_badge_achievement_schema(
     default = default or {}
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
     achievements_list = achievements_list or [
-        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
+        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
     ]
     rewards_list = rewards_list or [
-        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
+        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
     ]
     return vol.Schema(
         {
@@ -648,7 +648,7 @@ def build_badge_achievement_schema(
             ): str,
             vol.Optional(
                 const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
+                default=default.get(const.CONF_BADGE_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
                 const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
@@ -693,10 +693,10 @@ def build_badge_challenge_schema(
     default = default or {}
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
     challenges_list = challenges_list or [
-        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
+        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
     ]
     rewards_list = rewards_list or [
-        {"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}
+        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
     ]
     return vol.Schema(
         {
@@ -710,7 +710,7 @@ def build_badge_challenge_schema(
             ): str,
             vol.Optional(
                 const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
+                default=default.get(const.CONF_BADGE_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
                 const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
@@ -764,7 +764,7 @@ def build_badge_special_occasions_schema(default: dict = None):
             ): str,
             vol.Optional(
                 const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, const.DEFAULT_EMPTY_LIST),
+                default=default.get(const.CONF_BADGE_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
                 const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
@@ -818,7 +818,7 @@ def build_reward_schema(default=None):
             ): str,
             vol.Optional(
                 const.CONF_REWARD_LABELS,
-                default=default.get(const.CONF_REWARD_LABELS, const.DEFAULT_EMPTY_LIST),
+                default=default.get(const.CONF_REWARD_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Required(
                 const.CONF_REWARD_COST,
@@ -868,7 +868,7 @@ def build_bonus_schema(default=None):
             ): str,
             vol.Optional(
                 const.CONF_BONUS_LABELS,
-                default=default.get(const.CONF_BONUS_LABELS, const.DEFAULT_EMPTY_LIST),
+                default=default.get(const.CONF_BONUS_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Required(
                 const.CONF_BONUS_POINTS, default=display_points
@@ -917,9 +917,7 @@ def build_penalty_schema(default=None):
             ): str,
             vol.Optional(
                 const.CONF_PENALTY_LABELS,
-                default=default.get(
-                    const.CONF_PENALTY_LABELS, const.DEFAULT_EMPTY_LIST
-                ),
+                default=default.get(const.CONF_PENALTY_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Required(
                 const.CONF_PENALTY_POINTS, default=display_points
@@ -967,9 +965,7 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
         pass
 
     default_criteria = default.get(const.CONF_ACHIEVEMENT_CRITERIA, const.CONF_EMPTY)
-    default_assigned_kids = default.get(
-        const.CONF_ACHIEVEMENT_ASSIGNED_KIDS, const.DEFAULT_EMPTY_LIST
-    )
+    default_assigned_kids = default.get(const.CONF_ACHIEVEMENT_ASSIGNED_KIDS, [])
     if not isinstance(default_assigned_kids, list):
         default_assigned_kids = [default_assigned_kids]
 
@@ -982,9 +978,7 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
             ): str,
             vol.Optional(
                 const.CONF_ACHIEVEMENT_LABELS,
-                default=default.get(
-                    const.CONF_ACHIEVEMENT_LABELS, const.DEFAULT_EMPTY_LIST
-                ),
+                default=default.get(const.CONF_ACHIEVEMENT_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
                 const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
@@ -1069,7 +1063,7 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
         {"value": kid_id, "label": kid_name} for kid_name, kid_id in kids_dict.items()
     ]
 
-    chore_options = [{"value": const.CONF_EMPTY, "label": const.CONF_EMPTY}]
+    chore_options = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}]
     for chore_id, chore_data in chores_dict.items():
         chore_name = chore_data.get(const.CONF_NAME, f"Chore {chore_id[:6]}")
         chore_options.append({"value": chore_id, "label": chore_name})
@@ -1082,9 +1076,7 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
         default_selected_chore = ""
 
     default_criteria = default.get(const.CONF_CHALLENGE_CRITERIA, const.CONF_EMPTY)
-    default_assigned_kids = default.get(
-        const.CONF_CHALLENGE_ASSIGNED_KIDS, const.DEFAULT_EMPTY_LIST
-    )
+    default_assigned_kids = default.get(const.CONF_CHALLENGE_ASSIGNED_KIDS, [])
     if not isinstance(default_assigned_kids, list):
         default_assigned_kids = [default_assigned_kids]
 
@@ -1097,9 +1089,7 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
             ): str,
             vol.Optional(
                 const.CONF_CHALLENGE_LABELS,
-                default=default.get(
-                    const.CONF_CHALLENGE_LABELS, const.DEFAULT_EMPTY_LIST
-                ),
+                default=default.get(const.CONF_CHALLENGE_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
                 const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
@@ -1190,7 +1180,7 @@ def process_penalty_form_input(user_input: dict) -> dict:
 # Get notify services from HA
 def _get_notify_services(hass: HomeAssistant) -> list[dict[str, str]]:
     """Return a list of all notify.* services as"""
-    services_list = const.DEFAULT_EMPTY_LIST
+    services_list = []
     all_services = hass.services.async_services()
     if "notify" in all_services:
         for service_name in all_services["notify"].keys():
