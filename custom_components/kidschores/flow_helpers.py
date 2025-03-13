@@ -56,7 +56,7 @@ def build_kid_schema(
 
     return vol.Schema(
         {
-            vol.Required(const.CONF_KIDNAME, default=default_kid_name): str,
+            vol.Required(const.CFOF_KIDS_INPUT_KID_NAME, default=default_kid_name): str,
             vol.Optional(
                 const.CONF_HA_USER, default=default_ha_user_id or const.CONF_EMPTY
             ): selector.SelectSelector(
@@ -137,7 +137,7 @@ def build_parent_schema(
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=kid_options,
-                    translation_key=const.TRANS_KEY_ASSOCIATED_KIDS,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ASSOCIATED_KIDS,
                     multiple=True,
                 )
             ),
@@ -230,7 +230,7 @@ def build_chore_schema(kids_dict, default=None):
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=const.FREQUENCY_OPTIONS,
-                    translation_key=const.TRANS_KEY_RECURRING_FREQUENCY,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_RECURRING_FREQUENCY,
                 )
             ),
             vol.Optional(
@@ -252,7 +252,7 @@ def build_chore_schema(kids_dict, default=None):
                 selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=const.CUSTOM_INTERVAL_UNIT_OPTIONS,
-                        translation_key=const.TRANS_KEY_CUSTOM_INTERVAL_UNIT,
+                        translation_key=const.TRANS_KEY_FLOW_HELPERS_CUSTOM_INTERVAL_UNIT,
                         multiple=False,
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )
@@ -270,7 +270,7 @@ def build_chore_schema(kids_dict, default=None):
                         for key in const.WEEKDAY_OPTIONS
                     ],
                     multiple=True,
-                    translation_key=const.TRANS_KEY_APPLICABLE_DAYS,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_APPLICABLE_DAYS,
                 )
             ),
             vol.Optional(
@@ -350,7 +350,7 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=const.AWARD_MODE_OPTIONS,
-                    translation_key=const.TRANS_KEY_AWARD_MODE,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
                 )
             ),
             vol.Required(
@@ -372,7 +372,7 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_AWARD_REWARD,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
                 )
             ),
             vol.Required(
@@ -385,7 +385,7 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=const.BADGE_CUMULATIVE_RESET_PERIOD_OPTIONS,
-                    translation_key=const.TRANS_KEY_RESET_PERIOD,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_RESET_PERIOD,
                 )
             ),
             vol.Optional(
@@ -450,7 +450,7 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=const.THRESHOLD_TYPE_OPTIONS,
-                    translation_key=const.TRANS_KEY_DAILY_THRESHOLD_TYPE,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_DAILY_THRESHOLD_TYPE,
                 )
             ),
             vol.Required(
@@ -474,7 +474,7 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=const.AWARD_MODE_OPTIONS,
-                    translation_key=const.TRANS_KEY_AWARD_MODE,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
                 )
             ),
             vol.Optional(
@@ -496,7 +496,7 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_AWARD_REWARD,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
                 )
             ),
             vol.Required(
@@ -539,7 +539,7 @@ def build_badge_periodic_schema(default: dict = None, rewards_list: list = None)
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=const.BADGE_PERIOD_OPTIONS,
-                    translation_key=const.TRANS_KEY_PERIOD,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_PERIOD,
                 )
             ),
             vol.Optional(
@@ -558,7 +558,7 @@ def build_badge_periodic_schema(default: dict = None, rewards_list: list = None)
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=const.THRESHOLD_TYPE_OPTIONS,
-                    translation_key=const.TRANS_KEY_THRESHOLD_TYPE,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_THRESHOLD_TYPE,
                 )
             ),
             vol.Required(
@@ -581,7 +581,7 @@ def build_badge_periodic_schema(default: dict = None, rewards_list: list = None)
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=const.AWARD_MODE_OPTIONS,
-                    translation_key=const.TRANS_KEY_AWARD_MODE,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
                 )
             ),
             vol.Optional(
@@ -603,7 +603,7 @@ def build_badge_periodic_schema(default: dict = None, rewards_list: list = None)
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_AWARD_REWARD,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
                 )
             ),
             vol.Required(
@@ -662,7 +662,7 @@ def build_badge_achievement_schema(
                 selector.SelectSelectorConfig(
                     options=achievements_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_ASSOCIATED_ACHIEVEMENT,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ASSOCIATED_ACHIEVEMENT,
                 )
             ),
             vol.Required(
@@ -672,7 +672,7 @@ def build_badge_achievement_schema(
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_ONE_TIME_REWARD,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ONE_TIME_REWARD,
                 )
             ),
             vol.Required(
@@ -724,7 +724,7 @@ def build_badge_challenge_schema(
                 selector.SelectSelectorConfig(
                     options=challenges_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_ASSOCIATED_CHALLENGE,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ASSOCIATED_CHALLENGE,
                 )
             ),
             vol.Required(
@@ -734,7 +734,7 @@ def build_badge_challenge_schema(
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_ONE_TIME_REWARD,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ONE_TIME_REWARD,
                 )
             ),
             vol.Required(
@@ -776,7 +776,7 @@ def build_badge_special_occasions_schema(default: dict = None):
                 selector.SelectSelectorConfig(
                     options=const.OCCASION_TYPE_OPTIONS,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_OCCASION_TYPE,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_OCCASION_TYPE,
                 )
             ),
             vol.Required(
@@ -988,7 +988,7 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=kid_options,
-                    translation_key=const.TRANS_KEY_ASSIGNED_KIDS,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ASSIGNED_KIDS,
                     multiple=True,
                 )
             ),
@@ -1099,7 +1099,7 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=kid_options,
-                    translation_key=const.TRANS_KEY_ASSIGNED_KIDS,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ASSIGNED_KIDS,
                     multiple=True,
                 )
             ),

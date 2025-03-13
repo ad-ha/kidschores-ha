@@ -140,6 +140,34 @@ OPTIONS_FLOW_STEP_DELETE_PARENT = "delete_parent"
 OPTIONS_FLOW_STEP_DELETE_PENALTY = "delete_penalty"
 OPTIONS_FLOW_STEP_DELETE_REWARD = "delete_reward"
 
+# ConfigFlow & OptionsFlow User Input Fields
+
+# KIDS
+CFOF_KIDS_INPUT_KID_NAME = "kid_name"
+CFOF_KIDS_INPUT_KID_HA_USER = "ha_user"
+CFOF_KIDS_INPUT_KID_ENABLE_MOBILE_NOTIFICATIONS = "enable_mobile_notifications"
+CFOF_KIDS_INPUT_KID_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
+CFOF_KIDS_INPUT_KID_ENABLE_PERSISTENT_NOTIFICATIONS = "enable_persistent_notifications"
+CFOF_GLOBAL_INPUT_INTERNAL_ID = "internal_id"
+
+# OptionsFlow Input Fields
+OPTIONS_FLOW_INPUT_ENTITY_NAME = "entity_name"
+OPTIONS_FLOW_INPUT_INTERNAL_ID = "internal_id"
+OPTIONS_FLOW_INPUT_MENU_SELECTION = "menu_selection"
+OPTIONS_FLOW_INPUT_MANAGE_ACTION = "manage_action"
+
+# OptionsFlow Data Fields
+OPTIONS_FLOW_DATA_ENTITY_NAME = "name"
+
+# OptionsFlow Placeholders
+OPTIONS_FLOW_PLACEHOLDER_ACTION = "action"
+OPTIONS_FLOW_PLACEHOLDER_ENTITY_TYPE = "entity_type"
+
+# OptionsFlow Helpers
+OPTIONS_FLOW_MENU_MANAGE_PREFIX = "manage_"
+OPTIONS_FLOW_ASYNC_STEP_PREFIX = "async_step_"
+
+
 # Validation Keys
 VALIDATION_DUE_DATE = "due_date"  # Optional due date for chores
 VALIDATION_PARTIAL_ALLOWED = "partial_allowed"  # Allow partial points in chores
@@ -292,6 +320,18 @@ CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW = "total_within_window"
 # --------------------------------------------------------------------
 # Data Keys
 # --------------------------------------------------------------------
+
+# GLOBAL
+DATA_INTERNAL_ID = "internal_id"
+
+# KIDS
+DATA_KID_NAME = "name"
+DATA_KID_HA_USER_ID = "ha_user_id"
+DATA_KID_ENABLE_NOTIFICATIONS = "enable_notifications"
+DATA_KID_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
+DATA_KID_USER_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
+DATA_KID_INTERNAL_ID = "internal_id"
+
 DATA_ACHIEVEMENTS = "achievements"
 DATA_ACHIEVEMENT_LABELS = "achievement_labels"
 DATA_ACHIEVEMENT_NAME = "achievement_name"
@@ -321,7 +361,6 @@ DATA_ENABLE_NOTIFICATIONS = "enable_notifications"
 DATA_HA_USER = "ha_user"
 DATA_HA_USER_ID = "ha_user_id"
 DATA_INTERNAL_ID = "internal_id"
-DATA_KID_NAME = "kid_name"
 DATA_KIDS = "kids"
 DATA_LAST_CHORE_DATE = "last_chore_date"
 DATA_MAX_POINTS_EVER = "max_points_ever"
@@ -635,8 +674,8 @@ UNKNOWN_CHORE = "Unknown Chore"  # Error for unknown chore
 UNKNOWN_KID = "Unknown Kid"  # Error for unknown kid
 UNKNOWN_REWARD = "Unknown Reward"  # Error for unknown reward
 
-# Config Flow
-ERROR_SINGLE_INSTANCE = "single_instance_allowed"
+# Config Flow & Options Flow Error Keys
+CFOP_ERROR_KIDS_KID_NAME = "kid_name"
 
 # --------------------------------------------------------------------
 # Parent Approval Workflow
@@ -659,25 +698,39 @@ ATTR_CAL_SUMMARY = "summary"
 # --------------------------------------------------------------------
 # Translation Keys
 # --------------------------------------------------------------------
-TRANS_KEY_APPLICABLE_DAYS = "applicable_days"
-TRANS_KEY_ASSIGNED_KIDS = "assigned_kids"
-TRANS_KEY_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
-TRANS_KEY_ASSOCIATED_CHALLENGE = "associated_challenge"
-TRANS_KEY_ASSOCIATED_KIDS = "associated_kids"
-TRANS_KEY_AWARD_MODE = "award_mode"
-TRANS_KEY_AWARD_REWARD = "award_reward"
-TRANS_KEY_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
-TRANS_KEY_DAILY_THRESHOLD_TYPE = "daily_threshold_type"
-TRANS_KEY_MAIN_MENU = "main_menu"
-TRANS_KEY_MANAGE_ACTIONS = "manage_actions"
-TRANS_KEY_OCCASION_TYPE = "occasion_type"
-TRANS_KEY_ONE_TIME_REWARD = "one_time_reward"
-TRANS_KEY_PERIOD = "period"
-TRANS_KEY_RECURRING_FREQUENCY = "recurring_frequency"
-TRANS_KEY_RESET_CRITERIA = "reset_criteria"
-TRANS_KEY_RESET_PERIOD = "reset_period"
-TRANS_KEY_SELECTED_CHORE_ID = "selected_chore_id"
-TRANS_KEY_THRESHOLD_TYPE = "threshold_type"
+
+# ConfigFlow & OptionsFlow translation keys
+TRANS_KEY_ERROR_SINGLE_INSTANCE = "single_instance_allowed"
+TRANS_KEY_OPTIONS_FLOW_BADGE_TYPE = "badge_type"
+TRANS_KEY_OPTIONS_FLOW_DUPLICATE_KID = "duplicate_kid"
+TRANS_KEY_OPTIONS_FLOW_INVALID_ACTION = "invalid_action"
+TRANS_KEY_OPTIONS_FLOW_INVALID_ENTITY = "invalid_entity"
+TRANS_KEY_OPTIONS_FLOW_INVALID_KID_NAME = "invalid_kid_name"
+TRANS_KEY_OPTIONS_FLOW_MAIN_MENU = "main_menu"
+TRANS_KEY_OPTIONS_FLOW_MANAGE_ACTIONS = "manage_actions"
+TRANS_KEY_OPTIONS_FLOW_NO_ENTITY_TYPE = "no_{}s"
+TRANS_KEY_OPTIONS_FLOW_SETUP_COMPLETE = "setup_complete"
+
+
+TRANS_KEY_FLOW_HELPERS_APPLICABLE_DAYS = "applicable_days"
+TRANS_KEY_FLOW_HELPERS_ASSIGNED_KIDS = "assigned_kids"
+TRANS_KEY_FLOW_HELPERS_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
+TRANS_KEY_FLOW_HELPERS_ASSOCIATED_CHALLENGE = "associated_challenge"
+TRANS_KEY_FLOW_HELPERS_ASSOCIATED_KIDS = "associated_kids"
+TRANS_KEY_FLOW_HELPERS_AWARD_MODE = "award_mode"
+TRANS_KEY_FLOW_HELPERS_AWARD_REWARD = "award_reward"
+TRANS_KEY_FLOW_HELPERS_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
+TRANS_KEY_FLOW_HELPERS_DAILY_THRESHOLD_TYPE = "daily_threshold_type"
+TRANS_KEY_FLOW_HELPERS_MAIN_MENU = "main_menu"
+TRANS_KEY_FLOW_HELPERS_MANAGE_ACTIONS = "manage_actions"
+TRANS_KEY_FLOW_HELPERS_OCCASION_TYPE = "occasion_type"
+TRANS_KEY_FLOW_HELPERS_ONE_TIME_REWARD = "one_time_reward"
+TRANS_KEY_FLOW_HELPERS_PERIOD = "period"
+TRANS_KEY_FLOW_HELPERS_RECURRING_FREQUENCY = "recurring_frequency"
+TRANS_KEY_FLOW_HELPERS_RESET_CRITERIA = "reset_criteria"
+TRANS_KEY_FLOW_HELPERS_RESET_PERIOD = "reset_period"
+TRANS_KEY_FLOW_HELPERS_SELECTED_CHORE_ID = "selected_chore_id"
+TRANS_KEY_FLOW_HELPERS_THRESHOLD_TYPE = "threshold_type"
 
 
 # --------------------------------------------------------------------

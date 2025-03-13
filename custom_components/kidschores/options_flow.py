@@ -42,10 +42,7 @@ def _ensure_str(value):
 
 
 class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
-    """Options Flow for adding/editing/deleting configuration elements.
-
-    Manages entities via internal_id for consistency and historical data preservation.
-    """
+    """Options Flow for adding/editing/deleting configuration elements."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize the options flow."""
@@ -54,23 +51,25 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entity_type = None
 
     async def async_step_init(self, user_input=None):
-        """Display the main menu for the Options Flow.
-
-        Add/Edit/Delete kid, chore, badge, reward, penalty, or done.
-        """
+        """Display the main menu for the Options Flow."""
         self._entry_options = dict(self.config_entry.options)
 
         if user_input is not None:
-            selection = user_input["menu_selection"]
-            if selection.startswith("manage_"):
-                self._entity_type = selection.replace("manage_", "")
-                # If user chose manage_points
-                if self._entity_type == "points":
-                    return await self.async_step_manage_points()
-                # Else manage other entities
+            selection = user_input[const.OPTIONS_FLOW_INPUT_MENU_SELECTION]
+
+            if selection == const.OPTIONS_FLOW_POINTS:
+                return await self.async_step_manage_points()
+
+            if selection.startswith(const.OPTIONS_FLOW_MENU_MANAGE_PREFIX):
+                self._entity_type = selection.replace(
+                    const.OPTIONS_FLOW_MENU_MANAGE_PREFIX, const.CONF_EMPTY
+                )
                 return await self.async_step_manage_entity()
-            elif selection == "done":
-                return self.async_abort(reason="setup_complete")
+
+            elif selection == const.OPTIONS_FLOW_FINISH:
+                return self.async_abort(
+                    reason=const.TRANS_KEY_OPTIONS_FLOW_SETUP_COMPLETE
+                )
 
         main_menu = [
             const.OPTIONS_FLOW_POINTS,
@@ -90,11 +89,13 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             step_id=const.OPTIONS_FLOW_STEP_INIT,
             data_schema=vol.Schema(
                 {
-                    vol.Required("menu_selection"): selector.SelectSelector(
+                    vol.Required(
+                        const.OPTIONS_FLOW_INPUT_MENU_SELECTION
+                    ): selector.SelectSelector(
                         selector.SelectSelectorConfig(
                             options=main_menu,
                             mode=selector.SelectSelectorMode.LIST,
-                            translation_key="main_menu",
+                            translation_key=const.TRANS_KEY_OPTIONS_FLOW_MAIN_MENU,
                         )
                     )
                 }
@@ -113,7 +114,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             self._entry_options[const.CONF_POINTS_LABEL] = new_label
             self._entry_options[const.CONF_POINTS_ICON] = new_icon
             const.LOGGER.debug(
-                "Before saving points, entry_options = %s", self._entry_options
+                "Configured points with %s and icon %s", new_label, new_icon
             )
             await self._update_and_reload()
 
@@ -144,7 +145,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         Presents add/edit/delete options for the selected entity.
         """
         if user_input is not None:
-            self._action = user_input["manage_action"]
+            self._action = user_input[const.OPTIONS_FLOW_INPUT_MANAGE_ACTION]
             # Route to the corresponding step based on action
             if self._action == const.OPTIONS_FLOW_ACTIONS_ADD:
                 return await getattr(self, f"async_step_add_{self._entity_type}")()
@@ -168,16 +169,20 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             step_id=const.OPTIONS_FLOW_STEP_MANAGE_ENTITY,
             data_schema=vol.Schema(
                 {
-                    vol.Required("manage_action"): selector.SelectSelector(
+                    vol.Required(
+                        const.OPTIONS_FLOW_INPUT_MANAGE_ACTION
+                    ): selector.SelectSelector(
                         selector.SelectSelectorConfig(
                             options=manage_action_choices,
                             mode=selector.SelectSelectorMode.LIST,
-                            translation_key="manage_actions",
+                            translation_key=const.TRANS_KEY_OPTIONS_FLOW_MANAGE_ACTIONS,
                         )
                     )
                 }
             ),
-            description_placeholders={"entity_type": self._entity_type},
+            description_placeholders={
+                const.OPTIONS_FLOW_PLACEHOLDER_ENTITY_TYPE: self._entity_type
+            },
         )
 
     async def async_step_select_entity(self, user_input=None):
@@ -186,44 +191,54 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             const.OPTIONS_FLOW_ACTIONS_EDIT,
             const.OPTIONS_FLOW_ACTIONS_DELETE,
         ]:
-            const.LOGGER.error(
-                "Invalid action '%s' for select_entity step", self._action
-            )
-            return self.async_abort(reason="invalid_action")
+            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_ACTION)
 
         entity_dict = self._get_entity_dict()
-        entity_names = [data["name"] for data in entity_dict.values()]
+        entity_names = [
+            data[const.OPTIONS_FLOW_DATA_ENTITY_NAME] for data in entity_dict.values()
+        ]
 
         if user_input is not None:
-            selected_name = _ensure_str(user_input["entity_name"])
+            selected_name = _ensure_str(
+                user_input[const.OPTIONS_FLOW_INPUT_ENTITY_NAME]
+            )
             internal_id = next(
                 (
                     eid
                     for eid, data in entity_dict.items()
-                    if data["name"] == selected_name
+                    if data[const.OPTIONS_FLOW_DATA_ENTITY_NAME] == selected_name
                 ),
                 None,
             )
             if not internal_id:
                 const.LOGGER.error("Selected entity '%s' not found", selected_name)
-                return self.async_abort(reason="invalid_entity")
+                return self.async_abort(
+                    reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_ENTITY
+                )
 
             # Store internal_id in context for later use
-            self.context["internal_id"] = internal_id
+            self.context[const.OPTIONS_FLOW_INPUT_INTERNAL_ID] = internal_id
 
             # Route to the corresponding edit/delete step
             return await getattr(
-                self, f"async_step_{self._action}_{self._entity_type}"
+                self,
+                f"{const.OPTIONS_FLOW_ASYNC_STEP_PREFIX}{self._action}_{self._entity_type}",
             )()
 
         if not entity_names:
-            return self.async_abort(reason=f"no_{self._entity_type}s")
+            return self.async_abort(
+                reason=const.TRANS_KEY_OPTIONS_FLOW_NO_ENTITY_TYPE.format(
+                    self._entity_type
+                )
+            )
 
         return self.async_show_form(
             step_id=const.OPTIONS_FLOW_STEP_SELECT_ENTITY,
             data_schema=vol.Schema(
                 {
-                    vol.Required("entity_name"): selector.SelectSelector(
+                    vol.Required(
+                        const.OPTIONS_FLOW_INPUT_ENTITY_NAME
+                    ): selector.SelectSelector(
                         selector.SelectSelectorConfig(
                             options=entity_names,
                             mode=selector.SelectSelectorMode.DROPDOWN,
@@ -233,8 +248,8 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 }
             ),
             description_placeholders={
-                "entity_type": self._entity_type,
-                "action": self._action,
+                const.OPTIONS_FLOW_PLACEHOLDER_ENTITY_TYPE: self._entity_type,
+                const.OPTIONS_FLOW_PLACEHOLDER_ACTION: self._action,
             },
         )
 
@@ -269,25 +284,45 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         kids_dict = self._entry_options.setdefault(const.CONF_KIDS, {})
 
         if user_input is not None:
-            kid_name = user_input["kid_name"].strip()
-            ha_user_id = user_input.get("ha_user") or ""
-            enable_mobile_notifications = user_input.get(
-                "enable_mobile_notifications", True
+            kid_name = user_input[const.CFOF_KIDS_INPUT_KID_NAME].strip()
+            ha_user_id = (
+                user_input.get(const.CFOF_KIDS_INPUT_KID_HA_USER) or const.CONF_EMPTY
             )
-            notify_service = user_input.get("mobile_notify_service") or ""
-            enable_persist = user_input.get("enable_persistent_notifications", True)
+            enable_mobile_notifications = user_input.get(
+                const.CFOF_KIDS_INPUT_KID_ENABLE_MOBILE_NOTIFICATIONS, True
+            )
+            notify_service = (
+                user_input.get(const.CFOF_KIDS_INPUT_KID_MOBILE_NOTIFY_SERVICE)
+                or const.CONF_EMPTY
+            )
+            enable_persist = user_input.get(
+                const.CFOF_KIDS_INPUT_KID_ENABLE_PERSISTENT_NOTIFICATIONS, True
+            )
 
-            if any(kid_data["name"] == kid_name for kid_data in kids_dict.values()):
-                errors["kid_name"] = "duplicate_kid"
+            if not kid_name:
+                errors[const.CFOP_ERROR_KIDS_KID_NAME] = (
+                    const.TRANS_KEY_OPTIONS_FLOW_INVALID_KID_NAME
+                )
+
+            elif any(
+                kid_data[const.DATA_KID_NAME] == kid_name
+                for kid_data in kids_dict.values()
+            ):
+                errors[const.CFOP_ERROR_KIDS_KID_NAME] = (
+                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_KID
+                )
+
             else:
-                internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+                internal_id = user_input.get(
+                    const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+                )
                 kids_dict[internal_id] = {
-                    "name": kid_name,
-                    "ha_user_id": ha_user_id,
-                    "enable_notifications": enable_mobile_notifications,
-                    "mobile_notify_service": notify_service,
-                    "use_persistent_notifications": enable_persist,
-                    "internal_id": internal_id,
+                    const.DATA_KID_NAME: kid_name,
+                    const.DATA_KID_HA_USER_ID: ha_user_id,
+                    const.DATA_KID_ENABLE_NOTIFICATIONS: enable_mobile_notifications,
+                    const.DATA_KID_MOBILE_NOTIFY_SERVICE: notify_service,
+                    const.DATA_KID_USER_PERSISTENT_NOTIFICATIONS: enable_persist,
+                    const.DATA_KID_INTERNAL_ID: internal_id,
                 }
                 self._entry_options[const.CONF_KIDS] = kids_dict
 
@@ -300,7 +335,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         schema = build_kid_schema(
             self.hass,
             users=users,
-            default_kid_name="",
+            default_kid_name=const.CONF_EMPTY,
             default_ha_user_id=None,
             default_enable_mobile_notifications=False,
             default_mobile_notify_service=None,
@@ -333,7 +368,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             ):
                 errors["parent_name"] = "duplicate_parent"
             else:
-                internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+                internal_id = user_input.get(
+                    const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+                )
                 parents_dict[internal_id] = {
                     "name": parent_name,
                     "ha_user_id": ha_user_id,
@@ -385,7 +422,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
             chore_name = user_input["chore_name"].strip()
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            internal_id = user_input.get(
+                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+            )
 
             if user_input.get("due_date"):
                 raw_due = user_input["due_date"]
@@ -510,7 +549,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     selector.SelectSelectorConfig(
                         options=badge_type_options,
                         mode=selector.SelectSelectorMode.DROPDOWN,
-                        translation_key="badge_type",
+                        translation_key=const.TRANS_KEY_OPTIONS_FLOW_BADGE_TYPE,
                     )
                 )
             }
@@ -529,7 +568,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            internal_id = user_input.get(
+                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+            )
             if any(
                 badge.get("badge_name") == badge_name for badge in badges_dict.values()
             ):
@@ -578,7 +619,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            internal_id = user_input.get(
+                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+            )
             if any(
                 badge.get("badge_name") == badge_name for badge in badges_dict.values()
             ):
@@ -613,7 +656,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            internal_id = user_input.get(
+                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+            )
             if any(
                 badge.get("badge_name") == badge_name for badge in badges_dict.values()
             ):
@@ -652,7 +697,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            internal_id = user_input.get(
+                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+            )
             if any(
                 badge.get("badge_name") == badge_name for badge in badges_dict.values()
             ):
@@ -691,7 +738,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            internal_id = user_input.get(
+                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+            )
             if any(
                 badge.get("badge_name") == badge_name for badge in badges_dict.values()
             ):
@@ -728,7 +777,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
         if user_input is not None:
             badge_name = user_input["badge_name"].strip()
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            internal_id = user_input.get(
+                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+            )
             if any(
                 badge.get("badge_name") == badge_name for badge in badges_dict.values()
             ):
@@ -766,7 +817,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
             reward_name = user_input["reward_name"].strip()
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            internal_id = user_input.get(
+                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+            )
 
             if any(
                 reward_data["name"] == reward_name
@@ -807,7 +860,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             penalty_name = user_input["penalty_name"].strip()
             penalty_points = user_input["penalty_points"]
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            internal_id = user_input.get(
+                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+            )
 
             if any(
                 penalty_data["name"] == penalty_name
@@ -848,7 +903,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             bonus_name = user_input["bonus_name"].strip()
             bonus_points = user_input["bonus_points"]
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            internal_id = user_input.get(
+                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+            )
 
             if any(
                 bonus_data["name"] == bonus_name for bonus_data in bonuses_dict.values()
@@ -903,7 +960,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     chore_id = c
 
                 if not errors:
-                    internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+                    internal_id = user_input.get(
+                        const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+                    )
                     achievements_dict[internal_id] = {
                         "name": achievement_name,
                         "description": user_input.get("description", ""),
@@ -996,7 +1055,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     end_date = None
 
                 if not errors:
-                    internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+                    internal_id = user_input.get(
+                        const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+                    )
                     challenges_dict[internal_id] = {
                         "name": challenge_name,
                         "description": user_input.get("description", ""),
@@ -1040,7 +1101,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         errors = {}
         kids_dict = self._entry_options.get(const.CONF_KIDS, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in kids_dict:
             const.LOGGER.error("Edit kid: Invalid internal_id '%s'", internal_id)
@@ -1100,7 +1161,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         errors = {}
         parents_dict = self._entry_options.get(const.CONF_PARENTS, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in parents_dict:
             const.LOGGER.error("Edit parent: Invalid internal_id '%s'", internal_id)
@@ -1173,7 +1234,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         errors = {}
         chores_dict = self._entry_options.get(const.CONF_CHORES, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in chores_dict:
             const.LOGGER.error("Edit chore: Invalid internal_id '%s'", internal_id)
@@ -1306,7 +1367,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Edit an existing badge."""
         self._entry_options = dict(self.config_entry.options)
         badges_dict = self._entry_options.get(const.CONF_BADGES, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in badges_dict:
             const.LOGGER.error("Edit badge: Invalid internal_id '%s'", internal_id)
@@ -1448,7 +1509,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         errors = {}
         rewards_dict = self._entry_options.get(const.CONF_REWARDS, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in rewards_dict:
             const.LOGGER.error("Edit reward: Invalid internal_id '%s'", internal_id)
@@ -1493,7 +1554,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         errors = {}
         penalties_dict = self._entry_options.get(const.CONF_PENALTIES, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in penalties_dict:
             const.LOGGER.error("Edit penalty: Invalid internal_id '%s'", internal_id)
@@ -1544,7 +1605,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         errors = {}
         bonuses_dict = self._entry_options.get(const.CONF_BONUSES, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in bonuses_dict:
             const.LOGGER.error("Edit bonus: Invalid internal_id '%s'", internal_id)
@@ -1594,7 +1655,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         errors = {}
         achievements_dict = self._entry_options.get(const.CONF_ACHIEVEMENTS, {})
 
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
         if not internal_id or internal_id not in achievements_dict:
             const.LOGGER.error(
                 "Edit achievement: Invalid internal_id '%s'", internal_id
@@ -1663,7 +1724,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
         errors = {}
         challenges_dict = self._entry_options.get(const.CONF_CHALLENGES, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in challenges_dict:
             const.LOGGER.error("Edit challenge: Invalid internal_id '%s'", internal_id)
@@ -1792,7 +1853,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         kids_dict = self._entry_options.get(const.CONF_KIDS, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in kids_dict:
             const.LOGGER.error("Delete kid: Invalid internal_id '%s'", internal_id)
@@ -1820,7 +1881,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         parents_dict = self._entry_options.get(const.CONF_PARENTS, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in parents_dict:
             const.LOGGER.error("Delete parent: Invalid internal_id '%s'", internal_id)
@@ -1850,7 +1911,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         chores_dict = self._entry_options.get(const.CONF_CHORES, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in chores_dict:
             const.LOGGER.error("Delete chore: Invalid internal_id '%s'", internal_id)
@@ -1880,7 +1941,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         badges_dict = self._entry_options.get(const.CONF_BADGES, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in badges_dict:
             const.LOGGER.error("Delete badge: Invalid internal_id '%s'", internal_id)
@@ -1910,7 +1971,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         rewards_dict = self._entry_options.get(const.CONF_REWARDS, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in rewards_dict:
             const.LOGGER.error("Delete reward: Invalid internal_id '%s'", internal_id)
@@ -1940,7 +2001,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         penalties_dict = self._entry_options.get(const.CONF_PENALTIES, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in penalties_dict:
             const.LOGGER.error("Delete penalty: Invalid internal_id '%s'", internal_id)
@@ -1970,7 +2031,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         achievements_dict = self._entry_options.get(const.CONF_ACHIEVEMENTS, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in achievements_dict:
             const.LOGGER.error(
@@ -2000,7 +2061,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         challenges_dict = self._entry_options.get(const.CONF_CHALLENGES, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in challenges_dict:
             const.LOGGER.error(
@@ -2030,7 +2091,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
 
         bonuses_dict = self._entry_options.get(const.CONF_BONUSES, {})
-        internal_id = self.context.get("internal_id")
+        internal_id = self.context.get(const.DATA_INTERNAL_ID)
 
         if not internal_id or internal_id not in bonuses_dict:
             const.LOGGER.error("Delete bonus: Invalid internal_id '%s'", internal_id)

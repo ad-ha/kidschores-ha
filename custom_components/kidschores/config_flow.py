@@ -72,7 +72,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         # Check if there's an existing KidsChores entry
         if any(self._async_current_entries()):
-            return self.async_abort(reason=const.ERROR_SINGLE_INSTANCE)
+            return self.async_abort(
+                reason=const.TRANS_KEY_OPTIONS_FLOW_ERROR_SINGLE_INSTANCE
+            )
 
         # Continue your normal flow
         return await self.async_step_intro()
@@ -138,10 +140,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
         )
 
     async def async_step_kids(self, user_input=None):
-        """Collect each kid's info using internal_id as the primary key.
-
-        Store in self._kids_temp as a dict keyed by internal_id.
-        """
+        """Collect each kid's info using internal_id as the primary key."""
         errors = {}
         if user_input is not None:
             kid_name = user_input["kid_name"].strip()
