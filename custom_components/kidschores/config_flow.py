@@ -72,7 +72,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         # Check if there's an existing KidsChores entry
         if any(self._async_current_entries()):
-            return self.async_abort(reason="single_instance_allowed")
+            return self.async_abort(reason=const.ERROR_SINGLE_INSTANCE)
 
         # Continue your normal flow
         return await self.async_step_intro()
@@ -82,7 +82,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
         if user_input is not None:
             return await self.async_step_points_label()
 
-        return self.async_show_form(step_id="intro", data_schema=vol.Schema({}))
+        return self.async_show_form(
+            step_id=const.CONFIG_FLOW_STEP_INTRO, data_schema=vol.Schema({})
+        )
 
     async def async_step_points_label(self, user_input=None):
         """Let the user define a custom label for points."""
@@ -107,7 +109,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
         )
 
         return self.async_show_form(
-            step_id="points_label", data_schema=points_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_POINTS,
+            data_schema=points_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
@@ -130,7 +134,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         schema = vol.Schema({vol.Required("kid_count", default=1): vol.Coerce(int)})
         return self.async_show_form(
-            step_id="kid_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_KID_COUNT, data_schema=schema, errors=errors
         )
 
     async def async_step_kids(self, user_input=None):
@@ -183,7 +187,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             default_enable_persistent_notifications=False,
         )
         return self.async_show_form(
-            step_id="kids", data_schema=kid_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_KIDS, data_schema=kid_schema, errors=errors
         )
 
     # --------------------------------------------------------------------------
@@ -206,7 +210,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         schema = vol.Schema({vol.Required("parent_count", default=1): vol.Coerce(int)})
         return self.async_show_form(
-            step_id="parent_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_PARENT_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_parents(self, user_input=None):
@@ -272,7 +278,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             internal_id=None,
         )
         return self.async_show_form(
-            step_id="parents", data_schema=parent_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_PARENTS,
+            data_schema=parent_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
@@ -295,7 +303,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         schema = vol.Schema({vol.Required("chore_count", default=1): vol.Coerce(int)})
         return self.async_show_form(
-            step_id="chore_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_CHORE_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_chores(self, user_input=None):
@@ -393,7 +403,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
         default_data = {}
         chore_schema = build_chore_schema(kids_dict, default_data)
         return self.async_show_form(
-            step_id="chores", data_schema=chore_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_CHORES,
+            data_schema=chore_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
@@ -416,7 +428,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         schema = vol.Schema({vol.Required("badge_count", default=0): vol.Coerce(int)})
         return self.async_show_form(
-            step_id="badge_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_BADGE_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_badges(self, user_input=None):
@@ -468,7 +482,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         badge_schema = build_badge_cumulative_schema()
         return self.async_show_form(
-            step_id="badges", data_schema=badge_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_BADGES,
+            data_schema=badge_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
@@ -491,7 +507,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         schema = vol.Schema({vol.Required("reward_count", default=0): vol.Coerce(int)})
         return self.async_show_form(
-            step_id="reward_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_REWARD_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_rewards(self, user_input=None):
@@ -531,7 +549,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         reward_schema = build_reward_schema()
         return self.async_show_form(
-            step_id="rewards", data_schema=reward_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_REWARDS,
+            data_schema=reward_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
@@ -554,7 +574,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         schema = vol.Schema({vol.Required("penalty_count", default=0): vol.Coerce(int)})
         return self.async_show_form(
-            step_id="penalty_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_PENALTY_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_penalties(self, user_input=None):
@@ -595,7 +617,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         penalty_schema = build_penalty_schema()
         return self.async_show_form(
-            step_id="penalties", data_schema=penalty_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_PENALTIES,
+            data_schema=penalty_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
@@ -618,7 +642,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         schema = vol.Schema({vol.Required("bonus_count", default=0): vol.Coerce(int)})
         return self.async_show_form(
-            step_id="bonus_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_BONUS_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_bonuses(self, user_input=None):
@@ -659,7 +685,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         schema = build_bonus_schema()
         return self.async_show_form(
-            step_id="bonuses", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_BONUSES, data_schema=schema, errors=errors
         )
 
     # --------------------------------------------------------------------------
@@ -683,7 +709,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             {vol.Required("achievement_count", default=0): vol.Coerce(int)}
         )
         return self.async_show_form(
-            step_id="achievement_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_ACHIEVEMENT_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_achievements(self, user_input=None):
@@ -742,7 +770,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             kids_dict=kids_dict, chores_dict=all_chores, default=None
         )
         return self.async_show_form(
-            step_id="achievements", data_schema=achievement_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_ACHIEVEMENTS,
+            data_schema=achievement_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
@@ -859,7 +889,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             default=default_data,
         )
         return self.async_show_form(
-            step_id="challenges", data_schema=challenge_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_CHALLENGES,
+            data_schema=challenge_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
@@ -900,7 +932,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             f"Challenges: {', '.join(challenge_data['name'] for challenge_data in self._challenges_temp.values()) or 'None'}\n\n"
         )
         return self.async_show_form(
-            step_id="finish",
+            step_id=const.CONFIG_FLOW_STEP_FINISH,
             data_schema=vol.Schema({}),
             description_placeholders={"summary": summary},
         )

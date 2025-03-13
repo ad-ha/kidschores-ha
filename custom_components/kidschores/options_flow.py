@@ -87,7 +87,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         ]
 
         return self.async_show_form(
-            step_id="init",
+            step_id=const.OPTIONS_FLOW_STEP_INIT,
             data_schema=vol.Schema(
                 {
                     vol.Required("menu_selection"): selector.SelectSelector(
@@ -133,7 +133,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
         return self.async_show_form(
-            step_id="manage_points",
+            step_id=const.OPTIONS_FLOW_STEP_MANAGE_POINTS,
             data_schema=points_schema,
             description_placeholders={},
         )
@@ -146,23 +146,26 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             self._action = user_input["manage_action"]
             # Route to the corresponding step based on action
-            if self._action == "add":
+            if self._action == const.OPTIONS_FLOW_ACTIONS_ADD:
                 return await getattr(self, f"async_step_add_{self._entity_type}")()
-            elif self._action in ["edit", "delete"]:
+            elif self._action in [
+                const.OPTIONS_FLOW_ACTIONS_EDIT,
+                const.OPTIONS_FLOW_ACTIONS_DELETE,
+            ]:
                 return await self.async_step_select_entity()
-            elif self._action == "back":
+            elif self._action == const.OPTIONS_FLOW_ACTIONS_BACK:
                 return await self.async_step_init()
 
         # Define manage action choices
         manage_action_choices = [
-            "add",
-            "edit",
-            "delete",
-            "back",  # Option to go back to the main menu
+            const.OPTIONS_FLOW_ACTIONS_ADD,
+            const.OPTIONS_FLOW_ACTIONS_EDIT,
+            const.OPTIONS_FLOW_ACTIONS_DELETE,
+            const.OPTIONS_FLOW_ACTIONS_BACK,  # Option to go back to the main menu
         ]
 
         return self.async_show_form(
-            step_id="manage_entity",
+            step_id=const.OPTIONS_FLOW_STEP_MANAGE_ENTITY,
             data_schema=vol.Schema(
                 {
                     vol.Required("manage_action"): selector.SelectSelector(
@@ -179,7 +182,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_select_entity(self, user_input=None):
         """Select an entity (kid, chore, etc.) to edit or delete based on internal_id."""
-        if self._action not in ["edit", "delete"]:
+        if self._action not in [
+            const.OPTIONS_FLOW_ACTIONS_EDIT,
+            const.OPTIONS_FLOW_ACTIONS_DELETE,
+        ]:
             const.LOGGER.error(
                 "Invalid action '%s' for select_entity step", self._action
             )
@@ -214,7 +220,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_abort(reason=f"no_{self._entity_type}s")
 
         return self.async_show_form(
-            step_id="select_entity",
+            step_id=const.OPTIONS_FLOW_STEP_SELECT_ENTITY,
             data_schema=vol.Schema(
                 {
                     vol.Required("entity_name"): selector.SelectSelector(
@@ -235,15 +241,15 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
     def _get_entity_dict(self):
         """Retrieve the appropriate entity dictionary based on entity_type."""
         entity_type_to_conf = {
-            "kid": const.CONF_KIDS,
-            "parent": const.CONF_PARENTS,
-            "chore": const.CONF_CHORES,
-            "badge": const.CONF_BADGES,
-            "reward": const.CONF_REWARDS,
-            "bonus": const.CONF_BONUSES,
-            "penalty": const.CONF_PENALTIES,
-            "achievement": const.CONF_ACHIEVEMENTS,
-            "challenge": const.CONF_CHALLENGES,
+            const.OPTIONS_FLOW_DIC_KID: const.CONF_KIDS,
+            const.OPTIONS_FLOW_DIC_PARENT: const.CONF_PARENTS,
+            const.OPTIONS_FLOW_DIC_CHORE: const.CONF_CHORES,
+            const.OPTIONS_FLOW_DIC_BADGE: const.CONF_BADGES,
+            const.OPTIONS_FLOW_DIC_REWARD: const.CONF_REWARDS,
+            const.OPTIONS_FLOW_DIC_BONUS: const.CONF_BONUSES,
+            const.OPTIONS_FLOW_DIC_PENALTY: const.CONF_PENALTIES,
+            const.OPTIONS_FLOW_DIC_ACHIEVEMENT: const.CONF_ACHIEVEMENTS,
+            const.OPTIONS_FLOW_DIC_CHALLENGE: const.CONF_CHALLENGES,
         }
         key = entity_type_to_conf.get(self._entity_type)
         if key is None:
@@ -301,7 +307,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             default_enable_persistent_notifications=False,
         )
         return self.async_show_form(
-            step_id="add_kid", data_schema=schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_ADD_KID, data_schema=schema, errors=errors
         )
 
     async def async_step_add_parent(self, user_input=None):
@@ -365,7 +371,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             internal_id=None,
         )
         return self.async_show_form(
-            step_id="add_parent", data_schema=parent_schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_ADD_PARENT,
+            data_schema=parent_schema,
+            errors=errors,
         )
 
     async def async_step_add_chore(self, user_input=None):
@@ -406,7 +414,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 }
                 schema = build_chore_schema(kids_dict, default=user_input)
                 return self.async_show_form(
-                    step_id="add_chore", data_schema=schema, errors=errors
+                    step_id=const.OPTIONS_FLOW_STEP_ADD_CHORE,
+                    data_schema=schema,
+                    errors=errors,
                 )
 
             if user_input.get("recurring_frequency") != const.FREQUENCY_CUSTOM:
@@ -462,7 +472,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         }
         schema = build_chore_schema(kids_dict)
         return self.async_show_form(
-            step_id="add_chore", data_schema=schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_ADD_CHORE, data_schema=schema, errors=errors
         )
 
     async def async_step_add_badge(self, user_input=None):
@@ -505,7 +515,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 )
             }
         )
-        return self.async_show_form(step_id="add_badge", data_schema=schema)
+        return self.async_show_form(
+            step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE, data_schema=schema
+        )
 
     # ----- Add Cumulative Badge (Points-only) -----
     async def async_step_add_badge_cumulative(self, user_input=None):
@@ -780,7 +792,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         schema = build_reward_schema()
         return self.async_show_form(
-            step_id="add_reward", data_schema=schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_ADD_REWARD,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_add_penalty(self, user_input=None):
@@ -819,7 +833,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         schema = build_penalty_schema()
         return self.async_show_form(
-            step_id="add_penalty", data_schema=schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_ADD_PENALTY,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_add_bonus(self, user_input=None):
@@ -857,7 +873,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         schema = build_bonus_schema()
         return self.async_show_form(
-            step_id="add_bonus", data_schema=schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_ADD_BONUS, data_schema=schema, errors=errors
         )
 
     async def async_step_add_achievement(self, user_input=None):
@@ -919,7 +935,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             kids_dict=kids_dict, chores_dict=chores_dict, default=None
         )
         return self.async_show_form(
-            step_id="add_achievement", data_schema=achievement_schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_ADD_ACHIEVEMENT,
+            data_schema=achievement_schema,
+            errors=errors,
         )
 
     async def async_step_add_challenge(self, user_input=None):
@@ -1010,7 +1028,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             kids_dict=kids_dict, chores_dict=chores_dict, default=user_input
         )
         return self.async_show_form(
-            step_id="add_challenge", data_schema=challenge_schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_ADD_CHALLENGE,
+            data_schema=challenge_schema,
+            errors=errors,
         )
 
     # ------------------ EDIT ENTITY ------------------
@@ -1071,7 +1091,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             internal_id=internal_id,
         )
         return self.async_show_form(
-            step_id="edit_kid", data_schema=schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_EDIT_KID, data_schema=schema, errors=errors
         )
 
     async def async_step_edit_parent(self, user_input=None):
@@ -1142,7 +1162,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             internal_id=internal_id,
         )
         return self.async_show_form(
-            step_id="edit_parent", data_schema=parent_schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_EDIT_PARENT,
+            data_schema=parent_schema,
+            errors=errors,
         )
 
     async def async_step_edit_chore(self, user_input=None):
@@ -1229,7 +1251,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 }
                 default_data = user_input.copy()
                 return self.async_show_form(
-                    step_id="edit_chore",
+                    step_id=const.OPTIONS_FLOW_STEP_EDIT_CHORE,
                     data_schema=build_chore_schema(
                         kids_dict, default={**chore_data, **default_data}
                     ),
@@ -1275,7 +1297,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             kids_dict, default={**chore_data, "due_date": existing_due_date}
         )
         return self.async_show_form(
-            step_id="edit_chore", data_schema=schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_EDIT_CHORE,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_edit_badge(self, user_input=None):
@@ -1413,7 +1437,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             schema = build_badge_cumulative_schema(default=badge_data)
 
         return self.async_show_form(
-            step_id="edit_badge", data_schema=schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_EDIT_BADGE,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_edit_reward(self, user_input=None):
@@ -1456,7 +1482,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         schema = build_reward_schema(default=reward_data)
         return self.async_show_form(
-            step_id="edit_reward", data_schema=schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_EDIT_REWARD,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_edit_penalty(self, user_input=None):
@@ -1505,7 +1533,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         display_data["penalty_points"] = abs(display_data["points"])
         schema = build_penalty_schema(default=display_data)
         return self.async_show_form(
-            step_id="edit_penalty", data_schema=schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_EDIT_PENALTY,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_edit_bonus(self, user_input=None):
@@ -1552,7 +1582,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         display_data["bonus_points"] = abs(display_data["points"])
         schema = build_bonus_schema(default=display_data)
         return self.async_show_form(
-            step_id="edit_bonus", data_schema=schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_EDIT_BONUS,
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_edit_achievement(self, user_input=None):
@@ -1621,7 +1653,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             kids_dict=kids_dict, chores_dict=chores_dict, default=achievement_data
         )
         return self.async_show_form(
-            step_id="edit_achievement", data_schema=achievement_schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_EDIT_ACHIEVEMENT,
+            data_schema=achievement_schema,
+            errors=errors,
         )
 
     async def async_step_edit_challenge(self, user_input=None):
@@ -1659,7 +1693,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 kids_dict=kids_dict, chores_dict=chores_dict, default=default_data
             )
             return self.async_show_form(
-                step_id="edit_challenge", data_schema=schema, errors=errors
+                step_id=const.OPTIONS_FLOW_STEP_EDIT_CHALLENGE,
+                data_schema=schema,
+                errors=errors,
             )
 
         start_date_input = user_input.get("start_date")
@@ -1745,7 +1781,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             kids_dict=kids_dict, chores_dict=chores_dict, default=default_data
         )
         return self.async_show_form(
-            step_id="edit_challenge", data_schema=challenge_schema, errors=errors
+            step_id=const.OPTIONS_FLOW_STEP_EDIT_CHALLENGE,
+            data_schema=challenge_schema,
+            errors=errors,
         )
 
     # ------------------ DELETE ENTITY ------------------
@@ -1772,7 +1810,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_init()
 
         return self.async_show_form(
-            step_id="delete_kid",
+            step_id=const.OPTIONS_FLOW_STEP_DELETE_KID,
             data_schema=vol.Schema({}),
             description_placeholders={"kid_name": kid_name},
         )
@@ -1802,7 +1840,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_init()
 
         return self.async_show_form(
-            step_id="delete_parent",
+            step_id=const.OPTIONS_FLOW_STEP_DELETE_PARENT,
             data_schema=vol.Schema({}),
             description_placeholders={"parent_name": parent_name},
         )
@@ -1832,7 +1870,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_init()
 
         return self.async_show_form(
-            step_id="delete_chore",
+            step_id=const.OPTIONS_FLOW_STEP_DELETE_CHORE,
             data_schema=vol.Schema({}),
             description_placeholders={"chore_name": chore_name},
         )
@@ -1862,7 +1900,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_init()
 
         return self.async_show_form(
-            step_id="delete_badge",
+            step_id=const.OPTIONS_FLOW_STEP_DELETE_BADGE,
             data_schema=vol.Schema({}),
             description_placeholders={"badge_name": badge_name},
         )
@@ -1892,7 +1930,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_init()
 
         return self.async_show_form(
-            step_id="delete_reward",
+            step_id=const.OPTIONS_FLOW_STEP_DELETE_REWARD,
             data_schema=vol.Schema({}),
             description_placeholders={"reward_name": reward_name},
         )
@@ -1922,7 +1960,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_init()
 
         return self.async_show_form(
-            step_id="delete_penalty",
+            step_id=const.OPTIONS_FLOW_STEP_DELETE_PENALTY,
             data_schema=vol.Schema({}),
             description_placeholders={"penalty_name": penalty_name},
         )
@@ -1952,7 +1990,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_init()
 
         return self.async_show_form(
-            step_id="delete_achievement",
+            step_id=const.OPTIONS_FLOW_STEP_DELETE_ACHIEVEMENT,
             data_schema=vol.Schema({}),
             description_placeholders={"achievement_name": achievement_name},
         )
@@ -1982,7 +2020,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_init()
 
         return self.async_show_form(
-            step_id="delete_challenge",
+            step_id=const.OPTIONS_FLOW_STEP_DELETE_CHALLENGE,
             data_schema=vol.Schema({}),
             description_placeholders={"challenge_name": challenge_name},
         )
@@ -2012,7 +2050,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_init()
 
         return self.async_show_form(
-            step_id="delete_bonus",
+            step_id=const.OPTIONS_FLOW_STEP_DELETE_BONUS,
             data_schema=vol.Schema({}),
             description_placeholders={"bonus_name": bonus_name},
         )
