@@ -40,6 +40,58 @@ UPDATE_INTERVAL = 5  # Update interval for coordinator (in minutes)
 # Configuration Keys
 # --------------------------------------------------------------------
 
+# ConfigFlow Steps
+CONFIG_FLOW_STEP_ACHIEVEMENT_COUNT = "achievement_count"
+CONFIG_FLOW_STEP_ACHIEVEMENTS = "achievements"
+CONFIG_FLOW_STEP_BADGE_COUNT = "badge_count"
+CONFIG_FLOW_STEP_BADGES = "badges"
+CONFIG_FLOW_STEP_BONUS_COUNT = "bonus_count"
+CONFIG_FLOW_STEP_BONUSES = "bonuses"
+CONFIG_FLOW_STEP_CHALLENGE_COUNT = "challenge_count"
+CONFIG_FLOW_STEP_CHALLENGES = "challenges"
+CONFIG_FLOW_STEP_CHORE_COUNT = "chore_count"
+CONFIG_FLOW_STEP_CHORES = "chores"
+CONFIG_FLOW_STEP_FINISH = "finish"
+CONFIG_FLOW_STEP_INTRO = "intro"
+CONFIG_FLOW_STEP_KID_COUNT = "kid_count"
+CONFIG_FLOW_STEP_KIDS = "kids"
+CONFIG_FLOW_STEP_PARENT_COUNT = "parent_count"
+CONFIG_FLOW_STEP_PARENTS = "parents"
+CONFIG_FLOW_STEP_PENALTY_COUNT = "penalty_count"
+CONFIG_FLOW_STEP_PENALTIES = "penalties"
+CONFIG_FLOW_STEP_POINTS = "points_label"
+CONFIG_FLOW_STEP_REWARD_COUNT = "reward_count"
+CONFIG_FLOW_STEP_REWARDS = "rewards"
+
+# OptionsFlow Management Menus Keys
+OPTIONS_FLOW_DIC_ACHIEVEMENT = "achievement"
+OPTIONS_FLOW_DIC_BADGE = "badge"
+OPTIONS_FLOW_DIC_BONUS = "bonus"
+OPTIONS_FLOW_DIC_CHALLENGE = "challenge"
+OPTIONS_FLOW_DIC_CHORE = "chore"
+OPTIONS_FLOW_DIC_KID = "kid"
+OPTIONS_FLOW_DIC_PARENT = "parent"
+OPTIONS_FLOW_DIC_PENALTY = "penalty"
+OPTIONS_FLOW_DIC_REWARD = "reward"
+
+OPTIONS_FLOW_ACTIONS_ADD = "add"
+OPTIONS_FLOW_ACTIONS_BACK = "back"
+OPTIONS_FLOW_ACTIONS_DELETE = "delete"
+OPTIONS_FLOW_ACTIONS_EDIT = "edit"
+
+OPTIONS_FLOW_ACHIEVEMENTS = "manage_achievement"
+OPTIONS_FLOW_BADGES = "manage_badge"
+OPTIONS_FLOW_BONUSES = "manage_bonus"
+OPTIONS_FLOW_CHALLENGES = "manage_challenge"
+OPTIONS_FLOW_CHORES = "manage_chore"
+OPTIONS_FLOW_SELECT_ENTITY = "select_entity"
+OPTIONS_FLOW_FINISH = "done"
+OPTIONS_FLOW_KIDS = "manage_kid"
+OPTIONS_FLOW_PARENTS = "manage_parent"
+OPTIONS_FLOW_PENALTIES = "manage_penalty"
+OPTIONS_FLOW_POINTS = "manage_points"
+OPTIONS_FLOW_REWARDS = "manage_reward"
+
 # OptionsFlow Configuration Keys
 CONF_ACHIEVEMENTS = "achievements"
 CONF_BADGES = "badges"
@@ -52,18 +104,41 @@ CONF_PARENTS = "parents"
 CONF_PENALTIES = "penalties"
 CONF_REWARDS = "rewards"
 
-# Options Flow Management Menus
-OPTIONS_FLOW_ACHIEVEMENTS = "manage_achievement"
-OPTIONS_FLOW_BADGES = "manage_badge"
-OPTIONS_FLOW_BONUSES = "manage_bonus"
-OPTIONS_FLOW_CHALLENGES = "manage_challenge"
-OPTIONS_FLOW_CHORES = "manage_chore"
-OPTIONS_FLOW_FINISH = "done"
-OPTIONS_FLOW_KIDS = "manage_kid"
-OPTIONS_FLOW_PARENTS = "manage_parent"
-OPTIONS_FLOW_PENALTIES = "manage_penalty"
-OPTIONS_FLOW_POINTS = "manage_points"
-OPTIONS_FLOW_REWARDS = "manage_reward"
+# OptionsFlow Steps
+OPTIONS_FLOW_STEP_INIT = "init"
+OPTIONS_FLOW_STEP_MANAGE_ENTITY = "manage_entity"
+OPTIONS_FLOW_STEP_MANAGE_POINTS = "manage_points"
+OPTIONS_FLOW_STEP_SELECT_ENTITY = "select_entity"
+
+OPTIONS_FLOW_STEP_ADD_ACHIEVEMENT = "add_achievement"
+OPTIONS_FLOW_STEP_ADD_BADGE = "add_badge"
+OPTIONS_FLOW_STEP_ADD_BONUS = "add_bonus"
+OPTIONS_FLOW_STEP_ADD_CHALLENGE = "add_challenge"
+OPTIONS_FLOW_STEP_ADD_CHORE = "add_chore"
+OPTIONS_FLOW_STEP_ADD_KID = "add_kid"
+OPTIONS_FLOW_STEP_ADD_PARENT = "add_parent"
+OPTIONS_FLOW_STEP_ADD_PENALTY = "add_penalty"
+OPTIONS_FLOW_STEP_ADD_REWARD = "add_reward"
+
+OPTIONS_FLOW_STEP_EDIT_ACHIEVEMENT = "edit_achievement"
+OPTIONS_FLOW_STEP_EDIT_BADGE = "edit_badge"
+OPTIONS_FLOW_STEP_EDIT_BONUS = "edit_bonus"
+OPTIONS_FLOW_STEP_EDIT_CHALLENGE = "edit_challenge"
+OPTIONS_FLOW_STEP_EDIT_CHORE = "edit_chore"
+OPTIONS_FLOW_STEP_EDIT_KID = "edit_kid"
+OPTIONS_FLOW_STEP_EDIT_PARENT = "edit_parent"
+OPTIONS_FLOW_STEP_EDIT_PENALTY = "edit_penalty"
+OPTIONS_FLOW_STEP_EDIT_REWARD = "edit_reward"
+
+OPTIONS_FLOW_STEP_DELETE_ACHIEVEMENT = "delete_achievement"
+OPTIONS_FLOW_STEP_DELETE_BADGE = "delete_badge"
+OPTIONS_FLOW_STEP_DELETE_BONUS = "delete_bonus"
+OPTIONS_FLOW_STEP_DELETE_CHALLENGE = "delete_challenge"
+OPTIONS_FLOW_STEP_DELETE_CHORE = "delete_chore"
+OPTIONS_FLOW_STEP_DELETE_KID = "delete_kid"
+OPTIONS_FLOW_STEP_DELETE_PARENT = "delete_parent"
+OPTIONS_FLOW_STEP_DELETE_PENALTY = "delete_penalty"
+OPTIONS_FLOW_STEP_DELETE_REWARD = "delete_reward"
 
 # Validation Keys
 VALIDATION_DUE_DATE = "due_date"  # Optional due date for chores
@@ -521,7 +596,7 @@ LABEL_BADGES = "Badges"
 LABEL_COMPLETED_DAILY = "Daily Completed Chores"
 LABEL_COMPLETED_MONTHLY = "Monthly Completed Chores"
 LABEL_COMPLETED_WEEKLY = "Weekly Completed Chores"
-LABEL_NONE = "None"
+LABEL_NONE = ""
 LABEL_POINTS = "Points"
 
 
@@ -559,6 +634,9 @@ MSG_NO_ENTRY_FOUND = "No KidsChores entry found"
 UNKNOWN_CHORE = "Unknown Chore"  # Error for unknown chore
 UNKNOWN_KID = "Unknown Kid"  # Error for unknown kid
 UNKNOWN_REWARD = "Unknown Reward"  # Error for unknown reward
+
+# Config Flow
+ERROR_SINGLE_INSTANCE = "single_instance_allowed"
 
 # --------------------------------------------------------------------
 # Parent Approval Workflow
