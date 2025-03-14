@@ -142,13 +142,74 @@ OPTIONS_FLOW_STEP_DELETE_REWARD = "delete_reward"
 
 # ConfigFlow & OptionsFlow User Input Fields
 
-# KIDS
-CFOF_KIDS_INPUT_KID_NAME = "kid_name"
-CFOF_KIDS_INPUT_KID_HA_USER = "ha_user"
-CFOF_KIDS_INPUT_KID_ENABLE_MOBILE_NOTIFICATIONS = "enable_mobile_notifications"
-CFOF_KIDS_INPUT_KID_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
-CFOF_KIDS_INPUT_KID_ENABLE_PERSISTENT_NOTIFICATIONS = "enable_persistent_notifications"
+# GLOBAL
 CFOF_GLOBAL_INPUT_INTERNAL_ID = "internal_id"
+
+# KIDS
+CFOF_KIDS_INPUT_ENABLE_MOBILE_NOTIFICATIONS = "enable_mobile_notifications"
+CFOF_KIDS_INPUT_ENABLE_PERSISTENT_NOTIFICATIONS = "enable_persistent_notifications"
+CFOF_KIDS_INPUT_HA_USER = "ha_user"
+CFOF_KIDS_INPUT_KID_NAME = "kid_name"
+CFOF_KIDS_INPUT_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
+
+# PARENTS
+CFOF_PARENTS_INPUT_ASSOCIATED_KIDS = "associated_kids"
+CFOF_PARENTS_INPUT_ENABLE_MOBILE_NOTIFICATIONS = "enable_mobile_notifications"
+CFOF_PARENTS_INPUT_ENABLE_PERSISTENT_NOTIFICATIONS = "enable_persistent_notifications"
+CFOF_PARENTS_INPUT_HA_USER = "ha_user_id"
+CFOF_PARENTS_INPUT_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
+CFOF_PARENTS_INPUT_PARENT_NAME = "parent_name"
+
+# CHORES
+CFOF_CHORES_INPUT_ALLOW_MULTIPLE_CLAIMS = "allow_multiple_claims_per_day"
+CFOF_CHORES_INPUT_APPLICABLE_DAYS = "applicable_days"
+CFOF_CHORES_INPUT_ASSIGNED_KIDS = "asigned_kids"
+CFOF_CHORES_INPUT_CHORE_DESCRIPTION = "chore_description"
+CFOF_CHORES_INPUT_CHORE_LABELS = "chore_labels"
+CFOF_CHORES_INPUT_CHORE_NAME = "chore_name"
+CFOF_CHORES_INPUT_CUSTOM_INTERVAL = "custom_interval"
+CFOF_CHORES_INPUT_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
+CFOF_CHORES_INPUT_DEFAULT_POINTS = "default_points"
+CFOF_CHORES_INPUT_DUE_DATE = "due_date"
+CFOF_CHORES_INPUT_ICON = "icon"
+CFOF_CHORES_INPUT_NOTIFY_ON_APPROVAL = "notify_on_approval"
+CFOF_CHORES_INPUT_NOTIFY_ON_CLAIM = "notify_on_claim"
+CFOF_CHORES_INPUT_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
+CFOF_CHORES_INPUT_PARTIAL_ALLOWED = "partial_allowed"
+CFOF_CHORES_INPUT_RECURRING_FREQUENCY = "recurring_frequency"
+CFOF_CHORES_INPUT_SHARED_CHORE = "shared_chore"
+
+# BADGES
+CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT = "associated_acchievement"
+CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE = "associated_challenge"
+CFOF_BADGES_INPUT_BADGE_DESCRIPTION = "badge_description"
+CFOF_BADGES_INPUT_BADGE_LABELS = "badge_labels"
+CFOF_BADGES_INPUT_BADGE_NAME = "badge_name"
+CFOF_BADGES_INPUT_BADGE_TYPE = "badge_type"
+CFOF_BADGES_INPUT_DAILY_THRESHOLD = "daily_threshold"
+CFOF_BADGES_INPUT_ICON = "icon"
+CFOF_BADGES_INPUT_OCCASION_TYPE = "occasion_type"
+CFOF_BADGES_INPUT_ONE_TIME_REWARD = "one_time_reward"
+CFOF_BADGES_INPUT_PERIOD = "period"
+CFOF_BADGES_INPUT_POINTS_MULTIPLIER = "points_multiplier"
+CFOF_BADGES_INPUT_REWARD = "reward"
+CFOF_BADGES_INPUT_RESET_CRITERIA = "reset_criteria"
+CFOF_BADGES_INPUT_THRESHOLD_VALUE = "threshold_value"
+CFOF_BADGES_INPUT_TRIGGER_INFO = "trigger_info"
+
+# REWARDS
+
+
+# BONUSES
+
+
+# PENALTIES
+
+
+# ACHIEVEMENTS
+
+
+# CHALLENGES
 
 # OptionsFlow Input Fields
 OPTIONS_FLOW_INPUT_ENTITY_NAME = "entity_name"
@@ -161,12 +222,22 @@ OPTIONS_FLOW_DATA_ENTITY_NAME = "name"
 
 # OptionsFlow Placeholders
 OPTIONS_FLOW_PLACEHOLDER_ACTION = "action"
+OPTIONS_FLOW_PLACEHOLDER_ACHIEVEMENT_NAME = "achievement_name"
+OPTIONS_FLOW_PLACEHOLDER_BADGE_NAME = "badge_name"
+OPTIONS_FLOW_PLACEHOLDER_BONUS_NAME = "bonus_name"
+OPTIONS_FLOW_PLACEHOLDER_CHALLENGE_NAME = "challenge_name"
+OPTIONS_FLOW_PLACEHOLDER_CHORE_NAME = "chore_name"
 OPTIONS_FLOW_PLACEHOLDER_ENTITY_TYPE = "entity_type"
+OPTIONS_FLOW_PLACEHOLDER_KID_NAME = "kid_name"
+OPTIONS_FLOW_PLACEHOLDER_PARENT_NAME = "parent_name"
+OPTIONS_FLOW_PLACEHOLDER_PENALTY_NAME = "penalty_name"
+OPTIONS_FLOW_PLACEHOLDER_REWARD_NAME = "reward_name"
+
 
 # OptionsFlow Helpers
-OPTIONS_FLOW_MENU_MANAGE_PREFIX = "manage_"
 OPTIONS_FLOW_ASYNC_STEP_PREFIX = "async_step_"
-
+OPTIONS_FLOW_ASYNC_STEP_ADD_PREFIX = "async_step_add_"
+OPTIONS_FLOW_MENU_MANAGE_PREFIX = "manage_"
 
 # Validation Keys
 VALIDATION_DUE_DATE = "due_date"  # Optional due date for chores
@@ -323,14 +394,50 @@ CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW = "total_within_window"
 
 # GLOBAL
 DATA_INTERNAL_ID = "internal_id"
+DATA_LAST_CHANGE = "last_change"
 
 # KIDS
-DATA_KID_NAME = "name"
-DATA_KID_HA_USER_ID = "ha_user_id"
+DATA_KID_APPROVED_CHORES = "approved_chores"
+DATA_KID_BADGES = "badges"
+DATA_KID_BONUS_APPLIES = "bonus_applies"
+DATA_KID_CHORE_APPROVALS = "chore_approvals"
+DATA_KID_CHORE_CLAIMS = "chore_claims"
+DATA_KID_CHORE_STREAKS = "chore_streaks"
+DATA_KID_CLAIMED_CHORES = "claimed_chores"
+DATA_KID_COMPLETED_CHORES_MONTHLY = "completed_chores_monthly"
+DATA_KID_COMPLETED_CHORES_TOTAL = "completed_chores_total"
+DATA_KID_COMPLETED_CHORES_TODAY = "completed_chores_today"
+DATA_KID_COMPLETED_CHORES_WEEKLY = "completed_chores_weekly"
 DATA_KID_ENABLE_NOTIFICATIONS = "enable_notifications"
-DATA_KID_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
-DATA_KID_USER_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
+DATA_KID_HA_USER_ID = "ha_user_id"
 DATA_KID_INTERNAL_ID = "internal_id"
+DATA_KID_LAST_CHORE_DATE = "last_chore_date"
+DATA_KID_MAX_POINTS_EVER = "max_points_ever"
+DATA_KID_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
+DATA_KID_NAME = "name"
+DATA_KID_OVERDUE_CHORES = "overdue_chores"
+DATA_KID_OVERDUE_NOTIFICATIONS = "overdue_notifications"
+DATA_KID_OVERALL_CHORE_STREAK = "overall_chore_streak"
+DATA_KID_PENALTY_APPLIES = "penalty_applies"
+DATA_KID_PENDING_REWARDS = "pending_rewards"
+DATA_KID_POINTS = "points"
+DATA_KID_POINTS_EARNED_MONTHLY = "points_earned_monthly"
+DATA_KID_POINTS_EARNED_TODAY = "points_earned_today"
+DATA_KID_POINTS_EARNED_WEEKLY = "points_earned_weekly"
+DATA_KID_POINTS_MULTIPLIER = "points_multiplier"
+DATA_KID_REDEEMED_REWARDS = "redeemed_rewards"
+DATA_KID_REWARD_APPROVALS = "reward_approvals"
+DATA_KID_REWARD_CLAIMS = "reward_claims"
+DATA_KID_USE_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
+
+# PARENTS
+DATA_PARENT_NAME = "name"
+DATA_PARENT_HA_USER_ID = "ha_user_id"
+DATA_PARENT_ASSOCIATED_KIDS = "associated_kids"
+DATA_PARENT_ENABLE_NOTIFICATIONS = "enable_notifications"
+DATA_PARENT_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
+DATA_PARENT_USER_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
+DATA_PARENT_INTERNAL_ID = "internal_id"
 
 DATA_ACHIEVEMENTS = "achievements"
 DATA_ACHIEVEMENT_LABELS = "achievement_labels"
@@ -675,7 +782,20 @@ UNKNOWN_KID = "Unknown Kid"  # Error for unknown kid
 UNKNOWN_REWARD = "Unknown Reward"  # Error for unknown reward
 
 # Config Flow & Options Flow Error Keys
-CFOP_ERROR_KIDS_KID_NAME = "kid_name"
+CFOP_ERROR_ACHIEVEMENT_NAME = "name"
+CFOP_ERROR_BADGE_NAME = "badge_name"
+CFOP_ERROR_BONUS_NAME = "bonus_name"
+CFOP_ERROR_CHALLENGE_NAME = "name"
+CFOP_ERROR_CHORE_NAME = "chore_name"
+CFOP_ERROR_DUE_DATE = "due_date"
+CFOP_ERROR_END_DATE = "end_date"
+CFOP_ERROR_KID_NAME = "kid_name"
+CFPO_ERROR_PARENT_NAME = "parent_name"
+CFOP_ERROR_PENALTY_NAME = "penalty_name"
+CFOP_ERROR_REWARD_NAME = "reward_name"
+CFOP_ERROR_SELECT_CHORE_ID = "selected_chore_id"
+CFOP_ERROR_START_DATE = "start_date"
+
 
 # --------------------------------------------------------------------
 # Parent Approval Workflow
@@ -702,13 +822,29 @@ ATTR_CAL_SUMMARY = "summary"
 # ConfigFlow & OptionsFlow translation keys
 TRANS_KEY_ERROR_SINGLE_INSTANCE = "single_instance_allowed"
 TRANS_KEY_OPTIONS_FLOW_BADGE_TYPE = "badge_type"
+TRANS_KEY_OPTIONS_FLOW_CHORE_MUST_BE_SELECTED = "a_chore_must_be_selected"
+TRANS_KEY_OPTIONS_FLOW_DUE_DATE_IN_PAST = "due_date_in_past"
+TRANS_KEY_OPTIONS_FLOW_DUPLICATE_ACHIEVEMENT = "duplicate_achievement"
+TRANS_KEY_OPTIONS_FLOW_DUPLICATE_BADGE = "duplicate_badge"
+TRANS_KEY_OPTIONS_FLOW_DUPLICATE_BONUS = "duplicate_bonus"
+TRANS_KEY_OPTIONS_FLOW_DUPLICATE_CHALLENGE = "duplicate_challenge"
+TRANS_KEY_OPTIONS_FLOW_DUPLICATE_CHORE = "duplicate_chore"
 TRANS_KEY_OPTIONS_FLOW_DUPLICATE_KID = "duplicate_kid"
+TRANS_KEY_OPTIONS_FLOW_DUPLICATE_PARENT = "duplicate_parent"
+TRANS_KEY_OPTIONS_FLOW_DUPLICATE_PENALTY = "duplicate_penalty"
+TRANS_KEY_OPTIONS_FLOW_DUPLICATE_REWARD = "duplicate_reward"
+TRANS_KEY_OPTIONS_FLOW_END_DATE_IN_PAST = "end_date_in_past"
+TRANS_KEY_OPTIONS_FLOW_END_DATE_NOT_AFTER_START_DATE = "end_date_not_after_start_date"
 TRANS_KEY_OPTIONS_FLOW_INVALID_ACTION = "invalid_action"
+TRANS_KEY_OPTIONS_FLOW_INVALID_DUE_DATE = "invalid_due_date"
+TRANS_KEY_OPTIONS_FLOW_INVALID_END_DATE = "invalid_end_date"
 TRANS_KEY_OPTIONS_FLOW_INVALID_ENTITY = "invalid_entity"
 TRANS_KEY_OPTIONS_FLOW_INVALID_KID_NAME = "invalid_kid_name"
+TRANS_KEY_OPTIONS_FLOW_INVALID_START_DATE = "invalid_start_date"
 TRANS_KEY_OPTIONS_FLOW_MAIN_MENU = "main_menu"
 TRANS_KEY_OPTIONS_FLOW_MANAGE_ACTIONS = "manage_actions"
 TRANS_KEY_OPTIONS_FLOW_NO_ENTITY_TYPE = "no_{}s"
+TRANS_KEY_OPTIONS_FLOW_START_DATE_IN_PAST = "start_date_in_past"
 TRANS_KEY_OPTIONS_FLOW_SETUP_COMPLETE = "setup_complete"
 
 

@@ -695,40 +695,80 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     # -- Kids
     def _create_kid(self, kid_id: str, kid_data: dict[str, Any]):
         self._data[const.DATA_KIDS][kid_id] = {
-            "name": kid_data.get("name", ""),
-            "points": kid_data.get("points", 0.0),
-            "badges": kid_data.get("badges", []),
-            "claimed_chores": kid_data.get("claimed_chores", []),
-            "approved_chores": kid_data.get("approved_chores", []),
-            "completed_chores_today": kid_data.get("completed_chores_today", 0),
-            "completed_chores_weekly": kid_data.get("completed_chores_weekly", 0),
-            "completed_chores_monthly": kid_data.get("completed_chores_monthly", 0),
-            "completed_chores_total": kid_data.get("completed_chores_total", 0),
-            "ha_user_id": kid_data.get("ha_user_id"),
-            "internal_id": kid_id,
-            "points_multiplier": kid_data.get("points_multiplier", 1.0),
-            "reward_claims": kid_data.get("reward_claims", {}),
-            "reward_approvals": kid_data.get("reward_approvals", {}),
-            "chore_claims": kid_data.get("chore_claims", {}),
-            "chore_approvals": kid_data.get("chore_approvals", {}),
-            "penalty_applies": kid_data.get("penalty_applies", {}),
-            "bonus_applies": kid_data.get("bonus_applies", {}),
-            "pending_rewards": kid_data.get("pending_rewards", []),
-            "redeemed_rewards": kid_data.get("redeemed_rewards", []),
-            "points_earned_today": kid_data.get("points_earned_today", 0.0),
-            "points_earned_weekly": kid_data.get("points_earned_weekly", 0.0),
-            "points_earned_monthly": kid_data.get("points_earned_monthly", 0.0),
-            "max_points_ever": kid_data.get("max_points_ever", 0.0),
-            "enable_notifications": kid_data.get("enable_notifications", True),
-            "mobile_notify_service": kid_data.get("mobile_notify_service", ""),
-            "use_persistent_notifications": kid_data.get(
-                "use_persistent_notifications", True
+            const.DATA_KID_NAME: kid_data.get(const.DATA_KID_NAME, ""),
+            const.DATA_KID_POINTS: kid_data.get(const.DATA_KID_POINTS, 0.0),
+            const.DATA_KID_BADGES: kid_data.get(const.DATA_KID_BADGES, []),
+            const.DATA_KID_CLAIMED_CHORES: kid_data.get(
+                const.DATA_KID_CLAIMED_CHORES, []
             ),
-            "chore_streaks": {},
-            "overall_chore_streak": 0,
-            "last_chore_date": None,
-            "overdue_chores": [],
-            "overdue_notifications": {},
+            const.DATA_KID_APPROVED_CHORES: kid_data.get(
+                const.DATA_KID_APPROVED_CHORES, []
+            ),
+            const.DATA_KID_COMPLETED_CHORES_TODAY: kid_data.get(
+                const.DATA_KID_COMPLETED_CHORES_TODAY, 0
+            ),
+            const.DATA_KID_COMPLETED_CHORES_WEEKLY: kid_data.get(
+                const.DATA_KID_COMPLETED_CHORES_WEEKLY, 0
+            ),
+            const.DATA_KID_COMPLETED_CHORES_MONTHLY: kid_data.get(
+                const.DATA_KID_COMPLETED_CHORES_MONTHLY, 0
+            ),
+            const.DATA_KID_COMPLETED_CHORES_TOTAL: kid_data.get(
+                const.DATA_KID_COMPLETED_CHORES_TOTAL, 0
+            ),
+            const.DATA_KID_HA_USER_ID: kid_data.get(const.DATA_KID_HA_USER_ID),
+            const.DATA_KID_INTERNAL_ID: kid_id,
+            const.DATA_KID_POINTS_MULTIPLIER: kid_data.get(
+                const.DATA_KID_POINTS_MULTIPLIER, 1.0
+            ),
+            const.DATA_KID_REWARD_CLAIMS: kid_data.get(
+                const.DATA_KID_REWARD_CLAIMS, {}
+            ),
+            const.DATA_KID_REWARD_APPROVALS: kid_data.get(
+                const.DATA_KID_REWARD_APPROVALS, {}
+            ),
+            const.DATA_KID_CHORE_CLAIMS: kid_data.get(const.DATA_KID_CHORE_CLAIMS, {}),
+            const.DATA_KID_CHORE_APPROVALS: kid_data.get(
+                const.DATA_KID_CHORE_APPROVALS, {}
+            ),
+            const.DATA_KID_PENALTY_APPLIES: kid_data.get(
+                const.DATA_KID_PENALTY_APPLIES, {}
+            ),
+            const.DATA_KID_BONUS_APPLIES: kid_data.get(
+                const.DATA_KID_BONUS_APPLIES, {}
+            ),
+            const.DATA_KID_PENDING_REWARDS: kid_data.get(
+                const.DATA_KID_PENDING_REWARDS, []
+            ),
+            const.DATA_KID_REDEEMED_REWARDS: kid_data.get(
+                const.DATA_KID_REDEEMED_REWARDS, []
+            ),
+            const.DATA_KID_POINTS_EARNED_TODAY: kid_data.get(
+                const.DATA_KID_POINTS_EARNED_TODAY, 0.0
+            ),
+            const.DATA_KID_POINTS_EARNED_WEEKLY: kid_data.get(
+                const.DATA_KID_POINTS_EARNED_WEEKLY, 0.0
+            ),
+            const.DATA_KID_POINTS_EARNED_MONTHLY: kid_data.get(
+                const.DATA_KID_POINTS_EARNED_MONTHLY, 0.0
+            ),
+            const.DATA_KID_MAX_POINTS_EVER: kid_data.get(
+                const.DATA_KID_MAX_POINTS_EVER, 0.0
+            ),
+            const.DATA_KID_ENABLE_NOTIFICATIONS: kid_data.get(
+                const.DATA_KID_ENABLE_NOTIFICATIONS, True
+            ),
+            const.DATA_KID_MOBILE_NOTIFY_SERVICE: kid_data.get(
+                const.DATA_KID_MOBILE_NOTIFY_SERVICE, ""
+            ),
+            const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS: kid_data.get(
+                const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS, True
+            ),
+            const.DATA_KID_CHORE_STREAKS: {},
+            const.DATA_KID_OVERALL_CHORE_STREAK: 0,
+            const.DATA_KID_LAST_CHORE_DATE: None,
+            const.DATA_KID_OVERDUE_CHORES: [],
+            const.DATA_KID_OVERDUE_NOTIFICATIONS: {},
         }
 
         self._normalize_kid_lists(self._data[const.DATA_KIDS][kid_id])
@@ -741,43 +781,80 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     def _update_kid(self, kid_id: str, kid_data: dict[str, Any]):
         kid_info = self._data[const.DATA_KIDS][kid_id]
+
         # Overwrite or set default if not present
-        kid_info["name"] = kid_data.get("name", kid_info["name"])
-        kid_info["ha_user_id"] = kid_data.get("ha_user_id", kid_info["ha_user_id"])
-        kid_info.setdefault("reward_claims", kid_data.get("reward_claims", {}))
-        kid_info.setdefault("reward_approvals", kid_data.get("reward_approvals", {}))
-        kid_info.setdefault("chore_claims", kid_data.get("chore_claims", {}))
-        kid_info.setdefault("chore_approvals", kid_data.get("chore_approvals", {}))
-        kid_info.setdefault("penalty_applies", kid_data.get("penalty_applies", {}))
-        kid_info.setdefault("bonus_applies", kid_data.get("bonus_applies", {}))
-        kid_info.setdefault("pending_rewards", kid_data.get("pending_rewards", []))
-        kid_info.setdefault("redeemed_rewards", kid_data.get("redeemed_rewards", []))
-        kid_info.setdefault(
-            "points_earned_today", kid_data.get("points_earned_today", 0.0)
+        kid_info[const.DATA_KID_NAME] = kid_data.get(
+            const.DATA_KID_NAME, kid_info[const.DATA_KID_NAME]
+        )
+        kid_info[const.DATA_KID_HA_USER_ID] = kid_data.get(
+            const.DATA_KID_HA_USER_ID, kid_info[const.DATA_KID_HA_USER_ID]
         )
         kid_info.setdefault(
-            "points_earned_weekly", kid_data.get("points_earned_weekly", 0.0)
+            const.DATA_KID_REWARD_CLAIMS, kid_data.get(const.DATA_KID_REWARD_CLAIMS, {})
         )
         kid_info.setdefault(
-            "points_earned_monthly", kid_data.get("points_earned_monthly", 0.0)
+            const.DATA_KID_REWARD_APPROVALS,
+            kid_data.get(const.DATA_KID_REWARD_APPROVALS, {}),
         )
-        kid_info.setdefault("max_points_ever", kid_data.get("max_points_ever", 0.0))
-        kid_info.setdefault("points_multiplier", kid_data.get("points_multiplier", 1.0))
-        kid_info["enable_notifications"] = kid_data.get(
-            "enable_notifications", kid_info.get("enable_notifications", True)
+        kid_info.setdefault(
+            const.DATA_KID_CHORE_CLAIMS, kid_data.get(const.DATA_KID_CHORE_CLAIMS, {})
         )
-        kid_info["mobile_notify_service"] = kid_data.get(
-            "mobile_notify_service", kid_info.get("mobile_notify_service", "")
+        kid_info.setdefault(
+            const.DATA_KID_CHORE_APPROVALS,
+            kid_data.get(const.DATA_KID_CHORE_APPROVALS, {}),
         )
-        kid_info["use_persistent_notifications"] = kid_data.get(
-            "use_persistent_notifications",
-            kid_info.get("use_persistent_notifications", True),
+        kid_info.setdefault(
+            const.DATA_KID_PENALTY_APPLIES,
+            kid_data.get(const.DATA_KID_PENALTY_APPLIES, {}),
         )
-        kid_info.setdefault("chore_streaks", {})
-        kid_info.setdefault("overall_chore_streak", 0)
-        kid_info.setdefault("last_chore_date", None)
-        kid_info.setdefault("overdue_chores", [])
-        kid_info.setdefault("overdue_notifications", {})
+        kid_info.setdefault(
+            const.DATA_KID_BONUS_APPLIES, kid_data.get(const.DATA_KID_BONUS_APPLIES, {})
+        )
+        kid_info.setdefault(
+            const.DATA_KID_PENDING_REWARDS,
+            kid_data.get(const.DATA_KID_PENDING_REWARDS, []),
+        )
+        kid_info.setdefault(
+            const.DATA_KID_REDEEMED_REWARDS,
+            kid_data.get(const.DATA_KID_REDEEMED_REWARDS, []),
+        )
+        kid_info.setdefault(
+            const.DATA_KID_POINTS_EARNED_TODAY,
+            kid_data.get(const.DATA_KID_POINTS_EARNED_TODAY, 0.0),
+        )
+        kid_info.setdefault(
+            const.DATA_KID_POINTS_EARNED_WEEKLY,
+            kid_data.get(const.DATA_KID_POINTS_EARNED_WEEKLY, 0.0),
+        )
+        kid_info.setdefault(
+            const.DATA_KID_POINTS_EARNED_MONTHLY,
+            kid_data.get(const.DATA_KID_POINTS_EARNED_MONTHLY, 0.0),
+        )
+        kid_info.setdefault(
+            const.DATA_KID_MAX_POINTS_EVER,
+            kid_data.get(const.DATA_KID_MAX_POINTS_EVER, 0.0),
+        )
+        kid_info.setdefault(
+            const.DATA_KID_POINTS_MULTIPLIER,
+            kid_data.get(const.DATA_KID_POINTS_MULTIPLIER, 1.0),
+        )
+        kid_info[const.DATA_KID_ENABLE_NOTIFICATIONS] = kid_data.get(
+            const.DATA_KID_ENABLE_NOTIFICATIONS,
+            kid_info.get(const.DATA_KID_ENABLE_NOTIFICATIONS, True),
+        )
+        kid_info[const.DATA_KID_MOBILE_NOTIFY_SERVICE] = kid_data.get(
+            const.DATA_KID_MOBILE_NOTIFY_SERVICE,
+            kid_info.get(const.DATA_KID_MOBILE_NOTIFY_SERVICE, ""),
+        )
+        kid_info[const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS] = kid_data.get(
+            const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS,
+            kid_info.get(const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS, True),
+        )
+        kid_info.setdefault(const.DATA_KID_CHORE_STREAKS, {})
+        kid_info.setdefault(const.DATA_KID_OVERALL_CHORE_STREAK, 0)
+        kid_info.setdefault(const.DATA_KID_LAST_CHORE_DATE, None)
+        kid_info.setdefault(const.DATA_KID_OVERDUE_CHORES, [])
+        kid_info.setdefault(const.DATA_KID_OVERDUE_NOTIFICATIONS, {})
 
         self._normalize_kid_lists(self._data[const.DATA_KIDS][kid_id])
 
