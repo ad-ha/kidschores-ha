@@ -158,20 +158,20 @@ CFOF_PARENTS_INPUT_ENABLE_MOBILE_NOTIFICATIONS = "enable_mobile_notifications"
 CFOF_PARENTS_INPUT_ENABLE_PERSISTENT_NOTIFICATIONS = "enable_persistent_notifications"
 CFOF_PARENTS_INPUT_HA_USER = "ha_user_id"
 CFOF_PARENTS_INPUT_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
-CFOF_PARENTS_INPUT_PARENT_NAME = "parent_name"
+CFOF_PARENTS_INPUT_NAME = "parent_name"
 
 # CHORES
 CFOF_CHORES_INPUT_ALLOW_MULTIPLE_CLAIMS = "allow_multiple_claims_per_day"
 CFOF_CHORES_INPUT_APPLICABLE_DAYS = "applicable_days"
 CFOF_CHORES_INPUT_ASSIGNED_KIDS = "asigned_kids"
-CFOF_CHORES_INPUT_CHORE_DESCRIPTION = "chore_description"
-CFOF_CHORES_INPUT_CHORE_LABELS = "chore_labels"
-CFOF_CHORES_INPUT_CHORE_NAME = "chore_name"
 CFOF_CHORES_INPUT_CUSTOM_INTERVAL = "custom_interval"
 CFOF_CHORES_INPUT_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
 CFOF_CHORES_INPUT_DEFAULT_POINTS = "default_points"
+CFOF_CHORES_INPUT_DESCRIPTION = "chore_description"
 CFOF_CHORES_INPUT_DUE_DATE = "due_date"
 CFOF_CHORES_INPUT_ICON = "icon"
+CFOF_CHORES_INPUT_LABELS = "chore_labels"
+CFOF_CHORES_INPUT_NAME = "chore_name"
 CFOF_CHORES_INPUT_NOTIFY_ON_APPROVAL = "notify_on_approval"
 CFOF_CHORES_INPUT_NOTIFY_ON_CLAIM = "notify_on_claim"
 CFOF_CHORES_INPUT_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
@@ -182,12 +182,11 @@ CFOF_CHORES_INPUT_SHARED_CHORE = "shared_chore"
 # BADGES
 CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT = "associated_acchievement"
 CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE = "associated_challenge"
-CFOF_BADGES_INPUT_BADGE_DESCRIPTION = "badge_description"
-CFOF_BADGES_INPUT_BADGE_LABELS = "badge_labels"
-CFOF_BADGES_INPUT_BADGE_NAME = "badge_name"
-CFOF_BADGES_INPUT_BADGE_TYPE = "badge_type"
 CFOF_BADGES_INPUT_DAILY_THRESHOLD = "daily_threshold"
+CFOF_BADGES_INPUT_DESCRIPTION = "badge_description"
 CFOF_BADGES_INPUT_ICON = "icon"
+CFOF_BADGES_INPUT_LABELS = "badge_labels"
+CFOF_BADGES_INPUT_NAME = "badge_name"
 CFOF_BADGES_INPUT_OCCASION_TYPE = "occasion_type"
 CFOF_BADGES_INPUT_ONE_TIME_REWARD = "one_time_reward"
 CFOF_BADGES_INPUT_PERIOD = "period"
@@ -196,20 +195,55 @@ CFOF_BADGES_INPUT_REWARD = "reward"
 CFOF_BADGES_INPUT_RESET_CRITERIA = "reset_criteria"
 CFOF_BADGES_INPUT_THRESHOLD_VALUE = "threshold_value"
 CFOF_BADGES_INPUT_TRIGGER_INFO = "trigger_info"
+CFOF_BADGES_INPUT_TYPE = "badge_type"
 
 # REWARDS
-
+CFOF_REWARDS_INPUT_COST = "reward_cost"
+CFOF_REWARDS_INPUT_DESCRIPTION = "reward_description"
+CFOF_REWARDS_INPUT_ICON = "icon"
+CFOF_REWARDS_INPUT_LABELS = "reward_labels"
+CFOF_REWARDS_INPUT_NAME = "reward_name"
 
 # BONUSES
-
+CFOF_BONUSES_INPUT_DESCRIPTION = "bonus_description"
+CFOF_BONUSES_INPUT_ICON = "icon"
+CFOF_BONUSES_INPUT_LABELS = "bonus_labels"
+CFOF_BONUSES_INPUT_NAME = "bonus_name"
+CFOF_BONUSES_INPUT_POINTS = "bonus_points"
 
 # PENALTIES
-
+CFOF_PENALTIES_INPUT_DESCRIPTION = "penalty_description"
+CFOF_PENALTIES_INPUT_ICON = "icon"
+CFOF_PENALTIES_INPUT_LABELS = "penalty_labels"
+CFOF_PENALTIES_INPUT_NAME = "penalty_name"
+CFOF_PENALTIES_INPUT_POINTS = "penalty_points"
 
 # ACHIEVEMENTS
-
+CFOF_ACHIEVEMENTS_INPUT_ASSIGNED_KIDS = "assigned_kids"
+CFOF_ACHIEVEMENTS_INPUT_CRITERIA = "criteria"
+CFOF_ACHIEVEMENTS_INPUT_DESCRIPTION = "description"
+CFOF_ACHIEVEMENTS_INPUT_ICON = "icon"
+CFOF_ACHIEVEMENTS_INPUT_LABELS = "achievement_labels"
+CFOF_ACHIEVEMENTS_INPUT_NAME = "name"
+CFOF_ACHIEVEMENTS_INPUT_REWARD_POINTS = "reward_points"
+CFOF_ACHIEVEMENTS_INPUT_SELECTED_CHORE_ID = "selected_chore_id"
+CFOF_ACHIEVEMENTS_INPUT_TARGET_VALUE = "target_value"
+CFOF_ACHIEVEMENTS_INPUT_TYPE = "type"
 
 # CHALLENGES
+CFOF_CHALLENGES_INPUT_ASSIGNED_KIDS = "assigned_kids"
+CFOF_CHALLENGES_INPUT_CRITERIA = "criteria"
+CFOF_CHALLENGES_INPUT_DESCRIPTION = "description"
+CFOF_CHALLENGES_INPUT_END_DATE = "end_date"
+CFOF_CHALLENGES_INPUT_ICON = "icon"
+CFOF_CHALLENGES_INPUT_LABELS = "challenge_labels"
+CFOF_CHALLENGES_INPUT_NAME = "name"
+CFOF_CHALLENGES_INPUT_REWARD_POINTS = "reward_points"
+CFOF_CHALLENGES_INPUT_SELECTED_CHORE_ID = "selected_chore_id"
+CFOF_CHALLENGES_INPUT_START_DATE = "start_date"
+CFOF_CHALLENGES_INPUT_TARGET_VALUE = "target_value"
+CFOF_CHALLENGES_INPUT_TYPE = "type"
+
 
 # OptionsFlow Input Fields
 OPTIONS_FLOW_INPUT_ENTITY_NAME = "entity_name"
@@ -393,8 +427,44 @@ CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW = "total_within_window"
 # --------------------------------------------------------------------
 
 # GLOBAL
+DATA_ACHIEVEMENTS = "achievements"
+DATA_APPLICABLE_DAYS = "applicable_days"
+DATA_ASSIGNED_KIDS = "assigned_kids"
+DATA_BADGES = "badges"
+DATA_BONUSES = "bonuses"
+DATA_CHALLENGES = "challenges"
+DATA_CHORES = "chores"
+DATA_CRITERIA = "criteria"
+DATA_CUSTOM_INTERVAL = "custom_interval"
+DATA_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
+DATA_DEFAULT_POINTS = "default_points"
+DATA_DUE_DATE = "due_date"
+DATA_ENABLE_NOTIFICATIONS = "enable_notifications"
+DATA_HA_USER = "ha_user"
+DATA_HA_USER_ID = "ha_user_id"
 DATA_INTERNAL_ID = "internal_id"
+DATA_KIDS = "kids"
 DATA_LAST_CHANGE = "last_change"
+DATA_LAST_CHORE_DATE = "last_chore_date"
+DATA_MAX_POINTS_EVER = "max_points_ever"
+DATA_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
+DATA_NOTIFY_ON_APPROVAL = "notify_on_approval"
+DATA_NOTIFY_ON_CLAIM = "notify_on_claim"
+DATA_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
+DATA_OVERALL_CHORE_STREAK = "overall_chore_streak"
+DATA_OVERDUE_CHORES = "overdue_chores"
+DATA_OVERDUE_NOTIFICATIONS = "overdue_notifications"
+DATA_PARENTS = "parents"
+DATA_PENALTIES = "penalties"
+DATA_PENALTY_APPLIES = "penalty_applies"
+DATA_POINTS_EARNED_MONTHLY = "points_earned_monthly"
+DATA_POINTS_EARNED_TODAY = "points_earned_today"
+DATA_POINTS_EARNED_WEEKLY = "points_earned_weekly"
+DATA_RECURRING_FREQUENCY = "recurring_frequency"
+DATA_REWARD_APPROVALS = "reward_approvals"
+DATA_REWARD_CLAIMS = "reward_claims"
+DATA_REWARDS = "rewards"
+DATA_SELECTED_CHORE_ID = "selected_chore_id"
 
 # KIDS
 DATA_KID_APPROVED_CHORES = "approved_chores"
@@ -431,65 +501,114 @@ DATA_KID_REWARD_CLAIMS = "reward_claims"
 DATA_KID_USE_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
 
 # PARENTS
-DATA_PARENT_NAME = "name"
-DATA_PARENT_HA_USER_ID = "ha_user_id"
 DATA_PARENT_ASSOCIATED_KIDS = "associated_kids"
 DATA_PARENT_ENABLE_NOTIFICATIONS = "enable_notifications"
-DATA_PARENT_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
-DATA_PARENT_USER_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
+DATA_PARENT_HA_USER_ID = "ha_user_id"
 DATA_PARENT_INTERNAL_ID = "internal_id"
+DATA_PARENT_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
+DATA_PARENT_NAME = "name"
+DATA_PARENT_USE_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
 
-DATA_ACHIEVEMENTS = "achievements"
-DATA_ACHIEVEMENT_LABELS = "achievement_labels"
-DATA_ACHIEVEMENT_NAME = "achievement_name"
-DATA_APPLICABLE_DAYS = "applicable_days"
-DATA_ASSIGNED_KIDS = "assigned_kids"
-DATA_BONUSES = "bonuses"
-DATA_BONUS_LABELS = "bonus_labels"
-DATA_BONUS_NAME = "bonus_name"
-DATA_BONUS_POINTS = "bonus_points"
-DATA_BADGES = "badges"
+# CHORES
+DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY = "allow_multiple_claims_per_day"
+DATA_CHORE_APPLICABLE_DAYS = "applicable_days"
+DATA_CHORE_ASSIGNED_KIDS = "assigned_kids"
+DATA_CHORE_CUSTOM_INTERVAL = "custom_interval"
+DATA_CHORE_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
+DATA_CHORE_DEFAULT_POINTS = "default_points"
+DATA_CHORE_DESCRIPTION = "description"
+DATA_CHORE_DUE_DATE = "due_date"
+DATA_CHORE_ICON = "icon"
+DATA_CHORE_INTERNAL_ID = "internal_id"
+DATA_CHORE_LABELS = "chore_labels"
+DATA_CHORE_LAST_CLAIMED = "last_claimed"
+DATA_CHORE_LAST_COMPLETED = "last_completed"
+DATA_CHORE_NAME = "name"
+DATA_CHORE_NOTIFY_ON_APPROVAL = "notify_on_approval"
+DATA_CHORE_NOTIFY_ON_CLAIM = "notify_on_claim"
+DATA_CHORE_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
+DATA_CHORE_PARTIAL_ALLOWED = "partial_allowed"
+DATA_CHORE_RECURRING_FREQUENCY = "recurring_frequency"
+DATA_CHORE_SHARED_CHORE = "shared_chore"
+DATA_CHORE_STATE = "state"
+
+# BADGES
+DATA_BADGE_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
+DATA_BADGE_ASSOCIATED_CHALLENGE = "associated_challenge"
+DATA_BADGE_DAILY_THRESHOLD = "daily_threshold"
+DATA_BADGE_DESCRIPTION = "description"
+DATA_BADGE_ICON = "icon"
+DATA_BADGE_INTERNAL_ID = "internal_id"
 DATA_BADGE_LABELS = "badge_labels"
-DATA_BADGE_NAME = "badge_name"
+DATA_BADGE_MAINTENANCE_RULES = "maintenance_rules"
+DATA_BADGE_NAME = "name"
+DATA_BADGE_ONE_TIME_REWARD = "one_time_reward"
+DATA_BADGE_OCCASION_TYPE = "occasion_type"
+DATA_BADGE_PERIOD = "period"
+DATA_BADGE_POINTS_MULTIPLIER = "points_multiplier"
+DATA_BADGE_REWARD = "reward"
+DATA_BADGE_RESET_CRITERIA = "reset_criteria"
+DATA_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"
+DATA_BADGE_RESET_PERIOD = "reset_period"
+DATA_BADGE_RESET_PERIODICALLY = "reset_periodically"
 DATA_BADGE_THRESHOLD_TYPE = "threshold_type"
 DATA_BADGE_THRESHOLD_VALUE = "threshold_value"
-DATA_CHALLENGES = "challenges"
+DATA_BADGE_TYPE = "badge_type"
+DATA_BADGE_TRIGGER_INFO = "trigger_info"
+
+# REWARDS
+DATA_REWARD_COST = "cost"
+DATA_REWARD_DESCRIPTION = "description"
+DATA_REWARD_ICON = "icon"
+DATA_REWARD_INTERNAL_ID = "internal_id"
+DATA_REWARD_LABELS = "reward_labels"
+DATA_REWARD_NAME = "name"
+
+# BONUSES
+DATA_BONUS_DESCRIPTION = "description"
+DATA_BONUS_ICON = "icon"
+DATA_BONUS_INTERNAL_ID = "internal_id"
+DATA_BONUS_LABELS = "bonus_labels"
+DATA_BONUS_NAME = "name"
+DATA_BONUS_POINTS = "points"
+
+# PENALTIES
+DATA_PENALTY_DESCRIPTION = "description"
+DATA_PENALTY_ICON = "icon"
+DATA_PENALTY_INTERNAL_ID = "internal_id"
+DATA_PENALTY_LABELS = "penalty_labels"
+DATA_PENALTY_NAME = "name"
+DATA_PENALTY_POINTS = "points"
+
+# ACHIEVEMENTS
+DATA_ACHIEVEMENT_ASSIGNED_KIDS = "assigned_kids"
+DATA_ACHIEVEMENT_CRITERIA = "criteria"
+DATA_ACHIEVEMENT_DESCRIPTION = "description"
+DATA_ACHIEVEMENT_ICON = "icon"
+DATA_ACHIEVEMENT_INTERNAL_ID = "internal_id"
+DATA_ACHIEVEMENT_LABELS = "achievement_labels"
+DATA_ACHIEVEMENT_NAME = "name"
+DATA_ACHIEVEMENT_PROGRESS = "progress"
+DATA_ACHIEVEMENT_REWARD_POINTS = "reward_points"
+DATA_ACHIEVEMENT_SELECTED_CHORE_ID = "selected_chore_id"
+DATA_ACHIEVEMENT_TARGET_VALUE = "target_value"
+DATA_ACHIEVEMENT_TYPE = "type"
+
+# CHALLENGES
+DATA_CHALLENGE_ASSIGNED_KIDS = "assigned_kids"
+DATA_CHALLENGE_CRITERIA = "criteria"
+DATA_CHALLENGE_DESCRIPTION = "description"
+DATA_CHALLENGE_END_DATE = "end_date"
+DATA_CHALLENGE_ICON = "icon"
+DATA_CHALLENGE_INTERNAL_ID = "internal_id"
 DATA_CHALLENGE_LABELS = "challenge_labels"
-DATA_CHALLENGE_NAME = "challenge_name"
-DATA_CHORE_LABELS = "chore_labels"
-DATA_CHORE_NAME = "name"
-DATA_CHORES = "chores"
-DATA_CRITERIA = "criteria"
-DATA_CUSTOM_INTERVAL = "custom_interval"
-DATA_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
-DATA_DEFAULT_POINTS = "default_points"
-DATA_DUE_DATE = "due_date"
-DATA_ENABLE_NOTIFICATIONS = "enable_notifications"
-DATA_HA_USER = "ha_user"
-DATA_HA_USER_ID = "ha_user_id"
-DATA_INTERNAL_ID = "internal_id"
-DATA_KIDS = "kids"
-DATA_LAST_CHORE_DATE = "last_chore_date"
-DATA_MAX_POINTS_EVER = "max_points_ever"
-DATA_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
-DATA_NOTIFY_ON_APPROVAL = "notify_on_approval"
-DATA_NOTIFY_ON_CLAIM = "notify_on_claim"
-DATA_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
-DATA_OVERALL_CHORE_STREAK = "overall_chore_streak"
-DATA_OVERDUE_CHORES = "overdue_chores"
-DATA_OVERDUE_NOTIFICATIONS = "overdue_notifications"
-DATA_PARENT_NAME = "parent_name"
-DATA_PARENTS = "parents"
-DATA_PENALTY_APPLIES = "penalty_applies"
-DATA_PENALTIES = "penalties"
-DATA_POINTS_EARNED_MONTHLY = "points_earned_monthly"
-DATA_POINTS_EARNED_TODAY = "points_earned_today"
-DATA_POINTS_EARNED_WEEKLY = "points_earned_weekly"
-DATA_RECURRING_FREQUENCY = "recurring_frequency"
-DATA_REWARD_APPROVALS = "reward_approvals"
-DATA_REWARD_CLAIMS = "reward_claims"
-DATA_REWARDS = "rewards"
-DATA_SELECTED_CHORE_ID = "selected_chore_id"
+DATA_CHALLENGE_NAME = "name"
+DATA_CHALLENGE_PROGRESS = "progress"
+DATA_CHALLENGE_REWARD_POINTS = "reward_points"
+DATA_CHALLENGE_SELECTED_CHORE_ID = "selected_chore_id"
+DATA_CHALLENGE_START_DATE = "start_date"
+DATA_CHALLENGE_TARGET_VALUE = "target_value"
+DATA_CHALLENGE_TYPE = "type"
 
 # Runtime Data Keys
 DATA_CHORE_APPROVALS = "chore_approvals"
@@ -534,25 +653,26 @@ DEFAULT_BADGE_AWARD_MODE = "points"
 DEFAULT_BADGE_AWARD_POINTS = 5
 DEFAULT_BADGE_DAILY_THRESHOLD = 5
 DEFAULT_BADGE_RESET_GRACE_PERIOD = 0
-DEFAULT_BADGE_THRESOLD_TYPE = "points"
+DEFAULT_BADGE_REWARD = 0
 DEFAULT_BADGE_THRESHOLD_VALUE = 50
+DEFAULT_BADGE_THRESOLD_TYPE = "points"
 DEFAULT_BONUS_POINTS = 1
 DEFAULT_CHALLENGE_REWARD_POINTS = 0
 DEFAULT_CHALLENGE_TARGET = 1
 DEFAULT_DAILY_RESET_TIME = {"hour": 0, "minute": 0, "second": 0}
+DEFAULT_MONTHLY_RESET_DAY = 1
 DEFAULT_MULTIPLE_CLAIMS_PER_DAY = False
 DEFAULT_NOTIFICATIONS = True
-DEFAULT_NOTIFY_ON_CLAIM = True
 DEFAULT_NOTIFY_ON_APPROVAL = True
+DEFAULT_NOTIFY_ON_CLAIM = True
 DEFAULT_NOTIFY_ON_DISAPPROVAL = True
 DEFAULT_PARTIAL_ALLOWED = False
+DEFAULT_PENALTY_POINTS = 1
 DEFAULT_POINTS = 5
 DEFAULT_POINTS_LABEL = "Points"
 DEFAULT_POINTS_MULTIPLIER = 1
-DEFAULT_PENALTY_POINTS = 1
 DEFAULT_REWARD_COST = 10
 DEFAULT_REMINDER_DELAY = 30
-DEFAULT_MONTHLY_RESET_DAY = 1
 DEFAULT_WEEKLY_RESET_DAY = 0
 
 
