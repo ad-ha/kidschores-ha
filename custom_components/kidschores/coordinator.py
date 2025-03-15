@@ -656,7 +656,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         for challenge in self._data.get(const.DATA_CHALLENGES, {}).values():
             selected = challenge.get("selected_chore_id")
             if selected and selected not in valid_chore_ids:
-                challenge["selected_chore_id"] = ""
+                challenge["selected_chore_id"] = const.CONF_EMPTY
                 const.LOGGER.debug(
                     "Cleared selected_chore_id in challenge '%s'", challenge.get("name")
                 )
@@ -695,7 +695,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     # -- Kids
     def _create_kid(self, kid_id: str, kid_data: dict[str, Any]):
         self._data[const.DATA_KIDS][kid_id] = {
-            const.DATA_KID_NAME: kid_data.get(const.DATA_KID_NAME, ""),
+            const.DATA_KID_NAME: kid_data.get(const.DATA_KID_NAME, const.CONF_EMPTY),
             const.DATA_KID_POINTS: kid_data.get(const.DATA_KID_POINTS, 0.0),
             const.DATA_KID_BADGES: kid_data.get(const.DATA_KID_BADGES, []),
             const.DATA_KID_CLAIMED_CHORES: kid_data.get(
@@ -759,7 +759,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.DATA_KID_ENABLE_NOTIFICATIONS, True
             ),
             const.DATA_KID_MOBILE_NOTIFY_SERVICE: kid_data.get(
-                const.DATA_KID_MOBILE_NOTIFY_SERVICE, ""
+                const.DATA_KID_MOBILE_NOTIFY_SERVICE, const.CONF_EMPTY
             ),
             const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS: kid_data.get(
                 const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS, True
@@ -775,7 +775,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         const.LOGGER.debug(
             "Added new kid '%s' with ID: %s",
-            self._data[const.DATA_KIDS][kid_id]["name"],
+            self._data[const.DATA_KIDS][kid_id][const.DATA_KID_NAME],
             kid_id,
         )
 
@@ -844,7 +844,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         )
         kid_info[const.DATA_KID_MOBILE_NOTIFY_SERVICE] = kid_data.get(
             const.DATA_KID_MOBILE_NOTIFY_SERVICE,
-            kid_info.get(const.DATA_KID_MOBILE_NOTIFY_SERVICE, ""),
+            kid_info.get(const.DATA_KID_MOBILE_NOTIFY_SERVICE, const.CONF_EMPTY),
         )
         kid_info[const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS] = kid_data.get(
             const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS,
@@ -858,150 +858,196 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         self._normalize_kid_lists(self._data[const.DATA_KIDS][kid_id])
 
-        const.LOGGER.debug("Updated kid '%s' with ID: %s", kid_info["name"], kid_id)
+        const.LOGGER.debug(
+            "Updated kid '%s' with ID: %s", kid_info[const.DATA_KID_NAME], kid_id
+        )
 
     # -- Parents
     def _create_parent(self, parent_id: str, parent_data: dict[str, Any]):
         associated_kids_ids = []
-        for kid_id in parent_data.get("associated_kids", []):
+        for kid_id in parent_data.get(const.DATA_PARENT_ASSOCIATED_KIDS, []):
             if kid_id in self.kids_data:
                 associated_kids_ids.append(kid_id)
             else:
                 const.LOGGER.warning(
                     "Parent '%s': Kid ID '%s' not found. Skipping assignment to parent",
-                    parent_data.get("name", parent_id),
+                    parent_data.get(const.DATA_PARENT_NAME, parent_id),
                     kid_id,
                 )
 
         self._data[const.DATA_PARENTS][parent_id] = {
-            "name": parent_data.get("name", ""),
-            "ha_user_id": parent_data.get("ha_user_id", ""),
-            "associated_kids": associated_kids_ids,
-            "enable_notifications": parent_data.get("enable_notifications", True),
-            "mobile_notify_service": parent_data.get("mobile_notify_service", ""),
-            "use_persistent_notifications": parent_data.get(
-                "use_persistent_notifications", True
+            const.DATA_PARENT_NAME: parent_data.get(
+                const.DATA_PARENT_NAME, const.CONF_EMPTY
             ),
-            "internal_id": parent_id,
+            const.DATA_PARENT_HA_USER_ID: parent_data.get(
+                const.DATA_PARENT_HA_USER_ID, const.CONF_EMPTY
+            ),
+            const.DATA_PARENT_ASSOCIATED_KIDS: associated_kids_ids,
+            const.DATA_PARENT_ENABLE_NOTIFICATIONS: parent_data.get(
+                const.DATA_PARENT_ENABLE_NOTIFICATIONS, True
+            ),
+            const.DATA_PARENT_MOBILE_NOTIFY_SERVICE: parent_data.get(
+                const.DATA_PARENT_MOBILE_NOTIFY_SERVICE, const.CONF_EMPTY
+            ),
+            const.DATA_PARENT_USE_PERSISTENT_NOTIFICATIONS: parent_data.get(
+                const.DATA_PARENT_USE_PERSISTENT_NOTIFICATIONS, True
+            ),
+            const.DATA_PARENT_INTERNAL_ID: parent_id,
         }
         const.LOGGER.debug(
             "Added new parent '%s' with ID: %s",
-            self._data[const.DATA_PARENTS][parent_id]["name"],
+            self._data[const.DATA_PARENTS][parent_id][const.DATA_PARENT_NAME],
             parent_id,
         )
 
     def _update_parent(self, parent_id: str, parent_data: dict[str, Any]):
         parent_info = self._data[const.DATA_PARENTS][parent_id]
-        parent_info["name"] = parent_data.get("name", parent_info["name"])
-        parent_info["ha_user_id"] = parent_data.get(
-            "ha_user_id", parent_info["ha_user_id"]
+        parent_info[const.DATA_PARENT_NAME] = parent_data.get(
+            const.DATA_PARENT_NAME, parent_info[const.DATA_PARENT_NAME]
+        )
+        parent_info[const.DATA_PARENT_HA_USER_ID] = parent_data.get(
+            const.DATA_PARENT_HA_USER_ID, parent_info[const.DATA_PARENT_HA_USER_ID]
         )
 
         # Update associated_kids
         updated_kids = []
-        for kid_id in parent_data.get("associated_kids", []):
+        for kid_id in parent_data.get(const.DATA_PARENT_ASSOCIATED_KIDS, []):
             if kid_id in self.kids_data:
                 updated_kids.append(kid_id)
             else:
                 const.LOGGER.warning(
                     "Parent '%s': Kid ID '%s' not found. Skipping assignment",
-                    parent_info["name"],
+                    parent_info[const.DATA_PARENT_NAME],
                     kid_id,
                 )
-        parent_info["associated_kids"] = updated_kids
-        parent_info["enable_notifications"] = parent_data.get(
-            "enable_notifications", parent_info.get("enable_notifications", True)
+        parent_info[const.DATA_PARENT_ASSOCIATED_KIDS] = updated_kids
+        parent_info[const.DATA_PARENT_ENABLE_NOTIFICATIONS] = parent_data.get(
+            const.DATA_PARENT_ENABLE_NOTIFICATIONS,
+            parent_info.get(const.DATA_PARENT_ENABLE_NOTIFICATIONS, True),
         )
-        parent_info["mobile_notify_service"] = parent_data.get(
-            "mobile_notify_service", parent_info.get("mobile_notify_service", "")
+        parent_info[const.DATA_PARENT_MOBILE_NOTIFY_SERVICE] = parent_data.get(
+            const.DATA_PARENT_MOBILE_NOTIFY_SERVICE,
+            parent_info.get(const.DATA_PARENT_MOBILE_NOTIFY_SERVICE, const.CONF_EMPTY),
         )
-        parent_info["use_persistent_notifications"] = parent_data.get(
-            "use_persistent_notifications",
-            parent_info.get("use_persistent_notifications", True),
+        parent_info[const.DATA_PARENT_USE_PERSISTENT_NOTIFICATIONS] = parent_data.get(
+            const.DATA_PARENT_USE_PERSISTENT_NOTIFICATIONS,
+            parent_info.get(const.DATA_PARENT_USE_PERSISTENT_NOTIFICATIONS, True),
         )
 
         const.LOGGER.debug(
-            "Updated parent '%s' with ID: %s", parent_info["name"], parent_id
+            "Updated parent '%s' with ID: %s",
+            parent_info[const.DATA_PARENT_NAME],
+            parent_id,
         )
 
     # -- Chores
     def _create_chore(self, chore_id: str, chore_data: dict[str, Any]):
         assigned_kids_ids = []
-        for kid_name in chore_data.get("assigned_kids", []):
+        for kid_name in chore_data.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
             kid_id = self._get_kid_id_by_name(kid_name)
             if kid_id:
                 assigned_kids_ids.append(kid_id)
             else:
                 const.LOGGER.warning(
                     "Chore '%s': Kid name '%s' not found. Skipping assignment",
-                    chore_data.get("name", chore_id),
+                    chore_data.get(const.DATA_CHORE_NAME, chore_id),
                     kid_name,
                 )
 
         # If chore is recurring, set due_date to creation date if not set
-        freq = chore_data.get("recurring_frequency", const.FREQUENCY_NONE)
-        if freq != const.FREQUENCY_NONE and not chore_data.get("due_date"):
+        freq = chore_data.get(
+            const.DATA_CHORE_RECURRING_FREQUENCY, const.FREQUENCY_NONE
+        )
+        if freq != const.FREQUENCY_NONE and not chore_data.get(
+            const.DATA_CHORE_DUE_DATE
+        ):
             now_local = dt_util.utcnow().astimezone(
                 dt_util.get_time_zone(self.hass.config.time_zone)
             )
             # Force the time to 23:59:00 (and zero microseconds)
             default_due = now_local.replace(hour=23, minute=59, second=0, microsecond=0)
-            chore_data["due_date"] = default_due.isoformat()
+            chore_data[const.DATA_CHORE_DUE_DATE] = default_due.isoformat()
             const.LOGGER.debug(
                 "Chore '%s' has freq '%s' but no due_date. Defaulting to 23:59 local time: %s",
-                chore_data.get("name", chore_id),
+                chore_data.get(const.DATA_CHORE_NAME, chore_id),
                 freq,
-                chore_data["due_date"],
+                chore_data[const.DATA_CHORE_DUE_DATE],
             )
 
         self._data[const.DATA_CHORES][chore_id] = {
-            "name": chore_data.get("name", ""),
-            "state": chore_data.get("state", const.CHORE_STATE_PENDING),
-            "default_points": chore_data.get("default_points", const.DEFAULT_POINTS),
-            "allow_multiple_claims_per_day": chore_data.get(
-                "allow_multiple_claims_per_day", const.DEFAULT_MULTIPLE_CLAIMS_PER_DAY
+            const.DATA_CHORE_NAME: chore_data.get(
+                const.DATA_CHORE_NAME, const.CONF_EMPTY
             ),
-            "partial_allowed": chore_data.get(
-                "partial_allowed", const.DEFAULT_PARTIAL_ALLOWED
+            const.DATA_CHORE_STATE: chore_data.get(
+                const.DATA_CHORE_STATE, const.CHORE_STATE_PENDING
             ),
-            "description": chore_data.get("description", ""),
-            "chore_labels": chore_data.get("chore_labels", []),
-            "icon": chore_data.get("icon", const.DEFAULT_ICON),
-            "shared_chore": chore_data.get("shared_chore", False),
-            "assigned_kids": assigned_kids_ids,
-            "recurring_frequency": chore_data.get(
-                "recurring_frequency", const.FREQUENCY_NONE
+            const.DATA_CHORE_DEFAULT_POINTS: chore_data.get(
+                const.DATA_CHORE_DEFAULT_POINTS, const.DEFAULT_POINTS
             ),
-            "custom_interval": chore_data.get("custom_interval")
-            if chore_data.get("recurring_frequency") == const.FREQUENCY_CUSTOM
+            const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY: chore_data.get(
+                const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY,
+                const.DEFAULT_MULTIPLE_CLAIMS_PER_DAY,
+            ),
+            const.DATA_CHORE_PARTIAL_ALLOWED: chore_data.get(
+                const.DATA_CHORE_PARTIAL_ALLOWED, const.DEFAULT_PARTIAL_ALLOWED
+            ),
+            const.DATA_CHORE_DESCRIPTION: chore_data.get(
+                const.DATA_CHORE_DESCRIPTION, const.CONF_EMPTY
+            ),
+            const.DATA_CHORE_LABELS: chore_data.get(const.DATA_CHORE_LABELS, []),
+            const.DATA_CHORE_ICON: chore_data.get(
+                const.DATA_CHORE_ICON, const.DEFAULT_ICON
+            ),
+            const.DATA_CHORE_SHARED_CHORE: chore_data.get(
+                const.DATA_CHORE_SHARED_CHORE, False
+            ),
+            const.DATA_CHORE_ASSIGNED_KIDS: assigned_kids_ids,
+            const.DATA_CHORE_RECURRING_FREQUENCY: chore_data.get(
+                const.DATA_CHORE_RECURRING_FREQUENCY, const.FREQUENCY_NONE
+            ),
+            const.DATA_CHORE_CUSTOM_INTERVAL: chore_data.get(
+                const.DATA_CHORE_CUSTOM_INTERVAL
+            )
+            if chore_data.get(const.DATA_CHORE_RECURRING_FREQUENCY)
+            == const.FREQUENCY_CUSTOM
             else None,
-            "custom_interval_unit": chore_data.get("custom_interval_unit")
-            if chore_data.get("recurring_frequency") == const.FREQUENCY_CUSTOM
+            const.DATA_CHORE_CUSTOM_INTERVAL_UNIT: chore_data.get(
+                const.DATA_CHORE_CUSTOM_INTERVAL_UNIT
+            )
+            if chore_data.get(const.DATA_CHORE_RECURRING_FREQUENCY)
+            == const.FREQUENCY_CUSTOM
             else None,
-            "due_date": chore_data.get("due_date"),
-            "last_completed": chore_data.get("last_completed"),
-            "last_claimed": chore_data.get("last_claimed"),
-            "applicable_days": chore_data.get("applicable_days", []),
-            "notify_on_claim": chore_data.get(
-                "notify_on_claim", const.DEFAULT_NOTIFY_ON_CLAIM
+            const.DATA_CHORE_DUE_DATE: chore_data.get(const.DATA_CHORE_DUE_DATE),
+            const.DATA_CHORE_LAST_COMPLETED: chore_data.get(
+                const.DATA_CHORE_LAST_COMPLETED
             ),
-            "notify_on_approval": chore_data.get(
-                "notify_on_approval", const.DEFAULT_NOTIFY_ON_APPROVAL
+            const.DATA_CHORE_LAST_CLAIMED: chore_data.get(
+                const.DATA_CHORE_LAST_CLAIMED
             ),
-            "notify_on_disapproval": chore_data.get(
-                "notify_on_disapproval", const.DEFAULT_NOTIFY_ON_DISAPPROVAL
+            const.DATA_CHORE_APPLICABLE_DAYS: chore_data.get(
+                const.DATA_CHORE_APPLICABLE_DAYS, []
             ),
-            "internal_id": chore_id,
+            const.DATA_CHORE_NOTIFY_ON_CLAIM: chore_data.get(
+                const.DATA_CHORE_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM
+            ),
+            const.DATA_CHORE_NOTIFY_ON_APPROVAL: chore_data.get(
+                const.DATA_CHORE_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
+            ),
+            const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL: chore_data.get(
+                const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL,
+                const.DEFAULT_NOTIFY_ON_DISAPPROVAL,
+            ),
+            const.DATA_CHORE_INTERNAL_ID: chore_id,
         }
         const.LOGGER.debug(
             "Added new chore '%s' with ID: %s",
-            self._data[const.DATA_CHORES][chore_id]["name"],
+            self._data[const.DATA_CHORES][chore_id][const.DATA_CHORE_NAME],
             chore_id,
         )
 
         # Notify Kids of new chore
-        new_name = self._data[const.DATA_CHORES][chore_id]["name"]
-        due_date = self._data[const.DATA_CHORES][chore_id]["due_date"]
+        new_name = self._data[const.DATA_CHORES][chore_id][const.DATA_CHORE_NAME]
+        due_date = self._data[const.DATA_CHORES][chore_id][const.DATA_CHORE_DUE_DATE]
         for kid_id in assigned_kids_ids:
             due_str = due_date if due_date else "No due date set"
             extra_data = {"kid_id": kid_id, "chore_id": chore_id}
@@ -1016,40 +1062,49 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     def _update_chore(self, chore_id: str, chore_data: dict[str, Any]):
         chore_info = self._data[const.DATA_CHORES][chore_id]
-        chore_info["name"] = chore_data.get("name", chore_info["name"])
-        chore_info["state"] = chore_data.get("state", chore_info["state"])
-        chore_info["default_points"] = chore_data.get(
-            "default_points", chore_info["default_points"]
+        chore_info[const.DATA_CHORE_NAME] = chore_data.get(
+            const.DATA_CHORE_NAME, chore_info[const.DATA_CHORE_NAME]
         )
-        chore_info["allow_multiple_claims_per_day"] = chore_data.get(
-            "allow_multiple_claims_per_day", chore_info["allow_multiple_claims_per_day"]
+        chore_info[const.DATA_CHORE_STATE] = chore_data.get(
+            const.DATA_CHORE_STATE, chore_info[const.DATA_CHORE_STATE]
         )
-        chore_info["partial_allowed"] = chore_data.get(
-            "partial_allowed", chore_info["partial_allowed"]
+        chore_info[const.DATA_CHORE_DEFAULT_POINTS] = chore_data.get(
+            const.DATA_CHORE_DEFAULT_POINTS, chore_info[const.DATA_CHORE_DEFAULT_POINTS]
         )
-        chore_info["description"] = chore_data.get(
-            "description", chore_info["description"]
+        chore_info[const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY] = chore_data.get(
+            const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY,
+            chore_info[const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY],
         )
-        chore_info["chore_labels"] = chore_data.get(
-            "chore_labels", chore_info.get("chore_labels", [])
+        chore_info[const.DATA_CHORE_PARTIAL_ALLOWED] = chore_data.get(
+            const.DATA_CHORE_PARTIAL_ALLOWED,
+            chore_info[const.DATA_CHORE_PARTIAL_ALLOWED],
         )
-        chore_info["icon"] = chore_data.get("icon", chore_info["icon"])
-        chore_info["shared_chore"] = chore_data.get(
-            "shared_chore", chore_info["shared_chore"]
+        chore_info[const.DATA_CHORE_DESCRIPTION] = chore_data.get(
+            const.DATA_CHORE_DESCRIPTION, chore_info[const.DATA_CHORE_DESCRIPTION]
+        )
+        chore_info[const.DATA_CHORE_LABELS] = chore_data.get(
+            const.DATA_CHORE_LABELS,
+            chore_info.get(const.DATA_CHORE_LABELS, []),
+        )
+        chore_info[const.DATA_CHORE_ICON] = chore_data.get(
+            const.DATA_CHORE_ICON, chore_info[const.DATA_CHORE_ICON]
+        )
+        chore_info[const.DATA_CHORE_SHARED_CHORE] = chore_data.get(
+            const.DATA_CHORE_SHARED_CHORE, chore_info[const.DATA_CHORE_SHARED_CHORE]
         )
 
         assigned_kids_ids = []
-        for kid_name in chore_data.get("assigned_kids", []):
+        for kid_name in chore_data.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
             kid_id = self._get_kid_id_by_name(kid_name)
             if kid_id:
                 assigned_kids_ids.append(kid_id)
             else:
                 const.LOGGER.warning(
                     "Chore '%s': Kid name '%s' not found. Skipping assignment",
-                    chore_data.get("name", chore_id),
+                    chore_data.get(const.DATA_CHORE_NAME, chore_id),
                     kid_name,
                 )
-        old_assigned = set(chore_info.get("assigned_kids", []))
+        old_assigned = set(chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []))
         new_assigned = set(assigned_kids_ids)
         removed_kids = old_assigned - new_assigned
         for kid in removed_kids:
@@ -1057,44 +1112,60 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._cleanup_chore_from_kid(kid, chore_id)
 
         # Update the chore's assigned kids list with the new assignments
-        chore_info["assigned_kids"] = list(new_assigned)
-
-        chore_info["recurring_frequency"] = chore_data.get(
-            "recurring_frequency", chore_info["recurring_frequency"]
+        chore_info[const.DATA_CHORE_ASSIGNED_KIDS] = list(new_assigned)
+        chore_info[const.DATA_CHORE_RECURRING_FREQUENCY] = chore_data.get(
+            const.DATA_CHORE_RECURRING_FREQUENCY,
+            chore_info[const.DATA_CHORE_RECURRING_FREQUENCY],
         )
-        chore_info["due_date"] = chore_data.get("due_date", chore_info["due_date"])
-        chore_info["last_completed"] = chore_data.get(
-            "last_completed", chore_info.get("last_completed")
+        chore_info[const.DATA_CHORE_DUE_DATE] = chore_data.get(
+            const.DATA_CHORE_DUE_DATE, chore_info[const.DATA_CHORE_DUE_DATE]
         )
-        chore_info["last_claimed"] = chore_data.get(
-            "last_claimed", chore_info.get("last_claimed")
+        chore_info[const.DATA_CHORE_LAST_COMPLETED] = chore_data.get(
+            const.DATA_CHORE_LAST_COMPLETED,
+            chore_info.get(const.DATA_CHORE_LAST_COMPLETED),
         )
-        chore_info["applicable_days"] = chore_data.get(
-            "applicable_days", chore_info.get("applicable_days", [])
+        chore_info[const.DATA_CHORE_LAST_CLAIMED] = chore_data.get(
+            const.DATA_CHORE_LAST_CLAIMED, chore_info.get(const.DATA_CHORE_LAST_CLAIMED)
         )
-        chore_info["notify_on_claim"] = chore_data.get(
-            "notify_on_claim",
-            chore_info.get("notify_on_claim", const.DEFAULT_NOTIFY_ON_CLAIM),
+        chore_info[const.DATA_CHORE_APPLICABLE_DAYS] = chore_data.get(
+            const.DATA_CHORE_APPLICABLE_DAYS,
+            chore_info.get(const.DATA_CHORE_APPLICABLE_DAYS, []),
         )
-        chore_info["notify_on_approval"] = chore_data.get(
-            "notify_on_approval",
-            chore_info.get("notify_on_approval", const.DEFAULT_NOTIFY_ON_APPROVAL),
-        )
-        chore_info["notify_on_disapproval"] = chore_data.get(
-            "notify_on_disapproval",
+        chore_info[const.DATA_CHORE_NOTIFY_ON_CLAIM] = chore_data.get(
+            const.DATA_CHORE_NOTIFY_ON_CLAIM,
             chore_info.get(
-                "notify_on_disapproval", const.DEFAULT_NOTIFY_ON_DISAPPROVAL
+                const.DATA_CHORE_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM
             ),
         )
-        if chore_info["recurring_frequency"] == const.FREQUENCY_CUSTOM:
-            chore_info["custom_interval"] = chore_data.get("custom_interval")
-            chore_info["custom_interval_unit"] = chore_data.get("custom_interval_unit")
+        chore_info[const.DATA_CHORE_NOTIFY_ON_APPROVAL] = chore_data.get(
+            const.DATA_CHORE_NOTIFY_ON_APPROVAL,
+            chore_info.get(
+                const.DATA_CHORE_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
+            ),
+        )
+        chore_info[const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL] = chore_data.get(
+            const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL,
+            chore_info.get(
+                const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL,
+                const.DEFAULT_NOTIFY_ON_DISAPPROVAL,
+            ),
+        )
+
+        if chore_info[const.DATA_CHORE_RECURRING_FREQUENCY] == const.FREQUENCY_CUSTOM:
+            chore_info[const.DATA_CHORE_CUSTOM_INTERVAL] = chore_data.get(
+                const.DATA_CHORE_CUSTOM_INTERVAL
+            )
+            chore_info[const.DATA_CHORE_CUSTOM_INTERVAL_UNIT] = chore_data.get(
+                const.DATA_CHORE_CUSTOM_INTERVAL_UNIT
+            )
         else:
-            chore_info["custom_interval"] = None
-            chore_info["custom_interval_unit"] = None
+            chore_info[const.DATA_CHORE_CUSTOM_INTERVAL] = None
+            chore_info[const.DATA_CHORE_CUSTOM_INTERVAL_UNIT] = None
 
         const.LOGGER.debug(
-            "Updated chore '%s' with ID: %s", chore_info["name"], chore_id
+            "Updated chore '%s' with ID: %s",
+            chore_info[const.DATA_CHORE_NAME],
+            chore_id,
         )
 
         self.hass.async_create_task(self._check_overdue_chores())
@@ -1105,82 +1176,110 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Base fields common to all types:
         self._data[const.DATA_BADGES][badge_id] = {
-            "name": badge_data.get("badge_name", ""),
-            "description": badge_data.get("badge_description", ""),
-            "badge_labels": badge_data.get("badge_labels", []),
-            "icon": badge_data.get("icon", const.DEFAULT_ICON),
-            "internal_id": badge_id,
-            "badge_type": badge_data.get("badge_type", const.BADGE_TYPE_CUMULATIVE),
+            const.DATA_BADGE_NAME: badge_data.get(
+                const.DATA_BADGE_NAME, const.CONF_EMPTY
+            ),
+            const.DATA_BADGE_DESCRIPTION: badge_data.get(
+                const.DATA_BADGE_DESCRIPTION, const.CONF_EMPTY
+            ),
+            const.DATA_BADGE_LABELS: badge_data.get(const.DATA_BADGE_LABELS, []),
+            const.DATA_BADGE_ICON: badge_data.get(
+                const.DATA_BADGE_ICON, const.DEFAULT_ICON
+            ),
+            const.DATA_BADGE_INTERNAL_ID: badge_id,
+            const.DATA_BADGE_TYPE: badge_data.get(
+                const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE
+            ),
         }
-        badge_type = badge_data.get("badge_type", const.BADGE_TYPE_CUMULATIVE)
+        badge_type = badge_data.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
         if badge_type == const.BADGE_TYPE_CUMULATIVE:
             self._data[const.DATA_BADGES][badge_id].update(
                 {
-                    "threshold_type": "points",  # standard badges now use only points
-                    "threshold_value": badge_data.get(
-                        "threshold_value", const.DEFAULT_BADGE_THRESHOLD_VALUE
+                    const.DATA_BADGE_THRESHOLD_TYPE: const.CONF_POINTS,  # standard badges now use only points
+                    const.DATA_BADGE_THRESHOLD_VALUE: badge_data.get(
+                        const.DATA_BADGE_THRESHOLD_VALUE,
+                        const.DEFAULT_BADGE_THRESHOLD_VALUE,
                     ),
-                    "points_multiplier": badge_data.get(
-                        "points_multiplier", const.DEFAULT_POINTS_MULTIPLIER
+                    const.DATA_BADGE_POINTS_MULTIPLIER: badge_data.get(
+                        const.DATA_BADGE_POINTS_MULTIPLIER,
+                        const.DEFAULT_POINTS_MULTIPLIER,
                     ),
                     const.CONF_BADGE_RESET_PERIODICALLY: badge_data.get(
                         const.CONF_BADGE_RESET_PERIODICALLY, False
                     ),
                     const.CONF_BADGE_RESET_PERIOD: badge_data.get(
-                        const.CONF_BADGE_RESET_PERIOD, "year_end"
+                        const.CONF_BADGE_RESET_PERIOD, const.CONF_YEAR_END
                     ),
                     const.CONF_BADGE_RESET_GRACE_PERIOD: badge_data.get(
                         const.CONF_BADGE_RESET_GRACE_PERIOD, 0
                     ),
                     const.CONF_BADGE_MAINTENANCE_RULES: badge_data.get(
-                        const.CONF_BADGE_MAINTENANCE_RULES, ""
+                        const.CONF_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY
                     ),
                 }
             )
         elif badge_type == const.BADGE_TYPE_DAILY:
             self._data[const.DATA_BADGES][badge_id].update(
                 {
-                    "daily_threshold": badge_data.get("daily_threshold"),
-                    "reward": badge_data.get("reward"),
+                    const.DATA_BADGE_DAILY_THRESHOLD: badge_data.get(
+                        const.DATA_BADGE_DAILY_THRESHOLD
+                    ),
+                    const.DATA_BADGE_REWARD: badge_data.get(const.DATA_BADGE_REWARD),
                 }
             )
         elif badge_type == const.BADGE_TYPE_PERIODIC:
             self._data[const.DATA_BADGES][badge_id].update(
                 {
-                    "period": badge_data.get("period", "weekly"),
-                    "threshold_value": badge_data.get("threshold_value", 200),
-                    "reward": badge_data.get("reward", 15),
-                    "reset_criteria": badge_data.get(
-                        "reset_criteria", "Sunday midnight"
+                    const.DATA_BADGE_PERIOD: badge_data.get(
+                        const.DATA_BADGE_PERIOD, const.CONF_WEEKLY
+                    ),
+                    const.DATA_BADGE_THRESHOLD_VALUE: badge_data.get(
+                        const.DATA_BADGE_THRESHOLD_VALUE, 200
+                    ),
+                    const.DATA_BADGE_REWARD: badge_data.get(
+                        const.DATA_BADGE_REWARD, 15
+                    ),
+                    const.DATA_BADGE_RESET_CRITERIA: badge_data.get(
+                        const.DATA_BADGE_RESET_CRITERIA, "Sunday midnight"
                     ),
                 }
             )
         elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
             self._data[const.DATA_BADGES][badge_id].update(
                 {
-                    "associated_achievement": badge_data.get(
-                        "associated_achievement", ""
+                    const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT: badge_data.get(
+                        const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY
                     ),
-                    "one_time_reward": badge_data.get("one_time_reward", ""),
+                    const.DATA_BADGE_ONE_TIME_REWARD: badge_data.get(
+                        const.DATA_BADGE_ONE_TIME_REWARD, const.CONF_EMPTY
+                    ),
                 }
             )
         elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
             self._data[const.DATA_BADGES][badge_id].update(
                 {
-                    "associated_challenge": badge_data.get("associated_challenge", ""),
-                    "one_time_reward": badge_data.get("one_time_reward", ""),
+                    const.DATA_BADGE_ASSOCIATED_CHALLENGE: badge_data.get(
+                        const.DATA_BADGE_ASSOCIATED_CHALLENGE, const.CONF_EMPTY
+                    ),
+                    const.DATA_BADGE_ONE_TIME_REWARD: badge_data.get(
+                        const.DATA_BADGE_ONE_TIME_REWARD, const.CONF_EMPTY
+                    ),
                 }
             )
         elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
             self._data[const.DATA_BADGES][badge_id].update(
                 {
-                    "occasion_type": badge_data.get("occasion_type", "holiday"),
-                    "trigger_info": badge_data.get("trigger_info", ""),
+                    const.DATA_BADGE_OCCASION_TYPE: badge_data.get(
+                        const.DATA_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY
+                    ),
+                    const.DATA_BADGE_TRIGGER_INFO: badge_data.get(
+                        const.DATA_BADGE_TRIGGER_INFO, const.CONF_EMPTY
+                    ),
                 }
             )
         const.LOGGER.debug(
             "Added new badge '%s' with ID: %s",
-            self._data[const.DATA_BADGES][badge_id]["name"],
+            self._data[const.DATA_BADGES][badge_id][const.DATA_BADGE_NAME],
             badge_id,
         )
 
@@ -1188,29 +1287,39 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Update an existing badge entity."""
 
         badge_info = self._data[const.DATA_BADGES][badge_id]
-
-        badge_info["name"] = badge_data.get("badge_name", badge_info["name"])
-        badge_info["description"] = badge_data.get(
-            "badge_description", badge_info["description"]
+        badge_info[const.DATA_BADGE_NAME] = badge_data.get(
+            const.DATA_BADGE_NAME, badge_info[const.DATA_BADGE_NAME]
         )
-        badge_info["badge_labels"] = badge_data.get(
-            "badge_labels", badge_info.get("badge_labels", [])
+        badge_info[const.DATA_BADGE_DESCRIPTION] = badge_data.get(
+            const.DATA_BADGE_DESCRIPTION,
+            badge_info[const.DATA_BADGE_DESCRIPTION],
         )
-        badge_info["icon"] = badge_data.get(
-            "icon", badge_info.get("icon", const.DEFAULT_ICON)
+        badge_info[const.DATA_BADGE_LABELS] = badge_data.get(
+            const.DATA_BADGE_LABELS,
+            badge_info.get(const.DATA_BADGE_LABELS, []),
+        )
+        badge_info[const.DATA_BADGE_ICON] = badge_data.get(
+            const.DATA_BADGE_ICON,
+            badge_info.get(const.DATA_BADGE_ICON, const.DEFAULT_ICON),
         )
         badge_type = badge_data.get(
-            "badge_type", badge_info.get("badge_type", const.BADGE_TYPE_CUMULATIVE)
+            const.DATA_BADGE_TYPE,
+            badge_info.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE),
         )
-        badge_info["badge_type"] = badge_type
+        badge_info[const.DATA_BADGE_TYPE] = badge_type
         if badge_type == const.BADGE_TYPE_CUMULATIVE:
-            badge_info["threshold_value"] = badge_data.get(
-                "threshold_value",
-                badge_info.get("threshold_value", const.DEFAULT_BADGE_THRESHOLD_VALUE),
+            badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = badge_data.get(
+                const.DATA_BADGE_THRESHOLD_VALUE,
+                badge_info.get(
+                    const.DATA_BADGE_THRESHOLD_VALUE,
+                    const.DEFAULT_BADGE_THRESHOLD_VALUE,
+                ),
             )
-            badge_info["points_multiplier"] = badge_data.get(
-                "points_multiplier",
-                badge_info.get("points_multiplier", const.DEFAULT_POINTS_MULTIPLIER),
+            badge_info[const.DATA_BADGE_POINTS_MULTIPLIER] = badge_data.get(
+                const.DATA_BADGE_POINTS_MULTIPLIER,
+                badge_info.get(
+                    const.DATA_BADGE_POINTS_MULTIPLIER, const.DEFAULT_POINTS_MULTIPLIER
+                ),
             )
             badge_info[const.CONF_BADGE_RESET_PERIODICALLY] = badge_data.get(
                 const.CONF_BADGE_RESET_PERIODICALLY,
@@ -1218,151 +1327,219 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             badge_info[const.CONF_BADGE_RESET_PERIOD] = badge_data.get(
                 const.CONF_BADGE_RESET_PERIOD,
-                badge_info.get(const.CONF_BADGE_RESET_PERIOD, "year_end"),
+                badge_info.get(const.CONF_BADGE_RESET_PERIOD, const.CONF_YEAR_END),
             )
             badge_info[const.CONF_BADGE_RESET_GRACE_PERIOD] = badge_data.get(
                 const.CONF_BADGE_RESET_GRACE_PERIOD,
-                badge_info.get(const.CONF_BADGE_RESET_GRACE_PERIOD, 0),
+                badge_info.get(
+                    const.CONF_BADGE_RESET_GRACE_PERIOD,
+                    const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
+                ),
             )
             badge_info[const.CONF_BADGE_MAINTENANCE_RULES] = badge_data.get(
                 const.CONF_BADGE_MAINTENANCE_RULES,
-                badge_info.get(const.CONF_BADGE_MAINTENANCE_RULES, ""),
+                badge_info.get(const.CONF_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY),
             )
         elif badge_type == const.BADGE_TYPE_DAILY:
-            badge_info["daily_threshold"] = badge_data.get(
-                "daily_threshold", badge_info.get("daily_threshold")
+            badge_info[const.DATA_BADGE_DAILY_THRESHOLD] = badge_data.get(
+                const.DATA_BADGE_DAILY_THRESHOLD,
+                badge_info.get(const.DATA_BADGE_DAILY_THRESHOLD),
             )
-            badge_info["reward"] = badge_data.get("reward", badge_info.get("reward"))
+            badge_info[const.DATA_BADGE_REWARD] = badge_data.get(
+                const.DATA_BADGE_REWARD, badge_info.get(const.DATA_BADGE_REWARD)
+            )
         elif badge_type == const.BADGE_TYPE_PERIODIC:
-            badge_info["period"] = badge_data.get(
-                "period", badge_info.get("period", "weekly")
+            badge_info[const.DATA_BADGE_PERIOD] = badge_data.get(
+                const.DATA_BADGE_PERIOD,
+                badge_info.get(const.DATA_BADGE_PERIOD, const.CONF_WEEKLY),
             )
-            badge_info["threshold_value"] = badge_data.get(
-                "threshold_value", badge_info.get("threshold_value", 200)
+            badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = badge_data.get(
+                const.DATA_BADGE_THRESHOLD_VALUE,
+                badge_info.get(
+                    const.DATA_BADGE_THRESHOLD_VALUE,
+                    const.DEFAULT_BADGE_THRESHOLD_VALUE,
+                ),
             )
-            badge_info["reward"] = badge_data.get(
-                "reward", badge_info.get("reward", 15)
+            badge_info[const.DATA_BADGE_REWARD] = badge_data.get(
+                const.DATA_BADGE_REWARD,
+                badge_info.get(const.DATA_BADGE_REWARD, const.DEFAULT_BADGE_REWARD),
             )
-            badge_info["reset_criteria"] = badge_data.get(
-                "reset_criteria", badge_info.get("reset_criteria", "Sunday midnight")
+            badge_info[const.DATA_BADGE_RESET_CRITERIA] = badge_data.get(
+                const.DATA_BADGE_RESET_CRITERIA,
+                badge_info.get(const.DATA_BADGE_RESET_CRITERIA, "Sunday midnight"),
             )
         elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
-            badge_info["associated_achievement"] = badge_data.get(
-                "associated_achievement", badge_info.get("associated_achievement", "")
+            badge_info[const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT] = badge_data.get(
+                const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT,
+                badge_info.get(
+                    const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY
+                ),
             )
-            badge_info["one_time_reward"] = badge_data.get(
-                "one_time_reward", badge_info.get("one_time_reward", "")
+            badge_info[const.DATA_BADGE_ONE_TIME_REWARD] = badge_data.get(
+                const.DATA_BADGE_ONE_TIME_REWARD,
+                badge_info.get(const.DATA_BADGE_ONE_TIME_REWARD, const.CONF_EMPTY),
             )
         elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
-            badge_info["associated_challenge"] = badge_data.get(
-                "associated_challenge", badge_info.get("associated_challenge", "")
+            badge_info[const.DATA_BADGE_ASSOCIATED_CHALLENGE] = badge_data.get(
+                const.DATA_BADGE_ASSOCIATED_CHALLENGE,
+                badge_info.get(const.DATA_BADGE_ASSOCIATED_CHALLENGE, const.CONF_EMPTY),
             )
-            badge_info["one_time_reward"] = badge_data.get(
-                "one_time_reward", badge_info.get("one_time_reward", "")
+            badge_info[const.DATA_BADGE_ONE_TIME_REWARD] = badge_data.get(
+                const.DATA_BADGE_ONE_TIME_REWARD,
+                badge_info.get(const.DATA_BADGE_ONE_TIME_REWARD, const.CONF_EMPTY),
             )
         elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
-            badge_info["occasion_type"] = badge_data.get(
-                "occasion_type", badge_info.get("occasion_type", "holiday")
-            )
-            badge_info["trigger_info"] = badge_data.get(
-                "trigger_info", badge_info.get("trigger_info", "")
+            badge_info[const.DATA_BADGE_OCCASION_TYPE] = badge_data.get(
+                const.DATA_BADGE_OCCASION_TYPE,
+                badge_info.get(const.DATA_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY),
             )
 
         const.LOGGER.debug(
-            "Updated badge '%s' with ID: %s", badge_info["name"], badge_id
+            "Updated badge '%s' with ID: %s",
+            badge_info[const.DATA_BADGE_NAME],
+            badge_id,
         )
 
     # -- Rewards
     def _create_reward(self, reward_id: str, reward_data: dict[str, Any]):
         self._data[const.DATA_REWARDS][reward_id] = {
-            "name": reward_data.get("name", ""),
-            "cost": reward_data.get("cost", const.DEFAULT_REWARD_COST),
-            "description": reward_data.get("description", ""),
-            "reward_labels": reward_data.get("reward_labels", []),
-            "icon": reward_data.get("icon", const.DEFAULT_REWARD_ICON),
-            "internal_id": reward_id,
+            const.DATA_REWARD_NAME: reward_data.get(
+                const.DATA_REWARD_NAME, const.CONF_EMPTY
+            ),
+            const.DATA_REWARD_COST: reward_data.get(
+                const.DATA_REWARD_COST, const.DEFAULT_REWARD_COST
+            ),
+            const.DATA_REWARD_DESCRIPTION: reward_data.get(
+                const.DATA_REWARD_DESCRIPTION, const.CONF_EMPTY
+            ),
+            const.DATA_REWARD_LABELS: reward_data.get(const.DATA_REWARD_LABELS, []),
+            const.DATA_REWARD_ICON: reward_data.get(
+                const.DATA_REWARD_ICON, const.DEFAULT_REWARD_ICON
+            ),
+            const.DATA_REWARD_INTERNAL_ID: reward_id,
         }
         const.LOGGER.debug(
             "Added new reward '%s' with ID: %s",
-            self._data[const.DATA_REWARDS][reward_id]["name"],
+            self._data[const.DATA_REWARDS][reward_id][const.DATA_REWARD_NAME],
             reward_id,
         )
 
     def _update_reward(self, reward_id: str, reward_data: dict[str, Any]):
         reward_info = self._data[const.DATA_REWARDS][reward_id]
-        reward_info["name"] = reward_data.get("name", reward_info["name"])
-        reward_info["cost"] = reward_data.get("cost", reward_info["cost"])
-        reward_info["description"] = reward_data.get(
-            "description", reward_info["description"]
-        )
-        reward_info["reward_labels"] = reward_data.get(
-            "reward_labels", reward_info.get("reward_labels", [])
-        )
-        reward_info["icon"] = reward_data.get("icon", reward_info["icon"])
-        const.LOGGER.debug(
-            "Updated reward '%s' with ID: %s", reward_info["name"], reward_id
-        )
 
-    # -- Penalties
-    def _create_penalty(self, penalty_id: str, penalty_data: dict[str, Any]):
-        self._data[const.DATA_PENALTIES][penalty_id] = {
-            "name": penalty_data.get("name", ""),
-            "points": penalty_data.get("points", -const.DEFAULT_PENALTY_POINTS),
-            "description": penalty_data.get("description", ""),
-            "penalty_labels": penalty_data.get("penalty_labels", []),
-            "icon": penalty_data.get("icon", const.DEFAULT_PENALTY_ICON),
-            "internal_id": penalty_id,
-        }
+        reward_info[const.DATA_REWARD_NAME] = reward_data.get(
+            const.DATA_REWARD_NAME, reward_info[const.DATA_REWARD_NAME]
+        )
+        reward_info[const.DATA_REWARD_COST] = reward_data.get(
+            const.DATA_REWARD_COST, reward_info[const.DATA_REWARD_COST]
+        )
+        reward_info[const.DATA_REWARD_DESCRIPTION] = reward_data.get(
+            const.DATA_REWARD_DESCRIPTION, reward_info[const.DATA_REWARD_DESCRIPTION]
+        )
+        reward_info[const.DATA_REWARD_LABELS] = reward_data.get(
+            const.DATA_REWARD_LABELS, reward_info.get(const.DATA_REWARD_LABELS, [])
+        )
+        reward_info[const.DATA_REWARD_ICON] = reward_data.get(
+            const.DATA_REWARD_ICON, reward_info[const.DATA_REWARD_ICON]
+        )
         const.LOGGER.debug(
-            "Added new penalty '%s' with ID: %s",
-            self._data[const.DATA_PENALTIES][penalty_id]["name"],
-            penalty_id,
-        )
-
-    def _update_penalty(self, penalty_id: str, penalty_data: dict[str, Any]):
-        penalty_info = self._data[const.DATA_PENALTIES][penalty_id]
-        penalty_info["name"] = penalty_data.get("name", penalty_info["name"])
-        penalty_info["points"] = penalty_data.get("points", penalty_info["points"])
-        penalty_info["description"] = penalty_data.get(
-            "description", penalty_info["description"]
-        )
-        penalty_info["penalty_labels"] = penalty_data.get(
-            "penalty_labels", penalty_info.get("penalty_labels", [])
-        )
-        penalty_info["icon"] = penalty_data.get("icon", penalty_info["icon"])
-        const.LOGGER.debug(
-            "Updated penalty '%s' with ID: %s", penalty_info["name"], penalty_id
+            "Updated reward '%s' with ID: %s",
+            reward_info[const.DATA_REWARD_NAME],
+            reward_id,
         )
 
     # -- Bonuses
     def _create_bonus(self, bonus_id: str, bonus_data: dict[str, Any]):
         self._data[const.DATA_BONUSES][bonus_id] = {
-            "name": bonus_data.get("name", ""),
-            "points": bonus_data.get("points", const.DEFAULT_BONUS_POINTS),
-            "description": bonus_data.get("description", ""),
-            "bonus_labels": bonus_data.get("bonus_labels", []),
-            "icon": bonus_data.get("icon", const.DEFAULT_BONUS_ICON),
-            "internal_id": bonus_id,
+            const.DATA_BONUS_NAME: bonus_data.get(
+                const.DATA_BONUS_NAME, const.CONF_EMPTY
+            ),
+            const.DATA_BONUS_POINTS: bonus_data.get(
+                const.DATA_BONUS_POINTS, const.DEFAULT_BONUS_POINTS
+            ),
+            const.DATA_BONUS_DESCRIPTION: bonus_data.get(
+                const.DATA_BONUS_DESCRIPTION, const.CONF_EMPTY
+            ),
+            const.DATA_BONUS_LABELS: bonus_data.get(const.DATA_BONUS_LABELS, []),
+            const.DATA_BONUS_ICON: bonus_data.get(
+                const.DATA_BONUS_ICON, const.DEFAULT_BONUS_ICON
+            ),
+            const.DATA_BONUS_INTERNAL_ID: bonus_id,
         }
         const.LOGGER.debug(
             "Added new bonus '%s' with ID: %s",
-            self._data[const.DATA_BONUSES][bonus_id]["name"],
+            self._data[const.DATA_BONUSES][bonus_id][const.DATA_BONUS_NAME],
             bonus_id,
         )
 
     def _update_bonus(self, bonus_id: str, bonus_data: dict[str, Any]):
         bonus_info = self._data[const.DATA_BONUSES][bonus_id]
-        bonus_info["name"] = bonus_data.get("name", bonus_info["name"])
-        bonus_info["points"] = bonus_data.get("points", bonus_info["points"])
-        bonus_info["description"] = bonus_data.get(
-            "description", bonus_info["description"]
+        bonus_info[const.DATA_BONUS_NAME] = bonus_data.get(
+            const.DATA_BONUS_NAME, bonus_info[const.DATA_BONUS_NAME]
         )
-        bonus_info["bonus_labels"] = bonus_data.get(
-            "bonus_labels", bonus_info.get("bonus_labels", [])
+        bonus_info[const.DATA_BONUS_POINTS] = bonus_data.get(
+            const.DATA_BONUS_POINTS, bonus_info[const.DATA_BONUS_POINTS]
         )
-        bonus_info["icon"] = bonus_data.get("icon", bonus_info["icon"])
+        bonus_info[const.DATA_BONUS_DESCRIPTION] = bonus_data.get(
+            const.DATA_BONUS_DESCRIPTION, bonus_info[const.DATA_BONUS_DESCRIPTION]
+        )
+        bonus_info[const.DATA_BONUS_LABELS] = bonus_data.get(
+            const.DATA_BONUS_LABELS, bonus_info.get(const.DATA_BONUS_LABELS, [])
+        )
+        bonus_info[const.DATA_BONUS_ICON] = bonus_data.get(
+            const.DATA_BONUS_ICON, bonus_info[const.DATA_BONUS_ICON]
+        )
         const.LOGGER.debug(
-            "Updated bonus '%s' with ID: %s", bonus_info["name"], bonus_id
+            "Updated bonus '%s' with ID: %s",
+            bonus_info[const.DATA_BONUS_NAME],
+            bonus_id,
+        )
+
+    # -- Penalties
+    def _create_penalty(self, penalty_id: str, penalty_data: dict[str, Any]):
+        self._data[const.DATA_PENALTIES][penalty_id] = {
+            const.DATA_PENALTY_NAME: penalty_data.get(
+                const.DATA_PENALTY_NAME, const.CONF_EMPTY
+            ),
+            const.DATA_PENALTY_POINTS: penalty_data.get(
+                const.DATA_PENALTY_POINTS, -const.DEFAULT_PENALTY_POINTS
+            ),
+            const.DATA_PENALTY_DESCRIPTION: penalty_data.get(
+                const.DATA_PENALTY_DESCRIPTION, const.CONF_EMPTY
+            ),
+            const.DATA_PENALTY_LABELS: penalty_data.get(const.DATA_PENALTY_LABELS, []),
+            const.DATA_PENALTY_ICON: penalty_data.get(
+                const.DATA_PENALTY_ICON, const.DEFAULT_PENALTY_ICON
+            ),
+            const.DATA_PENALTY_INTERNAL_ID: penalty_id,
+        }
+        const.LOGGER.debug(
+            "Added new penalty '%s' with ID: %s",
+            self._data[const.DATA_PENALTIES][penalty_id][const.DATA_PENALTY_NAME],
+            penalty_id,
+        )
+
+    def _update_penalty(self, penalty_id: str, penalty_data: dict[str, Any]):
+        penalty_info = self._data[const.DATA_PENALTIES][penalty_id]
+        penalty_info[const.DATA_PENALTY_NAME] = penalty_data.get(
+            const.DATA_PENALTY_NAME, penalty_info[const.DATA_PENALTY_NAME]
+        )
+        penalty_info[const.DATA_PENALTY_POINTS] = penalty_data.get(
+            const.DATA_PENALTY_POINTS, penalty_info[const.DATA_PENALTY_POINTS]
+        )
+        penalty_info[const.DATA_PENALTY_DESCRIPTION] = penalty_data.get(
+            const.DATA_PENALTY_DESCRIPTION, penalty_info[const.DATA_PENALTY_DESCRIPTION]
+        )
+        penalty_info[const.DATA_PENALTY_LABELS] = penalty_data.get(
+            const.DATA_PENALTY_LABELS, penalty_info.get(const.DATA_PENALTY_LABELS, [])
+        )
+        penalty_info[const.DATA_PENALTY_ICON] = penalty_data.get(
+            const.DATA_PENALTY_ICON, penalty_info[const.DATA_PENALTY_ICON]
+        )
+        const.LOGGER.debug(
+            "Updated penalty '%s' with ID: %s",
+            penalty_info[const.DATA_PENALTY_NAME],
+            penalty_id,
         )
 
     # -- Achievements
@@ -1370,22 +1547,47 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self, achievement_id: str, achievement_data: dict[str, Any]
     ):
         self._data[const.DATA_ACHIEVEMENTS][achievement_id] = {
-            "name": achievement_data.get("name", ""),
-            "description": achievement_data.get("description", ""),
-            "achievement_labels": achievement_data.get("achievement_labels", []),
-            "icon": achievement_data.get("icon", ""),
-            "assigned_kids": achievement_data.get("assigned_kids", []),
-            "type": achievement_data.get("type", "individual"),
-            "selected_chore_id": achievement_data.get("selected_chore_id", ""),
-            "criteria": achievement_data.get("criteria", ""),
-            "target_value": achievement_data.get("target_value", 1),
-            "reward_points": achievement_data.get("reward_points", 0),
-            "progress": achievement_data.get("progress", {}),
-            "internal_id": achievement_id,
+            const.DATA_ACHIEVEMENT_NAME: achievement_data.get(
+                const.DATA_ACHIEVEMENT_NAME, const.CONF_EMPTY
+            ),
+            const.DATA_ACHIEVEMENT_DESCRIPTION: achievement_data.get(
+                const.DATA_ACHIEVEMENT_DESCRIPTION, const.CONF_EMPTY
+            ),
+            const.DATA_ACHIEVEMENT_LABELS: achievement_data.get(
+                const.DATA_ACHIEVEMENT_LABELS, []
+            ),
+            const.DATA_ACHIEVEMENT_ICON: achievement_data.get(
+                const.DATA_ACHIEVEMENT_ICON, const.CONF_EMPTY
+            ),
+            const.DATA_ACHIEVEMENT_ASSIGNED_KIDS: achievement_data.get(
+                const.DATA_ACHIEVEMENT_ASSIGNED_KIDS, []
+            ),
+            const.DATA_ACHIEVEMENT_TYPE: achievement_data.get(
+                const.DATA_ACHIEVEMENT_TYPE, const.ACHIEVEMENT_TYPE_STREAK
+            ),
+            const.DATA_ACHIEVEMENT_SELECTED_CHORE_ID: achievement_data.get(
+                const.DATA_ACHIEVEMENT_SELECTED_CHORE_ID, const.CONF_EMPTY
+            ),
+            const.DATA_ACHIEVEMENT_CRITERIA: achievement_data.get(
+                const.DATA_ACHIEVEMENT_CRITERIA, const.CONF_EMPTY
+            ),
+            const.DATA_ACHIEVEMENT_TARGET_VALUE: achievement_data.get(
+                const.DATA_ACHIEVEMENT_TARGET_VALUE, const.DEFAULT_ACHIEVEMENT_TARGET
+            ),
+            const.DATA_ACHIEVEMENT_REWARD_POINTS: achievement_data.get(
+                const.DATA_ACHIEVEMENT_REWARD_POINTS,
+                const.DEFAULT_ACHIEVEMENT_REWARD_POINTS,
+            ),
+            const.DATA_ACHIEVEMENT_PROGRESS: achievement_data.get(
+                const.DATA_ACHIEVEMENT_PROGRESS, {}
+            ),
+            const.DATA_ACHIEVEMENT_INTERNAL_ID: achievement_id,
         }
         const.LOGGER.debug(
             "Added new achievement '%s' with ID: %s",
-            self._data[const.DATA_ACHIEVEMENTS][achievement_id]["name"],
+            self._data[const.DATA_ACHIEVEMENTS][achievement_id][
+                const.DATA_ACHIEVEMENT_NAME
+            ],
             achievement_id,
         )
 
@@ -1393,109 +1595,162 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self, achievement_id: str, achievement_data: dict[str, Any]
     ):
         achievement_info = self._data[const.DATA_ACHIEVEMENTS][achievement_id]
-        achievement_info["name"] = achievement_data.get(
-            "name", achievement_info["name"]
+        achievement_info[const.DATA_ACHIEVEMENT_NAME] = achievement_data.get(
+            const.DATA_ACHIEVEMENT_NAME, achievement_info[const.DATA_ACHIEVEMENT_NAME]
         )
-        achievement_info["description"] = achievement_data.get(
-            "description", achievement_info["description"]
+        achievement_info[const.DATA_ACHIEVEMENT_DESCRIPTION] = achievement_data.get(
+            const.DATA_ACHIEVEMENT_DESCRIPTION,
+            achievement_info[const.DATA_ACHIEVEMENT_DESCRIPTION],
         )
-        achievement_info["achievement_labels"] = achievement_data.get(
-            "achievement_labels", achievement_info.get("achievement_labels", [])
+        achievement_info[const.DATA_ACHIEVEMENT_LABELS] = achievement_data.get(
+            const.DATA_ACHIEVEMENT_LABELS,
+            achievement_info.get(const.DATA_ACHIEVEMENT_LABELS, []),
         )
-        achievement_info["icon"] = achievement_data.get(
-            "icon", achievement_info["icon"]
+        achievement_info[const.DATA_ACHIEVEMENT_ICON] = achievement_data.get(
+            const.DATA_ACHIEVEMENT_ICON, achievement_info[const.DATA_ACHIEVEMENT_ICON]
         )
-        achievement_info["assigned_kids"] = achievement_data.get(
-            "assigned_kids", achievement_info["assigned_kids"]
+        achievement_info[const.DATA_ACHIEVEMENT_ASSIGNED_KIDS] = achievement_data.get(
+            const.DATA_ACHIEVEMENT_ASSIGNED_KIDS,
+            achievement_info[const.DATA_ACHIEVEMENT_ASSIGNED_KIDS],
         )
-        achievement_info["type"] = achievement_data.get(
-            "type", achievement_info["type"]
+        achievement_info[const.DATA_ACHIEVEMENT_TYPE] = achievement_data.get(
+            const.DATA_ACHIEVEMENT_TYPE, achievement_info[const.DATA_ACHIEVEMENT_TYPE]
         )
-        achievement_info["selected_chore_id"] = achievement_data.get(
-            "selected_chore_id", achievement_info.get("selected_chore_id", "")
+        achievement_info[const.DATA_ACHIEVEMENT_SELECTED_CHORE_ID] = (
+            achievement_data.get(
+                const.DATA_ACHIEVEMENT_SELECTED_CHORE_ID,
+                achievement_info.get(
+                    const.DATA_ACHIEVEMENT_SELECTED_CHORE_ID, const.CONF_EMPTY
+                ),
+            )
         )
-        achievement_info["criteria"] = achievement_data.get(
-            "criteria", achievement_info["criteria"]
+        achievement_info[const.DATA_ACHIEVEMENT_CRITERIA] = achievement_data.get(
+            const.DATA_ACHIEVEMENT_CRITERIA,
+            achievement_info[const.DATA_ACHIEVEMENT_CRITERIA],
         )
-        achievement_info["target_value"] = achievement_data.get(
-            "target_value", achievement_info["target_value"]
+        achievement_info[const.DATA_ACHIEVEMENT_TARGET_VALUE] = achievement_data.get(
+            const.DATA_ACHIEVEMENT_TARGET_VALUE,
+            achievement_info[const.DATA_ACHIEVEMENT_TARGET_VALUE],
         )
-        achievement_info["reward_points"] = achievement_data.get(
-            "reward_points", achievement_info["reward_points"]
+        achievement_info[const.DATA_ACHIEVEMENT_REWARD_POINTS] = achievement_data.get(
+            const.DATA_ACHIEVEMENT_REWARD_POINTS,
+            achievement_info[const.DATA_ACHIEVEMENT_REWARD_POINTS],
         )
-
         const.LOGGER.debug(
             "Updated achievement '%s' with ID: %s",
-            achievement_info["name"],
+            achievement_info[const.DATA_ACHIEVEMENT_NAME],
             achievement_id,
         )
 
     # -- Challenges
     def _create_challenge(self, challenge_id: str, challenge_data: dict[str, Any]):
         self._data[const.DATA_CHALLENGES][challenge_id] = {
-            "name": challenge_data.get("name", ""),
-            "description": challenge_data.get("description", ""),
-            "challenge_labels": challenge_data.get("challenge_labels", []),
-            "icon": challenge_data.get("icon", ""),
-            "assigned_kids": challenge_data.get("assigned_kids", []),
-            "type": challenge_data.get("type", "individual"),
-            "selected_chore_id": challenge_data.get("selected_chore_id", ""),
-            "criteria": challenge_data.get("criteria", ""),
-            "target_value": challenge_data.get("target_value", 1),
-            "reward_points": challenge_data.get("reward_points", 0),
-            "start_date": challenge_data.get("start_date")
-            if challenge_data.get("start_date") not in [None, {}]
-            else None,
-            "end_date": challenge_data.get("end_date")
-            if challenge_data.get("end_date") not in [None, {}]
-            else None,
-            "progress": challenge_data.get("progress", {}),
-            "internal_id": challenge_id,
+            const.DATA_CHALLENGE_NAME: challenge_data.get(
+                const.DATA_CHALLENGE_NAME, const.CONF_EMPTY
+            ),
+            const.DATA_CHALLENGE_DESCRIPTION: challenge_data.get(
+                const.DATA_CHALLENGE_DESCRIPTION, const.CONF_EMPTY
+            ),
+            const.DATA_CHALLENGE_LABELS: challenge_data.get(
+                const.DATA_CHALLENGE_LABELS, []
+            ),
+            const.DATA_CHALLENGE_ICON: challenge_data.get(
+                const.DATA_CHALLENGE_ICON, const.CONF_EMPTY
+            ),
+            const.DATA_CHALLENGE_ASSIGNED_KIDS: challenge_data.get(
+                const.DATA_CHALLENGE_ASSIGNED_KIDS, []
+            ),
+            const.DATA_CHALLENGE_TYPE: challenge_data.get(
+                const.DATA_CHALLENGE_TYPE, const.CHALLENGE_TYPE_DAILY_MIN
+            ),
+            const.DATA_CHALLENGE_SELECTED_CHORE_ID: challenge_data.get(
+                const.DATA_CHALLENGE_SELECTED_CHORE_ID, const.CONF_EMPTY
+            ),
+            const.DATA_CHALLENGE_CRITERIA: challenge_data.get(
+                const.DATA_CHALLENGE_CRITERIA, const.CONF_EMPTY
+            ),
+            const.DATA_CHALLENGE_TARGET_VALUE: challenge_data.get(
+                const.DATA_CHALLENGE_TARGET_VALUE, const.DEFAULT_CHALLENGE_TARGET
+            ),
+            const.DATA_CHALLENGE_REWARD_POINTS: challenge_data.get(
+                const.DATA_CHALLENGE_REWARD_POINTS,
+                const.DEFAULT_CHALLENGE_REWARD_POINTS,
+            ),
+            const.DATA_CHALLENGE_START_DATE: (
+                challenge_data.get(const.DATA_CHALLENGE_START_DATE)
+                if challenge_data.get(const.DATA_CHALLENGE_START_DATE) not in [None, {}]
+                else None
+            ),
+            const.DATA_CHALLENGE_END_DATE: (
+                challenge_data.get(const.DATA_CHALLENGE_END_DATE)
+                if challenge_data.get(const.DATA_CHALLENGE_END_DATE) not in [None, {}]
+                else None
+            ),
+            const.DATA_CHALLENGE_PROGRESS: challenge_data.get(
+                const.DATA_CHALLENGE_PROGRESS, {}
+            ),
+            const.DATA_CHALLENGE_INTERNAL_ID: challenge_id,
         }
         const.LOGGER.debug(
             "Added new challenge '%s' with ID: %s",
-            self._data[const.DATA_CHALLENGES][challenge_id]["name"],
+            self._data[const.DATA_CHALLENGES][challenge_id][const.DATA_CHALLENGE_NAME],
             challenge_id,
         )
 
     def _update_challenge(self, challenge_id: str, challenge_data: dict[str, Any]):
         challenge_info = self._data[const.DATA_CHALLENGES][challenge_id]
-        challenge_info["name"] = challenge_data.get("name", challenge_info["name"])
-        challenge_info["description"] = challenge_data.get(
-            "description", challenge_info["description"]
+        challenge_info[const.DATA_CHALLENGE_NAME] = challenge_data.get(
+            const.DATA_CHALLENGE_NAME, challenge_info[const.DATA_CHALLENGE_NAME]
         )
-        challenge_info["challenge_labels"] = challenge_data.get(
-            "challenge_labels", challenge_info.get("challenge_labels", [])
+        challenge_info[const.DATA_CHALLENGE_DESCRIPTION] = challenge_data.get(
+            const.DATA_CHALLENGE_DESCRIPTION,
+            challenge_info[const.DATA_CHALLENGE_DESCRIPTION],
         )
-        challenge_info["icon"] = challenge_data.get("icon", challenge_info["icon"])
-        challenge_info["assigned_kids"] = challenge_data.get(
-            "assigned_kids", challenge_info["assigned_kids"]
+        challenge_info[const.DATA_CHALLENGE_LABELS] = challenge_data.get(
+            const.DATA_CHALLENGE_LABELS,
+            challenge_info.get(const.DATA_CHALLENGE_LABELS, []),
         )
-        challenge_info["type"] = challenge_data.get("type", challenge_info["type"])
-        challenge_info["selected_chore_id"] = challenge_data.get(
-            "selected_chore_id", challenge_info.get("selected_chore_id", "")
+        challenge_info[const.DATA_CHALLENGE_ICON] = challenge_data.get(
+            const.DATA_CHALLENGE_ICON, challenge_info[const.DATA_CHALLENGE_ICON]
         )
-        challenge_info["criteria"] = challenge_data.get(
-            "criteria", challenge_info["criteria"]
+        challenge_info[const.DATA_CHALLENGE_ASSIGNED_KIDS] = challenge_data.get(
+            const.DATA_CHALLENGE_ASSIGNED_KIDS,
+            challenge_info[const.DATA_CHALLENGE_ASSIGNED_KIDS],
         )
-        challenge_info["target_value"] = challenge_data.get(
-            "target_value", challenge_info["target_value"]
+        challenge_info[const.DATA_CHALLENGE_TYPE] = challenge_data.get(
+            const.DATA_CHALLENGE_TYPE, challenge_info[const.DATA_CHALLENGE_TYPE]
         )
-        challenge_info["reward_points"] = challenge_data.get(
-            "reward_points", challenge_info["reward_points"]
+        challenge_info[const.DATA_CHALLENGE_SELECTED_CHORE_ID] = challenge_data.get(
+            const.DATA_CHALLENGE_SELECTED_CHORE_ID,
+            challenge_info.get(
+                const.DATA_CHALLENGE_SELECTED_CHORE_ID, const.CONF_EMPTY
+            ),
         )
-        challenge_info["start_date"] = (
-            challenge_data.get("start_date")
-            if challenge_data.get("start_date") not in [None, {}]
+        challenge_info[const.DATA_CHALLENGE_CRITERIA] = challenge_data.get(
+            const.DATA_CHALLENGE_CRITERIA, challenge_info[const.DATA_CHALLENGE_CRITERIA]
+        )
+        challenge_info[const.DATA_CHALLENGE_TARGET_VALUE] = challenge_data.get(
+            const.DATA_CHALLENGE_TARGET_VALUE,
+            challenge_info[const.DATA_CHALLENGE_TARGET_VALUE],
+        )
+        challenge_info[const.DATA_CHALLENGE_REWARD_POINTS] = challenge_data.get(
+            const.DATA_CHALLENGE_REWARD_POINTS,
+            challenge_info[const.DATA_CHALLENGE_REWARD_POINTS],
+        )
+        challenge_info[const.DATA_CHALLENGE_START_DATE] = (
+            challenge_data.get(const.DATA_CHALLENGE_START_DATE)
+            if challenge_data.get(const.DATA_CHALLENGE_START_DATE) not in [None, {}]
             else None
         )
-        challenge_info["end_date"] = (
-            challenge_data.get("end_date")
-            if challenge_data.get("end_date") not in [None, {}]
+        challenge_info[const.DATA_CHALLENGE_END_DATE] = (
+            challenge_data.get(const.DATA_CHALLENGE_END_DATE)
+            if challenge_data.get(const.DATA_CHALLENGE_END_DATE) not in [None, {}]
             else None
         )
         const.LOGGER.debug(
-            "Updated challenge '%s' with ID: %s", challenge_info["name"], challenge_id
+            "Updated challenge '%s' with ID: %s",
+            challenge_info[const.DATA_CHALLENGE_NAME],
+            challenge_id,
         )
 
     # -------------------------------------------------------------------------------------
@@ -1535,7 +1790,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     @property
     def achievements_data(self) -> dict[str, Any]:
         """Return the achievements data."""
-        return self._data.get(const.DATA_ACHIEVEMENTS, {})  # New
+        return self._data.get(const.DATA_ACHIEVEMENTS, {})
 
     @property
     def challenges_data(self) -> dict[str, Any]:
@@ -1722,11 +1977,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._process_chore_state(
             kid_id, chore_id, const.CHORE_STATE_APPROVED, points_awarded=awarded_points
         )
-
-        # Remove to avoid awarding duplicated points
-        # old_points = float(kid_info["points"])
-        # new_points = old_points + awarded_points
-        # self.update_kid_points(kid_id, new_points)
 
         # increment completed chores counters
         kid_info["completed_chores_today"] += 1
@@ -2436,7 +2686,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self.penalties_data[internal_id] = {
             "name": penalty_name,
             "points": penalty_def.get("points", -const.DEFAULT_PENALTY_POINTS),
-            "description": penalty_def.get("description", ""),
+            "description": penalty_def.get("description", const.CONF_EMPTY),
             "icon": penalty_def.get("icon", const.DEFAULT_PENALTY_ICON),
             "internal_id": internal_id,
         }
@@ -2497,7 +2747,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self.bonuses_data[internal_id] = {
             "name": bonus_name,
             "points": bonus_def.get("points", const.DEFAULT_BONUS_POINTS),
-            "description": bonus_def.get("description", ""),
+            "description": bonus_def.get("description", const.CONF_EMPTY),
             "icon": bonus_def.get("icon", const.DEFAULT_BONUS_ICON),
             "internal_id": internal_id,
         }
@@ -3851,7 +4101,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         persistent_enabled = kid_info.get(
             const.CONF_ENABLE_PERSISTENT_NOTIFICATIONS, True
         )
-        mobile_notify_service = kid_info.get(const.CONF_MOBILE_NOTIFY_SERVICE, "")
+        mobile_notify_service = kid_info.get(
+            const.CONF_MOBILE_NOTIFY_SERVICE, const.CONF_EMPTY
+        )
         if mobile_enabled and mobile_notify_service:
             await async_send_notification(
                 self.hass,
@@ -3898,7 +4150,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.CONF_ENABLE_PERSISTENT_NOTIFICATIONS, True
             )
             mobile_notify_service = parent_info.get(
-                const.CONF_MOBILE_NOTIFY_SERVICE, ""
+                const.CONF_MOBILE_NOTIFY_SERVICE, const.CONF_EMPTY
             )
             if mobile_enabled and mobile_notify_service:
                 await async_send_notification(
