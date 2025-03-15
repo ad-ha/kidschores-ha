@@ -1,10 +1,11 @@
 # File: kc_helpers.py
 """KidsChores helper functions and shared logic."""
 
+from typing import Optional
+
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import User
 from homeassistant.helpers.label_registry import async_get
-from typing import Optional
 
 from . import const
 from .coordinator import KidsChoresDataCoordinator
