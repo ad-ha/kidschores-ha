@@ -141,8 +141,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         for key in [
             "claimed_chores",
             "approved_chores",
-            "pending_rewards",
-            "redeemed_rewards",
+            const.DATA_KID_PENDING_REWARDS,
+            const.DATA_KID_REDEEMED_REWARDS,
         ]:
             if not isinstance(kid_info.get(key), list):
                 kid_info[key] = []
@@ -410,12 +410,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         prefix = f"{self.config_entry.entry_id}_"
         suffix = "_global_state"
         for entity_entry in list(ent_reg.entities.values()):
+            unique_id = str(entity_entry.unique_id)
             if (
                 entity_entry.domain == "sensor"
-                and entity_entry.unique_id.startswith(prefix)
-                and entity_entry.unique_id.endswith(suffix)
+                and unique_id.startswith(prefix)
+                and unique_id.endswith(suffix)
             ):
-                chore_id = entity_entry.unique_id[len(prefix) : -len(suffix)]
+                chore_id = unique_id[len(prefix) : -len(suffix)]
                 chore_info = self.chores_data.get(chore_id)
                 if not chore_info or not chore_info.get("shared_chore", False):
                     ent_reg.async_remove(entity_entry.entity_id)
@@ -430,12 +431,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         prefix = f"{self.config_entry.entry_id}_"
         suffix = "_achievement_progress"
         for entity_entry in list(ent_reg.entities.values()):
+            unique_id = str(entity_entry.unique_id)
             if (
                 entity_entry.domain == "sensor"
-                and entity_entry.unique_id.startswith(prefix)
-                and entity_entry.unique_id.endswith(suffix)
+                and unique_id.startswith(prefix)
+                and unique_id.endswith(suffix)
             ):
-                core_id = entity_entry.unique_id[len(prefix) : -len(suffix)]
+                core_id = unique_id[len(prefix) : -len(suffix)]
                 parts = core_id.split("_", 1)
                 if len(parts) != 2:
                     continue
@@ -461,12 +463,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         prefix = f"{self.config_entry.entry_id}_"
         suffix = "_challenge_progress"
         for entity_entry in list(ent_reg.entities.values()):
+            unique_id = str(entity_entry.unique_id)
             if (
                 entity_entry.domain == "sensor"
-                and entity_entry.unique_id.startswith(prefix)
-                and entity_entry.unique_id.endswith(suffix)
+                and unique_id.startswith(prefix)
+                and unique_id.endswith(suffix)
             ):
-                core_id = entity_entry.unique_id[len(prefix) : -len(suffix)]
+                core_id = unique_id[len(prefix) : -len(suffix)]
                 parts = core_id.split("_", 1)
                 if len(parts) != 2:
                     continue
@@ -533,7 +536,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._data[const.DATA_PENDING_CHORE_APPROVALS] = [
             ap
             for ap in self._data.get(const.DATA_PENDING_CHORE_APPROVALS, [])
-            if not (ap.get("kid_id") == kid_id and ap.get("chore_id") == chore_id)
+            if not (
+                ap.get(const.DATA_KID_ID) == kid_id
+                and ap.get(const.DATA_CHORE_ID) == chore_id
+            )
         ]
 
     def _cleanup_pending_chore_approvals(self) -> None:
@@ -542,7 +548,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._data[const.DATA_PENDING_CHORE_APPROVALS] = [
             ap
             for ap in self._data.get(const.DATA_PENDING_CHORE_APPROVALS, [])
-            if ap.get("chore_id") in valid_chore_ids
+            if ap.get(const.DATA_CHORE_ID) in valid_chore_ids
         ]
 
     def _cleanup_pending_reward_approvals(self) -> None:
@@ -551,7 +557,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._data[const.DATA_PENDING_REWARD_APPROVALS] = [
             approval
             for approval in self._data.get(const.DATA_PENDING_REWARD_APPROVALS, [])
-            if approval.get("reward_id") in valid_reward_ids
+            if approval.get(const.DATA_REWARD_ID) in valid_reward_ids
         ]
 
     def _cleanup_deleted_kid_references(self) -> None:
@@ -1050,7 +1056,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         due_date = self._data[const.DATA_CHORES][chore_id][const.DATA_CHORE_DUE_DATE]
         for kid_id in assigned_kids_ids:
             due_str = due_date if due_date else "No due date set"
-            extra_data = {"kid_id": kid_id, "chore_id": chore_id}
+            extra_data = {const.DATA_KID_ID: kid_id, const.DATA_CHORE_ID: chore_id}
             self.hass.async_create_task(
                 self._notify_kid(
                     kid_id,
@@ -1803,61 +1809,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         return self._data.get(const.DATA_BONUSES, {})
 
     # -------------------------------------------------------------------------------------
-    # Parents: Add, Remove
-    # -------------------------------------------------------------------------------------
-
-    def add_parent(self, parent_def: dict[str, Any]):
-        """Add new parent at runtime if needed."""
-        parent_name = parent_def.get("name")
-        ha_user_id = parent_def.get("ha_user_id")
-        kid_ids = parent_def.get("associated_kids", [])
-
-        if not parent_name or not ha_user_id:
-            const.LOGGER.warning("Add parent: Parent must have a name and ha_user_id")
-            return
-
-        if any(p["ha_user_id"] == ha_user_id for p in self.parents_data.values()):
-            const.LOGGER.warning(
-                "Add parent: Parent with ha_user_id '%s' already exists", ha_user_id
-            )
-            return
-
-        valid_kids = []
-        for kid_id in kid_ids:
-            if kid_id in self.kids_data:
-                valid_kids.append(kid_id)
-            else:
-                const.LOGGER.warning(
-                    "Add parent: Kid ID '%s' not found. Skipping assignment to parent '%s'",
-                    kid_id,
-                    parent_name,
-                )
-
-        new_id = str(uuid.uuid4())
-        self.parents_data[new_id] = {
-            "name": parent_name,
-            "ha_user_id": ha_user_id,
-            "associated_kids": valid_kids,
-            "internal_id": new_id,
-        }
-        const.LOGGER.debug("Added new parent '%s' with ID: %s", parent_name, new_id)
-        self._persist()
-        self.async_set_updated_data(self._data)
-
-    def remove_parent(self, parent_id: str):
-        """Remove a parent by ID."""
-        if parent_id in self.parents_data:
-            parent_name = self.parents_data[parent_id]["name"]
-            del self.parents_data[parent_id]
-            const.LOGGER.debug(
-                "Removed parent '%s' with ID: %s", parent_name, parent_id
-            )
-            self._persist()
-            self.async_set_updated_data(self._data)
-        else:
-            const.LOGGER.warning("Remove parent: Parent ID '%s' not found", parent_id)
-
-    # -------------------------------------------------------------------------------------
     # Chores: Claim, Approve, Disapprove, Compute Global State for Shared Chores
     # -------------------------------------------------------------------------------------
 
@@ -1868,7 +1819,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             raise HomeAssistantError(f"Chore with ID '{chore_id}' not found.")
 
         chore_info = self.chores_data[chore_id]
-        if kid_id not in chore_info.get("assigned_kids", []):
+        if kid_id not in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
             const.LOGGER.warning(
                 "Claim chore: Chore ID '%s' not assigned to kid ID '%s'",
                 chore_id,
@@ -1921,8 +1872,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             ]
             # Pass extra context so the event handler can route the action.
             extra_data = {
-                "kid_id": kid_id,
-                "chore_id": chore_id,
+                const.DATA_KID_ID: kid_id,
+                const.DATA_CHORE_ID: chore_id,
             }
             self.hass.async_create_task(
                 self._notify_parents(
@@ -1949,7 +1900,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             raise HomeAssistantError(f"Chore with ID '{chore_id}' not found.")
 
         chore_info = self.chores_data[chore_id]
-        if kid_id not in chore_info.get("assigned_kids", []):
+        if kid_id not in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
             raise HomeAssistantError(
                 f"Chore '{chore_info.get('name')}' is not assigned to kid '{self.kids_data[kid_id]['name']}'."
             )
@@ -2001,7 +1952,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._data[const.DATA_PENDING_CHORE_APPROVALS] = [
             ap
             for ap in self._data[const.DATA_PENDING_CHORE_APPROVALS]
-            if not (ap["kid_id"] == kid_id and ap["chore_id"] == chore_id)
+            if not (
+                ap[const.DATA_KID_ID] == kid_id and ap[const.DATA_CHORE_ID] == chore_id
+            )
         ]
 
         # increment chore approvals
@@ -2075,7 +2028,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if chore_info.get(
             const.CONF_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
         ):
-            extra_data = {"kid_id": kid_id, "chore_id": chore_id}
+            extra_data = {const.DATA_KID_ID: kid_id, const.DATA_CHORE_ID: chore_id}
             self.hass.async_create_task(
                 self._notify_kid(
                     kid_id,
@@ -2104,7 +2057,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if chore_info.get(
             const.CONF_NOTIFY_ON_DISAPPROVAL, const.DEFAULT_NOTIFY_ON_DISAPPROVAL
         ):
-            extra_data = {"kid_id": kid_id, "chore_id": chore_id}
+            extra_data = {const.DATA_KID_ID: kid_id, const.DATA_CHORE_ID: chore_id}
             self.hass.async_create_task(
                 self._notify_kid(
                     kid_id,
@@ -2126,7 +2079,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             return
         # Set state for all kids assigned to the chore:
-        for kid_id in chore_info.get("assigned_kids", []):
+        for kid_id in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
             if kid_id:
                 self._process_chore_state(kid_id, chore_id, state)
         self._persist()
@@ -2199,8 +2152,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
             self._data.setdefault(const.DATA_PENDING_CHORE_APPROVALS, []).append(
                 {
-                    "kid_id": kid_id,
-                    "chore_id": chore_id,
+                    const.DATA_KID_ID: kid_id,
+                    const.DATA_CHORE_ID: chore_id,
                     "timestamp": dt_util.utcnow().isoformat(),
                 }
             )
@@ -2230,7 +2183,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._data[const.DATA_PENDING_CHORE_APPROVALS] = [
                 ap
                 for ap in self._data.get(const.DATA_PENDING_CHORE_APPROVALS, [])
-                if not (ap.get("kid_id") == kid_id and ap.get("chore_id") == chore_id)
+                if not (
+                    ap.get(const.DATA_KID_ID) == kid_id
+                    and ap.get(const.DATA_CHORE_ID) == chore_id
+                )
             ]
 
         elif new_state == const.CHORE_STATE_PENDING:
@@ -2243,7 +2199,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._data[const.DATA_PENDING_CHORE_APPROVALS] = [
                 ap
                 for ap in self._data.get(const.DATA_PENDING_CHORE_APPROVALS, [])
-                if not (ap.get("kid_id") == kid_id and ap.get("chore_id") == chore_id)
+                if not (
+                    ap.get(const.DATA_KID_ID) == kid_id
+                    and ap.get(const.DATA_CHORE_ID) == chore_id
+                )
             ]
 
         elif new_state == const.CHORE_STATE_OVERDUE:
@@ -2259,7 +2218,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # Compute and update the chore's global state.
         # Given the process above is handling everything properly for each kid, computing the global state straightforward.
         # This process needs run every time a chore state changes, so it no longer warrants a separate function.
-        assigned_kids = chore_info.get("assigned_kids", [])
+        assigned_kids = chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
 
         if len(assigned_kids) == 1:
             # if only one kid is assigned to the chore, update the chore state to new state 1:1
@@ -2323,7 +2282,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.LOGGER.warning("Update kid points: Kid ID '%s' not found", kid_id)
             return
 
-        old_points = float(kid_info["points"])
+        old_points = float(kid_info[const.DATA_KID_POINTS])
         delta = new_points - old_points
         if delta == 0:
             const.LOGGER.debug(
@@ -2331,7 +2290,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             return
 
-        kid_info["points"] = new_points
+        kid_info[const.DATA_KID_POINTS] = new_points
         kid_info["points_earned_today"] += delta
         kid_info["points_earned_weekly"] += delta
         kid_info["points_earned_monthly"] += delta
@@ -2371,28 +2330,28 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
 
         cost = reward.get("cost", 0.0)
-        if kid_info["points"] < cost:
+        if kid_info[const.DATA_KID_POINTS] < cost:
             raise HomeAssistantError(
                 f"'{kid_info['name']}' does not have enough points ({cost} needed)."
             )
 
-        kid_info.setdefault("pending_rewards", []).append(reward_id)
-        kid_info.setdefault("redeemed_rewards", [])
+        kid_info.setdefault(const.DATA_KID_PENDING_REWARDS, []).append(reward_id)
+        kid_info.setdefault(const.DATA_KID_REDEEMED_REWARDS, [])
 
         # Add to pending approvals
         self._data[const.DATA_PENDING_REWARD_APPROVALS].append(
             {
-                "kid_id": kid_id,
-                "reward_id": reward_id,
+                const.DATA_KID_ID: kid_id,
+                const.DATA_REWARD_ID: reward_id,
                 "timestamp": dt_util.utcnow().isoformat(),
             }
         )
 
         # increment reward_claims counter
-        if reward_id in kid_info["reward_claims"]:
-            kid_info["reward_claims"][reward_id] += 1
+        if reward_id in kid_info[const.DATA_KID_REWARD_CLAIMS]:
+            kid_info[const.DATA_KID_REWARD_CLAIMS][reward_id] += 1
         else:
-            kid_info["reward_claims"][reward_id] = 1
+            kid_info[const.DATA_KID_REWARD_CLAIMS][reward_id] = 1
 
         # Send a notification to the parents that a kid claimed a reward
         actions = [
@@ -2409,7 +2368,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 "title": const.ACTION_TITLE_REMIND_30,
             },
         ]
-        extra_data = {"kid_id": kid_id, "reward_id": reward_id}
+        extra_data = {const.DATA_KID_ID: kid_id, const.DATA_REWARD_ID: reward_id}
         self.hass.async_create_task(
             self._notify_parents(
                 kid_id,
@@ -2434,44 +2393,47 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             raise HomeAssistantError(f"Reward with ID '{reward_id}' not found.")
 
         cost = reward.get("cost", 0.0)
-        if reward_id in kid_info.get("pending_rewards", []):
-            if kid_info["points"] < cost:
+        if reward_id in kid_info.get(const.DATA_KID_PENDING_REWARDS, []):
+            if kid_info[const.DATA_KID_POINTS] < cost:
                 raise HomeAssistantError(
                     f"'{kid_info['name']}' does not have enough points to redeem '{reward['name']}'."
                 )
 
             # Deduct
-            new_points = float(kid_info["points"]) - cost
+            new_points = float(kid_info[const.DATA_KID_POINTS]) - cost
             self.update_kid_points(kid_id, new_points)
 
-            kid_info["pending_rewards"].remove(reward_id)
-            kid_info["redeemed_rewards"].append(reward_id)
+            kid_info[const.DATA_KID_PENDING_REWARDS].remove(reward_id)
+            kid_info[const.DATA_KID_REDEEMED_REWARDS].append(reward_id)
         else:
             # direct approval scenario
-            if kid_info["points"] < cost:
+            if kid_info[const.DATA_KID_POINTS] < cost:
                 raise HomeAssistantError(
                     f"'{kid_info['name']}' does not have enough points to redeem '{reward['name']}'."
                 )
-            kid_info["points"] -= cost
-            kid_info["redeemed_rewards"].append(reward_id)
+            kid_info[const.DATA_KID_POINTS] -= cost
+            kid_info[const.DATA_KID_REDEEMED_REWARDS].append(reward_id)
 
         self._check_badges_for_kid(kid_id)
 
         # remove 1 claim from pending approvals
         approvals = self._data[const.DATA_PENDING_REWARD_APPROVALS]
         for i, ap in enumerate(approvals):
-            if ap["kid_id"] == kid_id and ap["reward_id"] == reward_id:
+            if (
+                ap[const.DATA_KID_ID] == kid_id
+                and ap[const.DATA_REWARD_ID] == reward_id
+            ):
                 del approvals[i]  # Remove only the first match
                 break  # Stop after the first removal
 
         # increment reward_approvals
-        if reward_id in kid_info["reward_approvals"]:
-            kid_info["reward_approvals"][reward_id] += 1
+        if reward_id in kid_info[const.DATA_KID_REWARD_APPROVALS]:
+            kid_info[const.DATA_KID_REWARD_APPROVALS][reward_id] += 1
         else:
-            kid_info["reward_approvals"][reward_id] = 1
+            kid_info[const.DATA_KID_REWARD_APPROVALS][reward_id] = 1
 
         # Send a notification to the kid that reward was approved
-        extra_data = {"kid_id": kid_id, "reward_id": reward_id}
+        extra_data = {const.DATA_KID_ID: kid_id, const.DATA_REWARD_ID: reward_id}
         self.hass.async_create_task(
             self._notify_kid(
                 kid_id,
@@ -2495,15 +2457,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._data[const.DATA_PENDING_REWARD_APPROVALS] = [
             ap
             for ap in self._data[const.DATA_PENDING_REWARD_APPROVALS]
-            if not (ap["kid_id"] == kid_id and ap["reward_id"] == reward_id)
+            if not (
+                ap[const.DATA_KID_ID] == kid_id
+                and ap[const.DATA_REWARD_ID] == reward_id
+            )
         ]
 
         kid_info = self.kids_data.get(kid_id)
-        if kid_info and reward_id in kid_info.get("pending_rewards", []):
-            kid_info["pending_rewards"].remove(reward_id)
+        if kid_info and reward_id in kid_info.get(const.DATA_KID_PENDING_REWARDS, []):
+            kid_info[const.DATA_KID_PENDING_REWARDS].remove(reward_id)
 
         # Send a notification to the kid that reward was disapproved
-        extra_data = {"kid_id": kid_id, "reward_id": reward_id}
+        extra_data = {const.DATA_KID_ID: kid_id, const.DATA_REWARD_ID: reward_id}
         self.hass.async_create_task(
             self._notify_kid(
                 kid_id,
@@ -2532,7 +2497,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             threshold_type = badge_data.get("threshold_type")
             threshold_val = badge_data.get("threshold_value", 0)
             if threshold_type == const.BADGE_THRESHOLD_TYPE_POINTS:
-                if kid_info["points"] >= threshold_val:
+                if kid_info[const.DATA_KID_POINTS] >= threshold_val:
                     self._award_badge(kid_id, badge_id)
             elif threshold_type == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT:
                 ctype = badge_data.get("chore_count_type", const.FREQUENCY_DAILY)
@@ -2567,7 +2532,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             kid_name = kid_info["name"]
 
             # Send a notification to the kid and parents that a new badge was earned
-            extra_data = {"kid_id": kid_id, "badge_id": badge_id}
+            extra_data = {const.DATA_KID_ID: kid_id, "badge_id": badge_id}
             self.hass.async_create_task(
                 self._notify_kid(
                     kid_id,
@@ -2648,7 +2613,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
 
         penalty_pts = penalty.get("points", 0)
-        new_points = float(kid_info["points"]) + penalty_pts
+        new_points = float(kid_info[const.DATA_KID_POINTS]) + penalty_pts
         self.update_kid_points(kid_id, new_points)
 
         # increment penalty_applies
@@ -2658,7 +2623,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             kid_info["penalty_applies"][penalty_id] = 1
 
         # Send a notification to the kid that a penalty was applied
-        extra_data = {"kid_id": kid_id, "penalty_id": penalty_id}
+        extra_data = {const.DATA_KID_ID: kid_id, "penalty_id": penalty_id}
         self.hass.async_create_task(
             self._notify_kid(
                 kid_id,
@@ -2711,7 +2676,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
 
         bonus_pts = bonus.get("points", 0)
-        new_points = float(kid_info["points"]) + bonus_pts
+        new_points = float(kid_info[const.DATA_KID_POINTS]) + bonus_pts
         self.update_kid_points(kid_id, new_points)
 
         # increment bonus_applies
@@ -2721,7 +2686,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             kid_info["bonus_applies"][bonus_id] = 1
 
         # Send a notification to the kid that a bonus was applied
-        extra_data = {"kid_id": kid_id, "bonus_id": bonus_id}
+        extra_data = {const.DATA_KID_ID: kid_id, "bonus_id": bonus_id}
         self.hass.async_create_task(
             self._notify_kid(
                 kid_id,
@@ -2859,11 +2824,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         extra_points = achievement.get("reward_points", 0)
         kid_info = self.kids_data.get(kid_id)
         if kid_info is not None:
-            new_points = float(kid_info["points"]) + extra_points
+            new_points = float(kid_info[const.DATA_KID_POINTS]) + extra_points
             self.update_kid_points(kid_id, new_points)
 
         # Notify kid and parents
-        extra_data = {"kid_id": kid_id, "achievement_id": achievement_id}
+        extra_data = {
+            const.DATA_KID_ID: kid_id,
+            const.DATA_ACHIEVEMENT_ID: achievement_id,
+        }
         self.hass.async_create_task(
             self._notify_kid(
                 kid_id,
@@ -2977,11 +2945,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         extra_points = challenge.get("reward_points", 0)
         kid_info = self.kids_data.get(kid_id)
         if kid_info is not None:
-            new_points = float(kid_info["points"]) + extra_points
+            new_points = float(kid_info[const.DATA_KID_POINTS]) + extra_points
             self.update_kid_points(kid_id, new_points)
 
         # Notify kid and parents
-        extra_data = {"kid_id": kid_id, "challenge_id": challenge_id}
+        extra_data = {const.DATA_KID_ID: kid_id, const.DATA_CHALLENGE_ID: challenge_id}
         self.hass.async_create_task(
             self._notify_kid(
                 kid_id,
@@ -3098,7 +3066,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # const.LOGGER.debug("Checking chore '%s' id '%s' (state=%s)", chore_info.get("name"), chore_id, chore_info.get("state"))
 
             # Get the list of assigned kids
-            assigned_kids = chore_info.get("assigned_kids", [])
+            assigned_kids = chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
             # const.LOGGER.debug("Chore '%s' id '%s' assigned to kids: %s", chore_info.get("name"), chore_id, assigned_kids,)
 
             # Check if all assigned kids have either claimed or approved the chore
@@ -3180,7 +3148,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
             # Handling for overdue is the same for shared and non-shared chores
             # Status and global status will be determined by the chore state processor
-            assigned_kids = chore_info.get("assigned_kids", [])
+            assigned_kids = chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
             for kid_id in assigned_kids:
                 kid_info = self.kids_data.get(kid_id, {})
 
@@ -3228,7 +3196,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
                 if notify:
                     kid_info["overdue_notifications"][chore_id] = now.isoformat()
-                    extra_data = {"kid_id": kid_id, "chore_id": chore_id}
+                    extra_data = {
+                        const.DATA_KID_ID: kid_id,
+                        const.DATA_CHORE_ID: chore_id,
+                    }
                     actions = [
                         {
                             "action": f"{const.ACTION_APPROVE_CHORE}|{kid_id}|{chore_id}",
@@ -3389,7 +3360,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     const.CHORE_STATE_OVERDUE,
                 ]:
                     previous_state = chore_info["state"]
-                    for kid_id in chore_info.get("assigned_kids", []):
+                    for kid_id in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
                         if kid_id:
                             self._process_chore_state(
                                 kid_id, chore_id, const.CHORE_STATE_PENDING
@@ -3410,7 +3381,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._data[const.DATA_PENDING_CHORE_APPROVALS] = [
             ap
             for ap in self._data[const.DATA_PENDING_CHORE_APPROVALS]
-            if ap["chore_id"] not in target_chore_ids
+            if ap[const.DATA_CHORE_ID] not in target_chore_ids
         ]
 
         self._persist()
@@ -3423,8 +3394,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # For each kid, clear pending/approved reward lists to reflect daily reset
         for kid_id, kid_info in self.kids_data.items():
-            kid_info["pending_rewards"] = []
-            kid_info["redeemed_rewards"] = []
+            kid_info[const.DATA_KID_PENDING_REWARDS] = []
+            kid_info[const.DATA_KID_REDEEMED_REWARDS] = []
 
             const.LOGGER.debug(
                 "Cleared daily reward statuses for kid ID '%s' (%s)",
@@ -3531,7 +3502,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
 
         chore_info["due_date"] = next_due.isoformat()
-        chore_id = chore_info.get("internal_id")
+        chore_id = chore_info.get(const.DATA_CHORE_INTERNAL_ID)
 
         # Update config_entry.options for this chore so that the new due_date is visible in Options
         self.hass.async_create_task(
@@ -3540,7 +3511,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
         )
         # Reset the chore state to Pending
-        for kid_id in chore_info.get("assigned_kids", []):
+        for kid_id in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
             if kid_id:
                 self._process_chore_state(kid_id, chore_id, const.CHORE_STATE_PENDING)
 
@@ -3614,7 +3585,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         )
 
         # Reset the chore state to Pending
-        for kid_id in chore_info.get("assigned_kids", []):
+        for kid_id in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
             if kid_id:
                 self._process_chore_state(kid_id, chore_id, const.CHORE_STATE_PENDING)
 
@@ -3669,8 +3640,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         elif kid_id:
             # Kid-only reset: reset all overdue chores for the specified kid.
-            # Note that reschedule happens at the chore level, so it chores assigned to this kid that are multi assigned
-            # will show as reset for those other kids
+            # Note that reschedule happens at the chore level, so it chores assigned to this
+            # kid that are multi assigned will show as reset for those other kids
             kid = self.kids_data.get(kid_id)
             if not kid:
                 raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
@@ -3839,47 +3810,54 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.LOGGER.error("Reset Rewards: Kid with ID '%s' not found.", kid_id)
                 raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
 
-            kid_info["reward_claims"].pop(reward_id, None)
-            kid_info["reward_approvals"].pop(reward_id, None)
-            kid_info["redeemed_rewards"] = [
-                reward for reward in kid_info["redeemed_rewards"] if reward != reward_id
+            kid_info[const.DATA_KID_REWARD_CLAIMS].pop(reward_id, None)
+            kid_info[const.DATA_KID_REWARD_APPROVALS].pop(reward_id, None)
+            kid_info[const.DATA_KID_REDEEMED_REWARDS] = [
+                reward
+                for reward in kid_info[const.DATA_KID_REDEEMED_REWARDS]
+                if reward != reward_id
             ]
-            kid_info["pending_rewards"] = [
-                reward for reward in kid_info["pending_rewards"] if reward != reward_id
+            kid_info[const.DATA_KID_PENDING_REWARDS] = [
+                reward
+                for reward in kid_info[const.DATA_KID_PENDING_REWARDS]
+                if reward != reward_id
             ]
 
             # Remove open claims from pending approvals for this kid and reward.
             self._data[const.DATA_PENDING_REWARD_APPROVALS] = [
                 ap
                 for ap in self._data[const.DATA_PENDING_REWARD_APPROVALS]
-                if not (ap["kid_id"] == kid_id and ap["reward_id"] == reward_id)
+                if not (
+                    ap[const.DATA_KID_ID] == kid_id
+                    and ap[const.DATA_REWARD_ID] == reward_id
+                )
             ]
 
         elif reward_id:
             # Reset a specific reward for all kids
             found = False
             for kid_info in self.kids_data.values():
-                if reward_id in kid_info.get("reward_claims", {}):
+                if reward_id in kid_info.get(const.DATA_KID_REWARD_CLAIMS, {}):
                     found = True
-                    kid_info["reward_claims"].pop(reward_id, None)
-                if reward_id in kid_info.get("reward_approvals", {}):
+                    kid_info[const.DATA_KID_REWARD_CLAIMS].pop(reward_id, None)
+                if reward_id in kid_info.get(const.DATA_KID_REWARD_APPROVALS, {}):
                     found = True
-                    kid_info["reward_approvals"].pop(reward_id, None)
-                kid_info["redeemed_rewards"] = [
+                    kid_info[const.DATA_KID_REWARD_APPROVALS].pop(reward_id, None)
+                kid_info[const.DATA_KID_REDEEMED_REWARDS] = [
                     reward
-                    for reward in kid_info["redeemed_rewards"]
+                    for reward in kid_info[const.DATA_KID_REDEEMED_REWARDS]
                     if reward != reward_id
                 ]
-                kid_info["pending_rewards"] = [
+                kid_info[const.DATA_KID_PENDING_REWARDS] = [
                     reward
-                    for reward in kid_info["pending_rewards"]
+                    for reward in kid_info[const.DATA_KID_PENDING_REWARDS]
                     if reward != reward_id
                 ]
             # Remove open claims from pending approvals for this reward (all kids).
             self._data[const.DATA_PENDING_REWARD_APPROVALS] = [
                 ap
                 for ap in self._data[const.DATA_PENDING_REWARD_APPROVALS]
-                if ap["reward_id"] != reward_id
+                if ap[const.DATA_REWARD_ID] != reward_id
             ]
             if not found:
                 const.LOGGER.warning(
@@ -3894,26 +3872,26 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.LOGGER.error("Reset Rewards: Kid with ID '%s' not found.", kid_id)
                 raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
 
-            kid_info["reward_claims"].clear()
-            kid_info["reward_approvals"].clear()
-            kid_info["redeemed_rewards"].clear()
-            kid_info["pending_rewards"].clear()
+            kid_info[const.DATA_KID_REWARD_CLAIMS].clear()
+            kid_info[const.DATA_KID_REWARD_APPROVALS].clear()
+            kid_info[const.DATA_KID_REDEEMED_REWARDS].clear()
+            kid_info[const.DATA_KID_PENDING_REWARDS].clear()
 
             # Remove open claims from pending approvals for that kid.
             self._data[const.DATA_PENDING_REWARD_APPROVALS] = [
                 ap
                 for ap in self._data[const.DATA_PENDING_REWARD_APPROVALS]
-                if ap["kid_id"] != kid_id
+                if ap[const.DATA_KID_ID] != kid_id
             ]
 
         else:
             # Reset all rewards for all kids
             const.LOGGER.info("Reset Rewards: Resetting all rewards for all kids.")
             for kid_info in self.kids_data.values():
-                kid_info["reward_claims"].clear()
-                kid_info["reward_approvals"].clear()
-                kid_info["redeemed_rewards"].clear()
-                kid_info["pending_rewards"].clear()
+                kid_info[const.DATA_KID_REWARD_CLAIMS].clear()
+                kid_info[const.DATA_KID_REWARD_APPROVALS].clear()
+                kid_info[const.DATA_KID_REDEEMED_REWARDS].clear()
+                kid_info[const.DATA_KID_PENDING_REWARDS].clear()
 
             # Clear all pending reward approvals.
             self._data[const.DATA_PENDING_REWARD_APPROVALS].clear()
@@ -4241,7 +4219,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     "title": const.ACTION_TITLE_REMIND_30,
                 },
             ]
-            extra_data = {"kid_id": kid_id, "chore_id": chore_id}
+            extra_data = {const.DATA_KID_ID: kid_id, const.DATA_CHORE_ID: chore_id}
             await self._notify_parents(
                 kid_id,
                 title="KidsChores: Reminder for Pending Chore",
@@ -4254,7 +4232,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
         elif reward_id:
             # Check if the reward is still pending approval.
-            if reward_id not in kid_info.get("pending_rewards", []):
+            if reward_id not in kid_info.get(const.DATA_KID_PENDING_REWARDS, []):
                 const.LOGGER.info(
                     "Reward '%s' is no longer pending approval for kid '%s'; no reminder sent",
                     reward_id,
@@ -4275,7 +4253,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     "title": const.ACTION_TITLE_REMIND_30,
                 },
             ]
-            extra_data = {"kid_id": kid_id, "reward_id": reward_id}
+            extra_data = {const.DATA_KID_ID: kid_id, const.DATA_REWARD_ID: reward_id}
             reward = self.rewards_data.get(reward_id, {})
             reward_name = reward.get("name", "the reward")
             await self._notify_parents(
