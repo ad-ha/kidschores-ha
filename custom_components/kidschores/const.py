@@ -30,6 +30,7 @@ PLATFORMS = [
 ]
 
 # Storage and Versioning
+STORAGE_MANAGER = "storage_manager"
 STORAGE_KEY = "kidschores_data"  # Persistent storage key
 STORAGE_VERSION = 1  # Storage version
 
@@ -294,6 +295,7 @@ CONF_DAYS = "days"
 CONF_DESCRIPTION = "description"
 CONF_EMPTY = ""
 CONF_HOLIDAY = "holiday"
+CONF_HOUR = "hour"
 CONF_ICON = "icon"
 CONF_INTERNAL_ID = "internal_id"
 CONF_MONTHS = "months"
@@ -448,6 +450,7 @@ DATA_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
 DATA_DEFAULT_POINTS = "default_points"
 DATA_DUE_DATE = "due_date"
 DATA_ENABLE_NOTIFICATIONS = "enable_notifications"
+DATA_GLOBAL_STATE_SUFFIX = "_global_state"
 DATA_HA_USER = "ha_user"
 DATA_HA_USER_ID = "ha_user_id"
 DATA_INTERNAL_ID = "internal_id"
@@ -456,6 +459,7 @@ DATA_LAST_CHANGE = "last_change"
 DATA_LAST_CHORE_DATE = "last_chore_date"
 DATA_MAX_POINTS_EVER = "max_points_ever"
 DATA_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
+DATA_NAME = "name"
 DATA_NOTIFY_ON_APPROVAL = "notify_on_approval"
 DATA_NOTIFY_ON_CLAIM = "notify_on_claim"
 DATA_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
@@ -468,6 +472,7 @@ DATA_PENALTY_APPLIES = "penalty_applies"
 DATA_POINTS_EARNED_MONTHLY = "points_earned_monthly"
 DATA_POINTS_EARNED_TODAY = "points_earned_today"
 DATA_POINTS_EARNED_WEEKLY = "points_earned_weekly"
+DATA_PROGRESS = "progress"
 DATA_RECURRING_FREQUENCY = "recurring_frequency"
 DATA_REWARD_APPROVALS = "reward_approvals"
 DATA_REWARD_CLAIMS = "reward_claims"
@@ -482,15 +487,20 @@ DATA_KID_CHORE_APPROVALS = "chore_approvals"
 DATA_KID_CHORE_CLAIMS = "chore_claims"
 DATA_KID_CHORE_STREAKS = "chore_streaks"
 DATA_KID_CLAIMED_CHORES = "claimed_chores"
+DATA_KID_COMPLETED_CHORES_PREFIX = "completed_chores_"
 DATA_KID_COMPLETED_CHORES_MONTHLY = "completed_chores_monthly"
 DATA_KID_COMPLETED_CHORES_TOTAL = "completed_chores_total"
 DATA_KID_COMPLETED_CHORES_TODAY = "completed_chores_today"
 DATA_KID_COMPLETED_CHORES_WEEKLY = "completed_chores_weekly"
+DATA_KID_CURRENT_STREAK = "current_streak"
 DATA_KID_ENABLE_NOTIFICATIONS = "enable_notifications"
 DATA_KID_HA_USER_ID = "ha_user_id"
+DATA_KID_ID = "kid_id"
 DATA_KID_INTERNAL_ID = "internal_id"
 DATA_KID_LAST_CHORE_DATE = "last_chore_date"
+DATA_KID_LAST_STREAK_DATE = "last_date"
 DATA_KID_MAX_POINTS_EVER = "max_points_ever"
+DATA_KID_MAX_STREAK = "max_streak"
 DATA_KID_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
 DATA_KID_NAME = "name"
 DATA_KID_OVERDUE_CHORES = "overdue_chores"
@@ -506,6 +516,7 @@ DATA_KID_POINTS_MULTIPLIER = "points_multiplier"
 DATA_KID_REDEEMED_REWARDS = "redeemed_rewards"
 DATA_KID_REWARD_APPROVALS = "reward_approvals"
 DATA_KID_REWARD_CLAIMS = "reward_claims"
+DATA_KID_TODAY_CHORE_APPROVALS = "today_chore_approvals"
 DATA_KID_USE_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
 
 # PARENTS
@@ -527,6 +538,7 @@ DATA_CHORE_DEFAULT_POINTS = "default_points"
 DATA_CHORE_DESCRIPTION = "description"
 DATA_CHORE_DUE_DATE = "due_date"
 DATA_CHORE_ICON = "icon"
+DATA_CHORE_ID = "chore_id"
 DATA_CHORE_INTERNAL_ID = "internal_id"
 DATA_CHORE_LABELS = "chore_labels"
 DATA_CHORE_LAST_CLAIMED = "last_claimed"
@@ -539,13 +551,17 @@ DATA_CHORE_PARTIAL_ALLOWED = "partial_allowed"
 DATA_CHORE_RECURRING_FREQUENCY = "recurring_frequency"
 DATA_CHORE_SHARED_CHORE = "shared_chore"
 DATA_CHORE_STATE = "state"
+DATA_CHORE_TIMESTAMP = "timestamp"
 
 # BADGES
 DATA_BADGE_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
 DATA_BADGE_ASSOCIATED_CHALLENGE = "associated_challenge"
+DATA_BADGE_CHORE_COUNT_TYPE = "chore_count_type"
 DATA_BADGE_DAILY_THRESHOLD = "daily_threshold"
 DATA_BADGE_DESCRIPTION = "description"
+DATA_BADGE_EARNED_BY = "earned_by"
 DATA_BADGE_ICON = "icon"
+DATA_BADGE_ID = "badge_id"
 DATA_BADGE_INTERNAL_ID = "internal_id"
 DATA_BADGE_LABELS = "badge_labels"
 DATA_BADGE_MAINTENANCE_RULES = "maintenance_rules"
@@ -562,19 +578,23 @@ DATA_BADGE_RESET_PERIODICALLY = "reset_periodically"
 DATA_BADGE_THRESHOLD_TYPE = "threshold_type"
 DATA_BADGE_THRESHOLD_VALUE = "threshold_value"
 DATA_BADGE_TYPE = "badge_type"
+DATA_BADGE_TYPE_TOTAL = "total"
 DATA_BADGE_TRIGGER_INFO = "trigger_info"
 
 # REWARDS
 DATA_REWARD_COST = "cost"
 DATA_REWARD_DESCRIPTION = "description"
 DATA_REWARD_ICON = "icon"
+DATA_REWARD_ID = "reward_id"
 DATA_REWARD_INTERNAL_ID = "internal_id"
 DATA_REWARD_LABELS = "reward_labels"
 DATA_REWARD_NAME = "name"
+DATA_REWARD_TIMESTAMP = "timestamp"
 
 # BONUSES
 DATA_BONUS_DESCRIPTION = "description"
 DATA_BONUS_ICON = "icon"
+DATA_BONUS_ID = "bonus_id"
 DATA_BONUS_INTERNAL_ID = "internal_id"
 DATA_BONUS_LABELS = "bonus_labels"
 DATA_BONUS_NAME = "name"
@@ -583,6 +603,7 @@ DATA_BONUS_POINTS = "points"
 # PENALTIES
 DATA_PENALTY_DESCRIPTION = "description"
 DATA_PENALTY_ICON = "icon"
+DATA_PENALTY_ID = "penalty_id"
 DATA_PENALTY_INTERNAL_ID = "internal_id"
 DATA_PENALTY_LABELS = "penalty_labels"
 DATA_PENALTY_NAME = "name"
@@ -590,13 +611,19 @@ DATA_PENALTY_POINTS = "points"
 
 # ACHIEVEMENTS
 DATA_ACHIEVEMENT_ASSIGNED_KIDS = "assigned_kids"
+DATA_ACHIEVEMENT_AWARDED = "awarded"
+DATA_ACHIEVEMENT_BASELINE = "baseline"
 DATA_ACHIEVEMENT_CRITERIA = "criteria"
+DATA_ACHIEVEMENT_CURRENT_VALUE = "current_value"
 DATA_ACHIEVEMENT_DESCRIPTION = "description"
 DATA_ACHIEVEMENT_ICON = "icon"
+DATA_ACHIEVEMENT_ID = "achievement_id"
 DATA_ACHIEVEMENT_INTERNAL_ID = "internal_id"
 DATA_ACHIEVEMENT_LABELS = "achievement_labels"
+DATA_ACHIEVEMENT_LAST_AWARDED_DATE = "last_awarded_date"
 DATA_ACHIEVEMENT_NAME = "name"
 DATA_ACHIEVEMENT_PROGRESS = "progress"
+DATA_ACHIEVEMENT_PROGRESS_SUFFIX = "_achievement_progress"
 DATA_ACHIEVEMENT_REWARD_POINTS = "reward_points"
 DATA_ACHIEVEMENT_SELECTED_CHORE_ID = "selected_chore_id"
 DATA_ACHIEVEMENT_TARGET_VALUE = "target_value"
@@ -604,14 +631,20 @@ DATA_ACHIEVEMENT_TYPE = "type"
 
 # CHALLENGES
 DATA_CHALLENGE_ASSIGNED_KIDS = "assigned_kids"
+DATA_CHALLENGE_AWARDED = "awarded"
+DATA_CHALLENGE_COUNT = "count"
 DATA_CHALLENGE_CRITERIA = "criteria"
+DATA_CHALLENGE_DAILY_COUNTS = "daily_counts"
 DATA_CHALLENGE_DESCRIPTION = "description"
 DATA_CHALLENGE_END_DATE = "end_date"
 DATA_CHALLENGE_ICON = "icon"
+DATA_CHALLENGE_ID = "challenge_id"
 DATA_CHALLENGE_INTERNAL_ID = "internal_id"
 DATA_CHALLENGE_LABELS = "challenge_labels"
 DATA_CHALLENGE_NAME = "name"
 DATA_CHALLENGE_PROGRESS = "progress"
+DATA_CHALLENGE_PROGRESS_SUFFIX = "_challenge_progress"
+DATA_CHALLENGE_REQUIRED_DAILY = "required_daily"
 DATA_CHALLENGE_REWARD_POINTS = "reward_points"
 DATA_CHALLENGE_SELECTED_CHORE_ID = "selected_chore_id"
 DATA_CHALLENGE_START_DATE = "start_date"
@@ -668,9 +701,13 @@ DEFAULT_BONUS_POINTS = 1
 DEFAULT_CHALLENGE_REWARD_POINTS = 0
 DEFAULT_CHALLENGE_TARGET = 1
 DEFAULT_DAILY_RESET_TIME = {"hour": 0, "minute": 0, "second": 0}
+DEFAULT_DUE_TIME = {"hour": 23, "minute": 59, "second": 0}
+DEFAULT_HOUR = 0
+DEFAULT_KID_POINTS_MULTIPLIER = 1
 DEFAULT_MONTHLY_RESET_DAY = 1
 DEFAULT_MULTIPLE_CLAIMS_PER_DAY = False
 DEFAULT_NOTIFICATIONS = True
+DEFAULT_NOTIFY_DELAY_REMINDER = 24
 DEFAULT_NOTIFY_ON_APPROVAL = True
 DEFAULT_NOTIFY_ON_CLAIM = True
 DEFAULT_NOTIFY_ON_DISAPPROVAL = True
@@ -682,6 +719,7 @@ DEFAULT_POINTS_MULTIPLIER = 1
 DEFAULT_REWARD_COST = 10
 DEFAULT_REMINDER_DELAY = 30
 DEFAULT_WEEKLY_RESET_DAY = 0
+DEFAULT_ZERO = 0
 
 
 # --------------------------------------------------------------------
@@ -946,6 +984,8 @@ ATTR_CAL_SUMMARY = "summary"
 # --------------------------------------------------------------------
 # Translation Keys
 # --------------------------------------------------------------------
+# Global
+TRANS_KEY_NO_DUE_DATE = "No due date set"
 
 # ConfigFlow & OptionsFlow translation keys
 TRANS_KEY_ERROR_SINGLE_INSTANCE = "single_instance_allowed"
@@ -1004,6 +1044,16 @@ TRANS_KEY_FLOW_HELPERS_RESET_CRITERIA = "reset_criteria"
 TRANS_KEY_FLOW_HELPERS_RESET_PERIOD = "reset_period"
 TRANS_KEY_FLOW_HELPERS_SELECTED_CHORE_ID = "selected_chore_id"
 TRANS_KEY_FLOW_HELPERS_THRESHOLD_TYPE = "threshold_type"
+
+# --------------------------------------------------------------------
+# Notification Keys
+# --------------------------------------------------------------------
+NOTIFY_ACTION = "action"
+NOTIFY_CREATE = "create"
+NOTIFY_MESSAGE = "message"
+NOTIFY_NOTIFICATION_ID = "notification_id"
+NOTIFY_PERSISTENT_NOTIFICATION = "persistent_notification"
+NOTIFY_TITLE = "title"
 
 
 # --------------------------------------------------------------------
