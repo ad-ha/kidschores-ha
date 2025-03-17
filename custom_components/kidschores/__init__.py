@@ -48,7 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Store the coordinator and data manager in hass.data.
     hass.data.setdefault(const.DOMAIN, {})[entry.entry_id] = {
         "coordinator": coordinator,
-        "storage_manager": storage_manager,
+        const.STORAGE_MANAGER: storage_manager,
     }
 
     # Set up services required by the integration.
@@ -99,7 +99,7 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     if const.DOMAIN in hass.data and entry.entry_id in hass.data[const.DOMAIN]:
         storage_manager: KidsChoresStorageManager = hass.data[const.DOMAIN][
             entry.entry_id
-        ]["storage_manager"]
+        ][const.STORAGE_MANAGER]
         await storage_manager.async_delete_storage()
 
     const.LOGGER.info("KidsChores entry data cleared: %s", entry.entry_id)
