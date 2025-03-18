@@ -51,9 +51,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 return await self.async_step_manage_entity()
 
             elif selection == const.OPTIONS_FLOW_FINISH:
-                return self.async_abort(
-                    reason=const.TRANS_KEY_OPTIONS_FLOW_SETUP_COMPLETE
-                )
+                return self.async_abort(reason=const.TRANS_KEY_CFOF_SETUP_COMPLETE)
 
         main_menu = [
             const.OPTIONS_FLOW_POINTS,
@@ -79,7 +77,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         selector.SelectSelectorConfig(
                             options=main_menu,
                             mode=selector.SelectSelectorMode.LIST,
-                            translation_key=const.TRANS_KEY_OPTIONS_FLOW_MAIN_MENU,
+                            translation_key=const.TRANS_KEY_CFOF_MAIN_MENU,
                         )
                     )
                 }
@@ -162,7 +160,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         selector.SelectSelectorConfig(
                             options=manage_action_choices,
                             mode=selector.SelectSelectorMode.LIST,
-                            translation_key=const.TRANS_KEY_OPTIONS_FLOW_MANAGE_ACTIONS,
+                            translation_key=const.TRANS_KEY_CFOF_MANAGE_ACTIONS,
                         )
                     )
                 }
@@ -178,7 +176,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             const.OPTIONS_FLOW_ACTIONS_EDIT,
             const.OPTIONS_FLOW_ACTIONS_DELETE,
         ]:
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_ACTION)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_ACTION)
 
         entity_dict = self._get_entity_dict()
         entity_names = [
@@ -199,9 +197,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             )
             if not internal_id:
                 const.LOGGER.error("Selected entity '%s' not found", selected_name)
-                return self.async_abort(
-                    reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_ENTITY
-                )
+                return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_ENTITY)
 
             # Store internal_id in context for later use
             self.context[const.OPTIONS_FLOW_INPUT_INTERNAL_ID] = internal_id
@@ -214,9 +210,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not entity_names:
             return self.async_abort(
-                reason=const.TRANS_KEY_OPTIONS_FLOW_NO_ENTITY_TYPE.format(
-                    self._entity_type
-                )
+                reason=const.TRANS_KEY_CFOF_NO_ENTITY_TYPE.format(self._entity_type)
             )
 
         return self.async_show_form(
@@ -288,16 +282,14 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
             if not kid_name:
                 errors[const.CFOP_ERROR_KID_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_INVALID_KID_NAME
+                    const.TRANS_KEY_CFOF_INVALID_KID_NAME
                 )
 
             elif any(
                 kid_data[const.DATA_KID_NAME] == kid_name
                 for kid_data in kids_dict.values()
             ):
-                errors[const.CFOP_ERROR_KID_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_KID
-                )
+                errors[const.CFOP_ERROR_KID_NAME] = const.TRANS_KEY_CFOF_DUPLICATE_KID
 
             else:
                 internal_id = user_input.get(
@@ -363,7 +355,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for parent_data in parents_dict.values()
             ):
                 errors[const.CFPO_ERROR_PARENT_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_PARENT
+                    const.TRANS_KEY_CFOF_DUPLICATE_PARENT
                 )
             else:
                 internal_id = user_input.get(
@@ -431,11 +423,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     due_dt = dt_util.parse_datetime(due_date_str)
                     if due_dt and due_dt < dt_util.utcnow():
                         errors[const.CFOP_ERROR_DUE_DATE] = (
-                            const.TRANS_KEY_OPTIONS_FLOW_DUE_DATE_IN_PAST
+                            const.TRANS_KEY_CFOF_DUE_DATE_IN_PAST
                         )
                 except ValueError:
                     errors[const.CFOP_ERROR_DUE_DATE] = (
-                        const.TRANS_KEY_OPTIONS_FLOW_INVALID_DUE_DATE
+                        const.TRANS_KEY_CFOF_INVALID_DUE_DATE
                     )
                     due_date_str = None
             else:
@@ -446,7 +438,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for chore_data in chores_dict.values()
             ):
                 errors[const.CFOP_ERROR_CHORE_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_CHORE
+                    const.TRANS_KEY_CFOF_DUPLICATE_CHORE
                 )
 
             if errors:
@@ -494,7 +486,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     const.CFOF_CHORES_INPUT_LABELS, []
                 ),
                 const.DATA_CHORE_ICON: user_input.get(
-                    const.CFOF_CHORES_INPUT_ICON, const.CONF_EMPTY
+                    const.CFOF_CHORES_INPUT_ICON, const.DEFAULT_CHORE_ICON
                 ),
                 const.DATA_CHORE_RECURRING_FREQUENCY: user_input.get(
                     const.CFOF_CHORES_INPUT_RECURRING_FREQUENCY, const.CONF_EMPTY
@@ -581,7 +573,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     selector.SelectSelectorConfig(
                         options=badge_type_options,
                         mode=selector.SelectSelectorMode.DROPDOWN,
-                        translation_key=const.TRANS_KEY_OPTIONS_FLOW_BADGE_TYPE,
+                        translation_key=const.TRANS_KEY_CFOF_BADGE_TYPE,
                     )
                 )
             }
@@ -608,7 +600,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for badge in badges_dict.values()
             ):
                 errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_BADGE
+                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
                 )
             else:
                 # Cumulative badges now use only points.
@@ -621,7 +613,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         const.CFOF_BADGES_INPUT_LABELS, []
                     ),
                     const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.CONF_EMPTY
+                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
                     ),
                     const.DATA_BADGE_THRESHOLD_VALUE: user_input[
                         const.CFOF_BADGES_INPUT_THRESHOLD_VALUE
@@ -637,7 +629,8 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         const.CONF_BADGE_RESET_PERIOD, const.CONF_YEAR_END
                     ),
                     const.CONF_BADGE_RESET_GRACE_PERIOD: user_input.get(
-                        const.CONF_BADGE_RESET_GRACE_PERIOD, 0
+                        const.CONF_BADGE_RESET_GRACE_PERIOD,
+                        const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
                     ),
                     const.CONF_BADGE_MAINTENANCE_RULES: user_input.get(
                         const.CONF_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY
@@ -674,7 +667,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for badge in badges_dict.values()
             ):
                 errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_BADGE
+                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
                 )
             else:
                 badges_dict[internal_id] = {
@@ -686,7 +679,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         const.CFOF_BADGES_INPUT_LABELS, []
                     ),
                     const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.CONF_EMPTY
+                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
                     ),
                     const.DATA_BADGE_DAILY_THRESHOLD: user_input[
                         const.CFOF_BADGES_INPUT_DAILY_THRESHOLD
@@ -724,7 +717,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for badge in badges_dict.values()
             ):
                 errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_BADGE
+                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
                 )
             else:
                 badges_dict[internal_id] = {
@@ -736,7 +729,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         const.CFOF_BADGES_INPUT_LABELS, []
                     ),
                     const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.CONF_EMPTY
+                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
                     ),
                     const.DATA_BADGE_PERIOD: user_input.get(
                         const.CFOF_BADGES_INPUT_PERIOD, const.CONF_WEEKS
@@ -780,7 +773,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for badge in badges_dict.values()
             ):
                 errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_BADGE
+                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
                 )
             else:
                 badges_dict[internal_id] = {
@@ -792,7 +785,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         const.CFOF_BADGES_INPUT_LABELS, []
                     ),
                     const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.CONF_EMPTY
+                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
                     ),
                     const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT: user_input.get(
                         const.CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY
@@ -834,7 +827,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for badge in badges_dict.values()
             ):
                 errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_BADGE
+                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
                 )
             else:
                 badges_dict[internal_id] = {
@@ -846,7 +839,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         const.CFOF_BADGES_INPUT_LABELS, []
                     ),
                     const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.CONF_EMPTY
+                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
                     ),
                     const.DATA_BADGE_ASSOCIATED_CHALLENGE: user_input.get(
                         const.CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE, const.CONF_EMPTY
@@ -888,7 +881,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for badge in badges_dict.values()
             ):
                 errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_BADGE
+                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
                 )
             else:
                 badges_dict[internal_id] = {
@@ -900,7 +893,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         const.CFOF_BADGES_INPUT_LABELS, []
                     ),
                     const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.CONF_EMPTY
+                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
                     ),
                     const.DATA_BADGE_OCCASION_TYPE: user_input.get(
                         const.CFOF_BADGES_INPUT_OCCASION_TYPE, const.CONF_HOLIDAY
@@ -944,7 +937,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for reward_data in rewards_dict.values()
             ):
                 errors[const.CFOP_ERROR_REWARD_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_REWARD
+                    const.TRANS_KEY_CFOF_DUPLICATE_REWARD
                 )
             else:
                 rewards_dict[internal_id] = {
@@ -957,7 +950,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         const.CFOF_REWARDS_INPUT_LABELS, []
                     ),
                     const.DATA_REWARD_ICON: user_input.get(
-                        const.CFOF_REWARDS_INPUT_ICON, const.CONF_EMPTY
+                        const.CFOF_REWARDS_INPUT_ICON, const.DEFAULT_REWARD_ICON
                     ),
                     const.DATA_REWARD_INTERNAL_ID: internal_id,
                 }
@@ -995,7 +988,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for bonus_data in bonuses_dict.values()
             ):
                 errors[const.CFOP_ERROR_BONUS_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_BONUS
+                    const.TRANS_KEY_CFOF_DUPLICATE_BONUS
                 )
             else:
                 bonuses_dict[internal_id] = {
@@ -1008,7 +1001,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     ),
                     const.DATA_BONUS_POINTS: abs(bonus_points),
                     const.DATA_BONUS_ICON: user_input.get(
-                        const.CFOF_BONUSES_INPUT_ICON, const.CONF_EMPTY
+                        const.CFOF_BONUSES_INPUT_ICON, const.DEFAULT_BONUS_ICON
                     ),
                     const.DATA_BONUS_INTERNAL_ID: internal_id,
                 }
@@ -1044,7 +1037,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for penalty_data in penalties_dict.values()
             ):
                 errors[const.CFOP_ERROR_PENALTY_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_PENALTY
+                    const.TRANS_KEY_CFOF_DUPLICATE_PENALTY
                 )
             else:
                 penalties_dict[internal_id] = {
@@ -1059,7 +1052,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         penalty_points
                     ),  # Ensure points are negative
                     const.DATA_PENALTY_ICON: user_input.get(
-                        const.CFOF_PENALTIES_INPUT_ICON, const.CONF_EMPTY
+                        const.CFOF_PENALTIES_INPUT_ICON, const.DEFAULT_PENALTY_ICON
                     ),
                     const.DATA_PENALTY_INTERNAL_ID: internal_id,
                 }
@@ -1094,7 +1087,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for data in achievements_dict.values()
             ):
                 errors[const.CFOP_ERROR_ACHIEVEMENT_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_ACHIEVEMENT
+                    const.TRANS_KEY_CFOF_DUPLICATE_ACHIEVEMENT
                 )
             else:
                 _type = user_input[const.CFOF_ACHIEVEMENTS_INPUT_TYPE]
@@ -1108,7 +1101,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     )
                     if not c or c == const.CONF_NONE_TEXT:
                         errors[const.CFOP_ERROR_SELECT_CHORE_ID] = (
-                            const.TRANS_KEY_OPTIONS_FLOW_CHORE_MUST_BE_SELECTED
+                            const.TRANS_KEY_CFOF_CHORE_MUST_BE_SELECTED
                         )
                     chore_id = c
 
@@ -1125,7 +1118,8 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                             const.CFOF_ACHIEVEMENTS_INPUT_LABELS, []
                         ),
                         const.DATA_ACHIEVEMENT_ICON: user_input.get(
-                            const.CFOF_ACHIEVEMENTS_INPUT_ICON, const.CONF_EMPTY
+                            const.CFOF_ACHIEVEMENTS_INPUT_ICON,
+                            const.DEFAULT_ACHIEVEMENTS_ICON,
                         ),
                         const.DATA_ACHIEVEMENT_ASSIGNED_KIDS: user_input[
                             const.CFOF_ACHIEVEMENTS_INPUT_ASSIGNED_KIDS
@@ -1182,7 +1176,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for data in challenges_dict.values()
             ):
                 errors[const.CFOP_ERROR_CHALLENGE_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_CHALLENGE
+                    const.TRANS_KEY_CFOF_DUPLICATE_CHALLENGE
                 )
             else:
                 _type = user_input[const.CFOF_CHALLENGES_INPUT_TYPE]
@@ -1195,7 +1189,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     )
                     if not c or c == const.CONF_NONE_TEXT:
                         errors[const.CFOP_ERROR_SELECT_CHORE_ID] = (
-                            const.TRANS_KEY_OPTIONS_FLOW_CHORE_MUST_BE_SELECTED
+                            const.TRANS_KEY_CFOF_CHORE_MUST_BE_SELECTED
                         )
                     chore_id = c
 
@@ -1211,11 +1205,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         start_dt = dt_util.parse_datetime(start_date)
                         if start_dt and start_dt < dt_util.utcnow():
                             errors[const.CFOP_ERROR_START_DATE] = (
-                                const.TRANS_KEY_OPTIONS_FLOW_START_DATE_IN_PAST
+                                const.TRANS_KEY_CFOF_START_DATE_IN_PAST
                             )
                     except Exception:
                         errors[const.CFOP_ERROR_START_DATE] = (
-                            const.TRANS_KEY_OPTIONS_FLOW_INVALID_START_DATE
+                            const.TRANS_KEY_CFOF_INVALID_START_DATE
                         )
                         start_date = None
                 else:
@@ -1227,17 +1221,17 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         end_dt = dt_util.parse_datetime(end_date)
                         if end_dt and end_dt <= dt_util.utcnow():
                             errors[const.CFOP_ERROR_END_DATE] = (
-                                const.TRANS_KEY_OPTIONS_FLOW_END_DATE_IN_PAST
+                                const.TRANS_KEY_CFOF_END_DATE_IN_PAST
                             )
                         if start_date:
                             sdt = dt_util.parse_datetime(start_date)
                             if sdt and end_dt and end_dt <= sdt:
                                 errors[const.CFOP_ERROR_END_DATE] = (
-                                    const.TRANS_KEY_OPTIONS_FLOW_END_DATE_NOT_AFTER_START_DATE
+                                    const.TRANS_KEY_CFOF_END_DATE_NOT_AFTER_START_DATE
                                 )
                     except Exception:
                         errors[const.CFOP_ERROR_END_DATE] = (
-                            const.TRANS_KEY_OPTIONS_FLOW_INVALID_END_DATE
+                            const.TRANS_KEY_CFOF_INVALID_END_DATE
                         )
                         end_date = None
                 else:
@@ -1256,7 +1250,8 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                             const.CFOF_CHALLENGES_INPUT_LABELS, []
                         ),
                         const.DATA_CHALLENGE_ICON: user_input.get(
-                            const.CFOF_CHALLENGES_INPUT_ICON, const.CONF_EMPTY
+                            const.CFOF_CHALLENGES_INPUT_ICON,
+                            const.DEFAULT_CHALLENGES_ICON,
                         ),
                         const.DATA_CHALLENGE_ASSIGNED_KIDS: user_input[
                             const.CFOF_CHALLENGES_INPUT_ASSIGNED_KIDS
@@ -1308,7 +1303,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in kids_dict:
             const.LOGGER.error("Edit kid: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_KID)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_KID)
 
         kid_data = kids_dict[internal_id]
 
@@ -1333,9 +1328,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 data[const.DATA_KID_NAME] == new_name and eid != internal_id
                 for eid, data in kids_dict.items()
             ):
-                errors[const.CFOP_ERROR_KID_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_KID
-                )
+                errors[const.CFOP_ERROR_KID_NAME] = const.TRANS_KEY_CFOF_DUPLICATE_KID
             else:
                 kid_data[const.DATA_KID_NAME] = new_name
                 kid_data[const.DATA_KID_HA_USER_ID] = ha_user_id
@@ -1381,7 +1374,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in parents_dict:
             const.LOGGER.error("Edit parent: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_PARENT)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_PARENT)
 
         parent_data = parents_dict[internal_id]
 
@@ -1410,7 +1403,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for eid, data in parents_dict.items()
             ):
                 errors[const.CFPO_ERROR_PARENT_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_PARENT
+                    const.TRANS_KEY_CFOF_DUPLICATE_PARENT
                 )
             else:
                 parent_data[const.DATA_PARENT_NAME] = new_name
@@ -1478,7 +1471,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in chores_dict:
             const.LOGGER.error("Edit chore: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_CHORE)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_CHORE)
 
         chore_data = chores_dict[internal_id]
 
@@ -1492,7 +1485,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for eid, data in chores_dict.items()
             ):
                 errors[const.CFOP_ERROR_CHORE_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_CHORE
+                    const.TRANS_KEY_CFOF_DUPLICATE_CHORE
                 )
             else:
                 if (
@@ -1547,13 +1540,13 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         due_utc = dt_util.as_utc(parsed_due)
                         if due_utc < dt_util.utcnow():
                             errors[const.CFOP_ERROR_DUE_DATE] = (
-                                const.TRANS_KEY_OPTIONS_FLOW_DUE_DATE_IN_PAST
+                                const.TRANS_KEY_CFOF_DUE_DATE_IN_PAST
                             )
                         else:
                             chore_data[const.DATA_CHORE_DUE_DATE] = due_utc.isoformat()
                     except Exception:
                         errors[const.CFOP_ERROR_DUE_DATE] = (
-                            const.TRANS_KEY_OPTIONS_FLOW_INVALID_DUE_DATE
+                            const.TRANS_KEY_CFOF_INVALID_DUE_DATE
                         )
                 else:
                     chore_data[const.DATA_CHORE_DUE_DATE] = None
@@ -1641,7 +1634,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in badges_dict:
             const.LOGGER.error("Edit badge: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_BADGE)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_BADGE)
 
         badge_data = badges_dict[internal_id]
         badge_type = badge_data.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
@@ -1655,7 +1648,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for eid, data in badges_dict.items()
             ):
                 errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_BADGE
+                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
                 )
             else:
                 badge_data[const.DATA_BADGE_NAME] = new_name
@@ -1823,7 +1816,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in rewards_dict:
             const.LOGGER.error("Edit reward: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_REWARD)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_REWARD)
 
         reward_data = rewards_dict[internal_id]
 
@@ -1836,7 +1829,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for eid, data in rewards_dict.items()
             ):
                 errors[const.CFOP_ERROR_REWARD_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_REWARD
+                    const.TRANS_KEY_CFOF_DUPLICATE_REWARD
                 )
             else:
                 reward_data[const.DATA_REWARD_NAME] = new_name
@@ -1879,7 +1872,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in penalties_dict:
             const.LOGGER.error("Edit penalty: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_PENALTY)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_PENALTY)
 
         penalty_data = penalties_dict[internal_id]
 
@@ -1893,7 +1886,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for eid, data in penalties_dict.items()
             ):
                 errors[const.CFOP_ERROR_PENALTY_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_PENALTY
+                    const.TRANS_KEY_CFOF_DUPLICATE_PENALTY
                 )
             else:
                 penalty_data[const.DATA_PENALTY_NAME] = new_name
@@ -1941,7 +1934,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in bonuses_dict:
             const.LOGGER.error("Edit bonus: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_BONUS)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_BONUS)
 
         bonus_data = bonuses_dict[internal_id]
 
@@ -1955,7 +1948,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for eid, data in bonuses_dict.items()
             ):
                 errors[const.CFOP_ERROR_BONUS_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_BONUS
+                    const.TRANS_KEY_CFOF_DUPLICATE_BONUS
                 )
             else:
                 bonus_data[const.DATA_BONUS_NAME] = new_name
@@ -2005,9 +1998,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             const.LOGGER.error(
                 "Edit achievement: Invalid internal_id '%s'", internal_id
             )
-            return self.async_abort(
-                reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_ACHIEVEMENT
-            )
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_ACHIEVEMENT)
 
         achievement_data = achievements_dict[internal_id]
 
@@ -2018,7 +2009,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for eid, data in achievements_dict.items()
             ):
                 errors[const.CFOP_ERROR_ACHIEVEMENT_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_ACHIEVEMENT
+                    const.TRANS_KEY_CFOF_DUPLICATE_ACHIEVEMENT
                 )
             else:
                 _type = user_input[const.CFOF_ACHIEVEMENTS_INPUT_TYPE]
@@ -2031,7 +2022,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     )
                     if not c or c == const.CONF_NONE_TEXT:
                         errors[const.CFOP_ERROR_SELECT_CHORE_ID] = (
-                            const.TRANS_KEY_OPTIONS_FLOW_CHORE_MUST_BE_SELECTED
+                            const.TRANS_KEY_CFOF_CHORE_MUST_BE_SELECTED
                         )
                     chore_id = c
 
@@ -2098,9 +2089,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in challenges_dict:
             const.LOGGER.error("Edit challenge: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(
-                reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_CHALLENGE
-            )
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_CHALLENGE)
 
         challenge_data = challenges_dict[internal_id]
 
@@ -2146,11 +2135,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 start_dt = dt_util.parse_datetime(new_start_date)
                 if start_dt and start_dt < dt_util.utcnow():
                     errors[const.CFOP_ERROR_START_DATE] = (
-                        const.TRANS_KEY_OPTIONS_FLOW_START_DATE_IN_PAST
+                        const.TRANS_KEY_CFOF_START_DATE_IN_PAST
                     )
             except Exception:
                 errors[const.CFOP_ERROR_START_DATE] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_INVALID_START_DATE
+                    const.TRANS_KEY_CFOF_INVALID_START_DATE
                 )
                 new_start_date = None
         else:
@@ -2164,18 +2153,18 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
                 if end_dt and end_dt <= dt_util.utcnow():
                     errors[const.CFOP_ERROR_END_DATE] = (
-                        const.TRANS_KEY_OPTIONS_FLOW_END_DATE_IN_PAST
+                        const.TRANS_KEY_CFOF_END_DATE_IN_PAST
                     )
 
                 if new_start_date:
                     sdt = dt_util.parse_datetime(new_start_date)
                     if sdt and end_dt and end_dt <= sdt:
                         errors[const.CFOP_ERROR_END_DATE] = (
-                            const.TRANS_KEY_OPTIONS_FLOW_END_DATE_NOT_AFTER_START_DATE
+                            const.TRANS_KEY_CFOF_END_DATE_NOT_AFTER_START_DATE
                         )
             except Exception:
                 errors[const.CFOP_ERROR_END_DATE] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_INVALID_END_DATE
+                    const.TRANS_KEY_CFOF_INVALID_END_DATE
                 )
                 new_end_date = None
         else:
@@ -2188,7 +2177,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 for eid, data in challenges_dict.items()
             ):
                 errors[const.CFOP_ERROR_CHALLENGE_NAME] = (
-                    const.TRANS_KEY_OPTIONS_FLOW_DUPLICATE_CHALLENGE
+                    const.TRANS_KEY_CFOF_DUPLICATE_CHALLENGE
                 )
             else:
                 _type = user_input[const.CFOF_CHALLENGES_INPUT_TYPE]
@@ -2201,7 +2190,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     )
                     if not c or c == const.CONF_NONE_TEXT:
                         errors[const.CFOP_ERROR_SELECT_CHORE_ID] = (
-                            const.TRANS_KEY_OPTIONS_FLOW_CHORE_MUST_BE_SELECTED
+                            const.TRANS_KEY_CFOF_CHORE_MUST_BE_SELECTED
                         )
                     chore_id = c
 
@@ -2270,7 +2259,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in kids_dict:
             const.LOGGER.error("Delete kid: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_KID)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_KID)
 
         kid_name = kids_dict[internal_id][const.DATA_KID_NAME]
 
@@ -2300,7 +2289,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in parents_dict:
             const.LOGGER.error("Delete parent: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_PARENT)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_PARENT)
 
         parent_name = parents_dict[internal_id][const.DATA_PARENT_NAME]
 
@@ -2332,7 +2321,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in chores_dict:
             const.LOGGER.error("Delete chore: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_CHORE)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_CHORE)
 
         chore_name = chores_dict[internal_id][const.DATA_CHORE_NAME]
 
@@ -2364,7 +2353,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in badges_dict:
             const.LOGGER.error("Delete badge: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_BADGE)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_BADGE)
 
         badge_name = badges_dict[internal_id][const.DATA_BADGE_NAME]
 
@@ -2396,7 +2385,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in rewards_dict:
             const.LOGGER.error("Delete reward: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_REWARD)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_REWARD)
 
         reward_name = rewards_dict[internal_id][const.DATA_REWARD_NAME]
 
@@ -2428,7 +2417,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in penalties_dict:
             const.LOGGER.error("Delete penalty: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_PENALTY)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_PENALTY)
 
         penalty_name = penalties_dict[internal_id][const.DATA_PENALTY_NAME]
 
@@ -2462,9 +2451,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             const.LOGGER.error(
                 "Delete achievement: Invalid internal_id '%s'", internal_id
             )
-            return self.async_abort(
-                reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_ACHIEVEMENT
-            )
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_ACHIEVEMENT)
 
         achievement_name = achievements_dict[internal_id][const.DATA_ACHIEVEMENT_NAME]
         if user_input is not None:
@@ -2496,9 +2483,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             const.LOGGER.error(
                 "Delete challenge: Invalid internal_id '%s'", internal_id
             )
-            return self.async_abort(
-                reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_CHALLENGE
-            )
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_CHALLENGE)
 
         challenge_name = challenges_dict[internal_id][const.DATA_CHALLENGE_NAME]
         if user_input is not None:
@@ -2528,7 +2513,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if not internal_id or internal_id not in bonuses_dict:
             const.LOGGER.error("Delete bonus: Invalid internal_id '%s'", internal_id)
-            return self.async_abort(reason=const.TRANS_KEY_OPTIONS_FLOW_INVALID_BONUS)
+            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_BONUS)
 
         bonus_name = bonuses_dict[internal_id][const.DATA_BONUS_NAME]
 
