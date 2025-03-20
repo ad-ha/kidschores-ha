@@ -11,9 +11,9 @@ import logging
 
 from homeassistant.const import Platform
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # General / Integration Information
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Integration Name
 KIDSCHORES_TITLE = "KidsChores"
 
@@ -39,9 +39,9 @@ STORAGE_VERSION = 1  # Storage version
 # Update Interval
 UPDATE_INTERVAL = 5  # Update interval for coordinator (in minutes)
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Configuration Keys
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 
 # ConfigFlow Steps
 CONFIG_FLOW_STEP_ACHIEVEMENT_COUNT = "achievement_count"
@@ -192,20 +192,30 @@ CFOF_CHORES_INPUT_RECURRING_FREQUENCY = "recurring_frequency"
 CFOF_CHORES_INPUT_SHARED_CHORE = "shared_chore"
 
 # BADGES
-CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT = "associated_acchievement"
+CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
 CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE = "associated_challenge"
+CFOF_BADGES_INPUT_AWARD_MODE = "award_mode"
+CFOF_BADGES_INPUT_AWARD_POINTS = "award_points"
+CFOF_BADGES_INPUT_AWARD_REWARD = "award_reward"
+CFOF_BADGES_INPUT_AWARD_POINTS_REWARD = "award_points_reward"
 CFOF_BADGES_INPUT_BADGE_COUNT = "badge_count"
 CFOF_BADGES_INPUT_DAILY_THRESHOLD = "daily_threshold"
 CFOF_BADGES_INPUT_DESCRIPTION = "badge_description"
+CFOF_BADGES_INPUT_END_DATE = "end_date"
 CFOF_BADGES_INPUT_ICON = "icon"
 CFOF_BADGES_INPUT_LABELS = "badge_labels"
 CFOF_BADGES_INPUT_NAME = "badge_name"
 CFOF_BADGES_INPUT_OCCASION_TYPE = "occasion_type"
 CFOF_BADGES_INPUT_ONE_TIME_REWARD = "one_time_reward"
 CFOF_BADGES_INPUT_PERIOD = "period"
+CFOF_BADGES_INPUT_PERIODIC_RECURRENT = "recurrent"
 CFOF_BADGES_INPUT_POINTS_MULTIPLIER = "points_multiplier"
 CFOF_BADGES_INPUT_REWARD = "reward"
 CFOF_BADGES_INPUT_RESET_CRITERIA = "reset_criteria"
+CFOF_BADGES_INPUT_RESET_SCHEDULE = "reset_schedule"
+CFOF_BADGES_INPUT_REQUIRED_CHORES = "required_chores"
+CFOF_BADGES_INPUT_START_DATE = "start_date"
+CFOF_BADGES_INPUT_THRESHOLD_TYPE = "threshold_type"
 CFOF_BADGES_INPUT_THRESHOLD_VALUE = "threshold_value"
 CFOF_BADGES_INPUT_TRIGGER_INFO = "trigger_info"
 CFOF_BADGES_INPUT_TYPE = "badge_type"
@@ -319,6 +329,7 @@ CONF_VALUE = "value"
 CONF_WEEKS = "weeks"
 CONF_WEEKLY = "weekly"
 CONF_YEAR_END = "year_end"
+CONF_YEARLY = "yearly"
 
 # Points configuration keys
 CONF_POINTS_ICON = "points_icon"
@@ -366,9 +377,11 @@ CONF_BADGE_ASSOCIATED_CHALLENGE = "associated_challenge"
 CONF_BADGE_AWARD_MODE = "award_mode"
 CONF_BADGE_AWARD_POINTS = "award_points"
 CONF_BADGE_AWARD_REWARD = "award_reward"
-CONF_BADGE_DESCRIPTION = "badge_description"
+CONF_BADGE_AWARD_POINTS_REWARD = "award_points_reward"
+CONF_BADGE_CRITERIA_POINTS = "points"
 CONF_BADGE_DAILY_THRESHOLD = "daily_threshold"
 CONF_BADGE_DAILY_THRESHOLD_TYPE = "daily_threshold_type"
+CONF_BADGE_DESCRIPTION = "badge_description"
 CONF_BADGE_END_DATE = "end_date"
 CONF_BADGE_LABELS = "badge_labels"
 CONF_BADGE_MAINTENANCE_RULES = "maintenance_rules"
@@ -377,11 +390,15 @@ CONF_BADGE_OCCASION_DATE = "occasion_date"
 CONF_BADGE_OCCASION_TYPE = "occasion_type"
 CONF_BADGE_ONE_TIME_REWARD = "one_time_reward"
 CONF_BADGE_PERIOD = "period"
+CONF_BADGE_PERIODIC_RECURRENT = "recurrent"
 CONF_BADGE_POINTS_MULTIPLIER = "points_multiplier"
+CONF_BADGE_REQUIRED_CHORES = "required_chores"
 CONF_BADGE_RESET_CRITERIA = "reset_criteria"
 CONF_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"
 CONF_BADGE_RESET_PERIOD = "reset_period"
 CONF_BADGE_RESET_PERIODICALLY = "reset_periodically"
+CONF_BADGE_RESET_SCHEDULE = "reset_schedule"
+CONF_BADGE_SPECIAL_OCCASION_RECURRENCY = "recurrent"
 CONF_BADGE_START_DATE = "start_date"
 CONF_BADGE_THRESHOLD_TYPE = "threshold_type"
 CONF_BADGE_THRESOLD_VALUE = "threshold_value"
@@ -444,9 +461,9 @@ CHALLENGE_TYPE_DAILY_MIN = "daily_minimum"
 CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW = "total_within_window"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Data Keys
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 
 # GLOBAL
 DATA_ACHIEVEMENTS = "achievements"
@@ -521,6 +538,8 @@ DATA_KID_OVERDUE_NOTIFICATIONS = "overdue_notifications"
 DATA_KID_OVERALL_CHORE_STREAK = "overall_chore_streak"
 DATA_KID_PENALTY_APPLIES = "penalty_applies"
 DATA_KID_PENDING_REWARDS = "pending_rewards"
+DATA_KID_PERIODIC_BADGE_POINTS = "periodic_badge_points"
+DATA_KID_PERIODIC_BADGE_SUCCESS = "periodic_badge_success"
 DATA_KID_POINTS = "points"
 DATA_KID_POINTS_EARNED_MONTHLY = "points_earned_monthly"
 DATA_KID_POINTS_EARNED_TODAY = "points_earned_today"
@@ -569,25 +588,41 @@ DATA_CHORE_TIMESTAMP = "timestamp"
 # BADGES
 DATA_BADGE_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
 DATA_BADGE_ASSOCIATED_CHALLENGE = "associated_challenge"
+DATA_BADGE_AWARD_MODE = "award_mode"
+DATA_BADGE_AWARD_POINTS = "award_points"
+DATA_BADGE_AWARD_POINTS_REWARD = "award_points_reward"
+DATA_BADGE_AWARD_REWARD = "award_reward"
 DATA_BADGE_CHORE_COUNT_TYPE = "chore_count_type"
+DATA_BADGE_CRITERIA_MODE = "criteria_mode"
+DATA_BADGE_CRITERIA_MODE_CHORES = "chores"
+DATA_BADGE_CRITERIA_MODE_POINTS = "points"
 DATA_BADGE_DAILY_THRESHOLD = "daily_threshold"
 DATA_BADGE_DESCRIPTION = "description"
 DATA_BADGE_EARNED_BY = "earned_by"
+DATA_BADGE_END_DATE = "end_date"
 DATA_BADGE_ICON = "icon"
 DATA_BADGE_ID = "badge_id"
 DATA_BADGE_INTERNAL_ID = "internal_id"
 DATA_BADGE_LABELS = "badge_labels"
+DATA_BADGE_LAST_RESET = "last_reset"
 DATA_BADGE_MAINTENANCE_RULES = "maintenance_rules"
 DATA_BADGE_NAME = "name"
 DATA_BADGE_ONE_TIME_REWARD = "one_time_reward"
+DATA_BADGE_OCCASION_DATE = "occasion_date"
 DATA_BADGE_OCCASION_TYPE = "occasion_type"
 DATA_BADGE_PERIOD = "period"
+DATA_BADGE_PERIODIC_RECURRENT = "recurrent"
 DATA_BADGE_POINTS_MULTIPLIER = "points_multiplier"
-DATA_BADGE_REWARD = "reward"
+DATA_BADGE_REQUIRED_CHORES = "required_chores"
 DATA_BADGE_RESET_CRITERIA = "reset_criteria"
 DATA_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"
 DATA_BADGE_RESET_PERIOD = "reset_period"
 DATA_BADGE_RESET_PERIODICALLY = "reset_periodically"
+DATA_BADGE_RESET_SCHEDULE = "reset_schedule"
+DATA_BADGE_REWARD = "reward"
+DATA_BADGE_SPECIAL_OCCASION_DATE = "occasion_date"
+DATA_BADGE_SPECIAL_OCCASION_RECURRENCY = "recurrent"
+DATA_BADGE_START_DATE = "start_date"
 DATA_BADGE_THRESHOLD_TYPE = "threshold_type"
 DATA_BADGE_THRESHOLD_VALUE = "threshold_value"
 DATA_BADGE_TYPE = "badge_type"
@@ -671,9 +706,9 @@ DATA_PENDING_CHORE_APPROVALS = "pending_chore_approvals"
 DATA_PENDING_REWARD_APPROVALS = "pending_reward_approvals"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Default Icons
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 DEFAULT_ACHIEVEMENTS_ICON = "mdi:trophy-award"
 DEFAULT_BADGE_ICON = "mdi:shield-star-outline"
 DEFAULT_BONUS_ICON = "mdi:seal"
@@ -698,9 +733,9 @@ DEFAULT_TROPHY_ICON = "mdi:trophy"
 DEFAULT_TROPHY_OUTLINE = "mdi:trophy-outline"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Default Values
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 DEFAULT_ACHIEVEMENT_REWARD_POINTS = 0
 DEFAULT_ACHIEVEMENT_TARGET = 1
 DEFAULT_APPLICABLE_DAYS = []
@@ -736,9 +771,9 @@ DEFAULT_WEEKLY_RESET_DAY = 0
 DEFAULT_ZERO = 0
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Frequencies
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 FREQUENCY_BIWEEKLY = "biweekly"
 FREQUENCY_CUSTOM = "custom"
 FREQUENCY_DAILY = "daily"
@@ -747,16 +782,16 @@ FREQUENCY_NONE = "none"
 FREQUENCY_WEEKLY = "weekly"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Badge Threshold Types
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 BADGE_THRESHOLD_TYPE_CHORE_COUNT = "chore_count"
 BADGE_THRESHOLD_TYPE_POINTS = "points"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # States
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 
 # Chore States
 CHORE_STATE_APPROVED = "approved"
@@ -775,16 +810,16 @@ REWARD_STATE_CLAIMED = "claimed"
 REWARD_STATE_NOT_CLAIMED = "not_claimed"
 REWARD_STATE_UNKNOWN = "unknown"
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Events
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 EVENT_CHORE_COMPLETED = "kidschores_chore_completed"
 EVENT_REWARD_REDEEMED = "kidschores_reward_redeemed"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Actions
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 
 # Action titles for notifications
 ACTION_TITLE_APPROVE = "Approve"
@@ -799,16 +834,20 @@ ACTION_DISAPPROVE_REWARD = "DISAPPROVE_REWARD"
 ACTION_REMIND_30 = "REMIND_30"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Sensor Attributes
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 ATTR_ACHIEVEMENT_NAME = "achievement_name"
 ATTR_ALL_EARNED_BADGES = "all_earned_badges"
 ATTR_ALLOW_MULTIPLE_CLAIMS_PER_DAY = "allow_multiple_claims_per_day"
 ATTR_APPLICABLE_DAYS = "applicable_days"
 ATTR_AWARDED = "awarded"
 ATTR_ASSIGNED_KIDS = "assigned_kids"
+ATTR_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
+ATTR_ASSOCIATED_CHALLENGE = "associated_challenge"
 ATTR_ASSOCIATED_CHORE = "associated_chore"
+ATTR_AWARD_POINTS = "award_points"
+ATTR_AWARD_REWARD = "award_reward"
 ATTR_BADGES = "badges"
 ATTR_BONUS_NAME = "bonus_name"
 ATTR_BONUS_POINTS = "bonus_points"
@@ -831,6 +870,7 @@ ATTR_COST = "cost"
 ATTR_CRITERIA = "criteria"
 ATTR_CUSTOM_FREQUENCY_INTERVAL = "custom_frequency_interval"
 ATTR_CUSTOM_FREQUENCY_UNIT = "custom_frequency_unit"
+ATTR_DAILY_THRESHOLD = "daily_threshold"
 ATTR_DEFAULT_POINTS = "default_points"
 ATTR_DESCRIPTION = "description"
 ATTR_DUE_DATE = "due_date"
@@ -842,15 +882,20 @@ ATTR_KID_STATE = "kid_state"
 ATTR_LABELS = "labels"
 ATTR_KIDS_EARNED = "kids_earned"
 ATTR_LAST_DATE = "last_date"
+ATTR_OCCASION_DATE = "occasion_date"
+ATTR_OCCASION_TYPE = "occasion_type"
 ATTR_PARTIAL_ALLOWED = "partial_allowed"
 ATTR_PENALTY_NAME = "penalty_name"
 ATTR_PENALTY_POINTS = "penalty_points"
+ATTR_PERIODIC_RECURRENT = "recurrent"
 ATTR_POINTS_MULTIPLIER = "points_multiplier"
 ATTR_POINTS_TO_NEXT_BADGE = "points_to_next_badge"
 ATTR_RAW_PROGRESS = "raw_progress"
 ATTR_RAW_STREAK = "raw_streak"
 ATTR_RECURRING_FREQUENCY = "recurring_frequency"
+ATTR_REQUIRED_CHORES = "required_chores"
 ATTR_REDEEMED_ON = "Redeemed on"
+ATTR_RESET_SCHEDULE = "reset_schedule"
 ATTR_REWARD_APPROVALS_COUNT = "reward_approvals_count"
 ATTR_REWARD_CLAIMS_COUNT = "reward_claims_count"
 ATTR_REWARD_NAME = "reward_name"
@@ -859,12 +904,15 @@ ATTR_START_DATE = "start_date"
 ATTR_SHARED_CHORE = "shared_chore"
 ATTR_TARGET_VALUE = "target_value"
 ATTR_THRESHOLD_TYPE = "threshold_type"
+ATTR_THRESHOLD_VALUE = "threshold_value"
+ATTR_TRIGGER_TYPE = "trigger_type"
+ATTR_TRIGGER_INFO = "trigger_info"
 ATTR_TYPE = "type"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Sensors
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 
 # Sensor Types
 SENSOR_TYPE_BADGES = "badges"
@@ -934,9 +982,9 @@ SENSOR_KC_EID_SUFFIX_KID_POINTS_SENSOR = "_points"
 SENSOR_KC_EID_SUFFIX_PENDING_CHORE_APPROVALS_SENSOR = "global_chore_pending_approvals"
 SENSOR_KC_EID_SUFFIX_PENDING_REWARD_APPROVALS_SENSOR = "global_reward_pending_approvals"
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Services
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 SERVICE_APPLY_BONUS = "apply_bonus"
 SERVICE_APPLY_PENALTY = "apply_penalty"
 SERVICE_APPROVE_CHORE = "approve_chore"
@@ -955,9 +1003,9 @@ SERVICE_SET_CHORE_DUE_DATE = "set_chore_due_date"
 SERVICE_SKIP_CHORE_DUE_DATE = "skip_chore_due_date"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Field Names (for service calls)
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 FIELD_BONUS_NAME = "bonus_name"
 FIELD_CHORE_ID = "chore_id"
 FIELD_CHORE_NAME = "chore_name"
@@ -969,9 +1017,9 @@ FIELD_POINTS_AWARDED = "points_awarded"
 FIELD_REWARD_NAME = "reward_name"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Labels
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 LABEL_BADGES = "Badges"
 LABEL_COMPLETED_DAILY = "Daily Completed Chores"
 LABEL_COMPLETED_MONTHLY = "Monthly Completed Chores"
@@ -980,9 +1028,9 @@ LABEL_NONE = ""
 LABEL_POINTS = "Points"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Button Prefixes
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 BUTTON_BONUS_PREFIX = "bonus_button_"
 BUTTON_DISAPPROVE_CHORE_PREFIX = "disapprove_chore_button_"
 BUTTON_DISAPPROVE_REWARD_PREFIX = "disapprove_reward_button_"
@@ -990,9 +1038,9 @@ BUTTON_PENALTY_PREFIX = "penalty_button_"
 BUTTON_REWARD_PREFIX = "reward_button_"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Errors and Warnings
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 DUE_DATE_NOT_SET = "Not Set"
 ERROR_BONUS_NOT_FOUND = "Bonus not found."
 ERROR_BONUS_NOT_FOUND_FMT = "Bonus '{}' not found"
@@ -1032,16 +1080,16 @@ CFOP_ERROR_SELECT_CHORE_ID = "selected_chore_id"
 CFOP_ERROR_START_DATE = "start_date"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Parent Approval Workflow
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 PARENT_APPROVAL_REQUIRED = True  # Enable parent approval for certain actions
 HA_USERNAME_LINK_ENABLED = True  # Enable linking kids to HA usernames
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Calendar Attributes
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 ATTR_CAL_ALL_DAY = "all_day"
 ATTR_CAL_DESCRIPTION = "description"
 ATTR_CAL_END = "end"
@@ -1050,9 +1098,9 @@ ATTR_CAL_START = "start"
 ATTR_CAL_SUMMARY = "summary"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Translation Keys
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Global
 TRANS_KEY_NO_DUE_DATE = "No due date set"
 
@@ -1107,6 +1155,8 @@ TRANS_KEY_CFOF_INVALID_START_DATE = "invalid_start_date"
 TRANS_KEY_CFOF_MAIN_MENU = "main_menu"
 TRANS_KEY_CFOF_MANAGE_ACTIONS = "manage_actions"
 TRANS_KEY_CFOF_NO_ENTITY_TYPE = "no_{}s"
+TRANS_KEY_CFOF_REQUIRED_CHORES = "required_chores"
+TRANS_KEY_CFOP_RESET_SCHEDULE = "reset_schedule"
 TRANS_KEY_CFOF_START_DATE_IN_PAST = "start_date_in_past"
 TRANS_KEY_CFOF_SETUP_COMPLETE = "setup_complete"
 TRANS_KEY_CFOF_SUMMARY_ACHIEVEMENTS = "Achievements: "
@@ -1177,9 +1227,9 @@ TRANS_KEY_SENSOR_ATTR_PENALTY_NAME = "penalty_name"
 TRANS_KEY_SENSOR_ATTR_POINTS = "points"
 TRANS_KEY_SENSOR_ATTR_REWARD_NAME = "reward_name"
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # Notification Keys
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 NOTIFY_ACTION = "action"
 NOTIFY_CREATE = "create"
 NOTIFY_MESSAGE = "message"
@@ -1188,9 +1238,9 @@ NOTIFY_PERSISTENT_NOTIFICATION = "persistent_notification"
 NOTIFY_TITLE = "title"
 
 
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 # List Keys
-# --------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 
 # Recurring Frequency
 FREQUENCY_OPTIONS = [
@@ -1217,16 +1267,27 @@ WEEKDAY_OPTIONS = {
 CUSTOM_INTERVAL_UNIT_OPTIONS = [CONF_EMPTY, CONF_DAYS, CONF_WEEKS, CONF_MONTHS]
 
 # Badge Award Mode
-AWARD_MODE_OPTIONS = ["points", "reward"]
+AWARD_MODE_OPTIONS = [
+    CONF_BADGE_AWARD_POINTS,
+    CONF_BADGE_AWARD_REWARD,
+    CONF_BADGE_AWARD_POINTS_REWARD,
+]
 
 # Badge Threshold Type
-THRESHOLD_TYPE_OPTIONS = ["points", "chore_count"]
+THRESHOLD_TYPE_OPTIONS = [BADGE_THRESHOLD_TYPE_POINTS, BADGE_THRESHOLD_TYPE_CHORE_COUNT]
 
 # Badge Cumulative Reset Period
 BADGE_CUMULATIVE_RESET_PERIOD_OPTIONS = [CONF_YEAR_END, CONF_CUSTOM]
 
 # Badge Reset Period
 BADGE_PERIOD_OPTIONS = [CONF_WEEKLY, CONF_BIWEEKLY, CONF_MONTHLY, CONF_CUSTOM]
+
+# Badge Periodic Reset Schedule
+BADGE_RESET_SCHEDULE_OPTIONS = [
+    {"value": CONF_WEEKLY, "label": "Weekly (reset Monday at midnight)"},
+    {"value": CONF_MONTHLY, "label": "Monthly (reset on 1st of month at midnight)"},
+    {"value": CONF_CUSTOM, "label": "Custom (define period below)"},
+]
 
 # Badge Special Occasion Types
 OCCASION_TYPE_OPTIONS = [CONF_BIRTHDAY, CONF_HOLIDAY, CONF_CUSTOM]

@@ -353,16 +353,16 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
                     translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
                 )
             ),
-            vol.Required(
-                const.CONF_BADGE_POINTS_MULTIPLIER,
+            vol.Optional(
+                const.CONF_BADGE_AWARD_POINTS,
                 default=default.get(
-                    const.CONF_BADGE_POINTS_MULTIPLIER, const.DEFAULT_POINTS_MULTIPLIER
+                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
                 ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
-                    step=0.01,
-                    min=1.0,
+                    min=0,
+                    step=1,
                 )
             ),
             vol.Optional(
@@ -373,6 +373,18 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
                     translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
+                )
+            ),
+            vol.Required(
+                const.CONF_BADGE_POINTS_MULTIPLIER,
+                default=default.get(
+                    const.CONF_BADGE_POINTS_MULTIPLIER, const.DEFAULT_POINTS_MULTIPLIER
+                ),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    step=0.01,
+                    min=1.0,
                 )
             ),
             vol.Required(
@@ -508,12 +520,16 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
     )
 
 
-def build_badge_periodic_schema(default: dict = None, rewards_list: list = None):
+def build_badge_periodic_schema(
+    default: dict = None, rewards_list: list = None, chores_list: list = None
+):
     """Build schema for periodic badges (e.g. weekly or monthly)."""
     default = default or {}
-    rewards_list = rewards_list or [
+
+    rewards_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ]
+    ] + rewards_list
+    chores_list = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}] + chores_list
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     return vol.Schema(
@@ -534,22 +550,27 @@ def build_badge_periodic_schema(default: dict = None, rewards_list: list = None)
                 const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
             vol.Required(
-                const.CONF_BADGE_PERIOD,
-                default=default.get(const.CONF_BADGE_PERIOD, const.CONF_WEEKLY),
+                const.CONF_BADGE_RESET_SCHEDULE,
+                default=default.get(const.CONF_BADGE_RESET_SCHEDULE, const.CONF_WEEKLY),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=const.BADGE_PERIOD_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_PERIOD,
+                    options=const.BADGE_RESET_SCHEDULE_OPTIONS,
+                    translation_key=const.TRANS_KEY_CFOP_RESET_SCHEDULE,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
                 )
             ),
             vol.Optional(
                 const.CONF_BADGE_START_DATE,
-                default=default.get(const.CONF_BADGE_START_DATE, const.CONF_EMPTY),
+                default=default.get(const.CONF_BADGE_START_DATE, None),
             ): selector.DateSelector(),
             vol.Optional(
                 const.CONF_BADGE_END_DATE,
-                default=default.get(const.CONF_BADGE_END_DATE, const.CONF_EMPTY),
+                default=default.get(const.CONF_BADGE_END_DATE, None),
             ): selector.DateSelector(),
+            vol.Optional(
+                const.CONF_BADGE_PERIODIC_RECURRENT,
+                default=default.get(const.CONF_BADGE_PERIODIC_RECURRENT, False),
+            ): selector.BooleanSelector(),
             vol.Required(
                 const.CONF_BADGE_THRESHOLD_TYPE,
                 default=default.get(
@@ -559,6 +580,16 @@ def build_badge_periodic_schema(default: dict = None, rewards_list: list = None)
                 selector.SelectSelectorConfig(
                     options=const.THRESHOLD_TYPE_OPTIONS,
                     translation_key=const.TRANS_KEY_FLOW_HELPERS_THRESHOLD_TYPE,
+                )
+            ),
+            vol.Optional(
+                const.CONF_BADGE_REQUIRED_CHORES,
+                default=default.get(const.CONF_BADGE_REQUIRED_CHORES, []),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=chores_list,
+                    multiple=True,
+                    translation_key=const.TRANS_KEY_CFOF_REQUIRED_CHORES,
                 )
             ),
             vol.Required(
@@ -607,15 +638,6 @@ def build_badge_periodic_schema(default: dict = None, rewards_list: list = None)
                 )
             ),
             vol.Required(
-                const.CONF_BADGE_RESET_CRITERIA,
-                default=default.get(
-                    const.CONF_BADGE_RESET_CRITERIA,
-                    "Sunday midnight"
-                    if default.get(const.CONF_BADGE_PERIOD, "weekly") == "weekly"
-                    else "1st day of month",
-                ),
-            ): str,
-            vol.Required(
                 const.CONF_BADGE_TYPE,
                 default=default.get(const.CONF_BADGE_TYPE, const.BADGE_TYPE_PERIODIC),
             ): str,
@@ -630,12 +652,13 @@ def build_badge_achievement_schema(
     """Build schema for achievement‑linked badges."""
     default = default or {}
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
-    achievements_list = achievements_list or [
+    achievements_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ]
-    rewards_list = rewards_list or [
+    ] + achievements_list
+    rewards_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ]
+    ] + rewards_list
+
     return vol.Schema(
         {
             vol.Required(
@@ -666,13 +689,36 @@ def build_badge_achievement_schema(
                 )
             ),
             vol.Required(
-                const.CONF_BADGE_ONE_TIME_REWARD,
-                default=default.get(const.CONF_BADGE_ONE_TIME_REWARD, const.CONF_EMPTY),
+                const.CONF_BADGE_AWARD_MODE,
+                default=default.get(
+                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+                ),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=const.AWARD_MODE_OPTIONS,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
+                )
+            ),
+            vol.Optional(
+                const.CONF_BADGE_AWARD_POINTS,
+                default=default.get(
+                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
+                ),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=1,
+                )
+            ),
+            vol.Optional(
+                const.CONF_BADGE_AWARD_REWARD,
+                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ONE_TIME_REWARD,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
                 )
             ),
             vol.Required(
@@ -692,12 +738,13 @@ def build_badge_challenge_schema(
     """Build schema for challenge‑linked badges."""
     default = default or {}
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
-    challenges_list = challenges_list or [
+    challenges_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ]
-    rewards_list = rewards_list or [
+    ] + challenges_list
+    rewards_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ]
+    ] + rewards_list
+
     return vol.Schema(
         {
             vol.Required(
@@ -728,13 +775,36 @@ def build_badge_challenge_schema(
                 )
             ),
             vol.Required(
-                const.CONF_BADGE_ONE_TIME_REWARD,
-                default=default.get(const.CONF_BADGE_ONE_TIME_REWARD, const.CONF_EMPTY),
+                const.CONF_BADGE_AWARD_MODE,
+                default=default.get(
+                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+                ),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=const.AWARD_MODE_OPTIONS,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
+                )
+            ),
+            vol.Optional(
+                const.CONF_BADGE_AWARD_POINTS,
+                default=default.get(
+                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
+                ),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=1,
+                )
+            ),
+            vol.Optional(
+                const.CONF_BADGE_AWARD_REWARD,
+                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=rewards_list,
                     mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ONE_TIME_REWARD,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
                 )
             ),
             vol.Required(
@@ -784,9 +854,11 @@ def build_badge_special_occasions_schema(default: dict = None):
                 default=default.get(const.CONF_BADGE_OCCASION_DATE, const.CONF_EMPTY),
             ): selector.DateSelector(),
             vol.Required(
-                const.CONF_BADGE_TRIGGER_INFO,
-                default=default.get(const.CONF_BADGE_TRIGGER_INFO, const.CONF_EMPTY),
-            ): str,
+                const.CONF_BADGE_SPECIAL_OCCASION_RECURRENCY,
+                default=default.get(
+                    const.CONF_BADGE_SPECIAL_OCCASION_RECURRENCY, False
+                ),
+            ): selector.BooleanSelector(),
             vol.Required(
                 const.CONF_BADGE_TYPE,
                 default=default.get(
