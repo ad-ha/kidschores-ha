@@ -57,7 +57,7 @@ async def async_handle_notification_action(hass: HomeAssistant, event: Event) ->
         return
 
     # Retrieve the coordinator.
-    domain_data = hass.data.get("kidschores", {})
+    domain_data = hass.data.get(const.DOMAIN, {})
     if not domain_data:
         const.LOGGER.error("No KidsChores data found in hass.data")
         return
