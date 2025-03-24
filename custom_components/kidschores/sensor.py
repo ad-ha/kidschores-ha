@@ -63,7 +63,7 @@ async def async_setup_entry(
     # For each kid, add standard sensors
     for kid_id, kid_info in coordinator.kids_data.items():
         kid_name = kid_info.get(
-            const.DATA_KID_NAME, f"{const.TRANS_KEY_SENSOR_LABEL_KID} {kid_id}"
+            const.DATA_KID_NAME, f"{const.TRANS_KEY_LABEL_KID} {kid_id}"
         )
 
         # Points counter sensor
@@ -128,14 +128,14 @@ async def async_setup_entry(
                 continue
             chore_name = chore_info.get(
                 const.DATA_CHORE_NAME,
-                f"{const.TRANS_KEY_SENSOR_LABEL_CHORE} {chore_id}",
+                f"{const.TRANS_KEY_LABEL_CHORE} {chore_id}",
             )
 
         # Penalty Applies
         for penalty_id, penalty_info in coordinator.penalties_data.items():
             penalty_name = penalty_info.get(
                 const.DATA_PENALTY_NAME,
-                f"{const.TRANS_KEY_SENSOR_LABEL_PENALTY} {penalty_id}",
+                f"{const.TRANS_KEY_LABEL_PENALTY} {penalty_id}",
             )
             entities.append(
                 PenaltyAppliesSensor(
@@ -147,7 +147,7 @@ async def async_setup_entry(
         for bonus_id, bonus_info in coordinator.bonuses_data.items():
             bonus_name = bonus_info.get(
                 const.DATA_BONUS_NAME,
-                f"{const.TRANS_KEY_SENSOR_LABEL_BONUS} {bonus_id}",
+                f"{const.TRANS_KEY_LABEL_BONUS} {bonus_id}",
             )
             entities.append(
                 BonusAppliesSensor(
@@ -160,7 +160,7 @@ async def async_setup_entry(
             if kid_id in achievement.get(const.DATA_ACHIEVEMENT_ASSIGNED_KIDS, []):
                 achievement_name = achievement.get(
                     const.DATA_ACHIEVEMENT_NAME,
-                    f"{const.TRANS_KEY_SENSOR_LABEL_ACHIEVEMENT} {achievement_id}",
+                    f"{const.TRANS_KEY_LABEL_ACHIEVEMENT} {achievement_id}",
                 )
                 entities.append(
                     AchievementProgressSensor(
@@ -178,7 +178,7 @@ async def async_setup_entry(
             if kid_id in challenge.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, []):
                 challenge_name = challenge.get(
                     const.DATA_CHALLENGE_NAME,
-                    f"{const.TRANS_KEY_SENSOR_LABEL_CHALLENGE} {challenge_id}",
+                    f"{const.TRANS_KEY_LABEL_CHALLENGE} {challenge_id}",
                 )
                 entities.append(
                     ChallengeProgressSensor(
@@ -197,13 +197,13 @@ async def async_setup_entry(
     # For each chore assigned to each kid, add a ChoreStatusSensor
     for chore_id, chore_info in coordinator.chores_data.items():
         chore_name = chore_info.get(
-            const.DATA_CHORE_NAME, f"{const.TRANS_KEY_SENSOR_LABEL_CHORE} {chore_id}"
+            const.DATA_CHORE_NAME, f"{const.TRANS_KEY_LABEL_CHORE} {chore_id}"
         )
         assigned_kids_ids = chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
         for kid_id in assigned_kids_ids:
             kid_name = (
                 coordinator._get_kid_name_by_id(kid_id)
-                or f"{const.TRANS_KEY_SENSOR_LABEL_KID} {kid_id}"
+                or f"{const.TRANS_KEY_LABEL_KID} {kid_id}"
             )
             entities.append(
                 ChoreStatusSensor(
@@ -216,7 +216,7 @@ async def async_setup_entry(
         if chore_info.get(const.DATA_CHORE_SHARED_CHORE, False):
             chore_name = chore_info.get(
                 const.DATA_CHORE_NAME,
-                f"{const.TRANS_KEY_SENSOR_LABEL_CHORE} {chore_id}",
+                f"{const.TRANS_KEY_LABEL_CHORE} {chore_id}",
             )
             entities.append(
                 SharedChoreGlobalStateSensor(coordinator, entry, chore_id, chore_name)
@@ -225,13 +225,13 @@ async def async_setup_entry(
     # For each Reward, add a RewardStatusSensor
     for reward_id, reward_info in coordinator.rewards_data.items():
         reward_name = reward_info.get(
-            const.DATA_REWARD_NAME, f"{const.TRANS_KEY_SENSOR_LABEL_REWARD} {reward_id}"
+            const.DATA_REWARD_NAME, f"{const.TRANS_KEY_LABEL_REWARD} {reward_id}"
         )
 
         # For each kid, create the reward status sensor
         for kid_id, kid_info in coordinator.kids_data.items():
             kid_name = kid_info.get(
-                const.DATA_KID_NAME, f"{const.TRANS_KEY_SENSOR_LABEL_KID} {kid_id}"
+                const.DATA_KID_NAME, f"{const.TRANS_KEY_LABEL_KID} {kid_id}"
             )
             entities.append(
                 RewardStatusSensor(
@@ -242,7 +242,7 @@ async def async_setup_entry(
     # For each Badge, add a BadgeSensor
     for badge_id, badge_info in coordinator.badges_data.items():
         badge_name = badge_info.get(
-            const.DATA_BADGE_NAME, f"{const.TRANS_KEY_SENSOR_LABEL_BADGE} {badge_id}"
+            const.DATA_BADGE_NAME, f"{const.TRANS_KEY_LABEL_BADGE} {badge_id}"
         )
         entities.append(BadgeSensor(coordinator, entry, badge_id, badge_name))
 
@@ -250,7 +250,7 @@ async def async_setup_entry(
     for achievement_id, achievement in coordinator.achievements_data.items():
         achievement_name = achievement.get(
             const.DATA_ACHIEVEMENT_NAME,
-            f"{const.TRANS_KEY_SENSOR_LABEL_ACHIEVEMENT} {achievement_id}",
+            f"{const.TRANS_KEY_LABEL_ACHIEVEMENT} {achievement_id}",
         )
         entities.append(
             AchievementSensor(coordinator, entry, achievement_id, achievement_name)
@@ -260,7 +260,7 @@ async def async_setup_entry(
     for challenge_id, challenge in coordinator.challenges_data.items():
         challenge_name = challenge.get(
             const.DATA_CHALLENGE_NAME,
-            f"{const.TRANS_KEY_SENSOR_LABEL_CHALLENGE} {challenge_id}",
+            f"{const.TRANS_KEY_LABEL_CHALLENGE} {challenge_id}",
         )
         entities.append(
             ChallengeSensor(coordinator, entry, challenge_id, challenge_name)
@@ -318,7 +318,7 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
         assigned_kids_ids = chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
         assigned_kids_names = [
             self.coordinator._get_kid_name_by_id(k_id)
-            or f"{const.TRANS_KEY_SENSOR_LABEL_KID} {k_id}"
+            or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
 
@@ -800,12 +800,12 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
                 kids_earned_names.append(
                     kid.get(
                         const.DATA_KID_NAME,
-                        f"{const.TRANS_KEY_SENSOR_LABEL_KID} {kid_id}",
+                        f"{const.TRANS_KEY_LABEL_KID} {kid_id}",
                     )
                 )
             else:
                 kids_earned_names.append(
-                    f"{const.TRANS_KEY_SENSOR_LABEL_KID} {kid_id} (not found)"
+                    f"{const.TRANS_KEY_LABEL_KID} {kid_id} (not found)"
                 )
 
         # Convert required chore_id to chore_name
@@ -1058,7 +1058,7 @@ class SharedChoreGlobalStateSensor(CoordinatorEntity, SensorEntity):
         assigned_kids_ids = chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
         assigned_kids_names = [
             self.coordinator._get_kid_name_by_id(k_id)
-            or f"{const.TRANS_KEY_SENSOR_LABEL_KID} {k_id}"
+            or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
 
@@ -1500,7 +1500,7 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
         assigned_kids_ids = achievement.get(const.DATA_ACHIEVEMENT_ASSIGNED_KIDS, [])
         assigned_kids_names = [
             self.coordinator._get_kid_name_by_id(k_id)
-            or f"{const.TRANS_KEY_SENSOR_LABEL_KID} {k_id}"
+            or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
         ach_type = achievement.get(const.DATA_ACHIEVEMENT_TYPE)
@@ -1655,7 +1655,7 @@ class ChallengeSensor(CoordinatorEntity, SensorEntity):
         assigned_kids_ids = challenge.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, [])
         assigned_kids_names = [
             self.coordinator._get_kid_name_by_id(k_id)
-            or f"{const.TRANS_KEY_SENSOR_LABEL_KID} {k_id}"
+            or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
 
@@ -1864,7 +1864,7 @@ class AchievementProgressSensor(CoordinatorEntity, SensorEntity):
         assigned_kids_ids = achievement.get(const.DATA_ACHIEVEMENT_ASSIGNED_KIDS, [])
         assigned_kids_names = [
             self.coordinator._get_kid_name_by_id(k_id)
-            or f"{const.TRANS_KEY_SENSOR_LABEL_KID} {k_id}"
+            or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
 
@@ -2024,7 +2024,7 @@ class ChallengeProgressSensor(CoordinatorEntity, SensorEntity):
         assigned_kids_ids = challenge.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, [])
         assigned_kids_names = [
             self.coordinator._get_kid_name_by_id(k_id)
-            or f"{const.TRANS_KEY_SENSOR_LABEL_KID} {k_id}"
+            or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
 

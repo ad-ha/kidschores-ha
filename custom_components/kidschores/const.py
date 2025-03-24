@@ -31,6 +31,9 @@ PLATFORMS = [
     Platform.SENSOR,
 ]
 
+# Coordinator
+COORDINATOR = "coordinator"
+
 # Storage and Versioning
 STORAGE_MANAGER = "storage_manager"
 STORAGE_KEY = "kidschores_data"  # Persistent storage key
@@ -315,6 +318,7 @@ CONF_COST = "cost"
 CONF_CUSTOM = "custom"
 CONF_DAYS = "days"
 CONF_DESCRIPTION = "description"
+CONF_DOT = "."
 CONF_EMPTY = ""
 CONF_HOLIDAY = "holiday"
 CONF_HOUR = "hour"
@@ -994,6 +998,27 @@ SENSOR_KC_EID_SUFFIX_PENDING_CHORE_APPROVALS_SENSOR = "global_chore_pending_appr
 SENSOR_KC_EID_SUFFIX_PENDING_REWARD_APPROVALS_SENSOR = "global_reward_pending_approvals"
 
 # ------------------------------------------------------------------------------------------------
+# Selects
+# ------------------------------------------------------------------------------------------------
+
+# Sensor Types
+SELECT_TYPE_ALL_BONUSES = "all_bonuses"
+SELECT_TYPE_ALL_CHORES = "all_chores"
+SELECT_TYPE_ALL_PENALTIES = "all_penalties"
+SELECT_TYPE_ALL_REWARDS = "all_rewards"
+SELECT_TYPE_CHORE_LIST = "_chore_list"
+
+# Select Prefixes
+SELECT_KC_PREFIX = "select.kc_"
+
+# Sensor Unique ID Mid & Suffixes
+SELECT_KC_UID_MIDFIX_CHORES_SELECT = "_chores_select_"
+SELECT_KC_UID_SUFFIX_BONUSES_SELECT = "_bonuses_select"
+SELECT_KC_UID_SUFFIX_CHORES_SELECT = "_chores_select"
+SELECT_KC_UID_SUFFIX_PENALTIES_SELECT = "_penalties_select"
+SELECT_KC_UID_SUFFIX_REWARDS_SELECT = "_rewards_select"
+
+# ------------------------------------------------------------------------------------------------
 # Services
 # ------------------------------------------------------------------------------------------------
 SERVICE_APPLY_BONUS = "apply_bonus"
@@ -1114,15 +1139,15 @@ ATTR_CAL_SUMMARY = "summary"
 # Translation Keys
 # ------------------------------------------------------------------------------------------------
 # Global
+TRANS_KEY_LABEL_ACHIEVEMENT = "Achievement"
+TRANS_KEY_LABEL_BADGE = "Badge"
+TRANS_KEY_LABEL_BONUS = "Bonus"
+TRANS_KEY_LABEL_CHALLENGE = "Challenge"
+TRANS_KEY_LABEL_CHORE = "Chore"
+TRANS_KEY_LABEL_KID = "Kid"
+TRANS_KEY_LABEL_PENALTY = "Penalty"
+TRANS_KEY_LABEL_REWARD = "Reward"
 TRANS_KEY_NO_DUE_DATE = "No due date set"
-TRANS_KEY_SENSOR_LABEL_ACHIEVEMENT = "Achievement"
-TRANS_KEY_SENSOR_LABEL_BADGE = "Badge"
-TRANS_KEY_SENSOR_LABEL_BONUS = "Bonus"
-TRANS_KEY_SENSOR_LABEL_CHALLENGE = "Challenge"
-TRANS_KEY_SENSOR_LABEL_CHORE = "Chore"
-TRANS_KEY_SENSOR_LABEL_KID = "Kid"
-TRANS_KEY_SENSOR_LABEL_PENALTY = "Penalty"
-TRANS_KEY_SENSOR_LABEL_REWARD = "Reward"
 
 # ConfigFlow & OptionsFlow Translation Keys
 TRANS_KEY_ERROR_SINGLE_INSTANCE = "single_instance_allowed"
@@ -1247,13 +1272,33 @@ TRANS_KEY_SENSOR_ATTR_PENALTY_NAME = "penalty_name"
 TRANS_KEY_SENSOR_ATTR_POINTS = "points"
 TRANS_KEY_SENSOR_ATTR_REWARD_NAME = "reward_name"
 
+# Select Translation Keys
+TRANS_KEY_SELECT_BASE = "kc_select_base"
+TRANS_KEY_SELECT_BONUSES = "bonuses_select"
+TRANS_KEY_SELECT_CHORES = "chores_select"
+TRANS_KEY_SELECT_CHORES_KID = "chores_kid_select"
+TRANS_KEY_SELECT_PENALTIES = "penalties_select"
+TRANS_KEY_SELECT_REWARDS = "rewards_select"
+
+# Select Labels
+TRANS_KEY_SELECT_LABEL_ALL_BONUSES = "All Bonuses"
+TRANS_KEY_SELECT_LABEL_ALL_CHORES = "All Chores"
+TRANS_KEY_SELECT_LABEL_ALL_PENALTIES = "All Penalties"
+TRANS_KEY_SELECT_LABEL_ALL_REWARDS = "All Rewards"
+TRANS_KEY_SELECT_LABEL_CHORES_FOR = "Chores for"
+
 # ------------------------------------------------------------------------------------------------
 # Notification Keys
 # ------------------------------------------------------------------------------------------------
 NOTIFY_ACTION = "action"
+NOTIFY_ACTIONS = "actions"
 NOTIFY_CREATE = "create"
+NOTIFY_DATA = "data"
+NOTIFY_DEFAULT_PARENT_NAME = "Parent"
+NOTIFY_DOMAIN = "notify"
 NOTIFY_MESSAGE = "message"
 NOTIFY_NOTIFICATION_ID = "notification_id"
+NOTIFY_PARENT_NAME = "parent_name"
 NOTIFY_PERSISTENT_NOTIFICATION = "persistent_notification"
 NOTIFY_TITLE = "title"
 
