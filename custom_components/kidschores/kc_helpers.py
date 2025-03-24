@@ -25,10 +25,10 @@ def _get_kidschores_coordinator(
         return None
 
     data = domain_entries.get(entry_id)
-    if not data or "coordinator" not in data:
+    if not data or const.COORDINATOR not in data:
         return None
 
-    return data["coordinator"]
+    return data[const.COORDINATOR]
 
 
 # -------- Authorization for General Actions --------
@@ -42,7 +42,6 @@ async def is_user_authorized_for_global_action(
     By default:
       - Admin users => authorized
       - Everyone else => not authorized
-
     """
     if not user_id:
         return False  # no user context => not authorized
@@ -59,7 +58,7 @@ async def is_user_authorized_for_global_action(
     coordinator = _get_kidschores_coordinator(hass)
     if coordinator:
         for parent in coordinator.parents_data.values():
-            if parent.get("ha_user_id") == user.id:
+            if parent.get(const.DATA_PARENT_HA_USER_ID) == user.id:
                 return True
 
     const.LOGGER.warning(
@@ -97,7 +96,7 @@ async def is_user_authorized_for_kid(
     coordinator = _get_kidschores_coordinator(hass)
     if coordinator:
         for parent in coordinator.parents_data.values():
-            if parent.get("ha_user_id") == user.id:
+            if parent.get(const.DATA_PARENT_HA_USER_ID) == user.id:
                 return True
 
     coordinator: KidsChoresDataCoordinator = _get_kidschores_coordinator(hass)
@@ -112,14 +111,14 @@ async def is_user_authorized_for_kid(
         )
         return False
 
-    linked_ha_id = kid_info.get("ha_user_id")
+    linked_ha_id = kid_info.get(const.DATA_KID_HA_USER_ID)
     if linked_ha_id and linked_ha_id == user.id:
         return True
 
     const.LOGGER.warning(
         "Authorization: Non-admin user '%s' attempted to manage kid '%s' but is not linked",
         user.name,
-        kid_info.get("name"),
+        kid_info.get(const.DATA_KID_NAME),
     )
     return False
 
@@ -128,7 +127,7 @@ async def is_user_authorized_for_kid(
 def _get_kid_id_by_name(self, kid_name: str) -> Optional[str]:
     """Help function to get kid_id by kid_name."""
     for kid_id, kid_info in self.kids_data.items():
-        if kid_info.get("name") == kid_name:
+        if kid_info.get(const.DATA_KID_NAME) == kid_name:
             return kid_id
     return None
 
@@ -137,7 +136,7 @@ def _get_kid_name_by_id(self, kid_id: str) -> Optional[str]:
     """Help function to get kid_name by kid_id."""
     kid_info = self.kids_data.get(kid_id)
     if kid_info:
-        return kid_info.get("name")
+        return kid_info.get(const.DATA_KID_NAME)
     return None
 
 
