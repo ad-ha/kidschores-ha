@@ -48,7 +48,9 @@ async def async_handle_notification_action(hass: HomeAssistant, event: Event) ->
         return
 
     # Parent name may be provided in the event data or use a default.
-    parent_name = event.data.get("parent_name", "ParentOrAdmin")
+    parent_name = event.data.get(
+        const.NOTIFY_PARENT_NAME, const.NOTIFY_DEFAULT_PARENT_NAME
+    )
 
     if not kid_id or not base_action:
         const.LOGGER.error(
@@ -62,7 +64,9 @@ async def async_handle_notification_action(hass: HomeAssistant, event: Event) ->
         const.LOGGER.error("No KidsChores data found in hass.data")
         return
     entry_id = next(iter(domain_data))
-    coordinator: KidsChoresDataCoordinator = domain_data[entry_id].get("coordinator")
+    coordinator: KidsChoresDataCoordinator = domain_data[entry_id].get(
+        const.COORDINATOR
+    )
     if not coordinator:
         const.LOGGER.error("No coordinator found in KidsChores data")
         return

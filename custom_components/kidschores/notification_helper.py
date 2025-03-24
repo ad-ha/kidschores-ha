@@ -27,17 +27,17 @@ async def async_send_notification(
 ) -> None:
     """Send a notification using the specified notify service."""
 
-    payload = {"title": title, "message": message}
+    payload = {const.NOTIFY_TITLE: title, const.NOTIFY_MESSAGE: message}
 
     if actions:
-        payload.setdefault("data", {})["actions"] = actions
+        payload.setdefault(const.NOTIFY_DATA, {})[const.NOTIFY_ACTIONS] = actions
 
     if extra_data:
-        payload.setdefault("data", {}).update(extra_data)
+        payload.setdefault(const.NOTIFY_DATA, {}).update(extra_data)
 
     try:
-        if "." not in notify_service:
-            domain = "notify"
+        if const.CONF_DOT not in notify_service:
+            domain = const.NOTIFY_DOMAIN
             service = notify_service
         else:
             domain, service = notify_service.split(".", 1)
