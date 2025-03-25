@@ -97,7 +97,6 @@ OPTIONS_FLOW_PARENTS = "manage_parent"
 OPTIONS_FLOW_PENALTIES = "manage_penalty"
 OPTIONS_FLOW_POINTS = "manage_points"
 OPTIONS_FLOW_REWARDS = "manage_reward"
-OPTIONS_FLOW_SELECT_ENTITY = "select_entity"
 
 # OptionsFlow Configuration Keys
 CONF_ACHIEVEMENTS = "achievements"
@@ -202,7 +201,6 @@ CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE = "associated_challenge"
 CFOF_BADGES_INPUT_AWARD_MODE = "award_mode"
 CFOF_BADGES_INPUT_AWARD_POINTS = "award_points"
 CFOF_BADGES_INPUT_AWARD_REWARD = "award_reward"
-CFOF_BADGES_INPUT_AWARD_POINTS_REWARD = "award_points_reward"
 CFOF_BADGES_INPUT_BADGE_COUNT = "badge_count"
 CFOF_BADGES_INPUT_DAILY_THRESHOLD = "daily_threshold"
 CFOF_BADGES_INPUT_DESCRIPTION = "badge_description"
@@ -211,12 +209,9 @@ CFOF_BADGES_INPUT_ICON = "icon"
 CFOF_BADGES_INPUT_LABELS = "badge_labels"
 CFOF_BADGES_INPUT_NAME = "badge_name"
 CFOF_BADGES_INPUT_OCCASION_TYPE = "occasion_type"
-CFOF_BADGES_INPUT_ONE_TIME_REWARD = "one_time_reward"
-CFOF_BADGES_INPUT_PERIOD = "period"
 CFOF_BADGES_INPUT_PERIODIC_RECURRENT = "recurrent"
 CFOF_BADGES_INPUT_POINTS_MULTIPLIER = "points_multiplier"
 CFOF_BADGES_INPUT_REWARD = "reward"
-CFOF_BADGES_INPUT_RESET_CRITERIA = "reset_criteria"
 CFOF_BADGES_INPUT_RESET_SCHEDULE = "reset_schedule"
 CFOF_BADGES_INPUT_REQUIRED_CHORES = "required_chores"
 CFOF_BADGES_INPUT_START_DATE = "start_date"
@@ -307,11 +302,6 @@ OPTIONS_FLOW_ASYNC_STEP_PREFIX = "async_step_"
 OPTIONS_FLOW_ASYNC_STEP_ADD_PREFIX = "async_step_add_"
 OPTIONS_FLOW_MENU_MANAGE_PREFIX = "manage_"
 
-# Validation Keys
-VALIDATION_DUE_DATE = "due_date"  # Optional due date for chores
-VALIDATION_PARTIAL_ALLOWED = "partial_allowed"  # Allow partial points in chores
-VALIDATION_THRESHOLD_TYPE = "threshold_type"  # Badge criteria type
-VALIDATION_THRESHOLD_VALUE = "threshold_value"  # Badge criteria value
 
 # Global configuration keys
 CONF_BIRTHDAY = "birthday"
@@ -519,7 +509,6 @@ DATA_RECURRING_FREQUENCY = "recurring_frequency"
 DATA_REWARD_APPROVALS = "reward_approvals"
 DATA_REWARD_CLAIMS = "reward_claims"
 DATA_REWARDS = "rewards"
-DATA_SELECTED_CHORE_ID = "selected_chore_id"
 
 # KIDS
 DATA_KID_APPROVED_CHORES = "approved_chores"
@@ -729,7 +718,6 @@ DEFAULT_CALENDAR_ICON = "mdi:calendar"
 DEFAULT_CHALLENGES_ICON = "mdi:trophy"
 DEFAULT_CHORE_ICON = "mdi:checkbox-marked-circle-auto-outline"
 DEFAULT_CHORE_APPROVE_ICON = "mdi:checkbox-marked-circle-outline"
-DEFAULT_CHORE_BINARY_ICON = "mdi:checkbox-blank-circle-outline"
 DEFAULT_CHORE_CLAIM_ICON = "mdi:clipboard-check-outline"
 DEFAULT_CHORE_SENSOR_ICON = "mdi:checkbox-blank-circle-outline"
 DEFAULT_COMPLETED_CHORES_DAILY_SENSOR_ICON = "mdi:clipboard-check-outline"
@@ -776,7 +764,6 @@ DEFAULT_HOUR = 0
 DEFAULT_KID_POINTS_MULTIPLIER = 1
 DEFAULT_MONTHLY_RESET_DAY = 1
 DEFAULT_MULTIPLE_CLAIMS_PER_DAY = False
-DEFAULT_NOTIFICATIONS = True
 DEFAULT_NOTIFY_DELAY_REMINDER = 24
 DEFAULT_NOTIFY_ON_APPROVAL = True
 DEFAULT_NOTIFY_ON_CLAIM = True
@@ -824,7 +811,6 @@ CHORE_STATE_CLAIMED = "claimed"
 CHORE_STATE_CLAIMED_IN_PART = "claimed_in_part"
 CHORE_STATE_INDEPENDENT = "independent"
 CHORE_STATE_OVERDUE = "overdue"
-CHORE_STATE_PARTIAL = "partial"
 CHORE_STATE_PENDING = "pending"
 CHORE_STATE_UNKNOWN = "unknown"
 
@@ -832,13 +818,6 @@ CHORE_STATE_UNKNOWN = "unknown"
 REWARD_STATE_APPROVED = "approved"
 REWARD_STATE_CLAIMED = "claimed"
 REWARD_STATE_NOT_CLAIMED = "not_claimed"
-REWARD_STATE_UNKNOWN = "unknown"
-
-# ------------------------------------------------------------------------------------------------
-# Events
-# ------------------------------------------------------------------------------------------------
-EVENT_CHORE_COMPLETED = "kidschores_chore_completed"
-EVENT_REWARD_REDEEMED = "kidschores_reward_redeemed"
 
 
 # ------------------------------------------------------------------------------------------------
@@ -872,15 +851,8 @@ ATTR_ASSOCIATED_CHALLENGE = "associated_challenge"
 ATTR_ASSOCIATED_CHORE = "associated_chore"
 ATTR_AWARD_POINTS = "award_points"
 ATTR_AWARD_REWARD = "award_reward"
-ATTR_BADGES = "badges"
 ATTR_BONUS_NAME = "bonus_name"
 ATTR_BONUS_POINTS = "bonus_points"
-ATTR_CAL_ALL_DAY = "all_day"
-ATTR_CAL_DESCRIPTION = "description"
-ATTR_CAL_END = "end"
-ATTR_CAL_MANUFACTURER = "manufacturer"
-ATTR_CAL_START = "start"
-ATTR_CAL_SUMMARY = "summary"
 ATTR_CHALLENGE_NAME = "challenge_name"
 ATTR_CHALLENGE_TYPE = "challenge_type"
 ATTR_CHORE_APPROVALS_COUNT = "chore_approvals_count"
@@ -902,21 +874,17 @@ ATTR_END_DATE = "end_date"
 ATTR_GLOBAL_STATE = "global_state"
 ATTR_HIGHEST_BADGE_THRESHOLD_VALUE = "highest_badge_threshold_value"
 ATTR_KID_NAME = "kid_name"
-ATTR_KID_STATE = "kid_state"
 ATTR_LABELS = "labels"
 ATTR_KIDS_EARNED = "kids_earned"
-ATTR_LAST_DATE = "last_date"
 ATTR_OCCASION_DATE = "occasion_date"
 ATTR_OCCASION_TYPE = "occasion_type"
 ATTR_PARTIAL_ALLOWED = "partial_allowed"
 ATTR_PENALTY_NAME = "penalty_name"
 ATTR_PENALTY_POINTS = "penalty_points"
 ATTR_PERIODIC_RECURRENT = "recurrent"
-ATTR_POINTS_LABEL = "points_label"
 ATTR_POINTS_MULTIPLIER = "points_multiplier"
 ATTR_POINTS_TO_NEXT_BADGE = "points_to_next_badge"
 ATTR_RAW_PROGRESS = "raw_progress"
-ATTR_RAW_STREAK = "raw_streak"
 ATTR_RECURRING_FREQUENCY = "recurring_frequency"
 ATTR_REQUIRED_CHORES = "required_chores"
 ATTR_REDEEMED_ON = "Redeemed on"
@@ -930,9 +898,8 @@ ATTR_START_DATE = "start_date"
 ATTR_STREAKS_BY_ACHIEVEMENT = "streaks_by_achievement"
 ATTR_SHARED_CHORE = "shared_chore"
 ATTR_TARGET_VALUE = "target_value"
-ATTR_THRESHOLD_TYPE = "threshold_type"
 ATTR_THRESHOLD_VALUE = "threshold_value"
-ATTR_TRIGGER_TYPE = "trigger_type"
+
 ATTR_TRIGGER_INFO = "trigger_info"
 ATTR_TYPE = "type"
 

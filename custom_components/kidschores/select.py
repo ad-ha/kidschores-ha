@@ -80,7 +80,9 @@ class ChoresSelect(KidsChoresSelectBase):
         self._attr_name = (
             f"{const.KIDSCHORES_TITLE}: {const.TRANS_KEY_SELECT_LABEL_ALL_CHORES}"
         )
-        self.entity_id = f"{const.SELECT_KC_PREFIX}{const.SELECT_TYPE_ALL_CHORES}"
+        self.entity_id = (
+            f"{const.SELECT_KC_PREFIX}{const.SELECT_KC_EID_SUFFIX_ALL_CHORES}"
+        )
 
     @property
     def options(self) -> list[str]:
@@ -109,7 +111,9 @@ class RewardsSelect(KidsChoresSelectBase):
         self._attr_name = (
             f"{const.KIDSCHORES_TITLE}: {const.TRANS_KEY_SELECT_LABEL_ALL_REWARDS}"
         )
-        self.entity_id = f"{const.SELECT_KC_PREFIX}{const.SELECT_TYPE_ALL_REWARDS}"
+        self.entity_id = (
+            f"{const.SELECT_KC_PREFIX}{const.SELECT_KC_EID_SUFFIX_ALL_REWARDS}"
+        )
 
     @property
     def options(self) -> list[str]:
@@ -138,7 +142,9 @@ class PenaltiesSelect(KidsChoresSelectBase):
         self._attr_name = (
             f"{const.KIDSCHORES_TITLE}: {const.TRANS_KEY_SELECT_LABEL_ALL_PENALTIES}"
         )
-        self.entity_id = f"{const.SELECT_KC_PREFIX}{const.SELECT_TYPE_ALL_PENALTIES}"
+        self.entity_id = (
+            f"{const.SELECT_KC_PREFIX}{const.SELECT_KC_EID_SUFFIX_ALL_PENALTIES}"
+        )
 
     @property
     def options(self) -> list[str]:
@@ -167,7 +173,9 @@ class BonusesSelect(KidsChoresSelectBase):
         self._attr_name = (
             f"{const.KIDSCHORES_TITLE}: {const.TRANS_KEY_SELECT_LABEL_ALL_BONUSES}"
         )
-        self.entity_id = f"{const.SELECT_KC_PREFIX}{const.SELECT_TYPE_ALL_BONUSES}"
+        self.entity_id = (
+            f"{const.SELECT_KC_PREFIX}{const.SELECT_KC_EID_SUFFIX_ALL_BONUSES}"
+        )
 
     @property
     def options(self) -> list[str]:
@@ -201,7 +209,7 @@ class ChoresKidSelect(KidsChoresSelectBase):
         )
         self._attr_name = f"{const.KIDSCHORES_TITLE}: {const.TRANS_KEY_SELECT_LABEL_CHORES_FOR} {kid_name}"
         self.entity_id = (
-            f"{const.SELECT_KC_PREFIX}{kid_name}{const.SELECT_TYPE_CHORE_LIST}"
+            f"{const.SELECT_KC_PREFIX}{kid_name}{const.SELECT_KC_EID_SUFFIX_CHORE_LIST}"
         )
 
     @property

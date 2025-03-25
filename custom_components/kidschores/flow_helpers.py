@@ -1264,15 +1264,26 @@ def build_general_options_schema(default: dict = None) -> vol.Schema:
             ): selector.TextSelector(
                 selector.TextSelectorConfig(
                     multiline=True,
-                    # placeholder="Enter one value per line, e.g.:\n1\n-1\n2\n-2\n10\n-10",
                 )
             ),
             vol.Required(
                 const.CONF_UPDATE_INTERVAL, default=default_interval
-            ): vol.Coerce(int),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=1,
+                    step=1,
+                )
+            ),
             vol.Required(
                 const.CONF_CALENDAR_SHOW_PERIOD, default=default_calendar_period
-            ): vol.Coerce(int),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=1,
+                    step=1,
+                )
+            ),
         }
     )
 
@@ -1286,7 +1297,7 @@ def build_general_options_schema(default: dict = None) -> vol.Schema:
 def process_penalty_form_input(user_input: dict) -> dict:
     """Ensure penalty points are negative internally."""
     data = dict(user_input)
-    data["points"] = -abs(data["penalty_points"])
+    data[const.DATA_PENALTY_POINTS] = -abs(data[const.CONF_PENALTY_POINTS])
     return data
 
 
@@ -1295,9 +1306,9 @@ def _get_notify_services(hass: HomeAssistant) -> list[dict[str, str]]:
     """Return a list of all notify.* services as"""
     services_list = []
     all_services = hass.services.async_services()
-    if "notify" in all_services:
-        for service_name in all_services["notify"].keys():
-            fullname = f"notify.{service_name}"
+    if const.NOTIFY_DOMAIN in all_services:
+        for service_name in all_services[const.NOTIFY_DOMAIN].keys():
+            fullname = f"{const.NOTIFY_DOMAIN}.{service_name}"
             services_list.append({"value": fullname, "label": fullname})
     return services_list
 

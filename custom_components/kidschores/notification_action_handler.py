@@ -11,7 +11,7 @@ from .coordinator import KidsChoresDataCoordinator
 async def async_handle_notification_action(hass: HomeAssistant, event: Event) -> None:
     """Handle notification actions from HA companion notifications."""
 
-    action_field = event.data.get("action")
+    action_field = event.data.get(const.NOTIFY_ACTION)
     if not action_field:
         const.LOGGER.error("No action found in event data: %s", event.data)
         return

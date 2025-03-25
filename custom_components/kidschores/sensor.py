@@ -981,7 +981,7 @@ class PendingRewardApprovalsSensor(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}{const.SENSOR_KC_UID_SUFFIX_PENDING_REWARD_APPROVALS_SENSOR}"
         self._attr_icon = const.DEFAULT_PENDING_REWARD_APPROVALS_SENSOR_ICON
-        self._attr_native_unit_of_measurement = const.DEFAULT_PENDING_CHORES_UNIT
+        self._attr_native_unit_of_measurement = const.DEFAULT_PENDING_REWARDS_UNIT
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{const.SENSOR_KC_EID_SUFFIX_PENDING_REWARD_APPROVALS_SENSOR}"
 
     @property

@@ -47,7 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Store the coordinator and data manager in hass.data.
     hass.data.setdefault(const.DOMAIN, {})[entry.entry_id] = {
-        "coordinator": coordinator,
+        const.COORDINATOR: coordinator,
         const.STORAGE_MANAGER: storage_manager,
     }
 
@@ -70,13 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass, entry):
-    """Unload a config entry.
-
-    Args:
-        hass: Home Assistant instance.
-        entry: Config entry to unload.
-
-    """
+    """Unload a config entry."""
     const.LOGGER.info("Unloading KidsChores entry: %s", entry.entry_id)
 
     # Unload platforms
