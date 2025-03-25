@@ -40,13 +40,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     ):
         """Initialize the KidsChoresDataCoordinator."""
         update_interval_minutes = config_entry.options.get(
-            const.CONF_UPDATE_INTERVAL, const.UPDATE_INTERVAL
+            const.CONF_UPDATE_INTERVAL, const.DEFAULT_UPDATE_INTERVAL
         )
 
         super().__init__(
             hass,
             const.LOGGER,
-            name=f"{const.DOMAIN}_coordinator",
+            name=f"{const.DOMAIN}{const.COORDINATOR_SUFFIX}",
             update_interval=timedelta(minutes=update_interval_minutes),
         )
         self.config_entry = config_entry

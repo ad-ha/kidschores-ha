@@ -1252,7 +1252,9 @@ def build_general_options_schema(default: dict = None) -> vol.Schema:
             str(v) for v in const.DEFAULT_POINTS_ADJUST_VALUES
         )
 
-    default_interval = default.get(const.CONF_UPDATE_INTERVAL, const.UPDATE_INTERVAL)
+    default_interval = default.get(
+        const.CONF_UPDATE_INTERVAL, const.DEFAULT_UPDATE_INTERVAL
+    )
     default_calendar_period = default.get(
         const.CONF_CALENDAR_SHOW_PERIOD, const.DEFAULT_CALENDAR_SHOW_PERIOD
     )

@@ -33,14 +33,15 @@ PLATFORMS = [
 
 # Coordinator
 COORDINATOR = "coordinator"
+COORDINATOR_SUFFIX = "_coordinator"
 
 # Storage and Versioning
 STORAGE_MANAGER = "storage_manager"
-STORAGE_KEY = "kidschores_data"  # Persistent storage key
-STORAGE_VERSION = 1  # Storage version
+STORAGE_KEY = "kidschores_data"
+STORAGE_VERSION = 1
 
 # Update Interval
-UPDATE_INTERVAL = 5  # Update interval for coordinator (in minutes)
+DEFAULT_UPDATE_INTERVAL = 5
 
 # ------------------------------------------------------------------------------------------------
 # Configuration Keys
@@ -104,7 +105,6 @@ CONF_BADGES = "badges"
 CONF_BONUSES = "bonuses"
 CONF_CHALLENGES = "challenges"
 CONF_CHORES = "chores"
-CONF_GLOBAL = "global"
 CONF_KIDS = "kids"
 CONF_PARENTS = "parents"
 CONF_PENALTIES = "penalties"
@@ -272,7 +272,6 @@ CFOF_CHALLENGES_INPUT_START_DATE = "start_date"
 CFOF_CHALLENGES_INPUT_TARGET_VALUE = "target_value"
 CFOF_CHALLENGES_INPUT_TYPE = "type"
 
-
 # OptionsFlow Input Fields
 OPTIONS_FLOW_INPUT_ENTITY_NAME = "entity_name"
 OPTIONS_FLOW_INPUT_INTERNAL_ID = "internal_id"
@@ -322,7 +321,7 @@ CONF_MONTHLY = "monthly"
 CONF_NAME = "name"
 CONF_NONE_TEXT = "None"
 CONF_POINTS = "points"
-CONF_UNKNOWN = "Unknown"
+CONF_SHARED_CHORE = "shared_chore"
 CONF_VALUE = "value"
 CONF_WEEKS = "weeks"
 CONF_WEEKLY = "weekly"
@@ -334,7 +333,6 @@ CONF_POINTS_ICON = "points_icon"
 CONF_POINTS_LABEL = "points_label"
 
 # Kids configuration keys
-CONF_KIDNAME = "kid_name"
 CONF_HA_USER = "ha_user"
 
 # Parents configuration keys
@@ -355,11 +353,8 @@ CONF_DEFAULT_POINTS = "default_points"
 CONF_DUE_DATE = "due_date"
 CONF_PARTIAL_ALLOWED = "partial_allowed"
 CONF_RECURRING_FREQUENCY = "recurring_frequency"
-CONF_SHARED_CHORE = "shared_chore"
-
 
 # Notification configuration keys
-CONF_CHORE_NOTIFY_SERVICE = "chore_notify_service"
 CONF_ENABLE_MOBILE_NOTIFICATIONS = "enable_mobile_notifications"
 CONF_ENABLE_PERSISTENT_NOTIFICATIONS = "enable_persistent_notifications"
 CONF_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
@@ -376,7 +371,6 @@ CONF_BADGE_AWARD_MODE = "award_mode"
 CONF_BADGE_AWARD_POINTS = "award_points"
 CONF_BADGE_AWARD_REWARD = "award_reward"
 CONF_BADGE_AWARD_POINTS_REWARD = "award_points_reward"
-CONF_BADGE_CRITERIA_POINTS = "points"
 CONF_BADGE_DAILY_THRESHOLD = "daily_threshold"
 CONF_BADGE_DAILY_THRESHOLD_TYPE = "daily_threshold_type"
 CONF_BADGE_DESCRIPTION = "badge_description"
@@ -386,12 +380,10 @@ CONF_BADGE_MAINTENANCE_RULES = "maintenance_rules"
 CONF_BADGE_NAME = "badge_name"
 CONF_BADGE_OCCASION_DATE = "occasion_date"
 CONF_BADGE_OCCASION_TYPE = "occasion_type"
-CONF_BADGE_ONE_TIME_REWARD = "one_time_reward"
 CONF_BADGE_PERIOD = "period"
 CONF_BADGE_PERIODIC_RECURRENT = "recurrent"
 CONF_BADGE_POINTS_MULTIPLIER = "points_multiplier"
 CONF_BADGE_REQUIRED_CHORES = "required_chores"
-CONF_BADGE_RESET_CRITERIA = "reset_criteria"
 CONF_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"
 CONF_BADGE_RESET_PERIOD = "reset_period"
 CONF_BADGE_RESET_PERIODICALLY = "reset_periodically"
@@ -400,7 +392,6 @@ CONF_BADGE_SPECIAL_OCCASION_RECURRENCY = "recurrent"
 CONF_BADGE_START_DATE = "start_date"
 CONF_BADGE_THRESHOLD_TYPE = "threshold_type"
 CONF_BADGE_THRESOLD_VALUE = "threshold_value"
-CONF_BADGE_TRIGGER_INFO = "trigger_info"
 CONF_BADGE_TYPE = "badge_type"
 
 # Badge types
@@ -469,45 +460,20 @@ CONF_UPDATE_INTERVAL = "update_interval"
 
 # GLOBAL
 DATA_ACHIEVEMENTS = "achievements"
-DATA_APPLICABLE_DAYS = "applicable_days"
 DATA_ASSIGNED_KIDS = "assigned_kids"
 DATA_BADGES = "badges"
 DATA_BONUSES = "bonuses"
 DATA_CHALLENGES = "challenges"
 DATA_CHORES = "chores"
 DATA_COORDINATOR = "coordinator"
-DATA_CRITERIA = "criteria"
-DATA_CUSTOM_INTERVAL = "custom_interval"
-DATA_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
-DATA_DEFAULT_POINTS = "default_points"
-DATA_DUE_DATE = "due_date"
-DATA_ENABLE_NOTIFICATIONS = "enable_notifications"
 DATA_GLOBAL_STATE_SUFFIX = "_global_state"
-DATA_HA_USER = "ha_user"
-DATA_HA_USER_ID = "ha_user_id"
 DATA_INTERNAL_ID = "internal_id"
 DATA_KIDS = "kids"
 DATA_LAST_CHANGE = "last_change"
-DATA_LAST_CHORE_DATE = "last_chore_date"
-DATA_MAX_POINTS_EVER = "max_points_ever"
-DATA_MOBILE_NOTIFY_SERVICE = "mobile_notify_service"
 DATA_NAME = "name"
-DATA_NOTIFY_ON_APPROVAL = "notify_on_approval"
-DATA_NOTIFY_ON_CLAIM = "notify_on_claim"
-DATA_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
-DATA_OVERALL_CHORE_STREAK = "overall_chore_streak"
-DATA_OVERDUE_CHORES = "overdue_chores"
-DATA_OVERDUE_NOTIFICATIONS = "overdue_notifications"
 DATA_PARENTS = "parents"
 DATA_PENALTIES = "penalties"
-DATA_PENALTY_APPLIES = "penalty_applies"
-DATA_POINTS_EARNED_MONTHLY = "points_earned_monthly"
-DATA_POINTS_EARNED_TODAY = "points_earned_today"
-DATA_POINTS_EARNED_WEEKLY = "points_earned_weekly"
 DATA_PROGRESS = "progress"
-DATA_RECURRING_FREQUENCY = "recurring_frequency"
-DATA_REWARD_APPROVALS = "reward_approvals"
-DATA_REWARD_CLAIMS = "reward_claims"
 DATA_REWARDS = "rewards"
 
 # KIDS
@@ -518,7 +484,6 @@ DATA_KID_CHORE_APPROVALS = "chore_approvals"
 DATA_KID_CHORE_CLAIMS = "chore_claims"
 DATA_KID_CHORE_STREAKS = "chore_streaks"
 DATA_KID_CLAIMED_CHORES = "claimed_chores"
-DATA_KID_COMPLETED_CHORES_PREFIX = "completed_chores_"
 DATA_KID_COMPLETED_CHORES_MONTHLY = "completed_chores_monthly"
 DATA_KID_COMPLETED_CHORES_TOTAL = "completed_chores_total"
 DATA_KID_COMPLETED_CHORES_TODAY = "completed_chores_today"
@@ -702,8 +667,6 @@ DATA_CHALLENGE_TARGET_VALUE = "target_value"
 DATA_CHALLENGE_TYPE = "type"
 
 # Runtime Data Keys
-DATA_CHORE_APPROVALS = "chore_approvals"
-DATA_CHORE_CLAIMS = "chore_claims"
 DATA_PENDING_CHORE_APPROVALS = "pending_chore_approvals"
 DATA_PENDING_REWARD_APPROVALS = "pending_reward_approvals"
 
