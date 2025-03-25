@@ -1,21 +1,25 @@
 # File: kc_helpers.py
 """KidsChores helper functions and shared logic."""
 
-from typing import Optional
+from __future__ import annotations
+from typing import Optional, TYPE_CHECKING
 
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import User
 from homeassistant.helpers.label_registry import async_get
 
 from . import const
-from .coordinator import KidsChoresDataCoordinator
+
+if TYPE_CHECKING:
+    from .coordinator import KidsChoresDataCoordinator
 
 
 # -------- Get Coordinator --------
 def _get_kidschores_coordinator(
     hass: HomeAssistant,
-) -> KidsChoresDataCoordinator | None:
+) -> Optional[KidsChoresDataCoordinator]:
     """Retrieve KidsChores coordinator from hass.data."""
+
     domain_entries = hass.data.get(const.DOMAIN, {})
     if not domain_entries:
         return None

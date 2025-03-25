@@ -7,7 +7,6 @@ Manages entities primarily using internal_id for consistency.
 """
 
 import asyncio
-import uuid
 from calendar import monthrange
 from datetime import datetime, timedelta
 from typing import Any, Optional
@@ -22,6 +21,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from . import const
+from . import kc_helpers as kh
 from .storage_manager import KidsChoresStorageManager
 from .notification_helper import async_send_notification
 
@@ -725,127 +725,77 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
 
     def remove_deprecated_button_entities(self) -> None:
-        """Remove dynamic button entities that are no longer needed per current config."""
+        """Remove dynamic button entities that are not present in the current configuration."""
         ent_reg = er.async_get(self.hass)
         entry_prefix = f"{self.config_entry.entry_id}_"
-        for entity in list(ent_reg.entities.values()):
-            # Only process button domain and those that belong to our entry.
-            if entity.domain != "button" or not entity.unique_id.startswith(
+
+        # Build the set of expected unique_ids ("whitelist")
+        allowed_uids = set()
+
+        # --- Chore Buttons ---
+        # For each chore, create expected unique IDs for claim, approve, and disapprove buttons
+        for chore_id, chore_info in self.chores_data.items():
+            for kid_id in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
+                # Expected unique_id formats:
+                uid_claim = f"{self.config_entry.entry_id}_{kid_id}_{chore_id}{const.BUTTON_KC_UID_SUFFIX_CLAIM}"
+                uid_approve = f"{self.config_entry.entry_id}_{kid_id}_{chore_id}{const.BUTTON_KC_UID_SUFFIX_APPROVE}"
+                uid_disapprove = f"{self.config_entry.entry_id}_{kid_id}_{chore_id}{const.BUTTON_KC_UID_SUFFIX_DISAPPROVE}"
+                allowed_uids.update({uid_claim, uid_approve, uid_disapprove})
+
+        # --- Reward Buttons ---
+        # For each kid and reward, add expected unique IDs for reward claim, approve, and disapprove buttons.
+        for kid_id in self.kids_data.keys():
+            for reward_id in self.rewards_data.keys():
+                # The reward claim button might be built with a dedicated prefix:
+                uid_claim = f"{self.config_entry.entry_id}_{const.BUTTON_REWARD_PREFIX}{kid_id}_{reward_id}"
+                uid_approve = f"{self.config_entry.entry_id}_{kid_id}_{reward_id}{const.BUTTON_KC_UID_SUFFIX_APPROVE_REWARD}"
+                uid_disapprove = f"{self.config_entry.entry_id}_{kid_id}_{reward_id}{const.BUTTON_KC_UID_SUFFIX_DISAPPROVE_REWARD}"
+                allowed_uids.update({uid_claim, uid_approve, uid_disapprove})
+
+        # --- Penalty Buttons ---
+        for kid_id in self.kids_data.keys():
+            for penalty_id in self.penalties_data.keys():
+                uid = f"{self.config_entry.entry_id}_{const.BUTTON_PENALTY_PREFIX}{kid_id}_{penalty_id}"
+                allowed_uids.add(uid)
+
+        # --- Bonus Buttons ---
+        for kid_id in self.kids_data.keys():
+            for bonus_id in self.bonuses_data.keys():
+                uid = f"{self.config_entry.entry_id}_{const.BUTTON_BONUS_PREFIX}{kid_id}_{bonus_id}"
+                allowed_uids.add(uid)
+
+        # --- Points Adjust Buttons ---
+        # Determine the list of adjustment delta values from configuration or defaults.
+        raw_values = self.config_entry.options.get(const.CONF_POINTS_ADJUST_VALUES)
+        if not raw_values:
+            points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
+        elif isinstance(raw_values, str):
+            points_adjust_values = kh.parse_points_adjust_values(raw_values)
+            if not points_adjust_values:
+                points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
+        elif isinstance(raw_values, list):
+            try:
+                points_adjust_values = [float(v) for v in raw_values]
+            except (ValueError, TypeError):
+                points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
+        else:
+            points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
+
+        for kid_id in self.kids_data.keys():
+            for delta in points_adjust_values:
+                uid = f"{self.config_entry.entry_id}_{kid_id}{const.BUTTON_KC_UID_MIDFIX_ADJUST_POINTS}{delta}"
+                allowed_uids.add(uid)
+
+        # --- Now remove any button entity whose unique_id is not in allowed_uids ---
+        for entity_entry in list(ent_reg.entities.values()):
+            if entity_entry.domain != "button" or not entity_entry.unique_id.startswith(
                 entry_prefix
             ):
                 continue
-
-            uid = entity.unique_id
-            remove_entity = False
-            parts = uid.split("_")
-            # Points Adjust buttons: Format: {entry_id}_{kid_id}_adjust_points_{delta}
-            if "adjust_points" in uid:
-                # Expecting: [entry_id, kid_id, "adjust", "points", delta]
-                if len(parts) < 5:
-                    remove_entity = True
-                else:
-                    kid_id = parts[1]
-                    delta_str = parts[4]
-                    # Only keep points adjust buttons whose delta part includes a decimal.
-                    if kid_id not in self.kids_data or "." not in delta_str:
-                        remove_entity = True
-
-            # Chore Claim/Approval buttons: Format: {entry_id}_{kid_id}_{chore_id}_claim or _approval
-            elif "chore_claim" in uid or "chore_approval" in uid:
-                # Expecting: [entry_id, kid_id, chore_id, ("claim" or "approval")]
-                if len(parts) < 4:
-                    remove_entity = True
-                else:
-                    kid_id = parts[1]
-                    chore_id = parts[2]
-                    if kid_id not in self.kids_data or chore_id not in self.chores_data:
-                        remove_entity = True
-
-            # Chore Disapproval buttons: Format: {entry_id}_chore_disapproval_{kid_id}_{chore_id}
-            elif "chore_disapproval" in uid:
-                # Expecting: [entry_id, "chore", "disapproval", kid_id, chore_id]
-                if len(parts) < 5:
-                    remove_entity = True
-                else:
-                    kid_id = parts[3]
-                    chore_id = parts[4]
-                    if kid_id not in self.kids_data or chore_id not in self.chores_data:
-                        remove_entity = True
-
-            # Reward Claim buttons: Format: {entry_id}_reward_claim_{kid_id}_{reward_id}
-            elif "reward_claim" in uid:
-                # Expecting: [entry_id, "reward", "claim", kid_id, reward_id]
-                if len(parts) < 5:
-                    remove_entity = True
-                else:
-                    kid_id = parts[3]
-                    reward_id = parts[4]
-                    if (
-                        kid_id not in self.kids_data
-                        or reward_id not in self.rewards_data
-                    ):
-                        remove_entity = True
-
-            # Approve Reward buttons: Format: {entry_id}_{kid_id}_{reward_id}_approve_reward
-            elif "approve_reward" in uid and "reward_disapproval" not in uid:
-                # Expecting: [entry_id, kid_id, reward_id, "approve", "reward"]
-                if len(parts) < 5:
-                    remove_entity = True
-                else:
-                    kid_id = parts[1]
-                    reward_id = parts[2]
-                    if (
-                        kid_id not in self.kids_data
-                        or reward_id not in self.rewards_data
-                    ):
-                        remove_entity = True
-
-            # Reward Disapproval buttons: Format: {entry_id}_reward_disapproval_{kid_id}_{reward_id}
-            elif "reward_disapproval" in uid:
-                # Expecting: [entry_id, "reward", "disapproval", kid_id, reward_id]
-                if len(parts) < 5:
-                    remove_entity = True
-                else:
-                    kid_id = parts[3]
-                    reward_id = parts[4]
-                    if (
-                        kid_id not in self.kids_data
-                        or reward_id not in self.rewards_data
-                    ):
-                        remove_entity = True
-
-            # Penalty buttons: Format: {entry_id}_penalty_button_{kid_id}_{penalty_id}
-            elif "penalty_button" in uid:
-                # Expecting: [entry_id, "penalty", "button", kid_id, penalty_id]
-                if len(parts) < 5:
-                    remove_entity = True
-                else:
-                    kid_id = parts[3]
-                    penalty_id = parts[4]
-                    if (
-                        kid_id not in self.kids_data
-                        or penalty_id not in self.penalties_data
-                    ):
-                        remove_entity = True
-
-            # Bonus buttons: Format: {entry_id}_bonus_button_{kid_id}_{bonus_id}
-            elif "bonus_button" in uid:
-                # Expecting: [entry_id, "bonus", "button", kid_id, bonus_id]
-                if len(parts) < 5:
-                    remove_entity = True
-                else:
-                    kid_id = parts[3]
-                    bonus_id = parts[4]
-                    if (
-                        kid_id not in self.kids_data
-                        or bonus_id not in self.bonuses_data
-                    ):
-                        remove_entity = True
-
-            if remove_entity:
-                ent_reg.async_remove(entity.entity_id)
+            if entity_entry.unique_id not in allowed_uids:
+                ent_reg.async_remove(entity_entry.entity_id)
                 const.LOGGER.debug(
-                    "Removed deprecated button entity: %s", entity.entity_id
+                    "Removed deprecated button entity: %s", entity_entry.entity_id
                 )
 
     # -------------------------------------------------------------------------------------
@@ -3242,7 +3192,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         const.LOGGER.info("Badge recalculation complete")
 
     # -------------------------------------------------------------------------------------
-    # Penalties: Apply, Add
+    # Penalties: Apply
     # -------------------------------------------------------------------------------------
 
     def apply_penalty(self, parent_name: str, kid_id: str, penalty_id: str):
@@ -3279,42 +3229,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._persist()
         self.async_set_updated_data(self._data)
 
-    def add_penalty(self, penalty_def: dict[str, Any]):
-        """Add new penalty at runtime if needed."""
-        penalty_name = penalty_def.get(const.DATA_PENALTY_NAME)
-        if not penalty_name:
-            const.LOGGER.warning("Add penalty: Penalty must have a name")
-            return
-        if any(
-            p[const.DATA_PENALTY_NAME] == penalty_name
-            for p in self.penalties_data.values()
-        ):
-            const.LOGGER.warning(
-                "Add penalty: Penalty '%s' already exists", penalty_name
-            )
-            return
-        internal_id = str(uuid.uuid4())
-        self.penalties_data[internal_id] = {
-            const.DATA_PENALTY_NAME: penalty_name,
-            const.DATA_PENALTY_POINTS: penalty_def.get(
-                const.DATA_PENALTY_POINTS, -const.DEFAULT_PENALTY_POINTS
-            ),
-            const.DATA_PENALTY_DESCRIPTION: penalty_def.get(
-                const.DATA_PENALTY_DESCRIPTION, const.CONF_EMPTY
-            ),
-            const.DATA_PENALTY_ICON: penalty_def.get(
-                const.DATA_PENALTY_ICON, const.DEFAULT_PENALTY_ICON
-            ),
-            const.DATA_PENALTY_INTERNAL_ID: internal_id,
-        }
-        const.LOGGER.debug(
-            "Added new penalty '%s' with ID: %s", penalty_name, internal_id
-        )
-        self._persist()
-        self.async_set_updated_data(self._data)
-
     # -------------------------------------------------------------------------
-    # Bonuses: Apply, Add
+    # Bonuses: Apply
     # -------------------------------------------------------------------------
 
     def apply_bonus(self, parent_name: str, kid_id: str, bonus_id: str):
@@ -3348,35 +3264,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
         )
 
-        self._persist()
-        self.async_set_updated_data(self._data)
-
-    def add_bonus(self, bonus_def: dict[str, Any]):
-        """Add new bonus at runtime if needed."""
-        bonus_name = bonus_def.get(const.DATA_BONUS_NAME)
-        if not bonus_name:
-            const.LOGGER.warning("Add bonus: Bonus must have a name")
-            return
-        if any(
-            s[const.DATA_BONUS_NAME] == bonus_name for s in self.bonuses_data.values()
-        ):
-            const.LOGGER.warning("Add bonus: Bonus '%s' already exists", bonus_name)
-            return
-        internal_id = str(uuid.uuid4())
-        self.bonuses_data[internal_id] = {
-            const.DATA_BONUS_NAME: bonus_name,
-            const.DATA_BONUS_POINTS: bonus_def.get(
-                const.DATA_BONUS_POINTS, const.DEFAULT_BONUS_POINTS
-            ),
-            const.DATA_BONUS_DESCRIPTION: bonus_def.get(
-                const.DATA_BONUS_DESCRIPTION, const.CONF_EMPTY
-            ),
-            const.DATA_BONUS_ICON: bonus_def.get(
-                const.DATA_BONUS_ICON, const.DEFAULT_BONUS_ICON
-            ),
-            const.DATA_BONUS_INTERNAL_ID: internal_id,
-        }
-        const.LOGGER.debug("Added new bonus '%s' with ID: %s", bonus_name, internal_id)
         self._persist()
         self.async_set_updated_data(self._data)
 

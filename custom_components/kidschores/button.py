@@ -6,7 +6,7 @@ Features:
 2) Reward Buttons using user-defined or default icons.
 3) Penalty Buttons using user-defined or default icons.
 4) Bonus Buttons using user-defined or default icons.
-5) PointsAdjustButton: manually increments/decrements a kid's points (e.g., +1, -1, +2, -2, etc.).
+5) PointsAdjustButton: manually increments/decrements a kid's points.
 6) ApproveRewardButton: allows parents to approve rewards claimed by kids.
 
 """
@@ -29,15 +29,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ):
-    """Set up dynamic buttons.
-
-    - Chores (Claim & Approve & Disapprove)
-    - Rewards (Redeem & Approve & Disapprove)
-    - Penalties
-    - Kid points adjustments (e.g., +1, -1, +10, -10, etc.)
-    - Approve Reward Workflow
-
-    """
+    """Set up dynamic buttons."""
     data = hass.data[const.DOMAIN][entry.entry_id]
     coordinator: KidsChoresDataCoordinator = data[const.COORDINATOR]
 
@@ -49,16 +41,25 @@ async def async_setup_entry(
 
     # Create buttons for chores (Claim, Approve & Disapprove)
     for chore_id, chore_info in coordinator.chores_data.items():
-        chore_name = chore_info.get("name", f"Chore {chore_id}")
-        assigned_kids_ids = chore_info.get("assigned_kids", [])
+        chore_name = chore_info.get(
+            const.DATA_CHORE_NAME, f"{const.TRANS_KEY_LABEL_CHORE} {chore_id}"
+        )
+        assigned_kids_ids = chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
 
         # If user defined an icon, use it; else fallback to default for chore claim
-        chore_claim_icon = chore_info.get("icon", const.DEFAULT_CHORE_CLAIM_ICON)
+        chore_claim_icon = chore_info.get(
+            const.DATA_CHORE_ICON, const.DEFAULT_CHORE_CLAIM_ICON
+        )
         # For "approve," use a distinct icon
-        chore_approve_icon = chore_info.get("icon", const.DEFAULT_CHORE_APPROVE_ICON)
+        chore_approve_icon = chore_info.get(
+            const.DATA_CHORE_ICON, const.DEFAULT_CHORE_APPROVE_ICON
+        )
 
         for kid_id in assigned_kids_ids:
-            kid_name = coordinator._get_kid_name_by_id(kid_id) or f"Kid {kid_id}"
+            kid_name = (
+                coordinator._get_kid_name_by_id(kid_id)
+                or f"{const.TRANS_KEY_LABEL_KID} {kid_id}"
+            )
             # Claim Button
             entities.append(
                 ClaimChoreButton(
@@ -97,10 +98,14 @@ async def async_setup_entry(
 
     # Create reward buttons (Redeem, Approve & Disapprove)
     for kid_id, kid_info in coordinator.kids_data.items():
-        kid_name = kid_info.get("name", f"Kid {kid_id}")
+        kid_name = kid_info.get(
+            const.DATA_KID_NAME, f"{const.TRANS_KEY_LABEL_KID} {kid_id}"
+        )
         for reward_id, reward_info in coordinator.rewards_data.items():
             # If no user-defined icon, fallback to const.DEFAULT_REWARD_ICON
-            reward_icon = reward_info.get("icon", const.DEFAULT_REWARD_ICON)
+            reward_icon = reward_info.get(
+                const.DATA_REWARD_ICON, const.DEFAULT_REWARD_ICON
+            )
             # Redeem Reward Button
             entities.append(
                 RewardButton(
@@ -109,7 +114,10 @@ async def async_setup_entry(
                     kid_id=kid_id,
                     kid_name=kid_name,
                     reward_id=reward_id,
-                    reward_name=reward_info.get("name", f"Reward {reward_id}"),
+                    reward_name=reward_info.get(
+                        const.DATA_REWARD_NAME,
+                        f"{const.TRANS_KEY_LABEL_REWARD} {reward_id}",
+                    ),
                     icon=reward_icon,
                 )
             )
@@ -121,8 +129,13 @@ async def async_setup_entry(
                     kid_id=kid_id,
                     kid_name=kid_name,
                     reward_id=reward_id,
-                    reward_name=reward_info.get("name", f"Reward {reward_id}"),
-                    icon=reward_info.get("icon", const.DEFAULT_REWARD_ICON),
+                    reward_name=reward_info.get(
+                        const.DATA_REWARD_NAME,
+                        f"{const.TRANS_KEY_LABEL_REWARD} {reward_id}",
+                    ),
+                    icon=reward_info.get(
+                        const.DATA_REWARD_ICON, const.DEFAULT_REWARD_ICON
+                    ),
                 )
             )
             # Disapprove Reward Button
@@ -133,16 +146,23 @@ async def async_setup_entry(
                     kid_id=kid_id,
                     kid_name=kid_name,
                     reward_id=reward_id,
-                    reward_name=reward_info.get("name", f"Reward {reward_id}"),
+                    reward_name=reward_info.get(
+                        const.DATA_REWARD_NAME,
+                        f"{const.TRANS_KEY_LABEL_REWARD} {reward_id}",
+                    ),
                 )
             )
 
     # Create penalty buttons
     for kid_id, kid_info in coordinator.kids_data.items():
-        kid_name = kid_info.get("name", f"Kid {kid_id}")
+        kid_name = kid_info.get(
+            const.DATA_KID_NAME, f"{const.TRANS_KEY_LABEL_KID} {kid_id}"
+        )
         for penalty_id, penalty_info in coordinator.penalties_data.items():
             # If no user-defined icon, fallback to const.DEFAULT_PENALTY_ICON
-            penalty_icon = penalty_info.get("icon", const.DEFAULT_PENALTY_ICON)
+            penalty_icon = penalty_info.get(
+                const.DATA_PENALTY_ICON, const.DEFAULT_PENALTY_ICON
+            )
             entities.append(
                 PenaltyButton(
                     coordinator=coordinator,
@@ -150,17 +170,22 @@ async def async_setup_entry(
                     kid_id=kid_id,
                     kid_name=kid_name,
                     penalty_id=penalty_id,
-                    penalty_name=penalty_info.get("name", f"Penalty {penalty_id}"),
+                    penalty_name=penalty_info.get(
+                        const.DATA_PENALTY_NAME,
+                        f"{const.TRANS_KEY_LABEL_PENALTY} {penalty_id}",
+                    ),
                     icon=penalty_icon,
                 )
             )
 
     # Create bonus buttons
     for kid_id, kid_info in coordinator.kids_data.items():
-        kid_name = kid_info.get("name", f"Kid {kid_id}")
+        kid_name = kid_info.get(
+            const.DATA_KID_NAME, f"{const.TRANS_KEY_LABEL_KID} {kid_id}"
+        )
         for bonus_id, bonus_info in coordinator.bonuses_data.items():
             # If no user-defined icon, fallback to const.DEFAULT_BONUS_ICON
-            bonus_icon = bonus_info.get("icon", const.DEFAULT_BONUS_ICON)
+            bonus_icon = bonus_info.get(const.DATA_BONUS_ICON, const.DEFAULT_BONUS_ICON)
             entities.append(
                 BonusButton(
                     coordinator=coordinator,
@@ -168,7 +193,10 @@ async def async_setup_entry(
                     kid_id=kid_id,
                     kid_name=kid_name,
                     bonus_id=bonus_id,
-                    bonus_name=bonus_info.get("name", f"Bonus {bonus_id}"),
+                    bonus_name=bonus_info.get(
+                        const.DATA_BONUS_NAME,
+                        f"{const.TRANS_KEY_LABEL_BONUS} {bonus_id}",
+                    ),
                     icon=bonus_icon,
                 )
             )
@@ -202,7 +230,9 @@ async def async_setup_entry(
 
     # Create a points adjust button for each kid and each delta value
     for kid_id, kid_info in coordinator.kids_data.items():
-        kid_name = kid_info.get(const.DATA_KID_NAME, f"Kid {kid_id}")
+        kid_name = kid_info.get(
+            const.DATA_KID_NAME, f"{const.TRANS_KEY_LABEL_KID} {kid_id}"
+        )
         for delta in points_adjust_values:
             const.LOGGER.debug(
                 "Creating PointsAdjustButton for kid %s with delta %s", kid_name, delta
@@ -226,7 +256,7 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
     """Button to claim a chore as done (set chore state=claimed)."""
 
     _attr_has_entity_name = True
-    _attr_translation_key = "claim_chore_button"
+    _attr_translation_key = const.TRANS_KEY_BUTTON_CLAIM_CHORE_BUTTON
 
     def __init__(
         self,
@@ -246,13 +276,15 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
         self._kid_name = kid_name
         self._chore_id = chore_id
         self._chore_name = chore_name
-        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_{chore_id}_claim"
+        self._attr_unique_id = (
+            f"{entry.entry_id}_{kid_id}_{chore_id}{const.BUTTON_KC_UID_SUFFIX_CLAIM}"
+        )
         self._attr_icon = icon
         self._attr_translation_placeholders = {
-            "kid_name": kid_name,
-            "chore_name": chore_name,
+            const.TRANS_KEY_BUTTON_ATTR_KID_NAME: kid_name,
+            const.TRANS_KEY_BUTTON_ATTR_CHORE_NAME: chore_name,
         }
-        self.entity_id = f"button.kc_{kid_name}_chore_claim_{chore_name}"
+        self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_CHORE_CLAIM}{chore_name}"
 
     async def async_press(self):
         """Handle the button press event."""
@@ -262,11 +294,13 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
                 self.hass, user_id, self._kid_id
             ):
                 raise HomeAssistantError(
-                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("claim chores")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format(
+                        const.TRANS_KEY_FMT_ERROR_CLAIM_CHORES
+                    )
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            user_name = user_obj.name if user_obj else "Unknown"
+            user_name = user_obj.name if user_obj else const.CONF_UNKNOWN
 
             self.coordinator.claim_chore(
                 kid_id=self._kid_id,
@@ -300,7 +334,7 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
     def extra_state_attributes(self):
         """Include extra state attributes for the button."""
         chore_info = self.coordinator.chores_data.get(self._chore_id, {})
-        stored_labels = chore_info.get("chore_labels", [])
+        stored_labels = chore_info.get(const.DATA_CHORE_LABELS, [])
         friendly_labels = [
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
@@ -316,7 +350,7 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
     """Button to approve a claimed chore for a kid (set chore state=approved or partial)."""
 
     _attr_has_entity_name = True
-    _attr_translation_key = "approve_chore_button"
+    _attr_translation_key = const.TRANS_KEY_BUTTON_APPROVE_CHORE_BUTTON
 
     def __init__(
         self,
@@ -336,27 +370,31 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
         self._kid_name = kid_name
         self._chore_id = chore_id
         self._chore_name = chore_name
-        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_{chore_id}_approve"
+        self._attr_unique_id = (
+            f"{entry.entry_id}_{kid_id}_{chore_id}{const.BUTTON_KC_UID_SUFFIX_APPROVE}"
+        )
         self._attr_icon = icon
         self._attr_translation_placeholders = {
-            "kid_name": kid_name,
-            "chore_name": chore_name,
+            const.TRANS_KEY_BUTTON_ATTR_KID_NAME: kid_name,
+            const.TRANS_KEY_BUTTON_ATTR_CHORE_NAME: chore_name,
         }
-        self.entity_id = f"button.kc_{kid_name}_chore_approval_{chore_name}"
+        self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_CHORE_APPROVAL}{chore_name}"
 
     async def async_press(self):
         """Handle the button press event."""
         try:
             user_id = self._context.user_id if self._context else None
             if user_id and not await kh.is_user_authorized_for_global_action(
-                self.hass, user_id, "approve_chore"
+                self.hass, user_id, const.SERVICE_APPROVE_CHORE
             ):
                 raise HomeAssistantError(
-                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("approve chores")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format(
+                        const.TRANS_KEY_FMT_ERROR_APPROVE_CHORES
+                    )
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else "ParentOrAdmin"
+            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
 
             self.coordinator.approve_chore(
                 parent_name=parent_name,
@@ -389,7 +427,7 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
     def extra_state_attributes(self):
         """Include extra state attributes for the button."""
         chore_info = self.coordinator.chores_data.get(self._chore_id, {})
-        stored_labels = chore_info.get("chore_labels", [])
+        stored_labels = chore_info.get(const.DATA_CHORE_LABELS, [])
         friendly_labels = [
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
@@ -405,7 +443,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
     """Button to disapprove a chore."""
 
     _attr_has_entity_name = True
-    _attr_translation_key = "disapprove_chore_button"
+    _attr_translation_key = const.TRANS_KEY_BUTTON_DISAPPROVE_CHORE_BUTTON
 
     def __init__(
         self,
@@ -424,13 +462,13 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
         self._kid_name = kid_name
         self._chore_id = chore_id
         self._chore_name = chore_name
-        self._attr_unique_id = f"{entry.entry_id}_{const.BUTTON_DISAPPROVE_CHORE_PREFIX}{kid_id}_{chore_id}"
+        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_{chore_id}{const.BUTTON_KC_UID_SUFFIX_DISAPPROVE}"
         self._attr_icon = icon
         self._attr_translation_placeholders = {
-            "kid_name": kid_name,
-            "chore_name": chore_name,
+            const.TRANS_KEY_BUTTON_ATTR_KID_NAME: kid_name,
+            const.TRANS_KEY_BUTTON_ATTR_CHORE_NAME: chore_name,
         }
-        self.entity_id = f"button.kc_{kid_name}_chore_disapproval_{chore_name}"
+        self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_CHORE_DISAPPROVAL}{chore_name}"
 
     async def async_press(self):
         """Handle the button press event."""
@@ -440,8 +478,8 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
                 const.DATA_PENDING_CHORE_APPROVALS, []
             )
             if not any(
-                approval["kid_id"] == self._kid_id
-                and approval["chore_id"] == self._chore_id
+                approval[const.DATA_KID_ID] == self._kid_id
+                and approval[const.DATA_CHORE_ID] == self._chore_id
                 for approval in pending_approvals
             ):
                 raise HomeAssistantError(
@@ -450,14 +488,16 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
 
             user_id = self._context.user_id if self._context else None
             if user_id and not await kh.is_user_authorized_for_global_action(
-                self.hass, user_id, "disapprove_chore"
+                self.hass, user_id, const.SERVICE_DISAPPROVE_CHORE
             ):
                 raise HomeAssistantError(
-                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("disapprove chores")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format(
+                        const.TRANS_KEY_FMT_ERROR_DISAPPROVE_CHORES
+                    )
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else "ParentOrAdmin"
+            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
 
             self.coordinator.disapprove_chore(
                 parent_name=parent_name,
@@ -491,7 +531,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
     def extra_state_attributes(self):
         """Include extra state attributes for the button."""
         chore_info = self.coordinator.chores_data.get(self._chore_id, {})
-        stored_labels = chore_info.get("chore_labels", [])
+        stored_labels = chore_info.get(const.DATA_CHORE_LABELS, [])
         friendly_labels = [
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
@@ -508,7 +548,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
     """Button to redeem a reward for a kid."""
 
     _attr_has_entity_name = True
-    _attr_translation_key = "claim_reward_button"
+    _attr_translation_key = const.TRANS_KEY_BUTTON_CLAIM_REWARD_BUTTON
 
     def __init__(
         self,
@@ -532,10 +572,10 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
         )
         self._attr_icon = icon
         self._attr_translation_placeholders = {
-            "kid_name": kid_name,
-            "reward_name": reward_name,
+            const.TRANS_KEY_BUTTON_ATTR_KID_NAME: kid_name,
+            const.TRANS_KEY_BUTTON_ATTR_REWARD_NAME: reward_name,
         }
-        self.entity_id = f"button.kc_{kid_name}_reward_claim_{reward_name}"
+        self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_REWARD_CLAIM}{reward_name}"
 
     async def async_press(self):
         """Handle the button press event."""
@@ -545,11 +585,13 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
                 self.hass, user_id, self._kid_id
             ):
                 raise HomeAssistantError(
-                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("redeem rewards")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format(
+                        const.TRANS_KEY_FMT_ERROR_REDEEM_REWARDS
+                    )
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else "Unknown"
+            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
 
             self.coordinator.redeem_reward(
                 parent_name=parent_name,
@@ -583,7 +625,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
     def extra_state_attributes(self):
         """Include extra state attributes for the button."""
         reward_info = self.coordinator.rewards_data.get(self._reward_id, {})
-        stored_labels = reward_info.get("reward_labels", [])
+        stored_labels = reward_info.get(const.DATA_REWARD_LABELS, [])
         friendly_labels = [
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
@@ -602,7 +644,7 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
     """
 
     _attr_has_entity_name = True
-    _attr_translation_key = "approve_reward_button"
+    _attr_translation_key = const.TRANS_KEY_BUTTON_APPROVE_REWARD_BUTTON
 
     def __init__(
         self,
@@ -622,27 +664,29 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
         self._kid_name = kid_name
         self._reward_id = reward_id
         self._reward_name = reward_name
-        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_{reward_id}_approve_reward"
+        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_{reward_id}{const.BUTTON_KC_UID_SUFFIX_APPROVE_REWARD}"
         self._attr_icon = icon
         self._attr_translation_placeholders = {
-            "kid_name": kid_name,
-            "reward_name": reward_name,
+            const.TRANS_KEY_BUTTON_ATTR_KID_NAME: kid_name,
+            const.TRANS_KEY_BUTTON_ATTR_REWARD_NAME: reward_name,
         }
-        self.entity_id = f"button.kc_{kid_name}_reward_approval_{reward_name}"
+        self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_REWARD_APPROVAL}{reward_name}"
 
     async def async_press(self):
         """Handle the button press event."""
         try:
             user_id = self._context.user_id if self._context else None
             if user_id and not await kh.is_user_authorized_for_global_action(
-                self.hass, user_id, "approve_reward"
+                self.hass, user_id, const.SERVICE_APPROVE_REWARD
             ):
                 raise HomeAssistantError(
-                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("approve rewards")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format(
+                        const.TRANS_KEY_FMT_ERROR_APPROVE_REWARDS
+                    )
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else "ParentOrAdmin"
+            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
 
             # Approve the reward
             self.coordinator.approve_reward(
@@ -666,13 +710,6 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
                 self._kid_name,
                 e,
             )
-            # Send a persistent notification for the error
-            if user_id:
-                self.hass.components.persistent_notification.create(
-                    f"Failed to approve reward '{self._reward_name}' for {self._kid_name}: {e}",
-                    title="Reward Approval Failed",
-                    notification_id=f"approve_reward_error_{self._reward_id}",
-                )
         except Exception as e:
             const.LOGGER.error(
                 "Failed to approve reward '%s' for kid '%s': %s",
@@ -680,19 +717,12 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
                 self._kid_name,
                 e,
             )
-            # Send a persistent notification for the unexpected error
-            if user_id:
-                self.hass.components.persistent_notification.create(
-                    f"An unexpected error occurred while approving reward '{self._reward_name}' for {self._kid_name}",
-                    title="Reward Approval Error",
-                    notification_id=f"approve_reward_unexpected_error_{self._reward_id}",
-                )
 
     @property
     def extra_state_attributes(self):
         """Include extra state attributes for the button."""
         reward_info = self.coordinator.rewards_data.get(self._reward_id, {})
-        stored_labels = reward_info.get("reward_labels", [])
+        stored_labels = reward_info.get(const.DATA_REWARD_LABELS, [])
         friendly_labels = [
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
@@ -708,7 +738,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
     """Button to disapprove a reward."""
 
     _attr_has_entity_name = True
-    _attr_translation_key = "disapprove_reward_button"
+    _attr_translation_key = const.TRANS_KEY_BUTTON_DISAPPROVE_REWARD_BUTTON
 
     def __init__(
         self,
@@ -727,13 +757,13 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
         self._kid_name = kid_name
         self._reward_id = reward_id
         self._reward_name = reward_name
-        self._attr_unique_id = f"{entry.entry_id}_{const.BUTTON_DISAPPROVE_REWARD_PREFIX}{kid_id}_{reward_id}"
+        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_{reward_id}{const.BUTTON_KC_UID_SUFFIX_DISAPPROVE_REWARD}"
         self._attr_icon = icon
         self._attr_translation_placeholders = {
-            "kid_name": kid_name,
-            "reward_name": reward_name,
+            const.TRANS_KEY_BUTTON_ATTR_KID_NAME: kid_name,
+            const.TRANS_KEY_BUTTON_ATTR_REWARD_NAME: reward_name,
         }
-        self.entity_id = f"button.kc_{kid_name}_reward_disapproval_{reward_name}"
+        self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_REWARD_DISAPPROVAL}{reward_name}"
 
     async def async_press(self):
         """Handle the button press event."""
@@ -743,8 +773,8 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
                 const.DATA_PENDING_REWARD_APPROVALS, []
             )
             if not any(
-                approval["kid_id"] == self._kid_id
-                and approval["reward_id"] == self._reward_id
+                approval[const.DATA_KID_ID] == self._kid_id
+                and approval[const.DATA_REWARD_ID] == self._reward_id
                 for approval in pending_approvals
             ):
                 raise HomeAssistantError(
@@ -753,14 +783,16 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
 
             user_id = self._context.user_id if self._context else None
             if user_id and not await kh.is_user_authorized_for_global_action(
-                self.hass, user_id, "disapprove_reward"
+                self.hass, user_id, const.SERVICE_DISAPPROVE_REWARD
             ):
                 raise HomeAssistantError(
-                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("disapprove rewards")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format(
+                        const.TRANS_KEY_FMT_ERROR_DISAPPROVE_REWARDS
+                    )
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else "ParentOrAdmin"
+            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
 
             self.coordinator.disapprove_reward(
                 parent_name=parent_name,
@@ -794,7 +826,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
     def extra_state_attributes(self):
         """Include extra state attributes for the button."""
         reward_info = self.coordinator.rewards_data.get(self._reward_id, {})
-        stored_labels = reward_info.get("reward_labels", [])
+        stored_labels = reward_info.get(const.DATA_REWARD_LABELS, [])
         friendly_labels = [
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
@@ -808,13 +840,10 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
 
 # ------------------ Penalty Button ------------------
 class PenaltyButton(CoordinatorEntity, ButtonEntity):
-    """Button to apply a penalty for a kid.
-
-    Uses user-defined or default penalty icon.
-    """
+    """Button to apply a penalty for a kid."""
 
     _attr_has_entity_name = True
-    _attr_translation_key = "penalty_button"
+    _attr_translation_key = const.TRANS_KEY_BUTTON_PENALTY_BUTTON
 
     def __init__(
         self,
@@ -839,24 +868,26 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
         )
         self._attr_icon = icon
         self._attr_translation_placeholders = {
-            "kid_name": kid_name,
-            "penalty_name": penalty_name,
+            const.TRANS_KEY_BUTTON_ATTR_KID_NAME: kid_name,
+            const.TRANS_KEY_BUTTON_ATTR_PENALTY_NAME: penalty_name,
         }
-        self.entity_id = f"button.kc_{kid_name}_penalty_{penalty_name}"
+        self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_PENALTY}{penalty_name}"
 
     async def async_press(self):
         """Handle the button press event."""
         try:
             user_id = self._context.user_id if self._context else None
             if user_id and not await kh.is_user_authorized_for_global_action(
-                self.hass, user_id, "apply_penalty"
+                self.hass, user_id, const.SERVICE_APPLY_PENALTY
             ):
                 raise HomeAssistantError(
-                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("apply penalties")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format(
+                        const.TRANS_KEY_FMT_ERROR_APPLY_PENALTIES
+                    )
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else "Unknown"
+            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
 
             self.coordinator.apply_penalty(
                 parent_name=parent_name,
@@ -890,7 +921,7 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
     def extra_state_attributes(self):
         """Include extra state attributes for the button."""
         penalty_info = self.coordinator.penalties_data.get(self._penalty_id, {})
-        stored_labels = penalty_info.get("penalty_labels", [])
+        stored_labels = penalty_info.get(const.DATA_PENALTY_LABELS, [])
         friendly_labels = [
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
@@ -904,14 +935,10 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
 
 # ------------------ Points Adjust Button ------------------
 class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
-    """Button that increments or decrements a kid's points by 'delta'.
-
-    For example: +1, -1, +10, -10, etc.
-    Uses icons from const.py for plus/minus, or fallback if desired.
-    """
+    """Button that increments or decrements a kid's points by 'delta'."""
 
     _attr_has_entity_name = True
-    _attr_translation_key = "manual_adjustment_button"
+    _attr_translation_key = const.TRANS_KEY_BUTTON_MANUAL_ADJUSTMENT_BUTTON
 
     def __init__(
         self,
@@ -931,15 +958,23 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
         self._delta = delta
         self._points_label = str(points_label)
 
-        sign_label = f"+{delta}" if delta >= 0 else f"{delta}"
-        sign_text = f"plus_{delta}" if delta >= 0 else f"minus_{delta}"
-        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_adjust_points_{delta}"
+        sign_label = (
+            f"{const.TRANS_KEY_BUTTON_DELTA_PLUS_LABEL}{delta}"
+            if delta >= 0
+            else f"{delta}"
+        )
+        sign_text = (
+            f"{const.TRANS_KEY_BUTTON_DELTA_PLUS_TEXT}{delta}"
+            if delta >= 0
+            else f"{const.TRANS_KEY_BUTTON_DELTA_MINUS_TEXT}{delta}"
+        )
+        self._attr_unique_id = f"{entry.entry_id}_{kid_id}{const.BUTTON_KC_UID_MIDFIX_ADJUST_POINTS}{delta}"
         self._attr_translation_placeholders = {
-            "kid_name": kid_name,
-            "sign_label": sign_label,
-            "points_label": points_label,
+            const.TRANS_KEY_BUTTON_ATTR_KID_NAME: kid_name,
+            const.TRANS_KEY_BUTTON_ATTR_SIGN_LABEL: sign_label,
+            const.TRANS_KEY_BUTTON_ATTR_POINTS_LABEL: points_label,
         }
-        self.entity_id = f"button.kc_{kid_name}_{sign_text}_points"
+        self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}_{sign_text}{const.BUTTON_KC_EID_SUFFIX_POINTS}"
 
         # Decide the icon based on whether delta is positive or negative
         if delta >= 2:
@@ -958,13 +993,17 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
         try:
             user_id = self._context.user_id if self._context else None
             if user_id and not await kh.is_user_authorized_for_global_action(
-                self.hass, user_id, "adjust_points"
+                self.hass, user_id, const.SERVICE_ADJUST_POINTS
             ):
                 raise HomeAssistantError(
-                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("adjust points")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format(
+                        const.TRANS_KEY_FMT_ERROR_ADJUST_POINTS
+                    )
                 )
 
-            current_points = self.coordinator.kids_data[self._kid_id]["points"]
+            current_points = self.coordinator.kids_data[self._kid_id][
+                const.DATA_KID_POINTS
+            ]
             new_points = current_points + self._delta
             self.coordinator.update_kid_points(
                 kid_id=self._kid_id,
@@ -995,13 +1034,10 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
 
 
 class BonusButton(CoordinatorEntity, ButtonEntity):
-    """Button to apply a bonus for a kid.
-
-    Uses user-defined or default bonus icon.
-    """
+    """Button to apply a bonus for a kid."""
 
     _attr_has_entity_name = True
-    _attr_translation_key = "bonus_button"
+    _attr_translation_key = const.TRANS_KEY_BUTTON_BONUS_BUTTON
 
     def __init__(
         self,
@@ -1025,24 +1061,26 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
         )
         self._attr_icon = icon
         self._attr_translation_placeholders = {
-            "kid_name": kid_name,
-            "bonus_name": bonus_name,
+            const.TRANS_KEY_BUTTON_ATTR_KID_NAME: kid_name,
+            const.TRANS_KEY_BUTTON_ATTR_BONUS_NAME: bonus_name,
         }
-        self.entity_id = f"button.kc_{kid_name}_bonus_{bonus_name}"
+        self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_BONUS}{bonus_name}"
 
     async def async_press(self):
         """Handle the button press event."""
         try:
             user_id = self._context.user_id if self._context else None
             if user_id and not await kh.is_user_authorized_for_global_action(
-                self.hass, user_id, "apply_bonus"
+                self.hass, user_id, const.SERVICE_APPLY_BONUS
             ):
                 raise HomeAssistantError(
-                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format("apply bonus")
+                    const.ERROR_NOT_AUTHORIZED_ACTION_FMT.format(
+                        const.TRANS_KEY_FMT_ERROR_APPLY_BONUS
+                    )
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else "Unknown"
+            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
 
             self.coordinator.apply_bonus(
                 parent_name=parent_name,
@@ -1076,7 +1114,7 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
     def extra_state_attributes(self):
         """Include extra state attributes for the button."""
         bonus_info = self.coordinator.bonuses_data.get(self._bonus_id, {})
-        stored_labels = bonus_info.get("bonus_labels", [])
+        stored_labels = bonus_info.get(const.DATA_BONUS_LABELS, [])
         friendly_labels = [
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]

@@ -331,6 +331,7 @@ CONF_MONTHLY = "monthly"
 CONF_NAME = "name"
 CONF_NONE_TEXT = "None"
 CONF_POINTS = "points"
+CONF_UNKNOWN = "Unknown"
 CONF_VALUE = "value"
 CONF_WEEKS = "weeks"
 CONF_WEEKLY = "weekly"
@@ -856,7 +857,7 @@ ACTION_REMIND_30 = "REMIND_30"
 
 
 # ------------------------------------------------------------------------------------------------
-# Sensor Attributes
+# Entities Attributes
 # ------------------------------------------------------------------------------------------------
 ATTR_ACHIEVEMENT_NAME = "achievement_name"
 ATTR_ALL_EARNED_BADGES = "all_earned_badges"
@@ -909,6 +910,7 @@ ATTR_PARTIAL_ALLOWED = "partial_allowed"
 ATTR_PENALTY_NAME = "penalty_name"
 ATTR_PENALTY_POINTS = "penalty_points"
 ATTR_PERIODIC_RECURRENT = "recurrent"
+ATTR_POINTS_LABEL = "points_label"
 ATTR_POINTS_MULTIPLIER = "points_multiplier"
 ATTR_POINTS_TO_NEXT_BADGE = "points_to_next_badge"
 ATTR_RAW_PROGRESS = "raw_progress"
@@ -921,6 +923,7 @@ ATTR_REWARD_APPROVALS_COUNT = "reward_approvals_count"
 ATTR_REWARD_CLAIMS_COUNT = "reward_claims_count"
 ATTR_REWARD_NAME = "reward_name"
 ATTR_REWARD_POINTS = "reward_points"
+ATTR_SIGN_LABEL = "sign_label"
 ATTR_START_DATE = "start_date"
 ATTR_STREAKS_BY_ACHIEVEMENT = "streaks_by_achievement"
 ATTR_SHARED_CHORE = "shared_chore"
@@ -935,21 +938,6 @@ ATTR_TYPE = "type"
 # ------------------------------------------------------------------------------------------------
 # Sensors
 # ------------------------------------------------------------------------------------------------
-
-# Sensor Types
-SENSOR_TYPE_BADGES = "badges"
-SENSOR_TYPE_BONUS_APPLIES = "bonus_applies"
-SENSOR_TYPE_CHORE_APPROVALS = "chore_approvals"
-SENSOR_TYPE_CHORE_CLAIMS = "chore_claims"
-SENSOR_TYPE_COMPLETED_DAILY = "completed_daily"
-SENSOR_TYPE_COMPLETED_MONTHLY = "completed_monthly"
-SENSOR_TYPE_COMPLETED_WEEKLY = "completed_weekly"
-SENSOR_TYPE_PENDING_CHORE_APPROVALS = "pending_chore_approvals"
-SENSOR_TYPE_PENDING_REWARD_APPROVALS = "pending_reward_approvals"
-SENSOR_TYPE_PENALTY_APPLIES = "penalty_applies"
-SENSOR_TYPE_POINTS = "points"
-SENSOR_TYPE_REWARD_APPROVALS = "reward_approvals"
-SENSOR_TYPE_REWARD_CLAIMS = "reward_claims"
 
 # Sensor Prefixes
 SENSOR_KC_PREFIX = "sensor.kc_"
@@ -1008,26 +996,53 @@ SENSOR_KC_EID_SUFFIX_PENDING_REWARD_APPROVALS_SENSOR = "global_reward_pending_ap
 # Selects
 # ------------------------------------------------------------------------------------------------
 
-# Sensor Types
-SELECT_TYPE_ALL_BONUSES = "all_bonuses"
-SELECT_TYPE_ALL_CHORES = "all_chores"
-SELECT_TYPE_ALL_PENALTIES = "all_penalties"
-SELECT_TYPE_ALL_REWARDS = "all_rewards"
-SELECT_TYPE_CHORE_LIST = "_chore_list"
-
 # Select Prefixes
 SELECT_KC_PREFIX = "select.kc_"
 
-# Sensor Unique ID Mid & Suffixes
+# Select Unique ID Mid & Suffixes
 SELECT_KC_UID_MIDFIX_CHORES_SELECT = "_chores_select_"
 SELECT_KC_UID_SUFFIX_BONUSES_SELECT = "_bonuses_select"
 SELECT_KC_UID_SUFFIX_CHORES_SELECT = "_chores_select"
 SELECT_KC_UID_SUFFIX_PENALTIES_SELECT = "_penalties_select"
 SELECT_KC_UID_SUFFIX_REWARDS_SELECT = "_rewards_select"
 
+# Select Entity ID Mid & Suffixes
+SELECT_KC_EID_SUFFIX_ALL_BONUSES = "all_bonuses"
+SELECT_KC_EID_SUFFIX_ALL_CHORES = "all_chores"
+SELECT_KC_EID_SUFFIX_ALL_PENALTIES = "all_penalties"
+SELECT_KC_EID_SUFFIX_ALL_REWARDS = "all_rewards"
+SELECT_KC_EID_SUFFIX_CHORE_LIST = "_chore_list"
+
+# ------------------------------------------------------------------------------------------------
+# Buttons
+# ------------------------------------------------------------------------------------------------
+
+# Button Prefixes
+BUTTON_KC_PREFIX = "button.kc_"
+
+# Button Unique ID Mid & Suffixes
+BUTTON_KC_UID_MIDFIX_ADJUST_POINTS = "_adjust_points_"
+BUTTON_KC_UID_SUFFIX_APPROVE = "_approve"
+BUTTON_KC_UID_SUFFIX_APPROVE_REWARD = "_approve_reward"
+BUTTON_KC_UID_SUFFIX_CLAIM = "_claim"
+BUTTON_KC_UID_SUFFIX_DISAPPROVE = "_disapprove"
+BUTTON_KC_UID_SUFFIX_DISAPPROVE_REWARD = "_disapprove_reward"
+
+# Button Entity ID Mid & Suffixes
+BUTTON_KC_EID_MIDFIX_BONUS = "_bonus_"
+BUTTON_KC_EID_MIDFIX_CHORE_APPROVAL = "_chore_approval_"
+BUTTON_KC_EID_MIDFIX_CHORE_CLAIM = "_chore_claim_"
+BUTTON_KC_EID_MIDFIX_CHORE_DISAPPROVAL = "_chore_disapproval_"
+BUTTON_KC_EID_MIDFIX_PENALTY = "_penalty_"
+BUTTON_KC_EID_MIDFIX_REWARD_APPROVAL = "_reward_approval_"
+BUTTON_KC_EID_MIDFIX_REWARD_CLAIM = "_reward_claim_"
+BUTTON_KC_EID_MIDFIX_REWARD_DISAPPROVAL = "_reward_disapproval_"
+BUTTON_KC_EID_SUFFIX_POINTS = "_points"
+
 # ------------------------------------------------------------------------------------------------
 # Services
 # ------------------------------------------------------------------------------------------------
+SERVICE_ADJUST_POINTS = "adjust_points"
 SERVICE_APPLY_BONUS = "apply_bonus"
 SERVICE_APPLY_PENALTY = "apply_penalty"
 SERVICE_APPROVE_CHORE = "approve_chore"
@@ -1075,8 +1090,6 @@ LABEL_POINTS = "Points"
 # Button Prefixes
 # ------------------------------------------------------------------------------------------------
 BUTTON_BONUS_PREFIX = "bonus_button_"
-BUTTON_DISAPPROVE_CHORE_PREFIX = "disapprove_chore_button_"
-BUTTON_DISAPPROVE_REWARD_PREFIX = "disapprove_reward_button_"
 BUTTON_PENALTY_PREFIX = "penalty_button_"
 BUTTON_REWARD_PREFIX = "reward_button_"
 
@@ -1103,9 +1116,9 @@ ERROR_USER_NOT_AUTHORIZED = "User is not authorized to perform this action."
 MSG_NO_ENTRY_FOUND = "No KidsChores entry found"
 
 # Unknown States
-UNKNOWN_CHORE = "Unknown Chore"  # Error for unknown chore
-UNKNOWN_KID = "Unknown Kid"  # Error for unknown kid
-UNKNOWN_REWARD = "Unknown Reward"  # Error for unknown reward
+UNKNOWN_CHORE = "Unknown Chore"
+UNKNOWN_KID = "Unknown Kid"
+UNKNOWN_REWARD = "Unknown Reward"
 
 # Config Flow & Options Flow Error Keys
 CFOP_ERROR_ACHIEVEMENT_NAME = "name"
@@ -1294,6 +1307,41 @@ TRANS_KEY_SELECT_LABEL_ALL_CHORES = "All Chores"
 TRANS_KEY_SELECT_LABEL_ALL_PENALTIES = "All Penalties"
 TRANS_KEY_SELECT_LABEL_ALL_REWARDS = "All Rewards"
 TRANS_KEY_SELECT_LABEL_CHORES_FOR = "Chores for"
+
+# Button Translation Keys
+TRANS_KEY_BUTTON_APPROVE_CHORE_BUTTON = "approve_chore_button"
+TRANS_KEY_BUTTON_APPROVE_REWARD_BUTTON = "approve_reward_button"
+TRANS_KEY_BUTTON_BONUS_BUTTON = "bonus_button"
+TRANS_KEY_BUTTON_CLAIM_CHORE_BUTTON = "claim_chore_button"
+TRANS_KEY_BUTTON_CLAIM_REWARD_BUTTON = "claim_reward_button"
+TRANS_KEY_BUTTON_DELTA_PLUS_LABEL = "+"
+TRANS_KEY_BUTTON_DELTA_MINUS_TEXT = "minus_"
+TRANS_KEY_BUTTON_DELTA_PLUS_TEXT = "plus_"
+TRANS_KEY_BUTTON_DISAPPROVE_CHORE_BUTTON = "disapprove_chore_button"
+TRANS_KEY_BUTTON_DISAPPROVE_REWARD_BUTTON = "disapprove_reward_button"
+TRANS_KEY_BUTTON_MANUAL_ADJUSTMENT_BUTTON = "manual_adjustment_button"
+TRANS_KEY_BUTTON_PENALTY_BUTTON = "penalty_button"
+
+
+# Button Attributes Translation Keys
+TRANS_KEY_BUTTON_ATTR_BONUS_NAME = "bonus_name"
+TRANS_KEY_BUTTON_ATTR_CHORE_NAME = "chore_name"
+TRANS_KEY_BUTTON_ATTR_KID_NAME = "kid_name"
+TRANS_KEY_BUTTON_ATTR_PENALTY_NAME = "penalty_name"
+TRANS_KEY_BUTTON_ATTR_POINTS_LABEL = "points_label"
+TRANS_KEY_BUTTON_ATTR_REWARD_NAME = "reward_name"
+TRANS_KEY_BUTTON_ATTR_SIGN_LABEL = "sign_label"
+
+# FMT Errors Translation Keys
+TRANS_KEY_FMT_ERROR_ADJUST_POINTS = "adjust_points"
+TRANS_KEY_FMT_ERROR_APPLY_BONUS = "apply_bonus"
+TRANS_KEY_FMT_ERROR_APPLY_PENALTIES = "apply_penalties"
+TRANS_KEY_FMT_ERROR_APPROVE_CHORES = "approve_chores"
+TRANS_KEY_FMT_ERROR_APPROVE_REWARDS = "approve_rewards"
+TRANS_KEY_FMT_ERROR_CLAIM_CHORES = "claim_chores"
+TRANS_KEY_FMT_ERROR_DISAPPROVE_CHORES = "disapprove_chores"
+TRANS_KEY_FMT_ERROR_DISAPPROVE_REWARDS = "disapprove_rewards"
+TRANS_KEY_FMT_ERROR_REDEEM_REWARDS = "redeem_rewards"
 
 # ------------------------------------------------------------------------------------------------
 # Notification Keys
