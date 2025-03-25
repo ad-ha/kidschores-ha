@@ -12,11 +12,11 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import dt as dt_util
-from . import const
-from .coordinator import KidsChoresDataCoordinator
-from .kc_helpers import is_user_authorized_for_global_action, is_user_authorized_for_kid
-from .flow_helpers import ensure_utc_datetime
 
+from . import const
+from . import flow_helpers as fh
+from . import kc_helpers as kh
+from .coordinator import KidsChoresDataCoordinator
 
 # --- Service Schemas ---
 CLAIM_CHORE_SCHEMA = vol.Schema(
@@ -136,27 +136,27 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_claim_chore(call: ServiceCall):
         """Handle claiming a chore."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Claim Chore: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
         user_id = call.context.user_id
         kid_name = call.data[const.FIELD_KID_NAME]
         chore_name = call.data[const.FIELD_CHORE_NAME]
 
         # Map kid_name and chore_name to internal_ids
-        kid_id = _get_kid_id_by_name(coordinator, kid_name)
+        kid_id = kh.get_kid_id_by_name(coordinator, kid_name)
         if not kid_id:
             const.LOGGER.warning(
                 "Claim Chore: " + const.ERROR_KID_NOT_FOUND_FMT, kid_name
             )
             raise HomeAssistantError(const.ERROR_KID_NOT_FOUND_FMT.format(kid_name))
 
-        chore_id = _get_chore_id_by_name(coordinator, chore_name)
+        chore_id = kh.get_chore_id_by_name(coordinator, chore_name)
         if not chore_id:
             const.LOGGER.warning(
                 "Claim Chore: " + const.ERROR_CHORE_NOT_FOUND_FMT, chore_name
@@ -164,10 +164,12 @@ def async_setup_services(hass: HomeAssistant):
             raise HomeAssistantError(const.ERROR_CHORE_NOT_FOUND_FMT.format(chore_name))
 
         # Check if user is authorized
-        if user_id and not await is_user_authorized_for_kid(hass, user_id, kid_id):
+        if user_id and not await kh.is_user_authorized_for_kid(hass, user_id, kid_id):
             const.LOGGER.warning("Claim Chore: %s", const.ERROR_NOT_AUTHORIZED_FMT)
             raise HomeAssistantError(
-                const.ERROR_NOT_AUTHORIZED_FMT.format("claim chores")
+                const.ERROR_NOT_AUTHORIZED_FMT.format(
+                    const.TRANS_KEY_FMT_ERROR_CLAIM_CHORES
+                )
             )
 
         # Process chore claim
@@ -185,14 +187,14 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_approve_chore(call: ServiceCall):
         """Handle approving a claimed chore."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
 
         if not entry_id:
             const.LOGGER.warning("Approve Chore: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
         user_id = call.context.user_id
         parent_name = call.data[const.FIELD_PARENT_NAME]
@@ -201,18 +203,18 @@ def async_setup_services(hass: HomeAssistant):
         points_awarded = call.data.get(const.FIELD_POINTS_AWARDED)
 
         # Map kid_name and chore_name to internal_ids
-        kid_id = _get_kid_id_by_name(coordinator, kid_name)
+        kid_id = kh.get_kid_id_by_name(coordinator, kid_name)
         if not kid_id:
             const.LOGGER.warning("Approve Chore: Kid '%s' not found", kid_name)
             raise HomeAssistantError(f"Kid '{kid_name}' not found")
 
-        chore_id = _get_chore_id_by_name(coordinator, chore_name)
+        chore_id = kh.get_chore_id_by_name(coordinator, chore_name)
         if not chore_id:
             const.LOGGER.warning("Approve Chore: Chore '%s' not found", chore_name)
             raise HomeAssistantError(f"Chore '{chore_name}' not found")
 
         # Check if user is authorized
-        if user_id and not await is_user_authorized_for_global_action(
+        if user_id and not await kh.is_user_authorized_for_global_action(
             hass, user_id, kid_id
         ):
             const.LOGGER.warning("Approve Chore: User not authorized")
@@ -252,32 +254,32 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_disapprove_chore(call: ServiceCall):
         """Handle disapproving a chore."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Disapprove Chore: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
         parent_name = call.data[const.FIELD_PARENT_NAME]
         kid_name = call.data[const.FIELD_KID_NAME]
         chore_name = call.data[const.FIELD_CHORE_NAME]
 
         # Map kid_name and chore_name to internal_ids
-        kid_id = _get_kid_id_by_name(coordinator, kid_name)
+        kid_id = kh.get_kid_id_by_name(coordinator, kid_name)
         if not kid_id:
             const.LOGGER.warning("Disapprove Chore: Kid '%s' not found", kid_name)
             raise HomeAssistantError(f"Kid '{kid_name}' not found")
 
-        chore_id = _get_chore_id_by_name(coordinator, chore_name)
+        chore_id = kh.get_chore_id_by_name(coordinator, chore_name)
         if not chore_id:
             const.LOGGER.warning("Disapprove Chore: Chore '%s' not found", chore_name)
             raise HomeAssistantError(f"Chore '{chore_name}' not found")
 
         # Check if user is authorized
         user_id = call.context.user_id
-        if user_id and not await is_user_authorized_for_global_action(
+        if user_id and not await kh.is_user_authorized_for_global_action(
             hass, user_id, kid_id
         ):
             const.LOGGER.warning("Disapprove Chore: User not authorized")
@@ -301,32 +303,32 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_redeem_reward(call: ServiceCall):
         """Handle redeeming a reward (claiming without deduction)."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Redeem Reward: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
         parent_name = call.data[const.FIELD_PARENT_NAME]
         kid_name = call.data[const.FIELD_KID_NAME]
         reward_name = call.data[const.FIELD_REWARD_NAME]
 
         # Map kid_name and reward_name to internal_ids
-        kid_id = _get_kid_id_by_name(coordinator, kid_name)
+        kid_id = kh.get_kid_id_by_name(coordinator, kid_name)
         if not kid_id:
             const.LOGGER.warning("Redeem Reward: Kid '%s' not found", kid_name)
             raise HomeAssistantError(f"Kid '{kid_name}' not found")
 
-        reward_id = _get_reward_id_by_name(coordinator, reward_name)
+        reward_id = kh.get_reward_id_by_name(coordinator, reward_name)
         if not reward_id:
             const.LOGGER.warning("Redeem Reward: Reward '%s' not found", reward_name)
             raise HomeAssistantError(f"Reward '{reward_name}' not found")
 
         # Check if user is authorized
         user_id = call.context.user_id
-        if user_id and not await is_user_authorized_for_kid(hass, user_id, kid_id):
+        if user_id and not await kh.is_user_authorized_for_kid(hass, user_id, kid_id):
             const.LOGGER.warning("Redeem Reward: User not authorized")
             raise HomeAssistantError(
                 "You are not authorized to redeem rewards for this kid."
@@ -377,13 +379,13 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_approve_reward(call: ServiceCall):
         """Handle approving a reward claimed by a kid."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Approve Reward: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
         user_id = call.context.user_id
         parent_name = call.data[const.FIELD_PARENT_NAME]
@@ -391,18 +393,18 @@ def async_setup_services(hass: HomeAssistant):
         reward_name = call.data[const.FIELD_REWARD_NAME]
 
         # Map kid_name and reward_name to internal_ids
-        kid_id = _get_kid_id_by_name(coordinator, kid_name)
+        kid_id = kh.get_kid_id_by_name(coordinator, kid_name)
         if not kid_id:
             const.LOGGER.warning("Approve Reward: Kid '%s' not found", kid_name)
             raise HomeAssistantError(f"Kid '{kid_name}' not found")
 
-        reward_id = _get_reward_id_by_name(coordinator, reward_name)
+        reward_id = kh.get_reward_id_by_name(coordinator, reward_name)
         if not reward_id:
             const.LOGGER.warning("Approve Reward: Reward '%s' not found", reward_name)
             raise HomeAssistantError(f"Reward '{reward_name}' not found")
 
         # Check if user is authorized
-        if user_id and not await is_user_authorized_for_global_action(
+        if user_id and not await kh.is_user_authorized_for_global_action(
             hass, user_id, kid_id
         ):
             const.LOGGER.warning("Approve Reward: User not authorized")
@@ -438,25 +440,25 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_disapprove_reward(call: ServiceCall):
         """Handle disapproving a reward."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Disapprove Reward: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
         parent_name = call.data[const.FIELD_PARENT_NAME]
         kid_name = call.data[const.FIELD_KID_NAME]
         reward_name = call.data[const.FIELD_REWARD_NAME]
 
         # Map kid_name and reward_name to internal_ids
-        kid_id = _get_kid_id_by_name(coordinator, kid_name)
+        kid_id = kh.get_kid_id_by_name(coordinator, kid_name)
         if not kid_id:
             const.LOGGER.warning("Disapprove Reward: Kid '%s' not found", kid_name)
             raise HomeAssistantError(f"Kid '{kid_name}' not found")
 
-        reward_id = _get_reward_id_by_name(coordinator, reward_name)
+        reward_id = kh.get_reward_id_by_name(coordinator, reward_name)
         if not reward_id:
             const.LOGGER.warning(
                 "Disapprove Reward: Reward '%s' not found", reward_name
@@ -465,7 +467,7 @@ def async_setup_services(hass: HomeAssistant):
 
         # Check if user is authorized
         user_id = call.context.user_id
-        if user_id and not await is_user_authorized_for_global_action(
+        if user_id and not await kh.is_user_authorized_for_global_action(
             hass, user_id, kid_id
         ):
             const.LOGGER.warning("Disapprove Reward: User not authorized")
@@ -489,32 +491,32 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_apply_penalty(call: ServiceCall):
         """Handle applying a penalty."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Apply Penalty: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
         parent_name = call.data[const.FIELD_PARENT_NAME]
         kid_name = call.data[const.FIELD_KID_NAME]
         penalty_name = call.data[const.FIELD_PENALTY_NAME]
 
         # Map kid_name and penalty_name to internal_ids
-        kid_id = _get_kid_id_by_name(coordinator, kid_name)
+        kid_id = kh.get_kid_id_by_name(coordinator, kid_name)
         if not kid_id:
             const.LOGGER.warning("Apply Penalty: Kid '%s' not found", kid_name)
             raise HomeAssistantError(f"Kid '{kid_name}' not found")
 
-        penalty_id = _get_penalty_id_by_name(coordinator, penalty_name)
+        penalty_id = kh.get_penalty_id_by_name(coordinator, penalty_name)
         if not penalty_id:
             const.LOGGER.warning("Apply Penalty: Penalty '%s' not found", penalty_name)
             raise HomeAssistantError(f"Penalty '{penalty_name}' not found")
 
         # Check if user is authorized
         user_id = call.context.user_id
-        if user_id and not await is_user_authorized_for_global_action(
+        if user_id and not await kh.is_user_authorized_for_global_action(
             hass, user_id, kid_id
         ):
             const.LOGGER.warning("Apply Penalty: User not authorized")
@@ -550,21 +552,23 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_reset_penalties(call: ServiceCall):
         """Handle resetting penalties."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Reset Penalties: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
 
         kid_name = call.data.get(const.FIELD_KID_NAME)
         penalty_name = call.data.get(const.FIELD_PENALTY_NAME)
 
-        kid_id = _get_kid_id_by_name(coordinator, kid_name) if kid_name else None
+        kid_id = kh.get_kid_id_by_name(coordinator, kid_name) if kid_name else None
         penalty_id = (
-            _get_penalty_id_by_name(coordinator, penalty_name) if penalty_name else None
+            kh.get_penalty_id_by_name(coordinator, penalty_name)
+            if penalty_name
+            else None
         )
 
         if kid_name and not kid_id:
@@ -579,7 +583,7 @@ def async_setup_services(hass: HomeAssistant):
 
         # Check if user is authorized
         user_id = call.context.user_id
-        if user_id and not await is_user_authorized_for_global_action(
+        if user_id and not await kh.is_user_authorized_for_global_action(
             hass, user_id, kid_id
         ):
             const.LOGGER.warning("Reset Penalties: User not authorized.")
@@ -603,21 +607,21 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_reset_bonuses(call: ServiceCall):
         """Handle resetting bonuses."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Reset Bonuses: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
 
         kid_name = call.data.get(const.FIELD_KID_NAME)
         bonus_name = call.data.get(const.FIELD_BONUS_NAME)
 
-        kid_id = _get_kid_id_by_name(coordinator, kid_name) if kid_name else None
+        kid_id = kh.get_kid_id_by_name(coordinator, kid_name) if kid_name else None
         bonus_id = (
-            _get_bonus_id_by_name(coordinator, bonus_name) if bonus_name else None
+            kh.get_bonus_id_by_name(coordinator, bonus_name) if bonus_name else None
         )
 
         if kid_name and not kid_id:
@@ -630,7 +634,7 @@ def async_setup_services(hass: HomeAssistant):
 
         # Check if user is authorized
         user_id = call.context.user_id
-        if user_id and not await is_user_authorized_for_global_action(
+        if user_id and not await kh.is_user_authorized_for_global_action(
             hass, user_id, kid_id
         ):
             const.LOGGER.warning("Reset Bonuses: User not authorized.")
@@ -654,21 +658,21 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_reset_rewards(call: ServiceCall):
         """Handle resetting rewards counts."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Reset Rewards: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
 
         kid_name = call.data.get(const.FIELD_KID_NAME)
         reward_name = call.data.get(const.FIELD_REWARD_NAME)
 
-        kid_id = _get_kid_id_by_name(coordinator, kid_name) if kid_name else None
+        kid_id = kh.get_kid_id_by_name(coordinator, kid_name) if kid_name else None
         reward_id = (
-            _get_reward_id_by_name(coordinator, reward_name) if reward_name else None
+            kh.get_reward_id_by_name(coordinator, reward_name) if reward_name else None
         )
 
         if kid_name and not kid_id:
@@ -681,7 +685,7 @@ def async_setup_services(hass: HomeAssistant):
 
         # Check if user is authorized
         user_id = call.context.user_id
-        if user_id and not await is_user_authorized_for_global_action(
+        if user_id and not await kh.is_user_authorized_for_global_action(
             hass, user_id, kid_id
         ):
             const.LOGGER.warning("Reset Rewards: User not authorized.")
@@ -705,32 +709,32 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_apply_bonus(call: ServiceCall):
         """Handle applying a bonus."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Apply Bonus: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
         parent_name = call.data[const.FIELD_PARENT_NAME]
         kid_name = call.data[const.FIELD_KID_NAME]
         bonus_name = call.data[const.FIELD_BONUS_NAME]
 
         # Map kid_name and bonus_name to internal_ids
-        kid_id = _get_kid_id_by_name(coordinator, kid_name)
+        kid_id = kh.get_kid_id_by_name(coordinator, kid_name)
         if not kid_id:
             const.LOGGER.warning("Apply Bonus: Kid '%s' not found", kid_name)
             raise HomeAssistantError(f"Kid '{kid_name}' not found")
 
-        bonus_id = _get_bonus_id_by_name(coordinator, bonus_name)
+        bonus_id = kh.get_bonus_id_by_name(coordinator, bonus_name)
         if not bonus_id:
             const.LOGGER.warning("Apply Bonus: Bonus '%s' not found", bonus_name)
             raise HomeAssistantError(f"Bonus '{bonus_name}' not found")
 
         # Check if user is authorized
         user_id = call.context.user_id
-        if user_id and not await is_user_authorized_for_global_action(
+        if user_id and not await kh.is_user_authorized_for_global_action(
             hass, user_id, kid_id
         ):
             const.LOGGER.warning("Apply Bonus: User not authorized")
@@ -766,7 +770,7 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_reset_all_data(call: ServiceCall):
         """Handle manually resetting ALL data in KidsChores."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Reset All Data: No KidsChores entry found")
             return
@@ -776,7 +780,7 @@ def async_setup_services(hass: HomeAssistant):
             const.LOGGER.warning("Reset All Data: No coordinator data found")
             return
 
-        coordinator: KidsChoresDataCoordinator = data["coordinator"]
+        coordinator: KidsChoresDataCoordinator = data[const.COORDINATOR]
 
         # Clear everything from storage
         await coordinator.storage_manager.async_clear_data()
@@ -792,7 +796,7 @@ def async_setup_services(hass: HomeAssistant):
     async def handle_reset_all_chores(call: ServiceCall):
         """Handle manually resetting all chores to pending, clearing claims/approvals."""
 
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Reset All Chores: No KidsChores entry found")
             return
@@ -802,18 +806,18 @@ def async_setup_services(hass: HomeAssistant):
             const.LOGGER.warning("Reset All Chores: No coordinator data found")
             return
 
-        coordinator: KidsChoresDataCoordinator = data["coordinator"]
+        coordinator: KidsChoresDataCoordinator = data[const.COORDINATOR]
 
         # Loop over all chores, reset them to pending
         for chore_id, chore_info in coordinator.chores_data.items():
-            chore_info["state"] = const.CHORE_STATE_PENDING
+            chore_info[const.DATA_CHORE_STATE] = const.CHORE_STATE_PENDING
 
         # Remove all chore approvals/claims for each kid
         for kid_id, kid_info in coordinator.kids_data.items():
-            kid_info["claimed_chores"] = []
-            kid_info["approved_chores"] = []
-            kid_info["overdue_chores"] = []
-            kid_info["overdue_notifications"] = {}
+            kid_info[const.DATA_KID_CLAIMED_CHORES] = []
+            kid_info[const.DATA_KID_APPROVED_CHORES] = []
+            kid_info[const.DATA_KID_OVERDUE_CHORES] = []
+            kid_info[const.DATA_KID_OVERDUE_NOTIFICATIONS] = {}
 
         # Clear the pending approvals queue
         coordinator._data[const.DATA_PENDING_CHORE_APPROVALS] = []
@@ -828,13 +832,13 @@ def async_setup_services(hass: HomeAssistant):
     async def handle_reset_overdue_chores(call: ServiceCall) -> None:
         """Handle resetting overdue chores."""
 
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Reset Overdue Chores: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
 
         # Get parameters
@@ -844,7 +848,7 @@ def async_setup_services(hass: HomeAssistant):
 
         # If chore_id not provided but chore_name is, map it to chore_id.
         if not chore_id and chore_name:
-            chore_id = _get_chore_id_by_name(coordinator, chore_name)
+            chore_id = kh.get_chore_id_by_name(coordinator, chore_name)
 
             if not chore_id:
                 const.LOGGER.warning(
@@ -855,7 +859,7 @@ def async_setup_services(hass: HomeAssistant):
         # If kid_name provided, map it to kid_id.
         kid_id: Optional[str] = None
         if kid_name:
-            kid_id = _get_kid_id_by_name(coordinator, kid_name)
+            kid_id = kh.get_kid_id_by_name(coordinator, kid_name)
 
             if not kid_id:
                 const.LOGGER.warning(
@@ -874,19 +878,19 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_set_chore_due_date(call: ServiceCall):
         """Handle setting (or clearing) the due date of a chore."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Set Chore Due Date: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
         chore_name = call.data[const.FIELD_CHORE_NAME]
         due_date_input = call.data.get(const.FIELD_DUE_DATE)
 
         # Look up the chore by name:
-        chore_id = _get_chore_id_by_name(coordinator, chore_name)
+        chore_id = kh.get_chore_id_by_name(coordinator, chore_name)
         if not chore_id:
             const.LOGGER.warning("Set Chore Due Date: Chore '%s' not found", chore_name)
             raise HomeAssistantError(const.ERROR_CHORE_NOT_FOUND_FMT.format(chore_name))
@@ -894,7 +898,7 @@ def async_setup_services(hass: HomeAssistant):
         if due_date_input:
             try:
                 # Convert the provided date
-                due_date_str = ensure_utc_datetime(hass, due_date_input)
+                due_date_str = fh.ensure_utc_datetime(hass, due_date_input)
                 due_dt = dt_util.parse_datetime(due_date_str)
                 if due_dt and due_dt < dt_util.utcnow():
                     raise HomeAssistantError("Due date cannot be set in the past.")
@@ -924,13 +928,13 @@ def async_setup_services(hass: HomeAssistant):
 
     async def handle_skip_chore_due_date(call: ServiceCall) -> None:
         """Handle skipping the due date on a chore by rescheduling it to the next due date."""
-        entry_id = _get_first_kidschores_entry(hass)
+        entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
             const.LOGGER.warning("Skip Chore Due Date: %s", const.MSG_NO_ENTRY_FOUND)
             return
 
         coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
-            "coordinator"
+            const.COORDINATOR
         ]
 
         # Get parameters: either chore_id or chore_name must be provided.
@@ -938,7 +942,7 @@ def async_setup_services(hass: HomeAssistant):
         chore_name = call.data.get(const.FIELD_CHORE_NAME)
 
         if not chore_id and chore_name:
-            chore_id = _get_chore_id_by_name(coordinator, chore_name)
+            chore_id = kh.get_chore_id_by_name(coordinator, chore_name)
             if not chore_id:
                 const.LOGGER.warning(
                     "Skip Chore Due Date: Chore '%s' not found", chore_name
@@ -1089,61 +1093,3 @@ async def async_unload_services(hass: HomeAssistant):
             hass.services.async_remove(const.DOMAIN, service)
 
     const.LOGGER.info("KidsChores services have been unregistered")
-
-
-def _get_first_kidschores_entry(hass: HomeAssistant) -> Optional[str]:
-    """Retrieve the first KidsChores config entry ID."""
-    domain_entries = hass.data.get(const.DOMAIN)
-    if not domain_entries:
-        return None
-    return next(iter(domain_entries.keys()), None)
-
-
-def _get_kid_id_by_name(
-    coordinator: KidsChoresDataCoordinator, kid_name: str
-) -> Optional[str]:
-    """Help function to get kid_id by kid_name."""
-    for kid_id, kid_info in coordinator.kids_data.items():
-        if kid_info.get("name") == kid_name:
-            return kid_id
-    return None
-
-
-def _get_chore_id_by_name(
-    coordinator: KidsChoresDataCoordinator, chore_name: str
-) -> Optional[str]:
-    """Help function to get chore_id by chore_name."""
-    for chore_id, chore_info in coordinator.chores_data.items():
-        if chore_info.get("name") == chore_name:
-            return chore_id
-    return None
-
-
-def _get_reward_id_by_name(
-    coordinator: KidsChoresDataCoordinator, reward_name: str
-) -> Optional[str]:
-    """Help function to get reward_id by reward_name."""
-    for reward_id, reward_info in coordinator.rewards_data.items():
-        if reward_info.get("name") == reward_name:
-            return reward_id
-    return None
-
-
-def _get_penalty_id_by_name(
-    coordinator: KidsChoresDataCoordinator, penalty_name: str
-) -> Optional[str]:
-    """Help function to get penalty_id by penalty_name."""
-    for penalty_id, penalty_info in coordinator.penalties_data.items():
-        if penalty_info.get("name") == penalty_name:
-            return penalty_id
-    return None
-
-
-def _get_bonus_id_by_name(
-    coordinator: KidsChoresDataCoordinator, bonus_name: str
-) -> Optional[str]:
-    """Help function to get bonus_id by bonus_name."""
-    for bonus_id, bonus_info in coordinator.bonuses_data.items():
-        if bonus_info.get("name") == bonus_name:
-            return bonus_id
-    return None

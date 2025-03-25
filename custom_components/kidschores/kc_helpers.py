@@ -155,23 +155,76 @@ def parse_points_adjust_values(points_str: str) -> list[float]:
 
 
 # ------------------ Helper Functions ------------------
-def _get_kid_id_by_name(self, kid_name: str) -> Optional[str]:
-    """Help function to get kid_id by kid_name."""
-    for kid_id, kid_info in self.kids_data.items():
+def get_first_kidschores_entry(hass: HomeAssistant) -> Optional[str]:
+    """Retrieve the first KidsChores config entry ID."""
+    domain_entries = hass.data.get(const.DOMAIN)
+    if not domain_entries:
+        return None
+    return next(iter(domain_entries.keys()), None)
+
+
+def get_kid_id_by_name(
+    coordinator: KidsChoresDataCoordinator, kid_name: str
+) -> Optional[str]:
+    """Retrieve the kid_id for a given kid_name."""
+    for kid_id, kid_info in coordinator.kids_data.items():
         if kid_info.get(const.DATA_KID_NAME) == kid_name:
             return kid_id
     return None
 
 
-def _get_kid_name_by_id(self, kid_id: str) -> Optional[str]:
-    """Help function to get kid_name by kid_id."""
-    kid_info = self.kids_data.get(kid_id)
+def get_kid_name_by_id(
+    coordinator: KidsChoresDataCoordinator, kid_id: str
+) -> Optional[str]:
+    """Retrieve the kid_name for a given kid_id."""
+    kid_info = coordinator.kids_data.get(kid_id)
     if kid_info:
         return kid_info.get(const.DATA_KID_NAME)
     return None
 
 
+def get_chore_id_by_name(
+    coordinator: KidsChoresDataCoordinator, chore_name: str
+) -> Optional[str]:
+    """Retrieve the chore_id for a given chore_name."""
+    for chore_id, chore_info in coordinator.chores_data.items():
+        if chore_info.get(const.DATA_CHORE_NAME) == chore_name:
+            return chore_id
+    return None
+
+
+def get_reward_id_by_name(
+    coordinator: KidsChoresDataCoordinator, reward_name: str
+) -> Optional[str]:
+    """Retrieve the reward_id for a given reward_name."""
+    for reward_id, reward_info in coordinator.rewards_data.items():
+        if reward_info.get(const.DATA_REWARD_NAME) == reward_name:
+            return reward_id
+    return None
+
+
+def get_penalty_id_by_name(
+    coordinator: KidsChoresDataCoordinator, penalty_name: str
+) -> Optional[str]:
+    """Retrieve the penalty_id for a given penalty_name."""
+    for penalty_id, penalty_info in coordinator.penalties_data.items():
+        if penalty_info.get(const.DATA_PENALTY_NAME) == penalty_name:
+            return penalty_id
+    return None
+
+
+def get_bonus_id_by_name(
+    coordinator: KidsChoresDataCoordinator, bonus_name: str
+) -> Optional[str]:
+    """Retrieve the bonus_id for a given bonus_name."""
+    for bonus_id, bonus_info in coordinator.bonuses_data.items():
+        if bonus_info.get(const.DATA_BONUS_NAME) == bonus_name:
+            return bonus_id
+    return None
+
+
 def get_friendly_label(hass, label_name: str) -> str:
+    """Retrieve the friendly name for a given label_name."""
     registry = async_get(hass)
     entries = registry.async_list_labels()
     label_entry = registry.async_get_label(label_name)

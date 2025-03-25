@@ -57,7 +57,7 @@ async def async_setup_entry(
 
         for kid_id in assigned_kids_ids:
             kid_name = (
-                coordinator._get_kid_name_by_id(kid_id)
+                kh.get_kid_name_by_id(coordinator, kid_id)
                 or f"{const.TRANS_KEY_LABEL_KID} {kid_id}"
             )
             # Claim Button
@@ -638,10 +638,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
 
 
 class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
-    """Button for parents to approve a reward claimed by a kid.
-
-    Prevents unauthorized or premature reward approvals.
-    """
+    """Button for parents to approve a reward claimed by a kid."""
 
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_BUTTON_APPROVE_REWARD_BUTTON

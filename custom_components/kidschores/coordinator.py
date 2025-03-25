@@ -1059,7 +1059,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     def _create_chore(self, chore_id: str, chore_data: dict[str, Any]):
         assigned_kids_ids = []
         for kid_name in chore_data.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
-            kid_id = self._get_kid_id_by_name(kid_name)
+            kid_id = kh.get_kid_id_by_name(self, kid_name)
             if kid_id:
                 assigned_kids_ids.append(kid_id)
             else:
@@ -1210,7 +1210,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         assigned_kids_ids = []
         for kid_name in chore_data.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
-            kid_id = self._get_kid_id_by_name(kid_name)
+            kid_id = kh.get_kid_id_by_name(self, kid_name)
             if kid_id:
                 assigned_kids_ids.append(kid_id)
             else:
@@ -3883,7 +3883,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         self._notify_parents(
                             kid_id,
                             title="KidsChores: Chore Overdue",
-                            message=f"{self._get_kid_name_by_id(kid_id)}'s chore '{chore_info.get('name', 'Unnamed Chore')}' is overdue",
+                            message=f"{kh.get_kid_name_by_id(self, kid_id)}'s chore '{chore_info.get('name', 'Unnamed Chore')}' is overdue",
                             actions=actions,
                             extra_data=extra_data,
                         )
@@ -4953,21 +4953,3 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Save to persistent storage."""
         self.storage_manager.set_data(self._data)
         self.hass.add_job(self.storage_manager.async_save)
-
-    # -------------------------------------------------------------------------------------
-    # Internal Helper for kid <-> name lookups
-    # -------------------------------------------------------------------------------------
-
-    def _get_kid_id_by_name(self, kid_name: str) -> Optional[str]:
-        """Help function to get kid_id by kid_name."""
-        for kid_id, k_info in self.kids_data.items():
-            if k_info.get(const.DATA_KID_NAME) == kid_name:
-                return kid_id
-        return None
-
-    def _get_kid_name_by_id(self, kid_id: str) -> Optional[str]:
-        """Help function to get kid_name by kid_id."""
-        kid_info = self.kids_data.get(kid_id)
-        if kid_info:
-            return kid_info.get(const.DATA_KID_NAME)
-        return None

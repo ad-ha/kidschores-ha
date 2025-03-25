@@ -36,9 +36,10 @@ from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
+
 from . import const
+from . import kc_helpers as kh
 from .coordinator import KidsChoresDataCoordinator
-from .kc_helpers import get_friendly_label
 
 
 async def async_setup_entry(
@@ -202,7 +203,7 @@ async def async_setup_entry(
         assigned_kids_ids = chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
         for kid_id in assigned_kids_ids:
             kid_name = (
-                coordinator._get_kid_name_by_id(kid_id)
+                kh.get_kid_name_by_id(coordinator, kid_id)
                 or f"{const.TRANS_KEY_LABEL_KID} {kid_id}"
             )
             entities.append(
@@ -317,7 +318,7 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
 
         assigned_kids_ids = chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
         assigned_kids_names = [
-            self.coordinator._get_kid_name_by_id(k_id)
+            kh.get_kid_name_by_id(self.coordinator, k_id)
             or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
@@ -335,7 +336,7 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
 
         stored_labels = chore_info.get(const.DATA_CHORE_LABELS, [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         attributes = {
@@ -691,7 +692,7 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
             )
             stored_labels = badge_data.get(const.DATA_BADGE_LABELS, [])
             friendly_labels = [
-                get_friendly_label(self.hass, label) for label in stored_labels
+                kh.get_friendly_label(self.hass, label) for label in stored_labels
             ]
 
         # Compute points needed for next badge:
@@ -774,7 +775,7 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
 
         stored_labels = badge_info.get(const.DATA_BADGE_LABELS, [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         award_points = badge_info.get(const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_ZERO)
@@ -944,7 +945,7 @@ class PendingChoreApprovalsSensor(CoordinatorEntity, SensorEntity):
 
         for approval in approvals:
             kid_name = (
-                self.coordinator._get_kid_name_by_id(approval[const.DATA_KID_ID])
+                kh.get_kid_name_by_id(self.coordinator, approval[const.DATA_KID_ID])
                 or const.UNKNOWN_KID
             )
             chore_info = self.coordinator.chores_data.get(
@@ -997,7 +998,7 @@ class PendingRewardApprovalsSensor(CoordinatorEntity, SensorEntity):
 
         for approval in approvals:
             kid_name = (
-                self.coordinator._get_kid_name_by_id(approval[const.DATA_KID_ID])
+                kh.get_kid_name_by_id(self.coordinator, approval[const.DATA_KID_ID])
                 or const.UNKNOWN_KID
             )
             reward_info = self.coordinator.rewards_data.get(
@@ -1057,14 +1058,14 @@ class SharedChoreGlobalStateSensor(CoordinatorEntity, SensorEntity):
         chore_info = self.coordinator.chores_data.get(self._chore_id, {})
         assigned_kids_ids = chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
         assigned_kids_names = [
-            self.coordinator._get_kid_name_by_id(k_id)
+            kh.get_kid_name_by_id(self.coordinator, k_id)
             or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
 
         stored_labels = chore_info.get(const.DATA_CHORE_LABELS, [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         total_approvals_today = const.DEFAULT_ZERO
@@ -1171,7 +1172,7 @@ class RewardStatusSensor(CoordinatorEntity, SensorEntity):
 
         stored_labels = reward_info.get(const.DATA_REWARD_LABELS, [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         attributes = {
@@ -1237,7 +1238,7 @@ class PenaltyAppliesSensor(CoordinatorEntity, SensorEntity):
 
         stored_labels = penalty_info.get(const.DATA_PENALTY_LABELS, [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         return {
@@ -1487,7 +1488,7 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
         earned_by = []
         for kid_id, data in progress.items():
             if data.get(const.DATA_ACHIEVEMENT_AWARDED, False):
-                kid_name = self.coordinator._get_kid_name_by_id(kid_id) or kid_id
+                kid_name = kh.get_kid_name_by_id(self.coordinator, kid_id) or kid_id
                 earned_by.append(kid_name)
 
         associated_chore = const.CONF_EMPTY
@@ -1499,13 +1500,13 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
 
         assigned_kids_ids = achievement.get(const.DATA_ACHIEVEMENT_ASSIGNED_KIDS, [])
         assigned_kids_names = [
-            self.coordinator._get_kid_name_by_id(k_id)
+            kh.get_kid_name_by_id(self.coordinator, k_id)
             or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
         ach_type = achievement.get(const.DATA_ACHIEVEMENT_TYPE)
         for kid_id in assigned_kids_ids:
-            kid_name = self.coordinator._get_kid_name_by_id(kid_id) or kid_id
+            kid_name = kh.get_kid_name_by_id(self.coordinator, kid_id) or kid_id
             progress_data = achievement.get(const.DATA_ACHIEVEMENT_PROGRESS, {}).get(
                 kid_id, {}
             )
@@ -1529,7 +1530,7 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
 
         stored_labels = achievement.get(const.DATA_ACHIEVEMENT_LABELS, [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         return {
@@ -1642,7 +1643,7 @@ class ChallengeSensor(CoordinatorEntity, SensorEntity):
         earned_by = []
         for kid_id, data in progress.items():
             if data.get(const.DATA_CHALLENGE_AWARDED, False):
-                kid_name = self.coordinator._get_kid_name_by_id(kid_id) or kid_id
+                kid_name = kh.get_kid_name_by_id(self.coordinator, kid_id) or kid_id
                 earned_by.append(kid_name)
 
         associated_chore = const.CONF_EMPTY
@@ -1654,13 +1655,13 @@ class ChallengeSensor(CoordinatorEntity, SensorEntity):
 
         assigned_kids_ids = challenge.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, [])
         assigned_kids_names = [
-            self.coordinator._get_kid_name_by_id(k_id)
+            kh.get_kid_name_by_id(self.coordinator, k_id)
             or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
 
         for kid_id in assigned_kids_ids:
-            kid_name = self.coordinator._get_kid_name_by_id(kid_id) or kid_id
+            kid_name = kh.get_kid_name_by_id(self.coordinator, kid_id) or kid_id
             progress_data = challenge.get(const.DATA_CHALLENGE_PROGRESS, {}).get(
                 kid_id, {}
             )
@@ -1682,7 +1683,7 @@ class ChallengeSensor(CoordinatorEntity, SensorEntity):
 
         stored_labels = challenge.get(const.DATA_CHALLENGE_LABELS, [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         return {
@@ -1863,14 +1864,14 @@ class AchievementProgressSensor(CoordinatorEntity, SensorEntity):
 
         assigned_kids_ids = achievement.get(const.DATA_ACHIEVEMENT_ASSIGNED_KIDS, [])
         assigned_kids_names = [
-            self.coordinator._get_kid_name_by_id(k_id)
+            kh.get_kid_name_by_id(self.coordinator, k_id)
             or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
 
         stored_labels = achievement.get(const.DATA_ACHIEVEMENT_LABELS, [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         return {
@@ -2023,14 +2024,14 @@ class ChallengeProgressSensor(CoordinatorEntity, SensorEntity):
 
         assigned_kids_ids = challenge.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, [])
         assigned_kids_names = [
-            self.coordinator._get_kid_name_by_id(k_id)
+            kh.get_kid_name_by_id(self.coordinator, k_id)
             or f"{const.TRANS_KEY_LABEL_KID} {k_id}"
             for k_id in assigned_kids_ids
         ]
 
         stored_labels = challenge.get(const.DATA_CHALLENGE_LABELS, [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         return {
@@ -2163,7 +2164,7 @@ class BonusAppliesSensor(CoordinatorEntity, SensorEntity):
 
         stored_labels = bonus_info.get(const.DATA_BONUS_LABELS, [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         return {
