@@ -316,6 +316,7 @@ VALIDATION_THRESHOLD_VALUE = "threshold_value"  # Badge criteria value
 # Global configuration keys
 CONF_BIRTHDAY = "birthday"
 CONF_BIWEEKLY = "biweekly"
+CONF_CALENDAR_SHOW_PERIOD = "calendar_show_period"
 CONF_COST = "cost"
 CONF_CUSTOM = "custom"
 CONF_DAYS = "days"
@@ -765,6 +766,7 @@ DEFAULT_BADGE_REWARD = 0
 DEFAULT_BADGE_THRESHOLD_VALUE = 50
 DEFAULT_BADGE_THRESOLD_TYPE = "points"
 DEFAULT_BONUS_POINTS = 1
+DEFAULT_CALENDAR_SHOW_PERIOD = 90
 DEFAULT_CHALLENGE_REWARD_POINTS = 0
 DEFAULT_CHALLENGE_TARGET = 1
 DEFAULT_CHORES_UNIT = "Chores"
@@ -1040,6 +1042,17 @@ BUTTON_KC_EID_MIDFIX_REWARD_DISAPPROVAL = "_reward_disapproval_"
 BUTTON_KC_EID_SUFFIX_POINTS = "_points"
 
 # ------------------------------------------------------------------------------------------------
+# Calendars
+# ------------------------------------------------------------------------------------------------
+
+# Calendar Prefixes
+CALENDAR_KC_PREFIX = "calendar.kc_"
+
+# Calendar Unique ID Mid & Suffixes
+CALENDAR_KC_UID_SUFFIX_CALENDAR = "_calendar"
+
+
+# ------------------------------------------------------------------------------------------------
 # Services
 # ------------------------------------------------------------------------------------------------
 SERVICE_ADJUST_POINTS = "adjust_points"
@@ -1116,6 +1129,7 @@ ERROR_USER_NOT_AUTHORIZED = "User is not authorized to perform this action."
 MSG_NO_ENTRY_FOUND = "No KidsChores entry found"
 
 # Unknown States
+UNKNOWN_CHALLENGE = "Unknown Challenge"
 UNKNOWN_CHORE = "Unknown Chore"
 UNKNOWN_KID = "Unknown Kid"
 UNKNOWN_REWARD = "Unknown Reward"
@@ -1331,6 +1345,9 @@ TRANS_KEY_BUTTON_ATTR_PENALTY_NAME = "penalty_name"
 TRANS_KEY_BUTTON_ATTR_POINTS_LABEL = "points_label"
 TRANS_KEY_BUTTON_ATTR_REWARD_NAME = "reward_name"
 TRANS_KEY_BUTTON_ATTR_SIGN_LABEL = "sign_label"
+
+# Calendar Attributes Translation Keys
+TRANS_KEY_CALENDAR_NAME = f"{KIDSCHORES_TITLE} Calendar"
 
 # FMT Errors Translation Keys
 TRANS_KEY_FMT_ERROR_ADJUST_POINTS = "adjust_points"

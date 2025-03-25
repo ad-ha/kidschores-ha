@@ -1253,6 +1253,9 @@ def build_general_options_schema(default: dict = None) -> vol.Schema:
         )
 
     default_interval = default.get(const.CONF_UPDATE_INTERVAL, const.UPDATE_INTERVAL)
+    default_calendar_period = default.get(
+        const.CONF_CALENDAR_SHOW_PERIOD, const.DEFAULT_CALENDAR_SHOW_PERIOD
+    )
 
     return vol.Schema(
         {
@@ -1266,6 +1269,9 @@ def build_general_options_schema(default: dict = None) -> vol.Schema:
             ),
             vol.Required(
                 const.CONF_UPDATE_INTERVAL, default=default_interval
+            ): vol.Coerce(int),
+            vol.Required(
+                const.CONF_CALENDAR_SHOW_PERIOD, default=default_calendar_period
             ): vol.Coerce(int),
         }
     )

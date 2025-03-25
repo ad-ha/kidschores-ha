@@ -2812,7 +2812,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Manage general options: points adjust values and update interval."""
         if user_input is not None:
             # Get the raw text from the multiline text area.
-            points_str = user_input.get(const.CONF_POINTS_ADJUST_VALUES, "").strip()
+            points_str = user_input.get(
+                const.CONF_POINTS_ADJUST_VALUES, const.CONF_EMPTY
+            ).strip()
             if points_str:
                 # Parse the values by splitting on newlines and commas.
                 parsed_values = kh.parse_points_adjust_values(points_str)
@@ -2825,10 +2827,15 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             self._entry_options[const.CONF_UPDATE_INTERVAL] = user_input.get(
                 const.CONF_UPDATE_INTERVAL
             )
+            # update calendar show period
+            self._entry_options[const.CONF_CALENDAR_SHOW_PERIOD] = user_input.get(
+                const.CONF_CALENDAR_SHOW_PERIOD
+            )
             const.LOGGER.debug(
-                "General options updated: points_adjust_values=%s, update_interval=%s",
+                "General options updated: Points Adjust Values=%s, Update Interval=%s, Calendar Period to Show=%s",
                 self._entry_options.get(const.CONF_POINTS_ADJUST_VALUES),
                 self._entry_options.get(const.CONF_UPDATE_INTERVAL),
+                self._entry_options.get(const.CONF_CALENDAR_SHOW_PERIOD),
             )
             await self._update_and_reload()
             return await self.async_step_init()
