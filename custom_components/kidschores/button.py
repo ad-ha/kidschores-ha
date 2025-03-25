@@ -21,11 +21,7 @@ from homeassistant.exceptions import HomeAssistantError
 
 from . import const
 from .coordinator import KidsChoresDataCoordinator
-from .kc_helpers import (
-    is_user_authorized_for_global_action,
-    is_user_authorized_for_kid,
-    get_friendly_label,
-)
+from . import kc_helpers as kh
 
 
 async def async_setup_entry(
@@ -43,7 +39,7 @@ async def async_setup_entry(
 
     """
     data = hass.data[const.DOMAIN][entry.entry_id]
-    coordinator: KidsChoresDataCoordinator = data["coordinator"]
+    coordinator: KidsChoresDataCoordinator = data[const.COORDINATOR]
 
     points_label = entry.options.get(
         const.CONF_POINTS_LABEL, const.DEFAULT_POINTS_LABEL
@@ -178,10 +174,39 @@ async def async_setup_entry(
             )
 
     # Create "points adjustment" buttons for each kid (±1, ±2, ±10, etc.)
-    POINT_DELTAS = [+1, -1, +2, -2, +10, -10]
+    raw_values = coordinator.config_entry.options.get(const.CONF_POINTS_ADJUST_VALUES)
+    if not raw_values:
+        points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
+        const.LOGGER.debug(
+            "Using default points_adjust_values: %s", points_adjust_values
+        )
+    elif isinstance(raw_values, str):
+        points_adjust_values = kh.parse_points_adjust_values(raw_values)
+        if not points_adjust_values:
+            points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
+            const.LOGGER.warning(
+                "Parsed points_adjust_values empty; falling back to default"
+            )
+        else:
+            const.LOGGER.debug(
+                "Parsed points_adjust_values from string: %s", points_adjust_values
+            )
+    elif isinstance(raw_values, list):
+        try:
+            points_adjust_values = [float(v) for v in raw_values]
+        except (ValueError, TypeError):
+            points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
+            const.LOGGER.error("Error converting raw_values to floats; using default")
+    else:
+        points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
+
+    # Create a points adjust button for each kid and each delta value
     for kid_id, kid_info in coordinator.kids_data.items():
-        kid_name = kid_info.get("name", f"Kid {kid_id}")
-        for delta in POINT_DELTAS:
+        kid_name = kid_info.get(const.DATA_KID_NAME, f"Kid {kid_id}")
+        for delta in points_adjust_values:
+            const.LOGGER.debug(
+                "Creating PointsAdjustButton for kid %s with delta %s", kid_name, delta
+            )
             entities.append(
                 PointsAdjustButton(
                     coordinator=coordinator,
@@ -233,7 +258,7 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
         """Handle the button press event."""
         try:
             user_id = self._context.user_id if self._context else None
-            if user_id and not await is_user_authorized_for_kid(
+            if user_id and not await kh.is_user_authorized_for_kid(
                 self.hass, user_id, self._kid_id
             ):
                 raise HomeAssistantError(
@@ -277,7 +302,7 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
         chore_info = self.coordinator.chores_data.get(self._chore_id, {})
         stored_labels = chore_info.get("chore_labels", [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         attributes = {
@@ -323,7 +348,7 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
         """Handle the button press event."""
         try:
             user_id = self._context.user_id if self._context else None
-            if user_id and not await is_user_authorized_for_global_action(
+            if user_id and not await kh.is_user_authorized_for_global_action(
                 self.hass, user_id, "approve_chore"
             ):
                 raise HomeAssistantError(
@@ -366,7 +391,7 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
         chore_info = self.coordinator.chores_data.get(self._chore_id, {})
         stored_labels = chore_info.get("chore_labels", [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         attributes = {
@@ -424,7 +449,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
                 )
 
             user_id = self._context.user_id if self._context else None
-            if user_id and not await is_user_authorized_for_global_action(
+            if user_id and not await kh.is_user_authorized_for_global_action(
                 self.hass, user_id, "disapprove_chore"
             ):
                 raise HomeAssistantError(
@@ -468,7 +493,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
         chore_info = self.coordinator.chores_data.get(self._chore_id, {})
         stored_labels = chore_info.get("chore_labels", [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         attributes = {
@@ -516,7 +541,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
         """Handle the button press event."""
         try:
             user_id = self._context.user_id if self._context else None
-            if user_id and not await is_user_authorized_for_kid(
+            if user_id and not await kh.is_user_authorized_for_kid(
                 self.hass, user_id, self._kid_id
             ):
                 raise HomeAssistantError(
@@ -560,7 +585,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
         reward_info = self.coordinator.rewards_data.get(self._reward_id, {})
         stored_labels = reward_info.get("reward_labels", [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         attributes = {
@@ -609,7 +634,7 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
         """Handle the button press event."""
         try:
             user_id = self._context.user_id if self._context else None
-            if user_id and not await is_user_authorized_for_global_action(
+            if user_id and not await kh.is_user_authorized_for_global_action(
                 self.hass, user_id, "approve_reward"
             ):
                 raise HomeAssistantError(
@@ -669,7 +694,7 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
         reward_info = self.coordinator.rewards_data.get(self._reward_id, {})
         stored_labels = reward_info.get("reward_labels", [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         attributes = {
@@ -727,7 +752,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
                 )
 
             user_id = self._context.user_id if self._context else None
-            if user_id and not await is_user_authorized_for_global_action(
+            if user_id and not await kh.is_user_authorized_for_global_action(
                 self.hass, user_id, "disapprove_reward"
             ):
                 raise HomeAssistantError(
@@ -771,7 +796,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
         reward_info = self.coordinator.rewards_data.get(self._reward_id, {})
         stored_labels = reward_info.get("reward_labels", [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         attributes = {
@@ -823,7 +848,7 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
         """Handle the button press event."""
         try:
             user_id = self._context.user_id if self._context else None
-            if user_id and not await is_user_authorized_for_global_action(
+            if user_id and not await kh.is_user_authorized_for_global_action(
                 self.hass, user_id, "apply_penalty"
             ):
                 raise HomeAssistantError(
@@ -867,7 +892,7 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
         penalty_info = self.coordinator.penalties_data.get(self._penalty_id, {})
         stored_labels = penalty_info.get("penalty_labels", [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         attributes = {
@@ -906,7 +931,7 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
         self._delta = delta
         self._points_label = str(points_label)
 
-        sign_label = f"+{delta}" if delta >= 0 else f"-{delta}"
+        sign_label = f"+{delta}" if delta >= 0 else f"{delta}"
         sign_text = f"plus_{delta}" if delta >= 0 else f"minus_{delta}"
         self._attr_unique_id = f"{entry.entry_id}_{kid_id}_adjust_points_{delta}"
         self._attr_translation_placeholders = {
@@ -932,7 +957,7 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
         """Handle the button press event."""
         try:
             user_id = self._context.user_id if self._context else None
-            if user_id and not await is_user_authorized_for_global_action(
+            if user_id and not await kh.is_user_authorized_for_global_action(
                 self.hass, user_id, "adjust_points"
             ):
                 raise HomeAssistantError(
@@ -1009,7 +1034,7 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
         """Handle the button press event."""
         try:
             user_id = self._context.user_id if self._context else None
-            if user_id and not await is_user_authorized_for_global_action(
+            if user_id and not await kh.is_user_authorized_for_global_action(
                 self.hass, user_id, "apply_bonus"
             ):
                 raise HomeAssistantError(
@@ -1053,7 +1078,7 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
         bonus_info = self.coordinator.bonuses_data.get(self._bonus_id, {})
         stored_labels = bonus_info.get("bonus_labels", [])
         friendly_labels = [
-            get_friendly_label(self.hass, label) for label in stored_labels
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
         attributes = {

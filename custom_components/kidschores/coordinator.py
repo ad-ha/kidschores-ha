@@ -39,11 +39,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         storage_manager: KidsChoresStorageManager,
     ):
         """Initialize the KidsChoresDataCoordinator."""
+        update_interval_minutes = config_entry.options.get(
+            const.CONF_UPDATE_INTERVAL, const.UPDATE_INTERVAL
+        )
+
         super().__init__(
             hass,
             const.LOGGER,
             name=f"{const.DOMAIN}_coordinator",
-            update_interval=timedelta(minutes=const.UPDATE_INTERVAL),
+            update_interval=timedelta(minutes=update_interval_minutes),
         )
         self.config_entry = config_entry
         self.storage_manager = storage_manager
@@ -397,6 +401,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self.remove_deprecated_entities(self.hass, self.config_entry)
         )
 
+        # Remove deprecated buttons
+        self.remove_deprecated_button_entities()
+
     def _cleanup_all_links(self) -> None:
         """Run all cross-entity cleanup routines."""
         self._cleanup_deleted_kid_references()
@@ -715,6 +722,130 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     "Removed deprecated entity: %s (unique_id=%s)",
                     entity_id,
                     entity_entry.unique_id,
+                )
+
+    def remove_deprecated_button_entities(self) -> None:
+        """Remove dynamic button entities that are no longer needed per current config."""
+        ent_reg = er.async_get(self.hass)
+        entry_prefix = f"{self.config_entry.entry_id}_"
+        for entity in list(ent_reg.entities.values()):
+            # Only process button domain and those that belong to our entry.
+            if entity.domain != "button" or not entity.unique_id.startswith(
+                entry_prefix
+            ):
+                continue
+
+            uid = entity.unique_id
+            remove_entity = False
+            parts = uid.split("_")
+            # Points Adjust buttons: Format: {entry_id}_{kid_id}_adjust_points_{delta}
+            if "adjust_points" in uid:
+                # Expecting: [entry_id, kid_id, "adjust", "points", delta]
+                if len(parts) < 5:
+                    remove_entity = True
+                else:
+                    kid_id = parts[1]
+                    delta_str = parts[4]
+                    # Only keep points adjust buttons whose delta part includes a decimal.
+                    if kid_id not in self.kids_data or "." not in delta_str:
+                        remove_entity = True
+
+            # Chore Claim/Approval buttons: Format: {entry_id}_{kid_id}_{chore_id}_claim or _approval
+            elif "chore_claim" in uid or "chore_approval" in uid:
+                # Expecting: [entry_id, kid_id, chore_id, ("claim" or "approval")]
+                if len(parts) < 4:
+                    remove_entity = True
+                else:
+                    kid_id = parts[1]
+                    chore_id = parts[2]
+                    if kid_id not in self.kids_data or chore_id not in self.chores_data:
+                        remove_entity = True
+
+            # Chore Disapproval buttons: Format: {entry_id}_chore_disapproval_{kid_id}_{chore_id}
+            elif "chore_disapproval" in uid:
+                # Expecting: [entry_id, "chore", "disapproval", kid_id, chore_id]
+                if len(parts) < 5:
+                    remove_entity = True
+                else:
+                    kid_id = parts[3]
+                    chore_id = parts[4]
+                    if kid_id not in self.kids_data or chore_id not in self.chores_data:
+                        remove_entity = True
+
+            # Reward Claim buttons: Format: {entry_id}_reward_claim_{kid_id}_{reward_id}
+            elif "reward_claim" in uid:
+                # Expecting: [entry_id, "reward", "claim", kid_id, reward_id]
+                if len(parts) < 5:
+                    remove_entity = True
+                else:
+                    kid_id = parts[3]
+                    reward_id = parts[4]
+                    if (
+                        kid_id not in self.kids_data
+                        or reward_id not in self.rewards_data
+                    ):
+                        remove_entity = True
+
+            # Approve Reward buttons: Format: {entry_id}_{kid_id}_{reward_id}_approve_reward
+            elif "approve_reward" in uid and "reward_disapproval" not in uid:
+                # Expecting: [entry_id, kid_id, reward_id, "approve", "reward"]
+                if len(parts) < 5:
+                    remove_entity = True
+                else:
+                    kid_id = parts[1]
+                    reward_id = parts[2]
+                    if (
+                        kid_id not in self.kids_data
+                        or reward_id not in self.rewards_data
+                    ):
+                        remove_entity = True
+
+            # Reward Disapproval buttons: Format: {entry_id}_reward_disapproval_{kid_id}_{reward_id}
+            elif "reward_disapproval" in uid:
+                # Expecting: [entry_id, "reward", "disapproval", kid_id, reward_id]
+                if len(parts) < 5:
+                    remove_entity = True
+                else:
+                    kid_id = parts[3]
+                    reward_id = parts[4]
+                    if (
+                        kid_id not in self.kids_data
+                        or reward_id not in self.rewards_data
+                    ):
+                        remove_entity = True
+
+            # Penalty buttons: Format: {entry_id}_penalty_button_{kid_id}_{penalty_id}
+            elif "penalty_button" in uid:
+                # Expecting: [entry_id, "penalty", "button", kid_id, penalty_id]
+                if len(parts) < 5:
+                    remove_entity = True
+                else:
+                    kid_id = parts[3]
+                    penalty_id = parts[4]
+                    if (
+                        kid_id not in self.kids_data
+                        or penalty_id not in self.penalties_data
+                    ):
+                        remove_entity = True
+
+            # Bonus buttons: Format: {entry_id}_bonus_button_{kid_id}_{bonus_id}
+            elif "bonus_button" in uid:
+                # Expecting: [entry_id, "bonus", "button", kid_id, bonus_id]
+                if len(parts) < 5:
+                    remove_entity = True
+                else:
+                    kid_id = parts[3]
+                    bonus_id = parts[4]
+                    if (
+                        kid_id not in self.kids_data
+                        or bonus_id not in self.bonuses_data
+                    ):
+                        remove_entity = True
+
+            if remove_entity:
+                ent_reg.async_remove(entity.entity_id)
+                const.LOGGER.debug(
+                    "Removed deprecated button entity: %s", entity.entity_id
                 )
 
     # -------------------------------------------------------------------------------------

@@ -1237,6 +1237,41 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
 
 
 # ----------------------------------------------------------------------------------
+# GENERAL OPTIONS SCHEMA
+# ----------------------------------------------------------------------------------
+
+
+def build_general_options_schema(default: dict = None) -> vol.Schema:
+    """Build schema for general options including points adjust values and update interval."""
+    default = default or {}
+    current_values = default.get(const.CONF_POINTS_ADJUST_VALUES)
+    if current_values and isinstance(current_values, list):
+        default_points_str = "\n".join(str(v) for v in current_values)
+    else:
+        default_points_str = "\n".join(
+            str(v) for v in const.DEFAULT_POINTS_ADJUST_VALUES
+        )
+
+    default_interval = default.get(const.CONF_UPDATE_INTERVAL, const.UPDATE_INTERVAL)
+
+    return vol.Schema(
+        {
+            vol.Required(
+                const.CONF_POINTS_ADJUST_VALUES, default=default_points_str
+            ): selector.TextSelector(
+                selector.TextSelectorConfig(
+                    multiline=True,
+                    # placeholder="Enter one value per line, e.g.:\n1\n-1\n2\n-2\n10\n-10",
+                )
+            ),
+            vol.Required(
+                const.CONF_UPDATE_INTERVAL, default=default_interval
+            ): vol.Coerce(int),
+        }
+    )
+
+
+# ----------------------------------------------------------------------------------
 # HELPERS
 # ----------------------------------------------------------------------------------
 

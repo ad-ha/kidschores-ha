@@ -13,6 +13,7 @@ from homeassistant.helpers import selector
 from homeassistant.util import dt as dt_util
 from . import const
 from . import flow_helpers as fh
+from . import kc_helpers as kh
 
 
 def _ensure_str(value):
@@ -44,7 +45,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             if selection == const.OPTIONS_FLOW_POINTS:
                 return await self.async_step_manage_points()
 
-            if selection.startswith(const.OPTIONS_FLOW_MENU_MANAGE_PREFIX):
+            elif selection == const.OPTIONS_FLOW_GENERAL_OPTIONS:
+                return await self.async_step_manage_general_options()
+
+            elif selection.startswith(const.OPTIONS_FLOW_MENU_MANAGE_PREFIX):
                 self._entity_type = selection.replace(
                     const.OPTIONS_FLOW_MENU_MANAGE_PREFIX, const.CONF_EMPTY
                 )
@@ -64,6 +68,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             const.OPTIONS_FLOW_PENALTIES,
             const.OPTIONS_FLOW_ACHIEVEMENTS,
             const.OPTIONS_FLOW_CHALLENGES,
+            const.OPTIONS_FLOW_GENERAL_OPTIONS,
             const.OPTIONS_FLOW_FINISH,
         ]
 
@@ -2800,6 +2805,40 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             description_placeholders={
                 const.OPTIONS_FLOW_PLACEHOLDER_BONUS_NAME: bonus_name
             },
+        )
+
+    # ------------------ GENERAL OPTIONS ------------------
+    async def async_step_manage_general_options(self, user_input=None):
+        """Manage general options: points adjust values and update interval."""
+        if user_input is not None:
+            # Get the raw text from the multiline text area.
+            points_str = user_input.get(const.CONF_POINTS_ADJUST_VALUES, "").strip()
+            if points_str:
+                # Parse the values by splitting on newlines and commas.
+                parsed_values = kh.parse_points_adjust_values(points_str)
+                # Always store as a list of floats.
+                self._entry_options[const.CONF_POINTS_ADJUST_VALUES] = parsed_values
+            else:
+                # Remove the key if the field is left empty.
+                self._entry_options.pop(const.CONF_POINTS_ADJUST_VALUES, None)
+            # Update the update interval.
+            self._entry_options[const.CONF_UPDATE_INTERVAL] = user_input.get(
+                const.CONF_UPDATE_INTERVAL
+            )
+            const.LOGGER.debug(
+                "General options updated: points_adjust_values=%s, update_interval=%s",
+                self._entry_options.get(const.CONF_POINTS_ADJUST_VALUES),
+                self._entry_options.get(const.CONF_UPDATE_INTERVAL),
+            )
+            await self._update_and_reload()
+            return await self.async_step_init()
+
+        # Use the helper schema (which now shows one value per line)
+        general_schema = fh.build_general_options_schema(self._entry_options)
+        return self.async_show_form(
+            step_id=const.OPTIONS_FLOW_STEP_MANAGE_GENERAL_OPTIONS,
+            data_schema=general_schema,
+            description_placeholders={},
         )
 
     # ------------------ HELPER METHODS ------------------

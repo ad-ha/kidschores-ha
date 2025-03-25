@@ -90,13 +90,14 @@ OPTIONS_FLOW_BADGES = "manage_badge"
 OPTIONS_FLOW_BONUSES = "manage_bonus"
 OPTIONS_FLOW_CHALLENGES = "manage_challenge"
 OPTIONS_FLOW_CHORES = "manage_chore"
-OPTIONS_FLOW_SELECT_ENTITY = "select_entity"
 OPTIONS_FLOW_FINISH = "done"
+OPTIONS_FLOW_GENERAL_OPTIONS = "general_options"
 OPTIONS_FLOW_KIDS = "manage_kid"
 OPTIONS_FLOW_PARENTS = "manage_parent"
 OPTIONS_FLOW_PENALTIES = "manage_penalty"
 OPTIONS_FLOW_POINTS = "manage_points"
 OPTIONS_FLOW_REWARDS = "manage_reward"
+OPTIONS_FLOW_SELECT_ENTITY = "select_entity"
 
 # OptionsFlow Configuration Keys
 CONF_ACHIEVEMENTS = "achievements"
@@ -113,6 +114,7 @@ CONF_REWARDS = "rewards"
 # OptionsFlow Steps
 OPTIONS_FLOW_STEP_INIT = "init"
 OPTIONS_FLOW_STEP_MANAGE_ENTITY = "manage_entity"
+OPTIONS_FLOW_STEP_MANAGE_GENERAL_OPTIONS = "manage_general_options"
 OPTIONS_FLOW_STEP_MANAGE_POINTS = "manage_points"
 OPTIONS_FLOW_STEP_SELECT_ENTITY = "select_entity"
 
@@ -464,6 +466,10 @@ CONF_CHALLENGE_TYPE = "type"
 CHALLENGE_TYPE_DAILY_MIN = "daily_minimum"
 CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW = "total_within_window"
 
+# General Options
+CONF_POINTS_ADJUST_VALUES = "points_adjust_values"
+CONF_UPDATE_INTERVAL = "update_interval"
+
 
 # ------------------------------------------------------------------------------------------------
 # Data Keys
@@ -777,6 +783,7 @@ DEFAULT_PENALTY_POINTS = 1
 DEFAULT_PENDING_CHORES_UNIT = "Pending Chores"
 DEFAULT_PENDING_REWARDS_UNIT = "Pending Rewards"
 DEFAULT_POINTS = 5
+DEFAULT_POINTS_ADJUST_VALUES = [+1, -1, +2, -2, +10, -10]
 DEFAULT_POINTS_LABEL = "Points"
 DEFAULT_POINTS_MULTIPLIER = 1
 DEFAULT_REWARD_COST = 10
@@ -1200,6 +1207,7 @@ TRANS_KEY_CFOF_INVALID_START_DATE = "invalid_start_date"
 TRANS_KEY_CFOF_MAIN_MENU = "main_menu"
 TRANS_KEY_CFOF_MANAGE_ACTIONS = "manage_actions"
 TRANS_KEY_CFOF_NO_ENTITY_TYPE = "no_{}s"
+TRANS_KEY_CFOF_POINTS_ADJUST = "points_adjust_options"
 TRANS_KEY_CFOF_REQUIRED_CHORES = "required_chores"
 TRANS_KEY_CFOP_RESET_SCHEDULE = "reset_schedule"
 TRANS_KEY_CFOF_START_DATE_IN_PAST = "start_date_in_past"
