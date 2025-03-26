@@ -7,8 +7,10 @@ Manages entities primarily using internal_id for consistency.
 """
 
 import asyncio
+import uuid
+
 from calendar import monthrange
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, Optional
 
 from homeassistant.auth.models import User
@@ -2626,12 +2628,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         kid_info.setdefault(const.DATA_KID_PENDING_REWARDS, []).append(reward_id)
         kid_info.setdefault(const.DATA_KID_REDEEMED_REWARDS, [])
 
+        # Generate a unique notification ID for this claim.
+        notif_id = uuid.uuid4().hex
+
         # Add to pending approvals
         self._data[const.DATA_PENDING_REWARD_APPROVALS].append(
             {
                 const.DATA_KID_ID: kid_id,
                 const.DATA_REWARD_ID: reward_id,
                 const.DATA_REWARD_TIMESTAMP: dt_util.utcnow().isoformat(),
+                const.DATA_REWARD_NOTIFICATION_ID: notif_id,
             }
         )
 
@@ -2644,19 +2650,23 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # Send a notification to the parents that a kid claimed a reward
         actions = [
             {
-                const.NOTIFY_ACTION: f"{const.ACTION_APPROVE_REWARD}|{kid_id}|{reward_id}",
+                const.NOTIFY_ACTION: f"{const.ACTION_APPROVE_REWARD}|{kid_id}|{reward_id}|{notif_id}",
                 const.NOTIFY_TITLE: const.ACTION_TITLE_APPROVE,
             },
             {
-                const.NOTIFY_ACTION: f"{const.ACTION_DISAPPROVE_REWARD}|{kid_id}|{reward_id}",
+                const.NOTIFY_ACTION: f"{const.ACTION_DISAPPROVE_REWARD}|{kid_id}|{reward_id}|{notif_id}",
                 const.NOTIFY_TITLE: const.ACTION_TITLE_DISAPPROVE,
             },
             {
-                const.NOTIFY_ACTION: f"{const.ACTION_REMIND_30}|{kid_id}|{reward_id}",
+                const.NOTIFY_ACTION: f"{const.ACTION_REMIND_30}|{kid_id}|{reward_id}|{notif_id}",
                 const.NOTIFY_TITLE: const.ACTION_TITLE_REMIND_30,
             },
         ]
-        extra_data = {const.DATA_KID_ID: kid_id, const.DATA_REWARD_ID: reward_id}
+        extra_data = {
+            const.DATA_KID_ID: kid_id,
+            const.DATA_REWARD_ID: reward_id,
+            const.DATA_REWARD_NOTIFICATION_ID: notif_id,
+        }
         self.hass.async_create_task(
             self._notify_parents(
                 kid_id,
@@ -2670,7 +2680,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._persist()
         self.async_set_updated_data(self._data)
 
-    def approve_reward(self, parent_name: str, kid_id: str, reward_id: str):
+    def approve_reward(
+        self,
+        parent_name: str,
+        kid_id: str,
+        reward_id: str,
+        notif_id: Optional[str] = None,
+    ):
         """Parent approves the reward => deduct points."""
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
@@ -2681,20 +2697,26 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             raise HomeAssistantError(f"Reward with ID '{reward_id}' not found.")
 
         cost = reward.get(const.DATA_REWARD_COST, const.DEFAULT_ZERO)
-        if reward_id in kid_info.get(const.DATA_KID_PENDING_REWARDS, []):
+
+        pending_count = kid_info.get(const.DATA_KID_PENDING_REWARDS, []).count(
+            reward_id
+        )
+        if pending_count > 0:
             if kid_info[const.DATA_KID_POINTS] < cost:
                 raise HomeAssistantError(
                     f"'{kid_info[const.DATA_KID_NAME]}' does not have enough points to redeem '{reward[const.DATA_REWARD_NAME]}'."
                 )
 
-            # Deduct
+            # Deduct points for one claim.
             new_points = float(kid_info[const.DATA_KID_POINTS]) - cost
             self.update_kid_points(kid_id, new_points)
 
+            # Remove one occurrence from the kid's pending rewards list and add to redeemed.
             kid_info[const.DATA_KID_PENDING_REWARDS].remove(reward_id)
-            kid_info[const.DATA_KID_REDEEMED_REWARDS].append(reward_id)
+            kid_info.setdefault(const.DATA_KID_REDEEMED_REWARDS, []).append(reward_id)
+
         else:
-            # direct approval scenario
+            # Direct approval (no pending claim present).
             if kid_info[const.DATA_KID_POINTS] < cost:
                 raise HomeAssistantError(
                     f"'{kid_info[const.DATA_KID_NAME]}' does not have enough points to redeem '{reward[const.DATA_REWARD_NAME]}'."
@@ -2702,25 +2724,32 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             kid_info[const.DATA_KID_POINTS] -= cost
             kid_info[const.DATA_KID_REDEEMED_REWARDS].append(reward_id)
 
-        self._check_badges_for_kid(kid_id)
-
-        # remove 1 claim from pending approvals
-        approvals = self._data[const.DATA_PENDING_REWARD_APPROVALS]
+        # Remove only one matching pending reward approval from global approvals.
+        approvals = self._data.get(const.DATA_PENDING_REWARD_APPROVALS, [])
         for i, ap in enumerate(approvals):
             if (
-                ap[const.DATA_KID_ID] == kid_id
-                and ap[const.DATA_REWARD_ID] == reward_id
+                ap.get(const.DATA_KID_ID) == kid_id
+                and ap.get(const.DATA_REWARD_ID) == reward_id
             ):
-                del approvals[i]  # Remove only the first match
-                break  # Stop after the first removal
+                # If a notification ID was passed, only remove the matching one.
+                if notif_id is not None:
+                    if ap.get(const.DATA_REWARD_NOTIFICATION_ID) == notif_id:
+                        del approvals[i]
+                        break
+                else:
+                    del approvals[i]
+                    break
 
-        # increment reward_approvals
+        # Increment reward approval counter for the kid.
         if reward_id in kid_info[const.DATA_KID_REWARD_APPROVALS]:
             kid_info[const.DATA_KID_REWARD_APPROVALS][reward_id] += 1
         else:
             kid_info[const.DATA_KID_REWARD_APPROVALS][reward_id] = 1
 
-        # Send a notification to the kid that reward was approved
+        # Check badges
+        self._check_badges_for_kid(kid_id)
+
+        # Notify the kid that the reward has been approved
         extra_data = {const.DATA_KID_ID: kid_id, const.DATA_REWARD_ID: reward_id}
         self.hass.async_create_task(
             self._notify_kid(
@@ -2741,15 +2770,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if not reward:
             raise HomeAssistantError(f"Reward with ID '{reward_id}' not found.")
 
-        # remove from pending approvals
-        self._data[const.DATA_PENDING_REWARD_APPROVALS] = [
-            ap
-            for ap in self._data[const.DATA_PENDING_REWARD_APPROVALS]
-            if not (
-                ap[const.DATA_KID_ID] == kid_id
-                and ap[const.DATA_REWARD_ID] == reward_id
-            )
-        ]
+        # Remove only one entry of each reward claim from pending approvals
+        approvals = self._data.get(const.DATA_PENDING_REWARD_APPROVALS, [])
+        for i, ap in enumerate(approvals):
+            if (
+                ap.get(const.DATA_KID_ID) == kid_id
+                and ap.get(const.DATA_REWARD_ID) == reward_id
+            ):
+                del approvals[i]
+                break
+        self._data[const.DATA_PENDING_REWARD_APPROVALS] = approvals
 
         kid_info = self.kids_data.get(kid_id)
         if kid_info and reward_id in kid_info.get(const.DATA_KID_PENDING_REWARDS, []):
@@ -3649,7 +3679,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._persist()
         self.async_set_updated_data(self._data)
 
-    def _update_streak_progress(self, progress: dict, today: datetime.date):
+    def _update_streak_progress(self, progress: dict, today: date):
         """Update a streak progress dict.
 
         If the last approved date was yesterday, increment the streak.
@@ -3657,28 +3687,36 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """
         last_date = None
         if progress.get(const.DATA_KID_LAST_STREAK_DATE):
-            # Parse the stored ISO string using Home Assistant's dt_util
-            last_dt = dt_util.parse_datetime(progress[const.DATA_KID_LAST_STREAK_DATE])
-            if last_dt:
-                # Convert to local time and get the date portion
-                last_date = dt_util.as_local(last_dt).date()
+            try:
+                last_date = date.fromisoformat(
+                    progress[const.DATA_KID_LAST_STREAK_DATE]
+                )
+            except Exception:
+                last_date = None
+
+        # If already updated today, do nothing
         if last_date == today:
-            # Already updated today – do nothing
             return
+
+        # If yesterday was the last update, increment the streak
         elif last_date == today - timedelta(days=1):
             progress[const.DATA_KID_CURRENT_STREAK] += 1
+
+        # Reset to 1 if not done yesterday
         else:
             progress[const.DATA_KID_CURRENT_STREAK] = 1
+
         progress[const.DATA_KID_LAST_STREAK_DATE] = today.isoformat()
 
     def _update_chore_streak_for_kid(
-        self, kid_id: str, chore_id: str, completion_date: datetime.date
+        self, kid_id: str, chore_id: str, completion_date: date
     ):
         """Update (or initialize) the streak for a specific chore for a kid, and update the max streak achieved so far."""
 
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             return
+
         # Ensure a streak dictionary exists
         if const.DATA_KID_CHORE_STREAKS not in kid_info:
             kid_info[const.DATA_KID_CHORE_STREAKS] = {}
@@ -3693,16 +3731,21 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             },
         )
         last_date = None
-        if streak[const.DATA_KID_LAST_STREAK_DATE]:
+        if streak.get(const.DATA_KID_LAST_STREAK_DATE):
             try:
-                last_date = datetime.fromisoformat(
-                    streak[const.DATA_KID_LAST_STREAK_DATE]
-                ).date()
+                last_date = date.fromisoformat(streak[const.DATA_KID_LAST_STREAK_DATE])
             except Exception:
-                pass
+                last_date = None
 
-        if last_date == completion_date - timedelta(days=1):
+        # If the chore was already recorded today, do nothing
+        if last_date == completion_date:
+            return
+
+        # If the last completion was exactly yesterday, increase the streak
+        elif last_date == completion_date - timedelta(days=1):
             streak[const.DATA_KID_CURRENT_STREAK] += 1
+
+        # Reset to 1 if not done yesterday
         else:
             streak[const.DATA_KID_CURRENT_STREAK] = 1
 
@@ -3716,30 +3759,34 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         kid_info[const.DATA_KID_CHORE_STREAKS][chore_id] = streak
 
-    def _update_overall_chore_streak(self, kid_id: str, completion_date: datetime.date):
+    def _update_overall_chore_streak(self, kid_id: str, completion_date: date):
         """Update the overall streak for a kid (days in a row with at least one approved chore)."""
 
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             return
         last_date = None
-        if (
-            const.DATA_KID_LAST_CHORE_DATE in kid_info
-            and kid_info[const.DATA_KID_LAST_CHORE_DATE]
-        ):
+        if kid_info.get(const.DATA_KID_LAST_CHORE_DATE):
             try:
-                last_date = datetime.fromisoformat(
-                    kid_info[const.DATA_KID_LAST_CHORE_DATE]
-                ).date()
+                last_date = date.fromisoformat(kid_info[const.DATA_KID_LAST_CHORE_DATE])
             except Exception:
-                pass
-        if last_date == completion_date - timedelta(days=1):
+                last_date = None
+
+        # If the chore was already recorded today, do nothing
+        if last_date == completion_date:
+            return
+
+        # If the last completion was exactly yesterday, increase the streak
+        elif last_date == completion_date - timedelta(days=1):
             kid_info[const.DATA_KID_OVERALL_CHORE_STREAK] = (
                 kid_info.get(const.DATA_KID_OVERALL_CHORE_STREAK, const.DEFAULT_ZERO)
                 + 1
             )
+
+        # Reset to 1 if not done yesterday
         else:
             kid_info[const.DATA_KID_OVERALL_CHORE_STREAK] = 1
+
         kid_info[const.DATA_KID_LAST_CHORE_DATE] = completion_date.isoformat()
 
     # -------------------------------------------------------------------------------------
