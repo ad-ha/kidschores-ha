@@ -11,7 +11,6 @@ Features:
 
 """
 
-from homeassistant.auth.models import User
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -20,8 +19,8 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.exceptions import HomeAssistantError
 
 from . import const
-from .coordinator import KidsChoresDataCoordinator
 from . import kc_helpers as kh
+from .coordinator import KidsChoresDataCoordinator
 
 
 async def async_setup_entry(

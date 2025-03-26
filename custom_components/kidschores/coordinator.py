@@ -127,15 +127,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
 
     def _migrate_chore_data(self):
-        """Migrate each chore's data to include new fields if missing.
-
-        This method iterates over each chore entry in the stored data and ensures
-        that the following keys are present:
-        - const.CONF_APPLICABLE_DAYS (defaults to const.DEFAULT_APPLICABLE_DAYS)
-        - const.CONF_NOTIFY_ON_CLAIM (defaults to const.DEFAULT_NOTIFY_ON_CLAIM)
-        - const.CONF_NOTIFY_ON_APPROVAL (defaults to const.DEFAULT_NOTIFY_ON_APPROVAL)
-        - const.CONF_NOTIFY_ON_DISAPPROVAL (defaults to const.DEFAULT_NOTIFY_ON_DISAPPROVAL)
-        """
+        """Migrate each chore's data to include new fields if missing."""
         chores = self._data.get(const.DATA_CHORES, {})
         for chore in chores.values():
             chore.setdefault(const.CONF_APPLICABLE_DAYS, const.DEFAULT_APPLICABLE_DAYS)
@@ -147,6 +139,67 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.CONF_NOTIFY_ON_DISAPPROVAL, const.DEFAULT_NOTIFY_ON_DISAPPROVAL
             )
         const.LOGGER.info("Chore data migration complete.")
+
+    def _migrate_badges(self):
+        """Migrate legacy 'chore_count' badges into cumulative badges.
+
+        For badges whose threshold_type is set to the legacy value (e.g. BADGE_THRESHOLD_TYPE_CHORE_COUNT),
+        compute the new threshold as the legacy count multiplied by the average default points across all chores.
+        Also, set reset fields to empty and disable periodic resets.
+        """
+        badges = self._data.get(const.DATA_BADGES, {})
+        chores = self._data.get(const.DATA_CHORES, {})
+
+        # Calculate the average default points over all chores.
+        total_points = 0.0
+        count = 0
+        for chore in chores.values():
+            try:
+                default_points = float(
+                    chore.get(const.DATA_CHORE_DEFAULT_POINTS, const.DEFAULT_POINTS)
+                )
+                total_points += default_points
+                count += 1
+            except Exception:
+                continue
+
+        # If there are no chores, we fallback to DEFAULT_POINTS.
+        average_points = (total_points / count) if count > 0 else const.DEFAULT_POINTS
+
+        # Process each badge.
+        for badge in badges.values():
+            # Check if the badge uses the legacy "chore_count" threshold type.
+            if (
+                badge.get(const.DATA_BADGE_THRESHOLD_TYPE)
+                == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT
+            ):
+                old_threshold = badge.get(
+                    const.DATA_BADGE_THRESHOLD_VALUE,
+                    const.DEFAULT_BADGE_THRESHOLD_VALUE,
+                )
+                try:
+                    # Multiply the legacy count by the average default points.
+                    new_threshold = float(old_threshold) * average_points
+                except Exception:
+                    new_threshold = old_threshold
+
+                # Update the badge data to be a cumulative points badge.
+                badge[const.DATA_BADGE_THRESHOLD_VALUE] = new_threshold
+                badge[const.DATA_BADGE_THRESHOLD_TYPE] = const.CONF_POINTS
+
+                # Set reset-related fields to empty and disable periodic resets.
+                badge[const.DATA_BADGE_RESET_PERIODICALLY] = False
+                badge[const.DATA_BADGE_RESET_PERIOD] = const.CONF_EMPTY
+                badge[const.DATA_BADGE_RESET_GRACE_PERIOD] = const.CONF_EMPTY
+                badge[const.DATA_BADGE_MAINTENANCE_RULES] = const.CONF_EMPTY
+
+                const.LOGGER.info(
+                    "Migrated legacy chore_count badge '%s': old threshold %s -> new threshold %s (average_points=%.2f)",
+                    badge.get(const.DATA_BADGE_NAME),
+                    old_threshold,
+                    new_threshold,
+                    average_points,
+                )
 
     # -------------------------------------------------------------------------------------
     # Normalize Lists
@@ -191,6 +244,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
             # Migrate chore data and add new fields
             self._migrate_chore_data()
+
+            #  Migrate Badge Data for Legacy Badges
+            self._migrate_badges()
 
         else:
             self._data = {
