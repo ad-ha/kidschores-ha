@@ -21,6 +21,7 @@ async def async_handle_notification_action(hass: HomeAssistant, event: Event) ->
     kid_id = None
     chore_id = None
     reward_id = None
+    notif_id = None
 
     # Decide what to expect based on the base action.
     if base_action in (const.ACTION_APPROVE_REWARD, const.ACTION_DISAPPROVE_REWARD):
@@ -31,6 +32,8 @@ async def async_handle_notification_action(hass: HomeAssistant, event: Event) ->
             return
         kid_id = parts[1]
         reward_id = parts[2]
+        notif_id = parts[3]
+
     elif base_action in (
         const.ACTION_APPROVE_CHORE,
         const.ACTION_DISAPPROVE_CHORE,
@@ -89,6 +92,7 @@ async def async_handle_notification_action(hass: HomeAssistant, event: Event) ->
                 parent_name=parent_name,
                 kid_id=kid_id,
                 reward_id=reward_id,
+                notif_id=notif_id,
             )
         elif base_action == const.ACTION_DISAPPROVE_REWARD:
             await coordinator.disapprove_reward(

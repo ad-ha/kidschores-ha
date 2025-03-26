@@ -604,6 +604,7 @@ DATA_REWARD_ID = "reward_id"
 DATA_REWARD_INTERNAL_ID = "internal_id"
 DATA_REWARD_LABELS = "reward_labels"
 DATA_REWARD_NAME = "name"
+DATA_REWARD_NOTIFICATION_ID = "notification_id"
 DATA_REWARD_TIMESTAMP = "timestamp"
 
 # BONUSES

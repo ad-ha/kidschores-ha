@@ -598,7 +598,9 @@ class CompletedChoresMonthlySensor(CoordinatorEntity, SensorEntity):
 
 # ------------------------------------------------------------------------------------------
 class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
-    """Sensor that returns the "highest" badge the kid currently has."""
+    """Sensor that returns the highest cumulative badge a kid currently has,
+    and calculates how many points are needed to reach the next cumulative badge.
+    """
 
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_KIDS_HIGHEST_BADGE_SENSOR
@@ -617,7 +619,9 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_KID_HIGHEST_BADGE_SENSOR}"
 
     def _find_highest_badge(self):
-        """Determine which badge has the highest ranking."""
+        """Determine which cumulative badge has the highest threshold
+        among those the kid has earned.
+        """
 
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
         earned_badge_names = kid_info.get(const.DATA_KID_BADGES, [])
@@ -626,17 +630,18 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         highest_value = -1
 
         for badge_name in earned_badge_names:
-            # Find badge by name
+            # Find badge by name. Only consider badges that are cumulative
             badge_data = next(
                 (
                     info
                     for bid, info in self.coordinator.badges_data.items()
                     if info.get(const.DATA_BADGE_NAME) == badge_name
+                    and info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
                 ),
                 None,
             )
             if not badge_data:
-                continue  # skip if not found or invalid
+                continue
 
             threshold_val = badge_data.get(
                 const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
@@ -663,6 +668,7 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
                     info
                     for bid, info in self.coordinator.badges_data.items()
                     if info.get(const.DATA_BADGE_NAME) == highest_badge
+                    and info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
                 ),
                 {},
             )
@@ -671,7 +677,9 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        """Provide additional details."""
+        """Provide additional details about the highest cumulative badge,
+        including the points needed to reach the next cumulative badge.
+        """
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
         highest_badge, highest_val = self._find_highest_badge()
 
@@ -684,6 +692,7 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
                     info
                     for bid, info in self.coordinator.badges_data.items()
                     if info.get(const.DATA_BADGE_NAME) == highest_badge
+                    and info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
                 ),
                 {},
             )
@@ -834,6 +843,7 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
                 const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_BADGE_THRESHOLD_VALUE
             )
         elif badge_type == const.BADGE_TYPE_DAILY:
+            attributes[const.ATTR_THRESHOLD_TYPE] = threshold_type
             attributes[const.ATTR_DAILY_THRESHOLD] = badge_info.get(
                 const.DATA_BADGE_DAILY_THRESHOLD
             )
@@ -850,6 +860,7 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
             attributes[const.ATTR_PERIODIC_RECURRENT] = badge_info.get(
                 const.DATA_BADGE_PERIODIC_RECURRENT, False
             )
+            attributes[const.ATTR_THRESHOLD_TYPE] = threshold_type
             attributes[const.ATTR_THRESHOLD_VALUE] = badge_info.get(
                 const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_BADGE_THRESHOLD_VALUE
             )
