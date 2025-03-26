@@ -764,17 +764,26 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
     def native_value(self) -> float:
         """The sensor state is the threshold_value for the badge."""
         badge_info = self.coordinator.badges_data.get(self._badge_id, {})
-        return badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO)
+        badge_type = badge_info.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
+        if badge_type == const.BADGE_TYPE_DAILY:
+            return badge_info.get(const.DATA_BADGE_DAILY_THRESHOLD, const.DEFAULT_ZERO)
+        elif badge_type in (
+            const.BADGE_TYPE_ACHIEVEMENT_LINKED,
+            const.BADGE_TYPE_CHALLENGE_LINKED,
+            const.BADGE_TYPE_SPECIAL_OCCASION,
+        ):
+            return badge_info.get(const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_ZERO)
+        else:
+            return badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO)
 
     @property
     def extra_state_attributes(self):
         """Provide additional badge data, including which kids currently have it."""
         badge_info = self.coordinator.badges_data.get(self._badge_id, {})
-        threshold_type = (
-            badge_info.get(
-                const.DATA_BADGE_THRESHOLD_TYPE, const.BADGE_THRESHOLD_TYPE_POINTS
-            ),
+        threshold_type = badge_info.get(
+            const.DATA_BADGE_THRESHOLD_TYPE, const.BADGE_THRESHOLD_TYPE_POINTS
         )
+
         points_multiplier = badge_info.get(
             const.DATA_BADGE_POINTS_MULTIPLIER, const.DEFAULT_KID_POINTS_MULTIPLIER
         )
@@ -831,7 +840,6 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
 
         attributes = {
             const.ATTR_DESCRIPTION: description,
-            const.ATTR_POINTS_MULTIPLIER: points_multiplier,
             const.ATTR_AWARD_POINTS: award_points,
             const.ATTR_AWARD_REWARD: award_reward,
             const.ATTR_KIDS_EARNED: kids_earned_names,
@@ -839,6 +847,7 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
         }
 
         if badge_type == const.BADGE_TYPE_CUMULATIVE:
+            attributes[const.ATTR_POINTS_MULTIPLIER] = points_multiplier
             attributes[const.ATTR_THRESHOLD_VALUE] = badge_info.get(
                 const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_BADGE_THRESHOLD_VALUE
             )

@@ -540,7 +540,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                     const.DATA_BADGE_ICON: user_input.get(
                         const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
                     ),
-                    const.DATA_BADGE_THRESHOLD_TYPE: const.DEFAULT_BADGE_THRESOLD_TYPE,
+                    const.DATA_BADGE_THRESHOLD_TYPE: const.DEFAULT_BADGE_THRESHOLD_TYPE,
                     const.DATA_BADGE_THRESHOLD_VALUE: user_input[
                         const.CFOF_BADGES_INPUT_THRESHOLD_VALUE
                     ],

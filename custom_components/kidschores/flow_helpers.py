@@ -333,9 +333,10 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
                 const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
             vol.Required(
-                const.CONF_BADGE_THRESOLD_VALUE,
+                const.CONF_BADGE_THRESHOLD_VALUE,
                 default=default.get(
-                    const.CONF_BADGE_THRESOLD_VALUE, const.DEFAULT_BADGE_THRESHOLD_VALUE
+                    const.CONF_BADGE_THRESHOLD_VALUE,
+                    const.DEFAULT_BADGE_THRESHOLD_VALUE,
                 ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
@@ -459,7 +460,7 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
                 const.CONF_BADGE_DAILY_THRESHOLD_TYPE,
                 default=default.get(
                     const.CONF_BADGE_DAILY_THRESHOLD_TYPE,
-                    const.DEFAULT_BADGE_THRESOLD_TYPE,
+                    const.DEFAULT_BADGE_THRESHOLD_TYPE,
                 ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
@@ -576,7 +577,7 @@ def build_badge_periodic_schema(
             vol.Required(
                 const.CONF_BADGE_THRESHOLD_TYPE,
                 default=default.get(
-                    const.CONF_BADGE_THRESHOLD_TYPE, const.DEFAULT_BADGE_THRESOLD_TYPE
+                    const.CONF_BADGE_THRESHOLD_TYPE, const.DEFAULT_BADGE_THRESHOLD_TYPE
                 ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
@@ -595,9 +596,10 @@ def build_badge_periodic_schema(
                 )
             ),
             vol.Required(
-                const.CONF_BADGE_THRESOLD_VALUE,
+                const.CONF_BADGE_THRESHOLD_VALUE,
                 default=default.get(
-                    const.CONF_BADGE_THRESOLD_VALUE, const.DEFAULT_BADGE_THRESHOLD_VALUE
+                    const.CONF_BADGE_THRESHOLD_VALUE,
+                    const.DEFAULT_BADGE_THRESHOLD_VALUE,
                 ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
@@ -820,10 +822,16 @@ def build_badge_challenge_schema(
     )
 
 
-def build_badge_special_occasions_schema(default: dict = None):
+def build_badge_special_occasions_schema(
+    default: dict = None, rewards_list: list = None
+):
     """Build schema for special occasion badges."""
     default = default or {}
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
+    rewards_list = [
+        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
+    ] + rewards_list
+
     return vol.Schema(
         {
             vol.Required(
@@ -861,6 +869,39 @@ def build_badge_special_occasions_schema(default: dict = None):
                     const.CONF_BADGE_SPECIAL_OCCASION_RECURRENCY, False
                 ),
             ): selector.BooleanSelector(),
+            vol.Required(
+                const.CONF_BADGE_AWARD_MODE,
+                default=default.get(
+                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+                ),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=const.AWARD_MODE_OPTIONS,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
+                )
+            ),
+            vol.Optional(
+                const.CONF_BADGE_AWARD_POINTS,
+                default=default.get(
+                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
+                ),
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=0,
+                    step=1,
+                )
+            ),
+            vol.Optional(
+                const.CONF_BADGE_AWARD_REWARD,
+                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=rewards_list,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
+                )
+            ),
             vol.Required(
                 const.CONF_BADGE_TYPE,
                 default=default.get(

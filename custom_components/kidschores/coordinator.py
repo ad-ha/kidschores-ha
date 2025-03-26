@@ -1426,7 +1426,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     ),
                     const.DATA_BADGE_THRESHOLD_TYPE: badge_data.get(
                         const.DATA_BADGE_THRESHOLD_TYPE,
-                        const.DEFAULT_BADGE_THRESOLD_TYPE,
+                        const.DEFAULT_BADGE_THRESHOLD_TYPE,
                     ),
                     const.DATA_BADGE_REQUIRED_CHORES: badge_data.get(
                         const.DATA_BADGE_REQUIRED_CHORES, []
@@ -1575,7 +1575,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             badge_info[const.DATA_BADGE_THRESHOLD_TYPE] = badge_data.get(
                 const.DATA_BADGE_THRESHOLD_TYPE,
                 badge_info.get(
-                    const.DATA_BADGE_THRESHOLD_TYPE, const.DEFAULT_BADGE_THRESOLD_TYPE
+                    const.DATA_BADGE_THRESHOLD_TYPE, const.DEFAULT_BADGE_THRESHOLD_TYPE
                 ),
             )
             badge_info[const.DATA_BADGE_REQUIRED_CHORES] = badge_data.get(
