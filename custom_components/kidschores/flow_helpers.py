@@ -422,10 +422,6 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
                     const.CONF_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY
                 ),
             ): str,
-            vol.Required(
-                const.CONF_BADGE_TYPE,
-                default=default.get(const.CONF_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE),
-            ): str,
             vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
@@ -514,10 +510,6 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
                     translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
                 )
             ),
-            vol.Required(
-                const.CONF_BADGE_TYPE,
-                default=default.get(const.CONF_BADGE_TYPE, const.BADGE_TYPE_DAILY),
-            ): str,
             vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
@@ -641,10 +633,6 @@ def build_badge_periodic_schema(
                     translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
                 )
             ),
-            vol.Required(
-                const.CONF_BADGE_TYPE,
-                default=default.get(const.CONF_BADGE_TYPE, const.BADGE_TYPE_PERIODIC),
-            ): str,
             vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
@@ -725,12 +713,6 @@ def build_badge_achievement_schema(
                     translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
                 )
             ),
-            vol.Required(
-                const.CONF_BADGE_TYPE,
-                default=default.get(
-                    const.CONF_BADGE_TYPE, const.BADGE_TYPE_ACHIEVEMENT_LINKED
-                ),
-            ): str,
             vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
@@ -811,12 +793,6 @@ def build_badge_challenge_schema(
                     translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
                 )
             ),
-            vol.Required(
-                const.CONF_BADGE_TYPE,
-                default=default.get(
-                    const.CONF_BADGE_TYPE, const.BADGE_TYPE_CHALLENGE_LINKED
-                ),
-            ): str,
             vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
@@ -918,12 +894,6 @@ def build_badge_special_occasions_schema(
                     translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
                 )
             ),
-            vol.Required(
-                const.CONF_BADGE_TYPE,
-                default=default.get(
-                    const.CONF_BADGE_TYPE, const.BADGE_TYPE_SPECIAL_OCCASION
-                ),
-            ): str,
             vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
