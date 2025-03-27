@@ -780,6 +780,11 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
     def extra_state_attributes(self):
         """Provide additional badge data, including which kids currently have it."""
         badge_info = self.coordinator.badges_data.get(self._badge_id, {})
+
+        award_mode = badge_info.get(
+            const.DATA_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+        )
+
         threshold_type = badge_info.get(
             const.DATA_BADGE_THRESHOLD_TYPE, const.BADGE_THRESHOLD_TYPE_POINTS
         )
@@ -797,7 +802,6 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
         ]
 
         award_points = badge_info.get(const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_ZERO)
-
         award_reward_id = badge_info.get(
             const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
         )
@@ -840,11 +844,20 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
 
         attributes = {
             const.ATTR_DESCRIPTION: description,
-            const.ATTR_AWARD_POINTS: award_points,
-            const.ATTR_AWARD_REWARD: award_reward,
             const.ATTR_KIDS_EARNED: kids_earned_names,
             const.ATTR_LABELS: friendly_labels,
         }
+
+        if award_mode in (
+            const.CONF_BADGE_AWARD_POINTS,
+            const.CONF_BADGE_AWARD_POINTS_REWARD,
+        ):
+            attributes[const.ATTR_AWARD_POINTS] = award_points
+        if award_mode in (
+            const.CONF_BADGE_AWARD_REWARD,
+            const.CONF_BADGE_AWARD_POINTS_REWARD,
+        ):
+            attributes[const.ATTR_AWARD_REWARD] = award_reward
 
         if badge_type == const.BADGE_TYPE_CUMULATIVE:
             attributes[const.ATTR_POINTS_MULTIPLIER] = points_multiplier
@@ -918,9 +931,6 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
         elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
             attributes[const.ATTR_OCCASION_TYPE] = badge_info.get(
                 const.DATA_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY
-            )
-            attributes[const.ATTR_TRIGGER_INFO] = badge_info.get(
-                const.DATA_BADGE_TRIGGER_INFO, const.CONF_EMPTY
             )
             attributes[const.ATTR_OCCASION_DATE] = badge_info.get(
                 const.DATA_BADGE_SPECIAL_OCCASION_DATE, const.CONF_EMPTY

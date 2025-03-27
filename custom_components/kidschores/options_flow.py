@@ -670,7 +670,20 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 )
                 await self._update_and_reload()
                 return await self.async_step_init()
-        schema = fh.build_badge_cumulative_schema(default=user_input)
+
+        rewards_options = [
+            {
+                "value": reward_id,
+                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
+            }
+            for reward_id, reward in self._entry_options.get(
+                const.CONF_REWARDS, {}
+            ).items()
+        ]
+
+        schema = fh.build_badge_cumulative_schema(
+            default=user_input, rewards_list=rewards_options
+        )
         return self.async_show_form(
             step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE_CUMULATIVE,
             data_schema=schema,
@@ -742,7 +755,20 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 )
                 await self._update_and_reload()
                 return await self.async_step_init()
-        schema = fh.build_badge_daily_schema(default=user_input)
+
+        rewards_options = [
+            {
+                "value": reward_id,
+                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
+            }
+            for reward_id, reward in self._entry_options.get(
+                const.CONF_REWARDS, {}
+            ).items()
+        ]
+
+        schema = fh.build_badge_daily_schema(
+            default=user_input, rewards_list=rewards_options
+        )
         return self.async_show_form(
             step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE_DAILY,
             data_schema=schema,
@@ -1075,17 +1101,28 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     const.DATA_BADGE_ICON: user_input.get(
                         const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
                     ),
+                    const.DATA_BADGE_ASSIGNED_KIDS: user_input[
+                        const.CFOF_BADGES_INPUT_ASSIGNED_KIDS
+                    ],
                     const.DATA_BADGE_OCCASION_TYPE: user_input.get(
                         const.CFOF_BADGES_INPUT_OCCASION_TYPE, const.CONF_HOLIDAY
                     ),
                     const.DATA_BADGE_OCCASION_DATE: user_input.get(
                         const.CFOF_BADGES_INPUT_OCCASION_DATE, const.CONF_EMPTY
                     ),
+                    const.DATA_BADGE_AWARD_MODE: user_input.get(
+                        const.CFOF_BADGES_INPUT_AWARD_MODE,
+                        const.DEFAULT_BADGE_AWARD_MODE,
+                    ),
+                    const.DATA_BADGE_AWARD_POINTS: user_input.get(
+                        const.CFOF_BADGES_INPUT_AWARD_POINTS,
+                        const.DEFAULT_BADGE_AWARD_POINTS,
+                    ),
+                    const.DATA_BADGE_AWARD_REWARD: user_input.get(
+                        const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
+                    ),
                     const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY: user_input.get(
                         const.CFOF_BADGES_INPUT_SPECIAL_OCCASION_RECURRENCY, False
-                    ),
-                    const.DATA_BADGE_TRIGGER_INFO: user_input.get(
-                        const.CFOF_BADGES_INPUT_TRIGGER_INFO, const.CONF_EMPTY
                     ),
                     const.DATA_BADGE_TYPE: const.BADGE_TYPE_SPECIAL_OCCASION,
                     const.DATA_BADGE_INTERNAL_ID: internal_id,
@@ -1098,7 +1135,27 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 )
                 await self._update_and_reload()
                 return await self.async_step_init()
-        schema = fh.build_badge_special_occasions_schema(default=user_input)
+
+        kids_dict = {
+            kid_data[const.DATA_KID_NAME]: kid_id
+            for kid_id, kid_data in self._entry_options.get(const.CONF_KIDS, {}).items()
+        }
+
+        rewards_options = [
+            {
+                "value": reward_id,
+                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
+            }
+            for reward_id, reward in self._entry_options.get(
+                const.CONF_REWARDS, {}
+            ).items()
+        ]
+
+        schema = fh.build_badge_special_occasions_schema(
+            default=user_input,
+            rewards_list=rewards_options,
+            kids_dict=kids_dict,
+        )
         return self.async_show_form(
             step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE_SPECIAL,
             data_schema=schema,
@@ -1870,6 +1927,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     const.CFOF_BADGES_INPUT_AWARD_REWARD,
                     badge_data.get(const.DATA_BADGE_AWARD_REWARD),
                 )
+                badge_data[const.DATA_BADGE_ASSIGNED_KIDS] = user_input.get(
+                    const.CFOF_BADGES_INPUT_ASSIGNED_KIDS,
+                    badge_data.get(const.DATA_BADGE_ASSIGNED_KIDS),
+                )
 
                 # Update type-specific fields:
                 if badge_type == const.BADGE_TYPE_CUMULATIVE:
@@ -1923,18 +1984,26 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     )
 
                 elif badge_type == const.BADGE_TYPE_PERIODIC:
-                    badge_data[const.DATA_BADGE_RESET_SCHEDULE] = user_input.get(
+                    # Update reset schedule; if not custom, clear dates
+                    reset_schedule = user_input.get(
                         const.CFOF_BADGES_INPUT_RESET_SCHEDULE,
                         badge_data.get(
                             const.DATA_BADGE_RESET_SCHEDULE, const.CONF_WEEKLY
                         ),
                     )
-                    badge_data[const.DATA_BADGE_START_DATE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_START_DATE, None
-                    )
-                    badge_data[const.DATA_BADGE_END_DATE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_END_DATE, None
-                    )
+                    badge_data[const.DATA_BADGE_RESET_SCHEDULE] = reset_schedule
+                    if reset_schedule == const.CONF_CUSTOM:
+                        badge_data[const.DATA_BADGE_START_DATE] = user_input.get(
+                            const.CFOF_BADGES_INPUT_START_DATE,
+                            badge_data.get(const.DATA_BADGE_START_DATE),
+                        )
+                        badge_data[const.DATA_BADGE_END_DATE] = user_input.get(
+                            const.CFOF_BADGES_INPUT_END_DATE,
+                            badge_data.get(const.DATA_BADGE_END_DATE),
+                        )
+                    else:
+                        badge_data[const.DATA_BADGE_START_DATE] = None
+                        badge_data[const.DATA_BADGE_END_DATE] = None
                     badge_data[const.DATA_BADGE_PERIODIC_RECURRENT] = user_input.get(
                         const.CFOF_BADGES_INPUT_PERIODIC_RECURRENT,
                         badge_data.get(const.DATA_BADGE_PERIODIC_RECURRENT, False),
@@ -1953,17 +2022,6 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     badge_data[const.DATA_BADGE_THRESHOLD_VALUE] = user_input.get(
                         const.CFOF_BADGES_INPUT_THRESHOLD_VALUE,
                         badge_data.get(const.DATA_BADGE_THRESHOLD_VALUE),
-                    )
-                    badge_data[const.DATA_BADGE_AWARD_POINTS] = user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                        badge_data.get(
-                            const.DATA_BADGE_AWARD_POINTS,
-                            const.DEFAULT_BADGE_AWARD_POINTS,
-                        ),
-                    )
-                    badge_data[const.DATA_BADGE_AWARD_REWARD] = user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_REWARD,
-                        badge_data.get(const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY),
                     )
 
                 elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
@@ -1992,14 +2050,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                             const.DATA_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY
                         ),
                     )
-                    badge_data[const.DATA_BADGE_TRIGGER_INFO] = user_input.get(
-                        const.CFOF_BADGES_INPUT_TRIGGER_INFO,
-                        badge_data.get(const.DATA_BADGE_TRIGGER_INFO, const.CONF_EMPTY),
-                    )
-                    badge_data[const.DATA_BADGE_SPECIAL_OCCASION_DATE] = user_input.get(
+                    badge_data[const.DATA_BADGE_OCCASION_DATE] = user_input.get(
                         const.CFOF_BADGES_INPUT_OCCASION_DATE,
                         badge_data.get(
-                            const.DATA_BADGE_SPECIAL_OCCASION_DATE, const.CONF_EMPTY
+                            const.DATA_BADGE_OCCASION_DATE, const.CONF_EMPTY
                         ),
                     )
                     badge_data[const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY] = (
@@ -2009,6 +2063,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                                 const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY, False
                             ),
                         )
+                    )
+                    badge_data[const.DATA_BADGE_TRIGGER_INFO] = user_input.get(
+                        const.CFOF_BADGES_INPUT_TRIGGER_INFO,
+                        badge_data.get(const.DATA_BADGE_TRIGGER_INFO, const.CONF_EMPTY),
                     )
 
                 badges_dict[internal_id] = badge_data
@@ -2022,6 +2080,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
                 await self._update_and_reload()
                 return await self.async_step_init()
+
+        kids_dict = {
+            kid_data[const.DATA_KID_NAME]: kid_id
+            for kid_id, kid_data in self._entry_options.get(const.CONF_KIDS, {}).items()
+        }
 
         # Build the schema based on badge_type:
         if badge_type == const.BADGE_TYPE_CUMULATIVE:
@@ -2113,6 +2176,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             schema = fh.build_badge_special_occasions_schema(
                 default=badge_data,
                 rewards_list=rewards_options,
+                kids_dict=kids_dict,
             )
         else:
             schema = fh.build_badge_cumulative_schema(default=badge_data)

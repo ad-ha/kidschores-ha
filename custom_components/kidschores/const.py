@@ -196,6 +196,7 @@ CFOF_CHORES_INPUT_RECURRING_FREQUENCY = "recurring_frequency"
 CFOF_CHORES_INPUT_SHARED_CHORE = "shared_chore"
 
 # BADGES
+CFOF_BADGES_INPUT_ASSIGNED_KIDS = "assigned_kids"
 CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
 CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE = "associated_challenge"
 CFOF_BADGES_INPUT_AWARD_MODE = "award_mode"
@@ -369,6 +370,7 @@ CONF_NOTIFY_ON_DISAPPROVAL = "notify_on_disapproval"
 NOTIFICATION_EVENT = "mobile_app_notification_action"
 
 # Badge configuration keys
+CONF_BADGE_ASSIGNED_KIDS = "assigned_kids"
 CONF_BADGE_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
 CONF_BADGE_ASSOCIATED_CHALLENGE = "associated_challenge"
 CONF_BADGE_AWARD_MODE = "award_mode"
@@ -556,6 +558,7 @@ DATA_CHORE_STATE = "state"
 DATA_CHORE_TIMESTAMP = "timestamp"
 
 # BADGES
+DATA_BADGE_ASSIGNED_KIDS = "assigned_kids"
 DATA_BADGE_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
 DATA_BADGE_ASSOCIATED_CHALLENGE = "associated_challenge"
 DATA_BADGE_AWARD_MODE = "award_mode"
@@ -592,6 +595,7 @@ DATA_BADGE_RESET_PERIODICALLY = "reset_periodically"
 DATA_BADGE_RESET_SCHEDULE = "reset_schedule"
 DATA_BADGE_REWARD = "reward"
 DATA_BADGE_SPECIAL_OCCASION_DATE = "occasion_date"
+DATA_BADGE_SPECIAL_OCCASION_LAST_AWARDED = "last_awarded"
 DATA_BADGE_SPECIAL_OCCASION_RECURRENCY = "recurrent"
 DATA_BADGE_START_DATE = "start_date"
 DATA_BADGE_THRESHOLD_TYPE = "threshold_type"

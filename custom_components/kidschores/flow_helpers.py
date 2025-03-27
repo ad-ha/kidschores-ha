@@ -823,7 +823,7 @@ def build_badge_challenge_schema(
 
 
 def build_badge_special_occasions_schema(
-    default: dict = None, rewards_list: list = None
+    default: dict = None, rewards_list: list = None, kids_dict: list = None
 ):
     """Build schema for special occasion badges."""
     default = default or {}
@@ -831,6 +831,13 @@ def build_badge_special_occasions_schema(
     rewards_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
     ] + rewards_list
+
+    kids_options = [
+        {"value": kid_id, "label": kid_name} for kid_name, kid_id in kids_dict.items()
+    ]
+    default_assigned_kids = default.get(const.CONF_BADGE_ASSIGNED_KIDS, [])
+    if not isinstance(default_assigned_kids, list):
+        default_assigned_kids = [default_assigned_kids]
 
     return vol.Schema(
         {
@@ -849,6 +856,15 @@ def build_badge_special_occasions_schema(
             vol.Optional(
                 const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
             ): selector.IconSelector(),
+            vol.Required(
+                const.CONF_BADGE_ASSIGNED_KIDS, default=default_assigned_kids
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=kids_options,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ASSIGNED_KIDS,
+                    multiple=True,
+                )
+            ),
             vol.Required(
                 const.CONF_BADGE_OCCASION_TYPE,
                 default=default.get(const.CONF_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY),

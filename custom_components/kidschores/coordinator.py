@@ -1373,6 +1373,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
             ),
         }
+
+        # For non‑cumulative badges, store assigned kids
+        if (
+            self._data[const.DATA_BADGES][badge_id].get(const.DATA_BADGE_TYPE)
+            != const.BADGE_TYPE_CUMULATIVE
+        ):
+            self._data[const.DATA_BADGES][badge_id][const.DATA_BADGE_ASSIGNED_KIDS] = (
+                badge_data.get(const.DATA_BADGE_ASSIGNED_KIDS, [])
+            )
+
         badge_type = badge_data.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
         if badge_type == const.BADGE_TYPE_CUMULATIVE:
             self._data[const.DATA_BADGES][badge_id].update(
@@ -1460,11 +1470,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     const.DATA_BADGE_OCCASION_TYPE: badge_data.get(
                         const.DATA_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY
                     ),
-                    const.DATA_BADGE_TRIGGER_INFO: badge_data.get(
-                        const.DATA_BADGE_TRIGGER_INFO, const.CONF_EMPTY
-                    ),
                     const.DATA_BADGE_SPECIAL_OCCASION_DATE: badge_data.get(
                         const.DATA_BADGE_SPECIAL_OCCASION_DATE, const.CONF_EMPTY
+                    ),
+                    const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY: badge_data.get(
+                        const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY, False
+                    ),
+                    const.DATA_BADGE_ASSIGNED_KIDS: badge_data.get(
+                        const.DATA_BADGE_ASSIGNED_KIDS, []
                     ),
                 }
             )
@@ -1513,6 +1526,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         )
 
         badge_info[const.DATA_BADGE_TYPE] = badge_type
+
+        # For non‑cumulative badges, update the "assigned_kids" field
+        if badge_type != const.BADGE_TYPE_CUMULATIVE:
+            badge_info[const.DATA_BADGE_ASSIGNED_KIDS] = badge_data.get(
+                const.DATA_BADGE_ASSIGNED_KIDS,
+                badge_info.get(const.DATA_BADGE_ASSIGNED_KIDS, []),
+            )
 
         if badge_type == const.BADGE_TYPE_CUMULATIVE:
             badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = badge_data.get(
@@ -1609,15 +1629,19 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.DATA_BADGE_OCCASION_TYPE,
                 badge_info.get(const.DATA_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY),
             )
-            badge_info[const.DATA_BADGE_TRIGGER_INFO] = badge_data.get(
-                const.DATA_BADGE_TRIGGER_INFO,
-                badge_info.get(const.DATA_BADGE_TRIGGER_INFO, const.CONF_EMPTY),
-            )
             badge_info[const.DATA_BADGE_SPECIAL_OCCASION_DATE] = badge_data.get(
                 const.DATA_BADGE_SPECIAL_OCCASION_DATE,
                 badge_info.get(
                     const.DATA_BADGE_SPECIAL_OCCASION_DATE, const.CONF_EMPTY
                 ),
+            )
+            badge_info[const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY] = badge_data.get(
+                const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY,
+                badge_info.get(const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY, False),
+            )
+            badge_info[const.DATA_BADGE_ASSIGNED_KIDS] = badge_data.get(
+                const.DATA_BADGE_ASSIGNED_KIDS,
+                badge_info[const.DATA_BADGE_ASSIGNED_KIDS],
             )
 
         const.LOGGER.debug(
@@ -2810,11 +2834,19 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             return
 
         for badge_id, badge in self.badges_data.items():
-            # Skip if this kid has already earned the badge.
-            if kid_id in badge.get(const.DATA_BADGE_EARNED_BY, []):
-                continue
-
             badge_type = badge.get(const.DATA_BADGE_TYPE)
+
+            # For non-cumulative badges, if assigned kids is defined, only award if kid_id is in it.
+            if badge.get(const.DATA_BADGE_TYPE) != const.BADGE_TYPE_CUMULATIVE:
+                assigned = badge.get(const.DATA_BADGE_ASSIGNED_KIDS, [])
+                if assigned and kid_id not in assigned:
+                    continue
+
+            # For all types except special occasion, skip if already earned.
+            if badge_type != const.BADGE_TYPE_SPECIAL_OCCASION and kid_id in badge.get(
+                const.DATA_BADGE_EARNED_BY, []
+            ):
+                continue
 
             if badge_type == const.BADGE_TYPE_CUMULATIVE:
                 # For cumulative badges, award if the kid's max points ever meet the threshold.
@@ -3044,23 +3076,21 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             self._award_badge(kid_id, badge_id)
 
             elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
-                # Special Occasion badges now use a Date selector and a boolean recurrence field.
+                # Special Occasion badges are re‑evaluated even if previously awarded.
                 occasion_date_str = badge.get(
                     const.DATA_BADGE_SPECIAL_OCCASION_DATE, const.CONF_EMPTY
                 ).strip()
                 is_recurrent = badge.get(
                     const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY, False
                 )
-
                 if occasion_date_str:
                     try:
-                        # Parse the date
+                        # Using parse_date since these badges use a Date selector.
                         occasion_date = dt_util.parse_date(occasion_date_str)
                         if occasion_date:
                             today = dt_util.as_local(dt_util.utcnow()).date()
-
                             if is_recurrent:
-                                # Compare month and day only.
+                                # For recurrent badges compare month and day only.
                                 if (
                                     today.month == occasion_date.month
                                     and today.day == occasion_date.day
@@ -3073,22 +3103,44 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                                         > const.DEFAULT_ZERO
                                     ):
                                         self._award_badge(kid_id, badge_id)
-                                        # Bump the badge's occasion date by one year.
+                                        # Bump the badge's date by one year for the next recurrence.
                                         next_year = today.year + 1
                                         try:
                                             new_date = occasion_date.replace(
                                                 year=next_year
                                             )
                                         except ValueError:
-                                            # Handle February 29 in non‑leap years by using February 28.
                                             new_date = occasion_date.replace(
                                                 year=next_year, day=28
                                             )
                                         badge[
                                             const.DATA_BADGE_SPECIAL_OCCASION_DATE
                                         ] = new_date.isoformat()
+                                        updated_options = dict(
+                                            self.config_entry.options
+                                        )
+                                        badges_conf = dict(
+                                            updated_options.get(const.CONF_BADGES, {})
+                                        )
+                                        if badge_id in badges_conf:
+                                            badges_conf[badge_id][
+                                                const.DATA_BADGE_SPECIAL_OCCASION_DATE
+                                            ] = new_date.isoformat()
+                                            updated_options[const.CONF_BADGES] = (
+                                                badges_conf
+                                            )
+                                            new_data = dict(self.config_entry.data)
+                                            new_data[const.DATA_LAST_CHANGE] = (
+                                                dt_util.utcnow().isoformat()
+                                            )
+                                            self.hass.config_entries.async_update_entry(
+                                                self.config_entry,
+                                                data=new_data,
+                                                options=updated_options,
+                                            )
+
                             else:
-                                # One‑off: award only if today's date exactly matches.
+                                # One‑off: require an exact match.
                                 if today == occasion_date:
                                     if (
                                         kid_info.get(
@@ -3098,7 +3150,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                                         > const.DEFAULT_ZERO
                                     ):
                                         self._award_badge(kid_id, badge_id)
-
                     except Exception as e:
                         const.LOGGER.error(
                             "Error processing special occasion badge '%s': %s",
@@ -3117,9 +3168,31 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             return
 
-        if kid_id in badge.get(const.DATA_BADGE_EARNED_BY, []):
-            return  # already earned
+        badge_type = badge.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
+        # For non-special occasion badges, do not re‑award if already earned.
+        if badge_type != const.BADGE_TYPE_SPECIAL_OCCASION and kid_id in badge.get(
+            const.DATA_BADGE_EARNED_BY, []
+        ):
+            return
 
+        # For special occasion badges, only award once per day.
+        if badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
+            kid_info = self.kids_data.get(kid_id, {})
+            today = dt_util.as_local(dt_util.utcnow()).date().isoformat()
+            # Track the last award date for this badge.
+            last_award_key = (
+                f"{const.DATA_BADGE_SPECIAL_OCCASION_LAST_AWARDED}_{badge_id}"
+            )
+            if kid_info.get(last_award_key) == today:
+                return  # Already awarded today.
+            # Store last awarded date
+            kid_info[last_award_key] = today
+            # If it was awarded previously, remove it so we can award again.
+            if kid_id in badge.get(const.DATA_BADGE_EARNED_BY, []):
+                badge[const.DATA_BADGE_EARNED_BY].remove(kid_id)
+            # After awarding below, we’ll update kid_info[last_award_key] = today.
+
+        # Award the badge (for all types, including special occasion).
         badge.setdefault(const.DATA_BADGE_EARNED_BY, []).append(kid_id)
         kid_info = self.kids_data.get(kid_id, {})
         if not kid_info:
