@@ -512,6 +512,20 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
         """Collect badge details using internal_id as the primary key."""
         errors = {}
         if user_input is not None:
+            award_mode = user_input.get(
+                const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+            )
+            # Clean the non‑applicable field:
+            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
+                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
+            elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
+                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+            elif award_mode == const.CONF_BADGE_AWARD_NONE:
+                # When "none" is chosen, ensure both extra points and reward are cleared.
+                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
+            # (If award mode is points + reward leave both fields)
+
             badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
             internal_id = user_input.get(
                 const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
@@ -540,25 +554,36 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                     const.DATA_BADGE_ICON: user_input.get(
                         const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
                     ),
-                    const.DATA_BADGE_THRESHOLD_TYPE: const.DEFAULT_BADGE_THRESHOLD_TYPE,
                     const.DATA_BADGE_THRESHOLD_VALUE: user_input[
                         const.CFOF_BADGES_INPUT_THRESHOLD_VALUE
                     ],
+                    const.DATA_BADGE_AWARD_MODE: award_mode,
+                    const.DATA_BADGE_AWARD_POINTS: user_input.get(
+                        const.CFOF_BADGES_INPUT_AWARD_POINTS,
+                        const.DEFAULT_BADGE_AWARD_POINTS,
+                    ),
+                    const.DATA_BADGE_AWARD_REWARD: user_input.get(
+                        const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
+                    ),
                     const.DATA_BADGE_POINTS_MULTIPLIER: user_input[
                         const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER
                     ],
-                    const.CONF_BADGE_RESET_PERIODICALLY: user_input.get(
-                        const.CONF_BADGE_RESET_PERIODICALLY, False
+                    # Periodic reset settings for maintenance (if enabled)
+                    const.DATA_BADGE_RESET_PERIODICALLY: user_input.get(
+                        const.CFOF_BADGES_INPUT_RESET_PERIODICALLY, False
                     ),
-                    const.CONF_BADGE_RESET_PERIOD: user_input.get(
-                        const.CONF_BADGE_RESET_PERIOD, const.CONF_YEAR_END
+                    const.DATA_BADGE_RESET_TYPE: user_input.get(
+                        const.CFOF_BADGES_INPUT_RESET_TYPE, const.CONF_YEAR_END
                     ),
-                    const.CONF_BADGE_RESET_GRACE_PERIOD: user_input.get(
-                        const.CONF_BADGE_RESET_GRACE_PERIOD,
+                    const.DATA_BADGE_CUSTOM_RESET_DATE: user_input.get(
+                        const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE
+                    ),
+                    const.DATA_BADGE_RESET_GRACE_PERIOD: user_input.get(
+                        const.CFOF_BADGES_INPUT_RESET_GRACE_PERIOD,
                         const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
                     ),
-                    const.CONF_BADGE_MAINTENANCE_RULES: user_input.get(
-                        const.CONF_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY
+                    const.DATA_BADGE_MAINTENANCE_RULES: user_input.get(
+                        const.CFOF_BADGES_INPUT_MAINTENANCE_RULES, const.CONF_EMPTY
                     ),
                     const.DATA_BADGE_TYPE: const.BADGE_TYPE_CUMULATIVE,
                     const.DATA_BADGE_INTERNAL_ID: internal_id,

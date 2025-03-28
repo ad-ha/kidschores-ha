@@ -1399,14 +1399,19 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     const.DATA_BADGE_RESET_PERIODICALLY: badge_data.get(
                         const.DATA_BADGE_RESET_PERIODICALLY, False
                     ),
-                    const.DATA_BADGE_RESET_PERIOD: badge_data.get(
-                        const.DATA_BADGE_RESET_PERIOD, const.CONF_YEAR_END
+                    const.DATA_BADGE_RESET_TYPE: badge_data.get(
+                        const.DATA_BADGE_RESET_TYPE, const.CONF_YEAR_END
+                    ),
+                    const.DATA_BADGE_CUSTOM_RESET_DATE: badge_data.get(
+                        const.DATA_BADGE_CUSTOM_RESET_DATE, const.CONF_EMPTY
                     ),
                     const.DATA_BADGE_RESET_GRACE_PERIOD: badge_data.get(
-                        const.DATA_BADGE_RESET_GRACE_PERIOD, const.DEFAULT_ZERO
+                        const.DATA_BADGE_RESET_GRACE_PERIOD,
+                        const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
                     ),
                     const.DATA_BADGE_MAINTENANCE_RULES: badge_data.get(
-                        const.DATA_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY
+                        const.DATA_BADGE_MAINTENANCE_RULES,
+                        const.DEFAULT_BADGE_MAINTENANCE_THRESHOLD,
                     ),
                 }
             )
@@ -1552,9 +1557,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.DATA_BADGE_RESET_PERIODICALLY,
                 badge_info.get(const.DATA_BADGE_RESET_PERIODICALLY, False),
             )
-            badge_info[const.DATA_BADGE_RESET_PERIOD] = badge_data.get(
-                const.DATA_BADGE_RESET_PERIOD,
-                badge_info.get(const.DATA_BADGE_RESET_PERIOD, const.CONF_YEAR_END),
+            badge_info[const.DATA_BADGE_RESET_TYPE] = badge_data.get(
+                const.DATA_BADGE_RESET_TYPE,
+                badge_info.get(const.DATA_BADGE_RESET_TYPE, const.CONF_YEAR_END),
+            )
+            badge_info[const.DATA_BADGE_CUSTOM_RESET_DATE] = badge_data.get(
+                const.DATA_BADGE_CUSTOM_RESET_DATE,
+                badge_info.get(const.DATA_BADGE_CUSTOM_RESET_DATE, const.CONF_EMPTY),
             )
             badge_info[const.DATA_BADGE_RESET_GRACE_PERIOD] = badge_data.get(
                 const.DATA_BADGE_RESET_GRACE_PERIOD,
@@ -1565,7 +1574,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             badge_info[const.DATA_BADGE_MAINTENANCE_RULES] = badge_data.get(
                 const.DATA_BADGE_MAINTENANCE_RULES,
-                badge_info.get(const.DATA_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY),
+                badge_info.get(
+                    const.DATA_BADGE_MAINTENANCE_RULES,
+                    const.DEFAULT_BADGE_MAINTENANCE_THRESHOLD,
+                ),
             )
         elif badge_type == const.BADGE_TYPE_DAILY:
             badge_info[const.DATA_BADGE_DAILY_THRESHOLD] = badge_data.get(
@@ -2607,6 +2619,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         kid_info[const.DATA_KID_POINTS_EARNED_WEEKLY] += delta
         kid_info[const.DATA_KID_POINTS_EARNED_MONTHLY] += delta
 
+        # Update cumulative earned points if delta is positive (do not decrease on spending)
+        if delta > 0:
+            kid_info.setdefault(
+                const.DATA_KID_CUMULATIVE_EARNED_POINTS, const.DEFAULT_ZERO
+            )
+            kid_info[const.DATA_KID_CUMULATIVE_EARNED_POINTS] += delta
+
         # Update Max Points Ever
         if new_points > kid_info.get(
             const.DATA_KID_MAX_POINTS_EVER, const.DEFAULT_ZERO
@@ -2617,6 +2636,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._check_badges_for_kid(kid_id)
         self._check_achievements_for_kid(kid_id)
         self._check_challenges_for_kid(kid_id)
+
+        # Check Reset Cumulative Badges
+        self.hass.async_create_task(self._reset_cumulative_badges())
 
         self._persist()
         self.async_set_updated_data(self._data)
@@ -2849,16 +2871,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 continue
 
             if badge_type == const.BADGE_TYPE_CUMULATIVE:
-                # For cumulative badges, award if the kid's max points ever meet the threshold.
-                threshold = badge.get(
-                    const.DATA_BADGE_THRESHOLD_VALUE,
-                    const.DEFAULT_BADGE_THRESHOLD_VALUE,
-                )
-                if (
-                    kid_info.get(const.DATA_KID_MAX_POINTS_EVER, const.DEFAULT_ZERO)
-                    >= threshold
-                ):
+                effective_badge_id = self._determine_cumulative_badge_for_kid(kid_id)
+
+                if effective_badge_id == badge_id:
                     self._award_badge(kid_id, badge_id)
+
+                else:
+                    self._remove_badge_from_kid(kid_id, badge)
 
             elif badge_type == const.BADGE_TYPE_DAILY:
                 # Award daily badge if the kid completed enough chores today.
@@ -2946,7 +2965,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             kid_success = kid_info.setdefault(
                                 const.DATA_KID_PERIODIC_BADGE_SUCCESS, {}
                             )
-                            count = kid_success.get(badge_id, 0) + 1
+                            count = kid_success.get(badge_id, const.DEFAULT_ZERO) + 1
                             kid_success[badge_id] = count
                             if count >= threshold:
                                 self._award_badge(kid_id, badge_id)
@@ -3016,7 +3035,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         if criteria_type == const.BADGE_THRESHOLD_TYPE_POINTS:
                             kid_points = kid_info.setdefault(
                                 const.DATA_KID_PERIODIC_BADGE_POINTS, {}
-                            ).get(badge_id, 0)
+                            ).get(badge_id, const.DEFAULT_ZERO)
                             if kid_points >= threshold:
                                 self._award_badge(kid_id, badge_id)
                         elif criteria_type == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT:
@@ -3048,7 +3067,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                                 kid_success = kid_info.setdefault(
                                     const.DATA_KID_PERIODIC_BADGE_SUCCESS, {}
                                 )
-                                count = kid_success.get(badge_id, 0) + 1
+                                count = (
+                                    kid_success.get(badge_id, const.DEFAULT_ZERO) + 1
+                                )
                                 kid_success[badge_id] = count
                                 if count >= threshold:
                                     self._award_badge(kid_id, badge_id)
@@ -3160,6 +3181,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     def _award_badge(self, kid_id: str, badge_id: str):
         """Add the badge to kid's 'earned_by' and kid's 'badges' list."""
         badge = self.badges_data.get(badge_id)
+
+        kid_info = self.kids_data.get(kid_id, {})
+        if not kid_info:
+            const.LOGGER.error("Kid with ID '%s' not found when awarding badge", kid_id)
+            return
+
         if not badge:
             const.LOGGER.error(
                 "Attempted to award non-existent badge ID '%s' to kid ID '%s'",
@@ -3192,12 +3219,19 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 badge[const.DATA_BADGE_EARNED_BY].remove(kid_id)
             # After awarding below, we’ll update kid_info[last_award_key] = today.
 
+        # When awarding a periodic cumulative badge, record baseline and current badge if not already set.
+        if badge_type == const.BADGE_TYPE_CUMULATIVE and badge.get(
+            const.DATA_BADGE_RESET_PERIODICALLY, False
+        ):
+            if const.DATA_KID_CUMULATIVE_BADGE_BASELINE not in kid_info:
+                kid_info[const.DATA_KID_CUMULATIVE_BADGE_BASELINE] = kid_info.get(
+                    const.DATA_KID_CUMULATIVE_EARNED_POINTS, const.DEFAULT_ZERO
+                )
+            if const.DATA_KID_PRE_RESET_BADGE not in kid_info:
+                kid_info[const.DATA_KID_PRE_RESET_BADGE] = badge_id
+
         # Award the badge (for all types, including special occasion).
         badge.setdefault(const.DATA_BADGE_EARNED_BY, []).append(kid_id)
-        kid_info = self.kids_data.get(kid_id, {})
-        if not kid_info:
-            const.LOGGER.error("Kid with ID '%s' not found when awarding badge", kid_id)
-            return
 
         badge_name = badge.get(const.DATA_BADGE_NAME)
         kid_name = kid_info[const.DATA_KID_NAME]
@@ -3315,9 +3349,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if not kid_info:
             return
         earned_badges = [
-            b
-            for b in self.badges_data.values()
-            if kid_id in b.get(const.DATA_BADGE_EARNED_BY, [])
+            badge
+            for badge in self.badges_data.values()
+            if kid_id in badge.get(const.DATA_BADGE_EARNED_BY, [])
         ]
         if not earned_badges:
             kid_info[const.DATA_KID_POINTS_MULTIPLIER] = (
@@ -3325,13 +3359,122 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
         else:
             highest_mult = max(
-                b.get(
+                badge.get(
                     const.DATA_BADGE_POINTS_MULTIPLIER,
                     const.DEFAULT_KID_POINTS_MULTIPLIER,
                 )
-                for b in earned_badges
+                for badge in earned_badges
             )
             kid_info[const.DATA_KID_POINTS_MULTIPLIER] = highest_mult
+
+    async def _reset_cumulative_badges(self):
+        """Check and reset cumulative badges for all kids."""
+        for kid_id, kid_info in self.kids_data.items():
+            for badge in self.badges_data.values():
+                if badge.get(const.DATA_BADGE_TYPE) != const.BADGE_TYPE_CUMULATIVE:
+                    continue
+
+                if not self._process_cumulative_badge_reset(kid_id, badge):
+                    self._remove_badge_from_kid(kid_id, badge)
+
+    def _process_cumulative_badge_reset(self, kid_id: str, badge: dict) -> bool:
+        """Determine whether a cumulative badge is maintained for a kid."""
+        now_local = dt_util.as_local(dt_util.utcnow())
+        reset_type = badge.get(const.DATA_BADGE_RESET_TYPE, const.CONF_YEAR_END)
+        grace_period_days = badge.get(
+            const.DATA_BADGE_RESET_GRACE_PERIOD,
+            const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
+        )
+        custom_reset_date = badge.get(const.DATA_BADGE_CUSTOM_RESET_DATE)
+
+        # Determine expected reset date based on reset_type.
+        if reset_type == const.CONF_YEAR_END:
+            expected_reset = now_local.replace(
+                month=const.DEFAULT_YEAR_END_MONTH,
+                day=const.DEFAULT_YEAR_END_DAY,
+                hour=const.DEFAULT_YEAR_END_HOUR,
+                minute=const.DEFAULT_YEAR_END_MINUTE,
+                second=const.DEFAULT_YEAR_END_SECOND,
+            )
+
+        elif reset_type == const.CONF_QUARTER:
+            quarter = (now_local.month - 1) // 3 + 1
+            last_month = quarter * 3
+            from calendar import monthrange
+
+            last_day = monthrange(now_local.year, last_month)[1]
+            expected_reset = now_local.replace(
+                month=last_month,
+                day=last_day,
+                hour=const.DEFAULT_YEAR_END_HOUR,
+                minute=const.DEFAULT_YEAR_END_MINUTE,
+                second=const.DEFAULT_YEAR_END_SECOND,
+            )
+
+        elif reset_type == const.CONF_MONTHLY:
+            from calendar import monthrange
+
+            last_day = monthrange(now_local.year, now_local.month)[1]
+            expected_reset = now_local.replace(
+                day=last_day,
+                hour=const.DEFAULT_YEAR_END_HOUR,
+                minute=const.DEFAULT_YEAR_END_MINUTE,
+                second=const.DEFAULT_YEAR_END_SECOND,
+            )
+
+        elif reset_type == const.CONF_CUSTOM and custom_reset_date:
+            expected_reset = dt_util.parse_datetime(custom_reset_date)
+
+            if expected_reset and expected_reset.tzinfo is None:
+                local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                expected_reset = expected_reset.replace(tzinfo=local_tz)
+
+            expected_reset = dt_util.as_local(expected_reset)
+
+        else:
+            expected_reset = now_local
+
+        grace_expiration = expected_reset + timedelta(days=grace_period_days)
+
+        # Check if the badge is maintained.
+        kid_info = self.kids_data.get(kid_id, {})
+        cycle_points = kid_info.get(
+            const.DATA_KID_CUMULATIVE_EARNED_POINTS, const.DEFAULT_ZERO
+        )
+        maintenance_required = badge.get(
+            const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO
+        )
+
+        if now_local < grace_expiration:
+            # Within grace period: badge is maintained only if maintenance points are met.
+            return cycle_points >= maintenance_required
+
+        else:
+            # Grace period expired. In either case, reset the cycle counter.
+            if cycle_points >= maintenance_required:
+                kid_info[const.DATA_KID_CUMULATIVE_BADGE_BASELINE] = (
+                    kid_info.get(
+                        const.DATA_KID_CUMULATIVE_BADGE_BASELINE, const.DEFAULT_ZERO
+                    )
+                    + cycle_points
+                )
+                kid_info[const.DATA_KID_CUMULATIVE_EARNED_POINTS] = const.DEFAULT_ZERO
+                return True
+
+            else:
+                kid_info[const.DATA_KID_CUMULATIVE_EARNED_POINTS] = const.DEFAULT_ZERO
+                return False
+
+    def _remove_badge_from_kid(self, kid_id: str, badge: dict) -> None:
+        """Remove a cumulative badge from a kid if they no longer qualify."""
+        if kid_id in badge.get(const.DATA_BADGE_EARNED_BY, []):
+            badge[const.DATA_BADGE_EARNED_BY].remove(kid_id)
+
+        kid_info = self.kids_data.get(kid_id, {})
+        badge_name = badge.get(const.DATA_BADGE_NAME)
+
+        if badge_name in kid_info.get(const.DATA_KID_BADGES, []):
+            kid_info[const.DATA_KID_BADGES].remove(badge_name)
 
     def _recalculate_all_badges(self):
         """Global re-check of all badges for all kids."""
@@ -3349,6 +3492,120 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._persist()
         self.async_set_updated_data(self._data)
         const.LOGGER.info("Badge recalculation complete")
+
+    def _determine_cumulative_badge_for_kid(self, kid_id: str) -> Optional[str]:
+        """Determine which cumulative badge a kid should currently have."""
+        kid_info = self.kids_data.get(kid_id)
+        if not kid_info:
+            return None
+
+        cumulative_badges = [
+            badge
+            for badge in self.badges_data.values()
+            if badge.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
+        ]
+
+        cumulative_badges.sort(
+            key=lambda badge: badge.get(
+                const.CONF_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
+            )
+        )
+        baseline = kid_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_BASELINE, const.DEFAULT_ZERO
+        )
+        cycle_points = kid_info.get(
+            const.DATA_KID_CUMULATIVE_EARNED_POINTS, const.DEFAULT_ZERO
+        )
+        total = baseline + cycle_points
+        current_badge_id = kid_info.get(const.DATA_KID_PRE_RESET_BADGE)
+
+        if current_badge_id:
+            current_badge = next(
+                (
+                    badge
+                    for badge in cumulative_badges
+                    if badge.get(const.DATA_BADGE_INTERNAL_ID) == current_badge_id
+                ),
+                None,
+            )
+
+            if current_badge:
+                maintenance_required = current_badge.get(
+                    const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO
+                )
+                current_threshold = current_badge.get(
+                    const.CONF_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
+                )
+
+                if cycle_points >= maintenance_required:
+                    # Check for upgrade possibility.
+                    for badge in cumulative_badges:
+                        badge_threshold = badge.get(
+                            const.CONF_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
+                        )
+                        if (
+                            badge_threshold > current_threshold
+                            and total >= badge_threshold
+                        ):
+                            # Upgrade: record the new badge and update baseline.
+                            kid_info[const.DATA_KID_PRE_RESET_BADGE] = badge.get(
+                                const.DATA_BADGE_INTERNAL_ID
+                            )
+                            kid_info[const.DATA_KID_CUMULATIVE_BADGE_BASELINE] = total
+                            return badge.get(const.DATA_BADGE_INTERNAL_ID)
+                    return current_badge_id
+
+                else:
+                    # Not maintained: downgrade by one level.
+                    return self._get_next_lower_badge(current_badge_id)
+
+        else:
+            # No pre-reset badge recorded: award the highest badge that qualifies.
+            awarded_badge = None
+
+            for badge in cumulative_badges:
+                threshold = badge.get(
+                    const.CONF_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
+                )
+                if total >= threshold:
+                    awarded_badge = badge
+
+            if awarded_badge:
+                return awarded_badge.get(const.DATA_BADGE_INTERNAL_ID)
+
+        return None
+
+    def _get_next_lower_badge(self, current_badge_id: str) -> Optional[str]:
+        """Given a cumulative badge ID, return the badge ID immediately lower in threshold."""
+        cumulative_badges = [
+            badge
+            for badge in self.badges_data.values()
+            if badge.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
+        ]
+        cumulative_badges.sort(
+            key=lambda badge: badge.get(
+                const.CONF_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
+            )
+        )
+        current_index = None
+
+        for index, badge in enumerate(cumulative_badges):
+            if badge.get(const.DATA_BADGE_INTERNAL_ID) == current_badge_id:
+                current_index = index
+                break
+
+        if current_index is None or current_index == 0:
+            return None
+
+        lower_badge = cumulative_badges[current_index - 1]
+
+        return lower_badge.get(const.DATA_BADGE_INTERNAL_ID)
+
+    def _reset_cumulative_earned_points_for_kid(self, kid_id: str):
+        """Reset the cumulative earned points counter for the kid."""
+        kid_info = self.kids_data.get(kid_id)
+        if kid_info is not None:
+            kid_info[const.DATA_KID_CUMULATIVE_EARNED_POINTS] = 0
 
     # -------------------------------------------------------------------------------------
     # Penalties: Apply
@@ -4071,6 +4328,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         await self._handle_recurring_chore_resets(now)
         await self._reset_daily_reward_statuses()
         await self._check_overdue_chores()
+
+        # Process Cumulative Badge Resets
+        await self._reset_cumulative_badges()
 
         for kid in self.kids_data.values():
             kid[const.DATA_KID_TODAY_CHORE_APPROVALS] = {}

@@ -394,15 +394,21 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
                 const.CONF_BADGE_RESET_PERIODICALLY,
                 default=default.get(const.CONF_BADGE_RESET_PERIODICALLY, False),
             ): selector.BooleanSelector(),
+            # Following fields are used only when periodic reset is enabled.
             vol.Optional(
-                const.CONF_BADGE_RESET_PERIOD,
-                default=default.get(const.CONF_BADGE_RESET_PERIOD, const.CONF_YEAR_END),
+                const.CONF_BADGE_RESET_TYPE,
+                default=default.get(const.CONF_BADGE_RESET_TYPE, const.CONF_YEAR_END),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=const.BADGE_CUMULATIVE_RESET_PERIOD_OPTIONS,
+                    options=const.BADGE_CUMULATIVE_RESET_TYPE_OPTIONS,
                     translation_key=const.TRANS_KEY_FLOW_HELPERS_RESET_PERIOD,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
                 )
             ),
+            vol.Optional(
+                const.CONF_BADGE_CUSTOM_RESET_DATE,
+                default=default.get(const.CONF_BADGE_CUSTOM_RESET_DATE),
+            ): selector.DateSelector(),
             vol.Optional(
                 const.CONF_BADGE_RESET_GRACE_PERIOD,
                 default=default.get(
@@ -411,17 +417,20 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
                 ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=1,
+                    mode=selector.NumberSelectorMode.BOX, min=0, step=1
                 )
             ),
             vol.Optional(
                 const.CONF_BADGE_MAINTENANCE_RULES,
                 default=default.get(
-                    const.CONF_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY
+                    const.CONF_BADGE_MAINTENANCE_RULES,
+                    const.DEFAULT_BADGE_MAINTENANCE_THRESHOLD,
                 ),
-            ): str,
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX, min=0, step=1
+                )
+            ),
             vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )

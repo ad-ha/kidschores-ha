@@ -341,7 +341,9 @@ def async_setup_services(hass: HomeAssistant):
             const.LOGGER.warning("Redeem Reward: Invalid kid or reward")
             raise HomeAssistantError("Invalid kid or reward")
 
-        if kid_info["points"] < reward.get("cost", 0):
+        if kid_info[const.DATA_KID_POINTS] < reward.get(
+            const.DATA_REWARD_COST, const.DEFAULT_ZERO
+        ):
             const.LOGGER.warning(
                 "Redeem Reward: Kid '%s' does not have enough points to redeem reward '%s'",
                 kid_name,

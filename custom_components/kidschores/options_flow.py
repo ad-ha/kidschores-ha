@@ -606,6 +606,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
                 user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+            elif award_mode == const.CONF_BADGE_AWARD_NONE:
+                # When "none" is chosen, ensure both extra points and reward are cleared.
+                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             # (If award mode is points + reward leave both fields)
 
             badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
@@ -648,18 +652,21 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER
                     ],
                     # Periodic reset settings for maintenance (if enabled)
-                    const.CONF_BADGE_RESET_PERIODICALLY: user_input.get(
-                        const.CONF_BADGE_RESET_PERIODICALLY, False
+                    const.DATA_BADGE_RESET_PERIODICALLY: user_input.get(
+                        const.CFOF_BADGES_INPUT_RESET_PERIODICALLY, False
                     ),
-                    const.CONF_BADGE_RESET_PERIOD: user_input.get(
-                        const.CONF_BADGE_RESET_PERIOD, const.CONF_YEAR_END
+                    const.DATA_BADGE_RESET_TYPE: user_input.get(
+                        const.CFOF_BADGES_INPUT_RESET_TYPE, const.CONF_YEAR_END
                     ),
-                    const.CONF_BADGE_RESET_GRACE_PERIOD: user_input.get(
-                        const.CONF_BADGE_RESET_GRACE_PERIOD,
+                    const.DATA_BADGE_CUSTOM_RESET_DATE: user_input.get(
+                        const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE
+                    ),
+                    const.DATA_BADGE_RESET_GRACE_PERIOD: user_input.get(
+                        const.CFOF_BADGES_INPUT_RESET_GRACE_PERIOD,
                         const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
                     ),
-                    const.CONF_BADGE_MAINTENANCE_RULES: user_input.get(
-                        const.CONF_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY
+                    const.DATA_BADGE_MAINTENANCE_RULES: user_input.get(
+                        const.CFOF_BADGES_INPUT_MAINTENANCE_RULES, const.CONF_EMPTY
                     ),
                     const.DATA_BADGE_TYPE: const.BADGE_TYPE_CUMULATIVE,
                     const.DATA_BADGE_INTERNAL_ID: internal_id,
@@ -706,6 +713,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
                 user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+            elif award_mode == const.CONF_BADGE_AWARD_NONE:
+                # When "none" is chosen, ensure both extra points and reward are cleared.
+                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             # (If award mode is points + reward leave both fields)
 
             badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
@@ -781,6 +792,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = dict(self.config_entry.options)
         errors = {}
         badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
+
         if user_input is not None:
             award_mode = user_input.get(
                 const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
@@ -790,6 +802,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
                 user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+            elif award_mode == const.CONF_BADGE_AWARD_NONE:
+                # When "none" is chosen, ensure both extra points and reward are cleared.
+                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             # (If award mode is points + reward leave both fields)
 
             badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
@@ -899,6 +915,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
                 user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+            elif award_mode == const.CONF_BADGE_AWARD_NONE:
+                # When "none" is chosen, ensure both extra points and reward are cleared.
+                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             # (If award mode is points + reward leave both fields)
 
             badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
@@ -993,6 +1013,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
                 user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+            elif award_mode == const.CONF_BADGE_AWARD_NONE:
+                # When "none" is chosen, ensure both extra points and reward are cleared.
+                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             # (If award mode is points + reward leave both fields)
 
             badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
@@ -1893,7 +1917,10 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
                 user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-
+            elif award_mode == const.CONF_BADGE_AWARD_NONE:
+                # When "none" is chosen, ensure both extra points and reward are cleared.
+                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             # (If award mode is points + reward leave both fields)
 
             new_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
@@ -1942,27 +1969,31 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER,
                         badge_data.get(const.DATA_BADGE_POINTS_MULTIPLIER),
                     )
-                    badge_data[const.CONF_BADGE_RESET_PERIODICALLY] = user_input.get(
-                        const.CONF_BADGE_RESET_PERIODICALLY,
-                        badge_data.get(const.CONF_BADGE_RESET_PERIODICALLY, False),
+                    badge_data[const.DATA_BADGE_RESET_PERIODICALLY] = user_input.get(
+                        const.CFOF_BADGES_INPUT_RESET_PERIODICALLY,
+                        badge_data.get(const.DATA_BADGE_RESET_PERIODICALLY, False),
                     )
-                    badge_data[const.CONF_BADGE_RESET_PERIOD] = user_input.get(
-                        const.CONF_BADGE_RESET_PERIOD,
+                    badge_data[const.DATA_BADGE_RESET_TYPE] = user_input.get(
+                        const.CFOF_BADGES_INPUT_RESET_TYPE,
                         badge_data.get(
-                            const.CONF_BADGE_RESET_PERIOD, const.CONF_YEAR_END
+                            const.DATA_BADGE_RESET_TYPE, const.CONF_YEAR_END
                         ),
                     )
-                    badge_data[const.CONF_BADGE_RESET_GRACE_PERIOD] = user_input.get(
-                        const.CONF_BADGE_RESET_GRACE_PERIOD,
+                    badge_data[const.DATA_BADGE_CUSTOM_RESET_DATE] = user_input.get(
+                        const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE,
+                        badge_data.get(const.DATA_BADGE_CUSTOM_RESET_DATE),
+                    )
+                    badge_data[const.DATA_BADGE_RESET_GRACE_PERIOD] = user_input.get(
+                        const.CFOF_BADGES_INPUT_RESET_GRACE_PERIOD,
                         badge_data.get(
-                            const.CONF_BADGE_RESET_GRACE_PERIOD,
+                            const.DATA_BADGE_RESET_GRACE_PERIOD,
                             const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
                         ),
                     )
-                    badge_data[const.CONF_BADGE_MAINTENANCE_RULES] = user_input.get(
-                        const.CONF_BADGE_MAINTENANCE_RULES,
+                    badge_data[const.DATA_BADGE_MAINTENANCE_RULES] = user_input.get(
+                        const.CFOF_BADGES_INPUT_MAINTENANCE_RULES,
                         badge_data.get(
-                            const.CONF_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY
+                            const.DATA_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY
                         ),
                     )
 
