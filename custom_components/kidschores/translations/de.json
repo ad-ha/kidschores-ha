@@ -1407,7 +1407,7 @@
               "false": "Nein"
             }
           },
-          "threshold__type": {
+          "threshold_type": {
             "name": "Schwellenwerttyp"
           },
           "daily_threshold": {

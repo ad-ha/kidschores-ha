@@ -1407,7 +1407,7 @@
               "false": "No"
             }
           },
-          "threshold__type": {
+          "threshold_type": {
             "name": "Tipo de Umbral"
           },
           "daily_threshold": {
