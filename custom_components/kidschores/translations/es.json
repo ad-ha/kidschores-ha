@@ -3,7 +3,7 @@
   "config": {
     "step": {
       "intro": {
-        "title": "Bienvenido a KidsChores",
+        "title": "Bienvenido/a a KidsChores",
         "description": "Este asistente te guiará en la configuración de KidsChores."
       },
       "points_label": {
@@ -23,7 +23,7 @@
       },
       "kids": {
         "title": "Definir Niño/a",
-        "description": "Introduce el nombre para cada niño.",
+        "description": "Introduce el nombre para cada niño/a.",
         "data": {
           "kid_name": "Nombre del Niño/a",
           "internal_id": "ID Interno",
@@ -42,7 +42,7 @@
       },
       "parents": {
         "title": "Definir Padre/Madre",
-        "description": "Introduce los datos de cada padre.",
+        "description": "Introduce los datos de cada padre/madre.",
         "data": {
           "parent_name": "Nombre del Padre/Madre",
           "ha_user_id": "Usuario de Home Assistant",
@@ -96,20 +96,32 @@
         "description": "Introduce los datos de cada insignia.",
         "data": {
           "badge_name": "Nombre de la Insignia",
-          "internal_id": "ID Interno",
-          "threshold_type": "Tipo de umbral",
-          "threshold_value": "Valor del umbral",
-          "points_multiplier": "Multiplicador de puntos",
-          "icon": "Ícono (mdi:xxx)",
           "badge_description": "Descripción (opcional)",
-          "badge_labels": "Etiquetas de la Insignia"
+          "badge_labels": "Etiquetas de la Insignia",
+          "icon": "Ícono (mdi:xxx)",
+          "threshold_value": "Valor del umbral",
+          "award_mode": "Modo de Otorgamiento",
+          "award_points": "Otorgar Puntos",
+          "award_reward": "Otorgar Recompensa",
+          "points_multiplier": "Multiplicador de Puntos",
+          "reset_periodically": "Reiniciar Periódicamente",
+          "reset_type": "Tipo de Reinicio",
+          "custom_reset_date": "Fecha de Reinicio Personalizada",
+          "reset_grace_period": "Período de Gracia (días)",
+          "maintenance_rules": "Puntos de Mantenimiento Mínimos",
+          "internal_id": "ID Interno"
+        },
+        "data_description": {
+          "custom_reset_date": "Define una fecha de reinicio personalizada si el tipo de reinicio está en Personalizado.",
+          "reset_grace_period": "Define el período de gracia, en DÍAS, en el que los niños pueden mantener su insignia si alcanzan los Puntos de Mantenimiento Mínimos.",
+          "maintenance_rules": "Puntos mínimos que se deben obtener durante el Período de Gracia para conservar la insignia."
         }
       },
       "reward_count": {
         "title": "Número de Recompensas",
         "description": "¿Cuántas recompensas deseas definir?",
         "data": {
-          "reward_count": "Cantidad de Recompensas"
+          "reward_count": "Reward Count"
         }
       },
       "rewards": {
@@ -128,7 +140,7 @@
         "title": "Número de Penalizaciones",
         "description": "¿Cuántas penalizaciones deseas definir?",
         "data": {
-          "penalty_count": "Cantidad de Penalizaciones"
+          "penalty_count": "Penalty Count"
         }
       },
       "penalties": {
@@ -147,7 +159,7 @@
         "title": "Número de Bonificaciones",
         "description": "¿Cuántas bonificaciones deseas definir?",
         "data": {
-          "bonus_count": "Cantidad de Bonificaciones"
+          "bonus_count": "Bonuses Count"
         }
       },
       "bonuses": {
@@ -203,7 +215,7 @@
           "icon": "Ícono (mdi:xxx)",
           "assigned_kids": "Niños asignados",
           "type": "Tipo de reto",
-          "selected_chore_id": "Selecciona la tarea asociada al reto (opcional)",
+          "selected_chore_id": "Selecciona la tarea asociada con el reto (opcional)",
           "criteria": "Criterios (opcional)",
           "target_value": "Objetivo del reto",
           "reward_points": "Puntos extra por completar el reto",
@@ -223,7 +235,7 @@
       "duplicate_badge": "Ya existe una insignia con este nombre",
       "duplicate_challenge": "Ya existe un desafío con este nombre",
       "duplicate_chore": "Ya existe una tarea con este nombre",
-      "duplicate_kid": "Ya existe un niño con este nombre",
+      "duplicate_kid": "Ya existe un niño/a con este nombre",
       "duplicate_parent": "Ya existe un padre/madre con este nombre",
       "duplicate_penalty": "Ya existe una penalización con este nombre",
       "duplicate_reward": "Ya existe una recompensa con este nombre",
@@ -244,7 +256,7 @@
       "invalid_due_date": "Fecha de vencimiento no válida",
       "invalid_end_date": "Fecha de fin no válida.",
       "invalid_kid_count": "Cantidad de niños no válida",
-      "invalid_kid_name": "Nombre de niño no válido",
+      "invalid_kid_name": "Nombre de niño/a no válido",
       "invalid_parent_count": "Cantidad de padres no válida",
       "invalid_parent_name": "Nombre de padre/madre no válido",
       "invalid_penalty": "Penalización no válida",
@@ -267,28 +279,28 @@
     "step": {
       "init": {
         "title": "Opciones de KidsChores",
-        "description": "Gestiona niños, tareas, insignias, recompensas, penalizaciones o finaliza.",
+        "description": "Gestiona niños/as, tareas, insignias, recompensas, penalizaciones, bonificaciones o finaliza.",
         "data": {
           "menu_selection": "Selecciona una opción"
         }
       },
       "manage_entity": {
         "title": "Seleccionar Acción",
-        "description": "Opciones para añadir, editar o eliminar.",
+        "description": "Añadir, editar o eliminar opciones.",
         "data": {
           "manage_action": "Selecciona una acción"
         }
       },
       "select_entity": {
         "title": "Selecciona {entity_type}",
-        "description": "Selecciona el {entity_type} que deseas {action}.",
+        "description": "Selecciona el/la {entity_type} que deseas {action}.",
         "data": {
           "entity_name": "Nombre"
         }
       },
       "manage_points": {
         "title": "Editar Etiqueta e Ícono de Puntos",
-        "description": "Cambia la etiqueta e ícono utilizados para representar los puntos.",
+        "description": "Cambia la etiqueta e ícono usados para representar los puntos.",
         "data": {
           "points_label": "Etiqueta de Puntos",
           "points_icon": "Ícono de Puntos"
@@ -296,7 +308,7 @@
       },
       "add_kid": {
         "title": "Añadir Niño/a",
-        "description": "Proporciona los datos para el nuevo niño.",
+        "description": "Proporciona los datos para el nuevo niño/a.",
         "data": {
           "kid_name": "Nombre del Niño/a",
           "ha_user": "Usuario de Home Assistant",
@@ -308,7 +320,7 @@
       },
       "add_parent": {
         "title": "Añadir Padre/Madre",
-        "description": "Proporciona los datos para el nuevo padre.",
+        "description": "Proporciona los datos para el nuevo padre/madre.",
         "data": {
           "parent_name": "Nombre del Padre/Madre",
           "ha_user_id": "Usuario de Home Assistant",
@@ -321,7 +333,7 @@
       },
       "add_chore": {
         "title": "Añadir Tarea",
-        "description": "Proporciona los datos de la nueva tarea.",
+        "description": "Proporciona los datos para la nueva tarea.",
         "data": {
           "chore_name": "Nombre de la Tarea",
           "internal_id": "ID Interno",
@@ -334,7 +346,7 @@
           "chore_labels": "Etiquetas de la Tarea",
           "icon": "Ícono (mdi:xxx)",
           "recurring_frequency": "Frecuencia recurrente",
-          "custom_interval": "Intervalo de Frecuencia Recurrente Personalizado (usar solo si se configura Frecuencia Recurrente Personalizada)",
+          "custom_interval": "Intervalo de Frecuencia Recurrente Personalizado",
           "custom_interval_unit": "Periodo de Frecuencia Recurrente Personalizada",
           "applicable_days": "Días aplicables",
           "due_date": "Fecha de vencimiento",
@@ -345,16 +357,120 @@
       },
       "add_badge": {
         "title": "Añadir Insignia",
-        "description": "Proporciona los datos de la nueva insignia.",
+        "description": "Proporciona el tipo deseado para la nueva insignia.",
+        "data": {
+          "badge_type": "Tipo de Insignia"
+        }
+      },
+      "add_badge_cumulative": {
+        "title": "Añadir Insignia Acumulativa",
+        "description": "Proporciona los datos para la nueva insignia acumulativa.",
         "data": {
           "badge_name": "Nombre de la Insignia",
-          "internal_id": "ID Interno",
-          "threshold_type": "Tipo de umbral",
-          "threshold_value": "Valor del umbral",
-          "points_multiplier": "Multiplicador de puntos",
-          "icon": "Ícono (mdi:xxx)",
           "badge_description": "Descripción (opcional)",
-          "badge_labels": "Etiquetas de la Insignia"
+          "badge_labels": "Etiquetas de la Insignia",
+          "icon": "Ícono (mdi:xxx)",
+          "threshold_value": "Valor del Umbral",
+          "award_mode": "Modo de Otorgamiento",
+          "award_points": "Puntos Otorgados",
+          "award_reward": "Recompensa Otorgada",
+          "points_multiplier": "Multiplicador de Puntos",
+          "reset_periodically": "Reiniciar Periódicamente",
+          "reset_type": "Tipo de Reinicio",
+          "custom_reset_date": "Fecha de Reinicio Personalizada",
+          "reset_grace_period": "Período de Gracia (días)",
+          "maintenance_rules": "Puntos de Mantenimiento Mínimos",
+          "internal_id": "ID Interno"
+        },
+        "data_description": {
+          "custom_reset_date": "Define una fecha de reinicio personalizada si el tipo de reinicio está configurado en Custom.",
+          "reset_grace_period": "Define el período de gracia, en DÍAS, en el que los niños pueden mantener su insignia si alcanzan los puntos de mantenimiento mínimos.",
+          "maintenance_rules": "Puntos mínimos que se deben obtener durante el período de gracia para conservar la insignia."
+        }
+      },
+      "add_badge_daily": {
+        "title": "Añadir Insignia Diaria",
+        "description": "Proporciona los datos para la nueva insignia diaria.",
+        "data": {
+          "badge_name": "Nombre de la Insignia",
+          "badge_description": "Descripción (opcional)",
+          "badge_labels": "Etiquetas de la Insignia",
+          "icon": "Ícono (mdi:xxx)",
+          "daily_threshold_type": "Tipo de Umbral",
+          "daily_threshold": "Valor del Umbral",
+          "award_mode": "Modo de Otorgamiento",
+          "award_points": "Puntos Otorgados",
+          "award_reward": "Recompensa Otorgada",
+          "internal_id": "ID Interno"
+        }
+      },
+      "add_badge_periodic": {
+        "title": "Añadir Insignia Periódica",
+        "description": "Proporciona los datos para la nueva insignia periódica.",
+        "data": {
+          "badge_name": "Nombre de la Insignia",
+          "badge_description": "Descripción (opcional)",
+          "badge_labels": "Etiquetas de la Insignia",
+          "icon": "Ícono (mdi:xxx)",
+          "reset_schedule": "Programa de Reinicio",
+          "start_date": "Fecha de Inicio",
+          "end_date": "Fecha de Finalización",
+          "recurrent": "Recurrente",
+          "threshold_type": "Tipo de Umbral",
+          "required_chores": "Tareas Requeridas",
+          "threshold_value": "Valor del Umbral",
+          "award_mode": "Modo de Otorgamiento",
+          "award_points": "Puntos Otorgados",
+          "award_reward": "Recompensa Otorgada",
+          "internal_id": "ID Interno"
+        }
+      },
+      "add_badge_achievement": {
+        "title": "Añadir Insignia Vinculada a Logro",
+        "description": "Proporciona los datos para la nueva insignia vinculada a logro.",
+        "data": {
+          "badge_name": "Nombre de la Insignia",
+          "badge_description": "Descripción (opcional)",
+          "badge_labels": "Etiquetas de la Insignia",
+          "icon": "Ícono (mdi:xxx)",
+          "associated_achievement": "Logro Asociado",
+          "award_mode": "Modo de Otorgamiento",
+          "award_points": "Puntos Otorgados",
+          "award_reward": "Recompensa Otorgada",
+          "internal_id": "ID Interno"
+        }
+      },
+      "add_badge_challenge": {
+        "title": "Añadir Insignia Vinculada a Reto",
+        "description": "Proporciona los datos para la nueva insignia vinculada a un reto.",
+        "data": {
+          "badge_name": "Nombre de la Insignia",
+          "badge_description": "Descripción (opcional)",
+          "badge_labels": "Etiquetas de la Insignia",
+          "icon": "Ícono (mdi:xxx)",
+          "associated_challenge": "Reto Asociado",
+          "award_mode": "Modo de Otorgamiento",
+          "award_points": "Puntos Otorgados",
+          "award_reward": "Recompensa Otorgada",
+          "internal_id": "ID Interno"
+        }
+      },
+      "add_badge_special": {
+        "title": "Añadir Insignia para Ocasión Especial",
+        "description": "Proporciona los datos para la nueva insignia vinculada a una ocasión especial.",
+        "data": {
+          "badge_name": "Nombre de la Insignia",
+          "badge_description": "Descripción (opcional)",
+          "badge_labels": "Etiquetas de la Insignia",
+          "icon": "Ícono (mdi:xxx)",
+          "assigned_kids": "Niños Asignados",
+          "occasion_type": "Tipo de Ocasión",
+          "occasion_date": "Fecha de la Ocasión",
+          "recurrent": "Recurrente",
+          "award_mode": "Modo de Otorgamiento",
+          "award_points": "Puntos Otorgados",
+          "award_reward": "Recompensa Otorgada",
+          "internal_id": "ID Interno"
         }
       },
       "add_reward": {
@@ -420,7 +536,7 @@
           "icon": "Ícono (mdi:xxx)",
           "assigned_kids": "Niños asignados",
           "type": "Tipo de reto",
-          "selected_chore_id": "Selecciona la tarea asociada al reto (opcional)",
+          "selected_chore_id": "Selecciona la tarea asociada con el reto (opcional)",
           "criteria": "Criterios (opcional)",
           "target_value": "Objetivo del reto",
           "reward_points": "Puntos extra por completar el reto",
@@ -431,7 +547,7 @@
       },
       "edit_kid": {
         "title": "Editar Niño/a",
-        "description": "Modifica los datos del niño seleccionado.",
+        "description": "Modifica los datos del niño/a seleccionado.",
         "data": {
           "kid_name": "Nombre del Niño/a",
           "ha_user": "Usuario de Home Assistant",
@@ -443,7 +559,7 @@
       },
       "edit_parent": {
         "title": "Editar Padre/Madre",
-        "description": "Modifica los datos del padre seleccionado.",
+        "description": "Modifica los datos del padre/madre seleccionado.",
         "data": {
           "parent_name": "Nombre del Padre/Madre",
           "ha_user_id": "Usuario de Home Assistant",
@@ -483,13 +599,32 @@
         "description": "Modifica los datos de la insignia seleccionada.",
         "data": {
           "badge_name": "Nombre de la Insignia",
-          "internal_id": "ID Interno",
-          "threshold_type": "Tipo de umbral",
-          "threshold_value": "Valor del umbral",
-          "points_multiplier": "Multiplicador de puntos",
-          "icon": "Ícono (mdi:xxx)",
           "badge_description": "Descripción (opcional)",
-          "badge_labels": "Etiquetas de la Insignia"
+          "badge_labels": "Etiquetas de la Insignia",
+          "icon": "Ícono (mdi:xxx)",
+          "assigned_kids": "Niños asignados",
+          "occasion_type": "Tipo de ocasión",
+          "occasion_date": "Fecha de ocasión",
+          "recurrent": "Recurrente",
+          "award_mode": "Modo de otorgamiento",
+          "award_points": "Puntos otorgados",
+          "award_reward": "Recompensa otorgada",
+          "associated_challenge": "Desafío asociado",
+          "associated_achievement": "Logro asociado",
+          "reset_schedule": "Programa de reinicio",
+          "start_date": "Fecha de inicio",
+          "end_date": "Fecha de finalización",
+          "threshold_type": "Tipo de umbral",
+          "required_chores": "Tareas requeridas",
+          "threshold_value": "Valor del umbral",
+          "daily_threshold_type": "Tipo de umbral diario",
+          "daily_threshold": "Valor del umbral diario",
+          "points_multiplier": "Multiplicador de puntos",
+          "reset_periodically": "Reiniciar periódicamente",
+          "reset_period": "Periodo de reinicio",
+          "reset_grace_period": "Período de gracia de reinicio",
+          "maintenance_rules": "Reglas de mantenimiento",
+          "internal_id": "ID Interno"
         }
       },
       "edit_reward": {
@@ -555,7 +690,7 @@
           "icon": "Ícono (mdi:xxx)",
           "assigned_kids": "Niños asignados",
           "type": "Tipo de reto",
-          "selected_chore_id": "Selecciona la tarea asociada al reto (opcional)",
+          "selected_chore_id": "Selecciona la tarea asociada con el reto (opcional)",
           "criteria": "Criterios (opcional)",
           "target_value": "Objetivo del reto",
           "reward_points": "Puntos extra por completar el reto",
@@ -566,48 +701,62 @@
       },
       "delete_kid": {
         "title": "Eliminar Niño/a",
-        "description": "¿Estás seguro de que deseas eliminar al niño {kid_name}?",
+        "description": "¿Estás seguro/a de que deseas eliminar al niño/a {kid_name}?",
         "data": {}
       },
       "delete_parent": {
         "title": "Eliminar Padre/Madre",
-        "description": "¿Estás seguro de que deseas eliminar al padre {parent_name}?",
+        "description": "¿Estás seguro/a de que deseas eliminar al padre/madre {parent_name}?",
         "data": {}
       },
       "delete_chore": {
         "title": "Eliminar Tarea",
-        "description": "¿Estás seguro de que deseas eliminar la tarea {chore_name}?",
+        "description": "¿Estás seguro/a de que deseas eliminar la tarea {chore_name}?",
         "data": {}
       },
       "delete_badge": {
         "title": "Eliminar Insignia",
-        "description": "¿Estás seguro de que deseas eliminar la insignia {badge_name}?",
+        "description": "¿Estás seguro/a de que deseas eliminar la insignia {badge_name}?",
         "data": {}
       },
       "delete_reward": {
         "title": "Eliminar Recompensa",
-        "description": "¿Estás seguro de que deseas eliminar la recompensa {reward_name}?",
+        "description": "¿Estás seguro/a de que deseas eliminar la recompensa {reward_name}?",
         "data": {}
       },
       "delete_penalty": {
         "title": "Eliminar Penalización",
-        "description": "¿Estás seguro de que deseas eliminar la penalización {penalty_name}?",
+        "description": "¿Estás seguro/a de que deseas eliminar la penalización {penalty_name}?",
         "data": {}
       },
       "delete_bonus": {
         "title": "Eliminar Bonificación",
-        "description": "¿Estás seguro de que deseas eliminar la bonificación {bonus_name}?",
+        "description": "¿Estás seguro/a de que deseas eliminar la bonificación {bonus_name}?",
         "data": {}
       },
       "delete_achievement": {
         "title": "Eliminar Logro",
-        "description": "¿Estás seguro de que deseas eliminar el logro {achievement_name}?",
+        "description": "¿Estás seguro/a de que deseas eliminar el logro {achievement_name}?",
         "data": {}
       },
       "delete_challenge": {
         "title": "Eliminar Reto",
-        "description": "¿Estás seguro de que deseas eliminar el reto {challenge_name}?",
+        "description": "¿Estás seguro/a de que deseas eliminar el reto {challenge_name}?",
         "data": {}
+      },
+      "manage_general_options": {
+        "title": "Opciones Generales",
+        "description": "Administra la configuración general de la integración KidsChores.",
+        "data": {
+          "points_adjust_values": "Valores de Ajuste Manual de Puntos",
+          "update_interval": "Intervalo de Actualización",
+          "calendar_show_period": "Cantidad de Días a Mostrar en el Calendario"
+        },
+        "data_description": {
+          "points_adjust_values": "Lista de valores para los botones de ajuste manual de puntos, un valor por línea.",
+          "update_interval": "Intervalo (en minutos) para actualizar el estado interno de KidsChores.",
+          "calendar_show_period": "Cantidad de días a futuro para mostrar tareas y retos programados en el calendario."
+        }
       }
     },
     "error": {
@@ -616,7 +765,7 @@
       "duplicate_badge": "Ya existe una insignia con este nombre",
       "duplicate_challenge": "Ya existe un desafío con este nombre",
       "duplicate_chore": "Ya existe una tarea con este nombre",
-      "duplicate_kid": "Ya existe un niño con este nombre",
+      "duplicate_kid": "Ya existe un niño/a con este nombre",
       "duplicate_parent": "Ya existe un padre/madre con este nombre",
       "duplicate_penalty": "Ya existe una penalización con este nombre",
       "duplicate_reward": "Ya existe una recompensa con este nombre",
@@ -631,7 +780,7 @@
       "invalid_due_date": "Fecha de vencimiento no válida",
       "invalid_end_date": "Fecha de fin no válida.",
       "invalid_kid_count": "Cantidad de niños no válida",
-      "invalid_kid_name": "Nombre de niño no válido",
+      "invalid_kid_name": "Nombre de niño/a no válido",
       "invalid_penalty": "Penalización no válida",
       "invalid_penalty_count": "Cantidad de penalizaciones no válida",
       "invalid_bonus": "Bonificación no válida",
@@ -648,20 +797,20 @@
       "invalid_challenge": "Desafío no válido",
       "invalid_chore": "Tarea no válida",
       "invalid_entity": "Entidad no válida",
-      "invalid_kid": "Niño no válido",
+      "invalid_kid": "Niño/a no válido",
       "invalid_parent": "Padre/Madre no válido",
       "invalid_penalty": "Penalización no válida",
       "invalid_reward": "Recompensa no válida",
       "invalid_bonus": "Bonificación no válida",
-      "no_kid": "No hay niños configurados. Adiciona una entrada primero.",
-      "no_parent": "No hay padres configurados. Adiciona una entrada primero.",
-      "no_chore": "No hay tareas configuradas. Adiciona una entrada primero.",
-      "no_badge": "No hay insignias configuradas. Adiciona una entrada primero.",
-      "no_reward": "No hay recompensas configuradas. Adiciona una entrada primero.",
-      "no_penalty": "No hay penalizaciones configuradas. Adiciona una entrada primero.",
-      "no_bonus": "No hay bonificaciones configuradas. Adiciona una entrada primero.",
-      "no_achievement": "No hay logros configurados. Adiciona una entrada primero.",
-      "no_challenge": "No hay desafíos configurados. Adiciona una entrada primero.",
+      "no_kid": "No hay niños/as configurados. Añade una entrada primero.",
+      "no_parent": "No hay padres configurados. Añade una entrada primero.",
+      "no_chore": "No hay tareas configuradas. Añade una entrada primero.",
+      "no_badge": "No hay insignias configuradas. Añade una entrada primero.",
+      "no_reward": "No hay recompensas configuradas. Añade una entrada primero.",
+      "no_penalty": "No hay penalizaciones configuradas. Añade una entrada primero.",
+      "no_bonus": "No hay bonificaciones configuradas. Añade una entrada primero.",
+      "no_achievement": "No hay logros configurados. Añade una entrada primero.",
+      "no_challenge": "No hay retos configurados. Añade una entrada primero.",
       "setup_complete": "Configuración Completa"
     }
   },
@@ -678,6 +827,7 @@
         "manage_bonus": "Gestionar Bonificación",
         "manage_achievement": "Gestionar Logro",
         "manage_challenge": "Gestionar Reto",
+        "general_options": "Opciones Generales",
         "done": "Finalizar Configuración"
       }
     },
@@ -689,14 +839,52 @@
         "back": "Volver al Menú Principal"
       }
     },
+    "badge_type": {
+      "options": {
+        "cumulative": "Acumulativa",
+        "daily": "Diaria",
+        "periodic": "Periódica",
+        "achievement_linked": "Vinculada a Logro",
+        "challenge_linked": "Vinculada a Reto",
+        "special_occasions": "Ocasión Especial"
+      }
+    },
+    "award_mode": {
+      "options": {
+        "award_none": "Ninguna",
+        "award_points": "Puntos",
+        "award_reward": "Recompensa",
+        "award_points_reward": "Puntos y Recompensa"
+      }
+    },
+    "reset_period": {
+      "options": {
+        "year_end": "Fin de Año",
+        "custom": "Personalizado"
+      }
+    },
     "recurring_frequency": {
       "options": {
         "none": "Ninguna",
         "daily": "Diaria",
         "weekly": "Semanal",
-        "biweekly": "—",
+        "biweekly": "Bisemanal",
         "monthly": "Mensual",
         "custom": "Personalizada"
+      }
+    },
+    "reset_schedule": {
+      "options": {
+        "weekly": "Semanal (reset los lunes a medianoche)",
+        "monthly": "Mensual (reset el día 1 a medianoche)",
+        "custom": "Personalizado (definir periodo a continuación)"
+      }
+    },
+    "occasion_type": {
+      "options": {
+        "birthday": "Cumpleaños",
+        "holiday": "Festividad",
+        "custom": "Personalizado"
       }
     },
     "custom_interval_unit": {
@@ -722,16 +910,22 @@
         "points": "Puntos",
         "chore_count": "Cantidad de Tareas"
       }
+    },
+    "daily_threshold_type": {
+      "options": {
+        "points": "Puntos",
+        "chore_count": "Cantidad de Tareas"
+      }
     }
   },
   "services": {
     "claim_chore": {
       "name": "Reclamar Tarea",
-      "description": "Un niño reclama una tarea, marcándola como 'reclamada' para aprobación de los padres.",
+      "description": "Un niño/a reclama una tarea, marcándola como 'reclamada' para aprobación de los padres.",
       "fields": {
         "kid_name": {
           "name": "Nombre del Niño/a",
-          "description": "El nombre del niño que reclama la tarea.",
+          "description": "El nombre del niño/a que reclama la tarea.",
           "example": "Alice"
         },
         "chore_name": {
@@ -743,16 +937,16 @@
     },
     "approve_chore": {
       "name": "Aprobar Tarea",
-      "description": "El padre aprueba la tarea, otorgando puntos.",
+      "description": "El padre/madre aprueba la tarea, otorgando puntos.",
       "fields": {
         "parent_name": {
           "name": "Nombre del Padre/Madre",
-          "description": "El padre que aprueba la tarea.",
+          "description": "El padre/madre que aprueba la tarea.",
           "example": "Mamá"
         },
         "kid_name": {
           "name": "Nombre del Niño/a",
-          "description": "El nombre del niño que realizó la tarea.",
+          "description": "El nombre del niño/a que realizó la tarea.",
           "example": "Alice"
         },
         "chore_name": {
@@ -769,16 +963,16 @@
     },
     "disapprove_chore": {
       "name": "Desaprobar Tarea",
-      "description": "El padre rechaza una tarea para un niño, revirtiendo su estado.",
+      "description": "El padre/madre rechaza una tarea para un niño/a, revirtiendo su estado.",
       "fields": {
         "parent_name": {
           "name": "Nombre del Padre/Madre",
-          "description": "El padre que rechaza la tarea.",
+          "description": "El padre/madre que rechaza la tarea.",
           "example": "Mamá"
         },
         "kid_name": {
           "name": "Nombre del Niño/a",
-          "description": "El nombre del niño cuya tarea se está rechazando.",
+          "description": "El nombre del niño/a cuya tarea se está rechazando.",
           "example": "Alice"
         },
         "chore_name": {
@@ -790,16 +984,16 @@
     },
     "redeem_reward": {
       "name": "Canjear Recompensa",
-      "description": "Un padre canjea una recompensa para un niño, descontando puntos.",
+      "description": "Un padre/madre canjea una recompensa para un niño/a, descontando puntos.",
       "fields": {
         "parent_name": {
           "name": "Nombre del Padre/Madre",
-          "description": "El padre que autoriza el canje de la recompensa.",
+          "description": "El padre/madre que autoriza el canje de la recompensa.",
           "example": "Mamá"
         },
         "kid_name": {
           "name": "Nombre del Niño/a",
-          "description": "El niño que canjea la recompensa.",
+          "description": "El niño/a que canjea la recompensa.",
           "example": "Alice"
         },
         "reward_name": {
@@ -811,16 +1005,16 @@
     },
     "approve_reward": {
       "name": "Aprobar Recompensa",
-      "description": "El padre aprueba una recompensa reclamada por un niño.",
+      "description": "El padre/madre aprueba una recompensa reclamada por un niño/a.",
       "fields": {
         "parent_name": {
           "name": "Nombre del Padre/Madre",
-          "description": "El padre que aprueba la recompensa.",
+          "description": "El padre/madre que aprueba la recompensa.",
           "example": "Mamá"
         },
         "kid_name": {
           "name": "Nombre del Niño/a",
-          "description": "El niño que está canjeando la recompensa.",
+          "description": "El niño/a que está canjeando la recompensa.",
           "example": "Alice"
         },
         "reward_name": {
@@ -832,16 +1026,16 @@
     },
     "disapprove_reward": {
       "name": "Desaprobar Recompensa",
-      "description": "El padre rechaza el canje de una recompensa para un niño.",
+      "description": "El padre/madre rechaza el canje de una recompensa para un niño/a.",
       "fields": {
         "parent_name": {
           "name": "Nombre del Padre/Madre",
-          "description": "El padre que rechaza la recompensa.",
+          "description": "El padre/madre que rechaza la recompensa.",
           "example": "Papá"
         },
         "kid_name": {
           "name": "Nombre del Niño/a",
-          "description": "El niño cuyo canje de recompensa se está rechazando.",
+          "description": "El niño/a cuyo canje de recompensa se está rechazando.",
           "example": "Alice"
         },
         "reward_name": {
@@ -853,16 +1047,16 @@
     },
     "apply_penalty": {
       "name": "Aplicar Penalización",
-      "description": "Un padre aplica una penalización para descontar puntos.",
+      "description": "Un padre/madre aplica una penalización para descontar puntos.",
       "fields": {
         "parent_name": {
           "name": "Nombre del Padre/Madre",
-          "description": "El padre que aplica la penalización.",
+          "description": "El padre/madre que aplica la penalización.",
           "example": "Papá"
         },
         "kid_name": {
           "name": "Nombre del Niño/a",
-          "description": "El niño que recibe la penalización.",
+          "description": "El niño/a que recibe la penalización.",
           "example": "Alice"
         },
         "penalty_name": {
@@ -874,16 +1068,16 @@
     },
     "apply_bonus": {
       "name": "Aplicar Bonificación",
-      "description": "Un padre aplica una bonificación a un niño, otorgando puntos.",
+      "description": "Un padre/madre aplica una bonificación a un niño/a, otorgando puntos.",
       "fields": {
         "parent_name": {
           "name": "Nombre del Padre/Madre",
-          "description": "El padre que aplica la bonificación.",
+          "description": "El padre/madre que aplica la bonificación.",
           "example": "Mamá"
         },
         "kid_name": {
           "name": "Nombre del Niño/a",
-          "description": "El niño que recibe la bonificación.",
+          "description": "El niño/a que recibe la bonificación.",
           "example": "Alice"
         },
         "bonus_name": {
@@ -903,7 +1097,7 @@
     },
     "reset_overdue_chores": {
       "name": "Restablecer Tareas Vencidas",
-      "description": "Restablece las tareas vencidas a estado Pendiente y las reprograma según su frecuencia recurrente y la fecha de vencimiento anterior. Opcionalmente, puedes proporcionar un chore_id (o chore_name) para restablecer una tarea específica y, opcionalmente, un kid_name para restablecer la tarea solo para ese niño.",
+      "description": "Restablece las tareas vencidas a estado Pendiente y las reprograma según su frecuencia recurrente y la fecha de vencimiento anterior. Puedes proporcionar un chore_id (o chore_name) para restablecer una tarea específica y, opcionalmente, un kid_name para restablecer la tarea solo para ese niño/a.",
       "fields": {
         "chore_id": {
           "name": "ID de la Tarea",
@@ -917,14 +1111,14 @@
         },
         "kid_name": {
           "name": "Nombre del Niño/a",
-          "description": "El nombre del niño (opcional).",
+          "description": "El nombre del niño/a (opcional).",
           "example": "Alice"
         }
       }
     },
     "set_chore_due_date": {
       "name": "Establecer/Restablecer Fecha de Vencimiento de la Tarea",
-      "description": "Establece (o borra) la fecha de vencimiento de una tarea. Proporciona el nombre de la tarea y, si lo deseas, una nueva fecha de vencimiento. Si no se proporciona una fecha, se borrará la existente. El servicio rechazará las fechas en el pasado.",
+      "description": "Establece o borra la fecha de vencimiento de una tarea. Proporciona el nombre de la tarea y, si lo deseas, una nueva fecha. Si no se proporciona fecha, se borrará la existente. No se permiten fechas en el pasado.",
       "fields": {
         "chore_name": {
           "name": "Nombre de la Tarea",
@@ -933,14 +1127,14 @@
         },
         "due_date": {
           "name": "Fecha de Vencimiento",
-          "description": "La nueva fecha de vencimiento de la tarea. Usa el selector de fecha/hora para elegir una fecha y hora válidas (en tu zona horaria local). Déjalo vacío para borrar la fecha de vencimiento.",
+          "description": "La nueva fecha de vencimiento de la tarea. Usa el selector de fecha/hora para elegir una fecha/hora válida (en tu zona horaria local). Déjalo vacío para borrar la fecha de vencimiento.",
           "example": "2025-03-01T23:59:00Z"
         }
       }
     },
     "skip_chore_due_date": {
       "name": "Saltar Fecha de Vencimiento de la Tarea",
-      "description": "Salta la fecha de vencimiento actual de una tarea recurrente. Este servicio reprograma inmediatamente la fecha de vencimiento de la tarea según su frecuencia de repetición y restablece su estado a pendiente. Se eliminarán todas las reclamaciones o aprobaciones pendientes.",
+      "description": "Salta la fecha de vencimiento actual de una tarea recurrente. Se reprograma la fecha de vencimiento según su frecuencia y se restablece su estado a pendiente. Se eliminan reclamaciones y aprobaciones pendientes.",
       "fields": {
         "chore_id": {
           "name": "ID de la Tarea",
@@ -955,24 +1149,24 @@
       }
     },
     "reset_penalties": {
-      "name": "Restablecer Sanciones",
-      "description": "Restablece todas las sanciones aplicadas para todos los niños. Opcionalmente, proporciona Nombre de la Sanción para restablecer una sanción específica en todos los niños. Usa Nombre del Niño/a para restablecer todas las sanciones de un/a niño/a en particular. Combina ambos para restablecer una sanción específica de un/a niño/a específico/a.",
+      "name": "Restablecer Penalizaciones",
+      "description": "Restablece todas las penalizaciones aplicadas para todos los niños/as. Opcionalmente, proporciona el nombre de la penalización para restablecer una en particular. Usa el nombre del niño/a para restablecer penalizaciones de un niño/a específico. Combina ambos para restablecer una penalización concreta de un niño/a concreto.",
       "fields": {
         "kid_name": {
           "name": "Nombre del Niño/a",
-          "description": "El niño/a para el cual se restablecerán las sanciones.",
+          "description": "El niño/a para el cual se restablecerán las penalizaciones.",
           "example": "Alicia"
         },
         "penalty_name": {
-          "name": "Nombre de la Sanción",
-          "description": "El nombre de la sanción a restablecer.",
+          "name": "Nombre de la Penalización",
+          "description": "El nombre de la penalización a restablecer.",
           "example": "Gritar"
         }
       }
     },
     "reset_bonuses": {
       "name": "Restablecer Bonificaciones",
-      "description": "Restablece todas las bonificaciones aplicadas para todos los niños. Opcionalmente, proporciona Nombre de la Bonificación para restablecer una bonificación específica en todos los niños. Usa Nombre del Niño/a para restablecer todas las bonificaciones de un/a niño/a en particular. Combina ambos para restablecer una bonificación específica de un/a niño/a específico/a.",
+      "description": "Restablece todas las bonificaciones aplicadas para todos los niños/as. Opcionalmente, proporciona el nombre de la bonificación para restablecer una en particular. Usa el nombre del niño/a para restablecer todas las bonificaciones de un niño/a específico. Combina ambos para restablecer una bonificación concreta de un niño/a concreto.",
       "fields": {
         "kid_name": {
           "name": "Nombre del Niño/a",
@@ -988,11 +1182,11 @@
     },
     "reset_rewards": {
       "name": "Restablecer Recompensas",
-      "description": "Restablece el conteo de reclamaciones y aprobaciones de recompensas para todos los niños. Opcionalmente, proporciona Nombre de la Recompensa para restablecer el conteo de una recompensa específica en todos los niños. Usa Nombre del Niño/a para restablecer el conteo de recompensas de un/a niño/a en particular. Combina ambos para restablecer una recompensa específica de un/a niño/a específico/a.",
+      "description": "Restablece el conteo de reclamaciones y aprobaciones de recompensas para todos los niños/as. Opcionalmente, proporciona el nombre de la recompensa para restablecer una en particular. Usa el nombre del niño/a para restablecer todas las recompensas de un niño/a específico. Combina ambos para restablecer una recompensa concreta de un niño/a concreto.",
       "fields": {
         "kid_name": {
           "name": "Nombre del Niño/a",
-          "description": "El niño para el cual se restablecerán los conteos de recompensas.",
+          "description": "El niño/a para el cual se restablecerá el conteo de recompensas.",
           "example": "Alicia"
         },
         "reward_name": {
@@ -1037,13 +1231,13 @@
               "none": "Ninguna",
               "daily": "Diaria",
               "weekly": "Semanal",
-              "biweekly": "—",
+              "biweekly": "Bisemanal",
               "monthly": "Mensual",
               "custom": "Personalizada"
             }
           },
           "applicable_days": {
-            "name": "Applicable Days",
+            "name": "Días aplicables",
             "state": {
               "mon": "Lunes",
               "tue": "Martes",
@@ -1064,10 +1258,10 @@
             "name": "Descripción"
           },
           "chore_claims_count": {
-            "name": "—"
+            "name": "Reclamaciones de la Tarea"
           },
           "chore_approvals_count": {
-            "name": "—"
+            "name": "Aprobaciones de la Tarea"
           },
           "chore_current_streak": {
             "name": "Racha Actual de la Tarea"
@@ -1143,9 +1337,6 @@
       "chores_completed_monthly_sensor": {
         "name": "{kid_name} - Tareas Completadas - Mensuales"
       },
-      "kid_badges_sensor": {
-        "name": "{kid_name} - Insignias Obtenidas"
-      },
       "kids_highest_badge_sensor": {
         "name": "{kid_name} - Insignia",
         "state_attributes": {
@@ -1182,14 +1373,63 @@
           "points_multiplier": {
             "name": "Multiplicador de Puntos"
           },
-          "descriptionn": {
+          "description": {
             "name": "Descripción"
+          },
+          "award_points": {
+            "name": "Puntos Otorgados"
+          },
+          "award_reward": {
+            "name": "Recompensa Otorgada"
           },
           "kids_earned": {
             "name": "Niños que la han Obtenido"
           },
           "labels": {
             "name": "Etiquetas"
+          },
+          "threshold_value": {
+            "name": "Valor del Umbral"
+          },
+          "reset_schedule": {
+            "name": "Programa de Reinicio"
+          },
+          "start_date": {
+            "name": "Fecha de Inicio"
+          },
+          "end_date": {
+            "name": "Fecha de Finalización"
+          },
+          "recurrent": {
+            "name": "Recurrente",
+            "state": {
+              "true": "Sí",
+              "false": "No"
+            }
+          },
+          "threshold__type": {
+            "name": "Tipo de Umbral"
+          },
+          "daily_threshold": {
+            "name": "Umbral Diario"
+          },
+          "required_chores": {
+            "name": "Tareas Requeridas"
+          },
+          "associated_achievement": {
+            "name": "Logro Asociado"
+          },
+          "associated_challenge": {
+            "name": "Reto Asociado"
+          },
+          "occasion_type": {
+            "name": "Tipo de Ocasión"
+          },
+          "trigger_info": {
+            "name": "Información del Disparador"
+          },
+          "occasion_date": {
+            "name": "Fecha de Ocasión"
           }
         }
       },
@@ -1231,13 +1471,13 @@
               "none": "Ninguna",
               "daily": "Diaria",
               "weekly": "Semanal",
-              "biweekly": "—",
+              "biweekly": "Bisemanal",
               "monthly": "Mensual",
               "custom": "Personalizada"
             }
           },
           "applicable_days": {
-            "name": "Applicable Days",
+            "name": "Días aplicables",
             "state": {
               "mon": "Lunes",
               "tue": "Martes",
@@ -1301,6 +1541,12 @@
           "description": {
             "name": "Descripción"
           },
+          "reward_claims_count": {
+            "name": "Reclamaciones de la Recompensa"
+          },
+          "reward_approvals_count": {
+            "name": "Aprobaciones de la Recompensa"
+          },
           "labels": {
             "name": "Etiquetas"
           }
@@ -1321,7 +1567,7 @@
           "penalty_name": {
             "name": "Nombre de la Penalización"
           },
-          "descriptionn": {
+          "description": {
             "name": "Descripción"
           },
           "penalty_points": {
@@ -1333,7 +1579,7 @@
         }
       },
       "bonus_applies_sensor": {
-        "name": "{kid_name} - Bonus Applies - {bonus_name}",
+        "name": "{kid_name} - Bonificaciones Aplicadas - {bonus_name}",
         "state_attributes": {
           "kid_name": {
             "name": "Nombre del Niño/a"
@@ -1353,13 +1599,13 @@
         }
       },
       "kid_points_earned_daily_sensor": {
-        "name": "{kid_name} - Puntos Ganados - Diariamente"
+        "name": "{kid_name} - Puntos Ganados - Diarios"
       },
       "kid_points_earned_weekly_sensor": {
-        "name": "{kid_name} - Puntos Ganados - Semanalmente"
+        "name": "{kid_name} - Puntos Ganados - Semanales"
       },
       "kid_points_earned_monthly_sensor": {
-        "name": "{kid_name} - Puntos Ganados - Mensualmente"
+        "name": "{kid_name} - Puntos Ganados - Mensuales"
       },
       "achievement_state_sensor": {
         "name": "Logro - {achievement_name}",
@@ -1377,7 +1623,7 @@
             "name": "Tipo",
             "state": {
               "chore_total": "Tareas Totales",
-              "chore_streak": "Racha Tareas",
+              "chore_streak": "Racha de Tareas",
               "daily_minimum": "Mínimo Diario"
             }
           },
@@ -1394,7 +1640,7 @@
             "name": "Puntos de Recompensa"
           },
           "kids_earned": {
-            "name": "Ganado por"
+            "name": "Obtenido por"
           },
           "labels": {
             "name": "Etiquetas"
@@ -1416,8 +1662,8 @@
           "type": {
             "name": "Tipo",
             "state": {
-              "total_within_window": "Total en Periodo",
-              "daily_minimum": "Minimo Diario"
+              "total_within_window": "Total en el Período",
+              "daily_minimum": "Mínimo Diario"
             }
           },
           "associated_chore": {
@@ -1462,7 +1708,7 @@
             "name": "Tipo",
             "state": {
               "chore_total": "Tareas Totales",
-              "chore_streak": "Racha Tareas",
+              "chore_streak": "Racha de Tareas",
               "daily_minimum": "Mínimo Diario"
             }
           },
@@ -1508,8 +1754,8 @@
           "type": {
             "name": "Tipo",
             "state": {
-              "total_within_window": "Total en Periodo",
-              "daily_minimum": "Minimo Diario"
+              "total_within_window": "Total en el Período",
+              "daily_minimum": "Mínimo Diario"
             }
           },
           "associated_chore": {

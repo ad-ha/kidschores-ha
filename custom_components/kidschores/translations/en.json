@@ -96,13 +96,25 @@
         "description": "Enter details for each badge.",
         "data": {
           "badge_name": "Badge Name",
-          "internal_id": "Internal ID",
-          "threshold_type": "Threshold Type",
-          "threshold_value": "Threshold Value",
-          "points_multiplier": "Points Multiplier",
-          "icon": "Icon (mdi:xxx)",
           "badge_description": "Description (optional)",
-          "badge_labels": "Badge Labels"
+          "badge_labels": "Badge Labels",
+          "icon": "Icon (mdi:xxx)",
+          "threshold_value": "Threshold Value",
+          "award_mode": "Award Mode",
+          "award_points": "Award Points",
+          "award_reward": "Award Reward",
+          "points_multiplier": "Points Multiplier",
+          "reset_periodically": "Reset Periodically",
+          "reset_type": "Reset Type",
+          "custom_reset_date": "Custom Reset Date",
+          "reset_grace_period": "Reset Grace Period (days)",
+          "maintenance_rules": "Minimum Maintenance Points",
+          "internal_id": "Internal ID"
+        },
+        "data_description": {
+          "custom_reset_date": "Define custom reset date, if reset type set to Custom.",
+          "reset_grace_period": "Define the reset grace period, in DAYS, while the kids main keep their badge, if they \nachieve the Minimum Maintenance Points during the Grace Period.",
+          "maintenance_rules": "Minimum points needed to be obtained during the Grace Period in order to keep the badge."
         }
       },
       "reward_count": {
@@ -345,16 +357,120 @@
       },
       "add_badge": {
         "title": "Add Badge",
-        "description": "Provide the details for the new badge.",
+        "description": "Provide the desired type for the new badge.",
+        "data": {
+          "badge_type": "Badge Type"
+        }
+      },
+      "add_badge_cumulative": {
+        "title": "Add Cumulative Badge",
+        "description": "Provide the details for the new cumulative badge.",
         "data": {
           "badge_name": "Badge Name",
-          "internal_id": "Internal ID",
-          "threshold_type": "Threshold Type",
-          "threshold_value": "Threshold Value",
-          "points_multiplier": "Points Multiplier",
-          "icon": "Icon (mdi:xxx)",
           "badge_description": "Description (optional)",
-          "badge_labels": "Badge Labels"
+          "badge_labels": "Badge Labels",
+          "icon": "Icon (mdi:xxx)",
+          "threshold_value": "Threshold Value",
+          "award_mode": "Award Mode",
+          "award_points": "Award Points",
+          "award_reward": "Award Reward",
+          "points_multiplier": "Points Multiplier",
+          "reset_periodically": "Reset Periodically",
+          "reset_type": "Reset Type",
+          "custom_reset_date": "Custom Reset Date",
+          "reset_grace_period": "Reset Grace Period (days)",
+          "maintenance_rules": "Minimum Maintenance Points",
+          "internal_id": "Internal ID"
+        },
+        "data_description": {
+          "custom_reset_date": "Define custom reset date, if reset type set to Custom.",
+          "reset_grace_period": "Define the reset grace period, in DAYS, while the kids main keep their badge, if they \nachieve the Minimum Maintenance Points during the Grace Period.",
+          "maintenance_rules": "Minimum points needed to be obtained during the Grace Period in order to keep the badge."
+        }
+      },
+      "add_badge_daily": {
+        "title": "Add Daily Badge",
+        "description": "Provide the details for the new daily badge.",
+        "data": {
+          "badge_name": "Badge Name",
+          "badge_description": "Description (optional)",
+          "badge_labels": "Badge Labels",
+          "icon": "Icon (mdi:xxx)",
+          "daily_threshold_type": "Threshold Type",
+          "daily_threshold": "Threshold Value",
+          "award_mode": "Award Mode",
+          "award_points": "Award Points",
+          "award_reward": "Award Reward",
+          "internal_id": "Internal ID"
+        }
+      },
+      "add_badge_periodic": {
+        "title": "Add Periodic Badge",
+        "description": "Provide the details for the new periodic badge.",
+        "data": {
+          "badge_name": "Badge Name",
+          "badge_description": "Description (optional)",
+          "badge_labels": "Badge Labels",
+          "icon": "Icon (mdi:xxx)",
+          "reset_schedule": "Reset Schedule",
+          "start_date": "Start Date",
+          "end_date": "End Date",
+          "recurrent": "Recurrent",
+          "threshold_type": "Threshold Type",
+          "required_chores": "Required Chores",
+          "threshold_value": "Threshold Value",
+          "award_mode": "Award Mode",
+          "award_points": "Award Points",
+          "award_reward": "Award Reward",
+          "internal_id": "Internal ID"
+        }
+      },
+      "add_badge_achievement": {
+        "title": "Add Achievement-Linked Badge",
+        "description": "Provide the details for the new achievement-linked badge.",
+        "data": {
+          "badge_name": "Badge Name",
+          "badge_description": "Description (optional)",
+          "badge_labels": "Badge Labels",
+          "icon": "Icon (mdi:xxx)",
+          "associated_achievement": "Associated Achievement",
+          "award_mode": "Award Mode",
+          "award_points": "Award Points",
+          "award_reward": "Award Reward",
+          "internal_id": "Internal ID"
+        }
+      },
+      "add_badge_challenge": {
+        "title": "Add Challenge-Linked Badge",
+        "description": "Provide the details for the new challenge-linked badge.",
+        "data": {
+          "badge_name": "Badge Name",
+          "badge_description": "Description (optional)",
+          "badge_labels": "Badge Labels",
+          "icon": "Icon (mdi:xxx)",
+          "associated_challenge": "Associated Challenge",
+          "award_mode": "Award Mode",
+          "award_points": "Award Points",
+          "award_reward": "Award Reward",
+          "internal_id": "Internal ID"
+        }
+      },
+      "add_badge_special": {
+        "title": "Add Challenge-Linked Badge",
+        "description": "Provide the details for the new challenge-linked badge.",
+        "data": {
+          "badge_name": "Badge Name",
+          "badge_description": "Description (optional)",
+          "badge_labels": "Badge Labels",
+          "icon": "Icon (mdi:xxx)",
+          "assigned_kids": "Assigned Kids",
+          "occasion_type": "Occasion Type",
+          "occasion_date": "Occasion Date",
+          "recurrent": "Recurrent",
+          "award_mode": "Award Mode",
+          "award_points": "Award Points",
+          "award_reward": "Award Reward",
+          "internal_id": "Internal ID"
         }
       },
       "add_reward": {
@@ -483,13 +599,32 @@
         "description": "Modify the details of the selected badge.",
         "data": {
           "badge_name": "Badge Name",
-          "internal_id": "Internal ID",
-          "threshold_type": "Threshold Type",
-          "threshold_value": "Threshold Value",
-          "points_multiplier": "Points Multiplier",
-          "icon": "Icon (mdi:xxx)",
           "badge_description": "Description (optional)",
-          "badge_labels": "Badge Labels"
+          "badge_labels": "Badge Labels",
+          "icon": "Icon (mdi:xxx)",
+          "assigned_kids": "Assigned Kids",
+          "occasion_type": "Occasion Type",
+          "occasion_date": "Occasion Date",
+          "recurrent": "Recurrent",
+          "award_mode": "Award Mode",
+          "award_points": "Award Points",
+          "award_reward": "Award Reward",
+          "associated_challenge": "Associated Challenge",
+          "associated_achievement": "Associated Achievement",
+          "reset_schedule": "Reset Schedule",
+          "start_date": "Start Date",
+          "end_date": "End Date",
+          "threshold_type": "Threshold Type",
+          "required_chores": "Required Chores",
+          "threshold_value": "Threshold Value",
+          "daily_threshold_type": "Threshold Type",
+          "daily_threshold": "Threshold Value",
+          "points_multiplier": "Points Multiplier",
+          "reset_periodically": "Reset Periodically",
+          "reset_period": "Reset Period",
+          "reset_grace_period": "Reset Grace Period",
+          "maintenance_rules": "Maintenance Rules",
+          "internal_id": "Internal ID"
         }
       },
       "edit_reward": {
@@ -608,6 +743,20 @@
         "title": "Delete Challenge",
         "description": "Are you sure you want to delete the challenge {challenge_name}?",
         "data": {}
+      },
+      "manage_general_options": {
+        "title": "General Options",
+        "description": "Manage general settings for the KidsChores integration.",
+        "data": {
+          "points_adjust_values": "Manual Points Adjustment Button Values",
+          "update_interval": "Update Interval",
+          "calendar_show_period": "Number of Days to Show in Calendar"
+        },
+        "data_description": {
+          "points_adjust_values": "List of values for the manual points adjustment buttons, one value per line.",
+          "update_interval": "Interval in minutes for updating the internal state of KidsChores.",
+          "calendar_show_period": "Number of days in the future to show scheduled chores and challenges in the calendar."
+        }
       }
     },
     "error": {
@@ -678,6 +827,7 @@
         "manage_bonus": "Manage Bonus",
         "manage_achievement": "Manage Achievement",
         "manage_challenge": "Manage Challenge",
+        "general_options": "General Options",
         "done": "Finish Setup"
       }
     },
@@ -689,6 +839,30 @@
         "back": "Back to Main Menu"
       }
     },
+    "badge_type": {
+      "options": {
+        "cumulative": "Cumulative",
+        "daily": "Daily",
+        "periodic": "Periodic",
+        "achievement_linked": "Achievement Linked",
+        "challenge_linked": "Challenge Linked",
+        "special_occasions": "Special Occasion"
+      }
+    },
+    "award_mode": {
+      "options": {
+        "award_none": "None",
+        "award_points": "Points",
+        "award_reward": "Reward",
+        "award_points_reward": "Points & Reward"
+      }
+    },
+    "reset_period": {
+      "options": {
+        "year_end": "Year-End",
+        "custom": "Custom"
+      }
+    },
     "recurring_frequency": {
       "options": {
         "none": "None",
@@ -696,6 +870,20 @@
         "weekly": "Weekly",
         "biweekly": "Biweekly",
         "monthly": "Monthly",
+        "custom": "Custom"
+      }
+    },
+    "reset_schedule": {
+      "options": {
+        "weekly": "Weekly (reset Mondays at midnight)",
+        "monthly": "Monthly (reset on the 1st of the month at midnight)",
+        "custom": "Custom (define period below)"
+      }
+    },
+    "occasion_type": {
+      "options": {
+        "birthday": "Birthday",
+        "holiday": "Holiday",
         "custom": "Custom"
       }
     },
@@ -718,6 +906,12 @@
       }
     },
     "threshold_type": {
+      "options": {
+        "points": "Points",
+        "chore_count": "Chore Count"
+      }
+    },
+    "daily_threshold_type": {
       "options": {
         "points": "Points",
         "chore_count": "Chore Count"
@@ -1143,9 +1337,6 @@
       "chores_completed_monthly_sensor": {
         "name": "{kid_name} - Chores Completed - Monthly"
       },
-      "kid_badges_sensor": {
-        "name": "{kid_name} - Badges Earned"
-      },
       "kids_highest_badge_sensor": {
         "name": "{kid_name} - Badge",
         "state_attributes": {
@@ -1185,11 +1376,60 @@
           "description": {
             "name": "Description"
           },
+          "award_points": {
+            "name": "Award Points"
+          },
+          "award_reward": {
+            "name": "Award Reward"
+          },
           "kids_earned": {
             "name": "Kids Earned"
           },
           "labels": {
             "name": "Labels"
+          },
+          "threshold_value": {
+            "name": "Threshold Value"
+          },
+          "reset_schedule": {
+            "name": "Reset Schedule"
+          },
+          "start_date": {
+            "name": "Start Date"
+          },
+          "end_date": {
+            "name": "End Date"
+          },
+          "recurrent": {
+            "name": "Recurrent",
+            "state": {
+              "true": "Yes",
+              "false": "No"
+            }
+          },
+          "threshold__type": {
+            "name": "Threshold Type"
+          },
+          "daily_threshold": {
+            "name": "Daily Threshold"
+          },
+          "required_chores": {
+            "name": "Required Chores"
+          },
+          "associated_achievement": {
+            "name": "Associated Achievement"
+          },
+          "associated_challenge": {
+            "name": "Associated Challenge"
+          },
+          "occasion_type": {
+            "name": "Occasion Type"
+          },
+          "trigger_info": {
+            "name": "Trigger Info"
+          },
+          "occasion_date": {
+            "name": "Occasion Date"
           }
         }
       },
@@ -1300,6 +1540,12 @@
           },
           "description": {
             "name": "Description"
+          },
+          "reward_claims_count": {
+            "name": "Reward Claims Count"
+          },
+          "reward_approvals_count": {
+            "name": "Reward Approvals Count"
           },
           "labels": {
             "name": "Labels"
