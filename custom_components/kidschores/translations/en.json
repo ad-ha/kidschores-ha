@@ -456,8 +456,8 @@
         }
       },
       "add_badge_special": {
-        "title": "Add Challenge-Linked Badge",
-        "description": "Provide the details for the new challenge-linked badge.",
+        "title": "Add Special Occasion Badge",
+        "description": "Provide the details for the new special occasion badge.",
         "data": {
           "badge_name": "Badge Name",
           "badge_description": "Description (optional)",
