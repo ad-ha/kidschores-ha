@@ -579,7 +579,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Required(const.CFOF_BADGES_INPUT_TYPE): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=badge_type_options,
-                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        mode=selector.SelectSelectorMode.LIST,
                         translation_key=const.TRANS_KEY_CFOF_BADGE_TYPE,
                     )
                 )

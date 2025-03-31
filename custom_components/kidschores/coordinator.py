@@ -2217,7 +2217,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._update_chore_streak_for_kid(kid_id, chore_id, today)
         self._update_overall_chore_streak(kid_id, today)
 
-        # remove from pending approvals
+        # Remove from Pending Approvals
         self._data[const.DATA_PENDING_CHORE_APPROVALS] = [
             ap
             for ap in self._data[const.DATA_PENDING_CHORE_APPROVALS]
@@ -2226,7 +2226,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
         ]
 
-        # increment chore approvals
+        # Increment Chore Approvals
         if chore_id in kid_info[const.DATA_KID_CHORE_APPROVALS]:
             kid_info[const.DATA_KID_CHORE_APPROVALS][chore_id] += 1
         else:
@@ -2259,11 +2259,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # Manage Challenges
         today_iso = dt_util.as_local(dt_util.utcnow()).date().isoformat()
         for challenge_id, challenge in self.challenges_data.items():
-            if (
-                challenge.get(const.DATA_CHALLENGE_TYPE)
-                == const.CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW
-            ):
-                # (Challenge update logic for total-within-window remains here)
+            challenge_type = challenge.get(const.DATA_CHALLENGE_TYPE)
+
+            if challenge_type == const.CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
+                selected_chore = challenge.get(const.DATA_CHALLENGE_SELECTED_CHORE_ID)
+                if selected_chore and selected_chore != chore_id:
+                    continue
+
                 start_date_raw = challenge.get(const.DATA_CHALLENGE_START_DATE)
                 if isinstance(start_date_raw, str):
                     start_date = dt_util.parse_datetime(start_date_raw)
@@ -2294,11 +2296,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     )
                     progress[const.DATA_CHALLENGE_COUNT] += 1
 
-            elif (
-                challenge.get(const.DATA_CHALLENGE_TYPE)
-                == const.CHALLENGE_TYPE_DAILY_MIN
-            ):
-                # Only update if the challenge is tracking a specific chore.
+            elif challenge_type == const.CHALLENGE_TYPE_DAILY_MIN:
                 selected_chore = challenge.get(const.DATA_CHALLENGE_SELECTED_CHORE_ID)
                 if not selected_chore:
                     const.LOGGER.warning(
@@ -2306,8 +2304,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         challenge.get(const.DATA_CHALLENGE_NAME),
                     )
                     continue
+
                 if selected_chore != chore_id:
                     continue
+
                 if kid_id in challenge.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, []):
                     progress = challenge.setdefault(
                         const.DATA_CHALLENGE_PROGRESS, {}
