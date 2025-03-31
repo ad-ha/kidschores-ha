@@ -27,7 +27,7 @@ from .services import async_setup_services, async_unload_services
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the integration from a config entry."""
-    const.LOGGER.info("Starting setup for KidsChores entry: %s", entry.entry_id)
+    const.LOGGER.info("INFO: Starting setup for KidsChores entry: %s", entry.entry_id)
 
     # Initialize the storage manager to handle persistent data.
     storage_manager = KidsChoresStorageManager(hass, const.STORAGE_KEY)
@@ -41,7 +41,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Perform the first refresh to load data.
         await coordinator.async_config_entry_first_refresh()
     except ConfigEntryNotReady as e:
-        const.LOGGER.error("Failed to refresh coordinator data: %s", e)
+        const.LOGGER.error("ERROR: Failed to refresh coordinator data: %s", e)
         raise ConfigEntryNotReady from e
 
     # Store the coordinator and data manager in hass.data.
@@ -64,13 +64,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ),
     )
 
-    const.LOGGER.info("KidsChores setup complete for entry: %s", entry.entry_id)
+    const.LOGGER.info("INFO: KidsChores setup complete for entry: %s", entry.entry_id)
     return True
 
 
 async def async_unload_entry(hass, entry):
     """Unload a config entry."""
-    const.LOGGER.info("Unloading KidsChores entry: %s", entry.entry_id)
+    const.LOGGER.info("INFO: Unloading KidsChores entry: %s", entry.entry_id)
 
     # Unload platforms
     unload_ok = await hass.config_entries.async_unload_platforms(entry, const.PLATFORMS)
@@ -86,7 +86,7 @@ async def async_unload_entry(hass, entry):
 
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle removal of a config entry."""
-    const.LOGGER.info("Removing KidsChores entry: %s", entry.entry_id)
+    const.LOGGER.info("INFO: Removing KidsChores entry: %s", entry.entry_id)
 
     # Safely check if data exists before attempting to access it
     if const.DOMAIN in hass.data and entry.entry_id in hass.data[const.DOMAIN]:
@@ -95,4 +95,4 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
         ][const.STORAGE_MANAGER]
         await storage_manager.async_delete_storage()
 
-    const.LOGGER.info("KidsChores entry data cleared: %s", entry.entry_id)
+    const.LOGGER.info("INFO: KidsChores entry data cleared: %s", entry.entry_id)

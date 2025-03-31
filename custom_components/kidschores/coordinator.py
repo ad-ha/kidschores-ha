@@ -79,7 +79,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             dt_obj_utc = dt_util.as_utc(dt_obj)
             return dt_obj_utc.isoformat()
         except Exception as err:
-            const.LOGGER.warning("Error migrating datetime '%s': %s", dt_str, err)
+            const.LOGGER.warning(
+                "WARNING: Error migrating datetime '%s': %s", dt_str, err
+            )
             return dt_str
 
     def _migrate_stored_datetimes(self):
@@ -140,7 +142,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             chore.setdefault(
                 const.CONF_NOTIFY_ON_DISAPPROVAL, const.DEFAULT_NOTIFY_ON_DISAPPROVAL
             )
-        const.LOGGER.info("Chore data migration complete.")
+        const.LOGGER.info("INFO: Chore data migration complete.")
 
     def _migrate_badges(self):
         """Migrate legacy 'chore_count' badges into cumulative badges.
@@ -196,7 +198,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 badge[const.DATA_BADGE_MAINTENANCE_RULES] = const.CONF_EMPTY
 
                 const.LOGGER.info(
-                    "Migrated legacy chore_count badge '%s': old threshold %s -> new threshold %s (average_points=%.2f)",
+                    "INFO: Legacy Chore Count Badge '%s' migrated: Old threshold %s -> New threshold %s (average_points=%.2f)",
                     badge.get(const.DATA_BADGE_NAME),
                     old_threshold,
                     new_threshold,
@@ -317,7 +319,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             else:
                 self._data.setdefault(section_key, data_dict)
                 const.LOGGER.warning(
-                    "No initializer found for section '%s'", section_key
+                    "WARNING: No initializer found for section '%s'", section_key
                 )
 
         # Recalculate Badges on reload
@@ -476,7 +478,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if str(item_id) in str(entity_entry.unique_id):
                 ent_reg.async_remove(entity_entry.entity_id)
                 const.LOGGER.debug(
-                    "Auto-removed entity '%s' with unique_id '%s' from registry",
+                    "DEBUG: Auto-removed entity '%s' with UID '%s'",
                     entity_entry.entity_id,
                     entity_entry.unique_id,
                 )
@@ -500,7 +502,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 ):
                     ent_reg.async_remove(entity_entry.entity_id)
                     const.LOGGER.debug(
-                        "Removed orphaned SharedChoreGlobalStateSensor: %s",
+                        "DEBUG: Removed orphaned Shared Chore Global State Sensor: %s",
                         entity_entry.entity_id,
                     )
 
@@ -530,7 +532,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 ):
                     ent_reg.async_remove(entity_entry.entity_id)
                     const.LOGGER.debug(
-                        "Removed orphaned achievement progress sensor '%s' because kid '%s' is not assigned to achievement '%s'",
+                        "DEBUG: Removed orphaned Achievement Progress sensor '%s'. Kid '%s' is not assigned to Achievement '%s'",
                         entity_entry.entity_id,
                         kid_id,
                         achievement_id,
@@ -560,7 +562,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 ):
                     ent_reg.async_remove(entity_entry.entity_id)
                     const.LOGGER.debug(
-                        "Removed orphaned challenge progress sensor '%s' because kid '%s' is not assigned to challenge '%s'",
+                        "DEBUG: Removed orphaned Challenge Progress sensor '%s'. Kid '%s' is not assigned to Challenge '%s'",
                         entity_entry.entity_id,
                         kid_id,
                         challenge_id,
@@ -575,7 +577,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             ):
                 ent_reg.async_remove(entity_entry.entity_id)
                 const.LOGGER.debug(
-                    "Removed kid-specific entity '%s' for kid '%s' and chore '%s'",
+                    "DEBUG: Removed kid-specific entity '%s' for Kid '%s' and Chore '%s'",
                     entity_entry.entity_id,
                     kid_id,
                     chore_id,
@@ -592,7 +594,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if chore_id in kid.get(key, []):
                 kid[key] = [c for c in kid[key] if c != chore_id]
                 const.LOGGER.debug(
-                    "Removed chore '%s' from kid '%s' list '%s'", chore_id, kid_id, key
+                    "DEBUG: Removed Chore '%s' from Kid '%s' list '%s'",
+                    chore_id,
+                    kid_id,
+                    key,
                 )
 
         # Remove from dictionary fields if present
@@ -600,7 +605,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if chore_id in kid.get(dict_key, {}):
                 kid[dict_key].pop(chore_id)
                 const.LOGGER.debug(
-                    "Removed chore '%s' from kid '%s' dict '%s'",
+                    "DEBUG: Removed Chore '%s' from Kid '%s' dict '%s'",
                     chore_id,
                     kid_id,
                     dict_key,
@@ -613,7 +618,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         ):
             kid[const.DATA_KID_CHORE_STREAKS].pop(chore_id)
             const.LOGGER.debug(
-                "Removed chore streak for chore '%s' from kid '%s'", chore_id, kid_id
+                "DEBUG: Removed Chore Streak for Chore '%s' from Kid '%s'",
+                chore_id,
+                kid_id,
             )
 
         # Remove any pending chore approvals for this kid and chore
@@ -656,7 +663,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 if filtered != original:
                     chore[const.DATA_CHORE_ASSIGNED_KIDS] = filtered
                     const.LOGGER.debug(
-                        "Cleaned up assigned_kids in chore '%s'",
+                        "DEBUG: Removed Assigned Kids in Chore '%s'",
                         chore.get(const.DATA_CHORE_NAME),
                     )
 
@@ -668,7 +675,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 for kid in keys_to_remove:
                     del progress[kid]
                     const.LOGGER.debug(
-                        "Removed progress for deleted kid '%s' in section '%s'",
+                        "DEBUG: Removed Progress for deleted Kid '%s' in '%s'",
                         kid,
                         section,
                     )
@@ -680,7 +687,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     if filtered_assigned != original_assigned:
                         entity[const.DATA_ASSIGNED_KIDS] = filtered_assigned
                         const.LOGGER.debug(
-                            "Cleaned up assigned_kids in %s '%s'",
+                            "DEBUG: Removed Assigned Kids in '%s', '%s'",
                             section,
                             entity.get(const.DATA_NAME),
                         )
@@ -715,7 +722,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     if chore not in valid_chore_ids:
                         del kid[const.DATA_KID_CHORE_STREAKS][chore]
                         const.LOGGER.debug(
-                            "Removed chore streak for deleted chore '%s'", chore
+                            "DEBUG: Removed Chore Streak for deleted Chore '%s'", chore
                         )
 
     def _cleanup_parent_assignments(self) -> None:
@@ -727,7 +734,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if filtered != original:
                 parent[const.DATA_PARENT_ASSOCIATED_KIDS] = filtered
                 const.LOGGER.debug(
-                    "Cleaned up associated_kids for parent '%s'. New list: %s",
+                    "DEBUG: Removed Associated Kids for Parent '%s'. Current Associated Kids: %s",
                     parent.get(const.DATA_PARENT_NAME),
                     filtered,
                 )
@@ -740,7 +747,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if selected and selected not in valid_chore_ids:
                 achievement[const.DATA_ACHIEVEMENT_SELECTED_CHORE_ID] = ""
                 const.LOGGER.debug(
-                    "Cleared selected_chore_id in achievement '%s'",
+                    "DEBUG: Removed Selected Chore ID in Achievement '%s'",
                     achievement.get(const.DATA_ACHIEVEMENT_NAME),
                 )
 
@@ -752,7 +759,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if selected and selected not in valid_chore_ids:
                 challenge[const.DATA_CHALLENGE_SELECTED_CHORE_ID] = const.CONF_EMPTY
                 const.LOGGER.debug(
-                    "Cleared selected_chore_id in challenge '%s'",
+                    "DEBUG: Removed Selected Chore ID in Challenge '%s'",
                     challenge.get(const.DATA_CHALLENGE_NAME),
                 )
 
@@ -777,7 +784,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if any(entity_entry.unique_id.endswith(suffix) for suffix in old_suffixes):
                 ent_reg.async_remove(entity_id)
                 const.LOGGER.debug(
-                    "Removed deprecated entity: %s (unique_id=%s)",
+                    "DEBUG: Removed deprecated Entity '%s', UID '%s'",
                     entity_id,
                     entity_entry.unique_id,
                 )
@@ -853,7 +860,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if entity_entry.unique_id not in allowed_uids:
                 ent_reg.async_remove(entity_entry.entity_id)
                 const.LOGGER.debug(
-                    "Removed deprecated button entity: %s", entity_entry.entity_id
+                    "DEBUG: Removed deprecated Button '%s'", entity_entry.entity_id
                 )
 
     # -------------------------------------------------------------------------------------
@@ -945,7 +952,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._normalize_kid_lists(self._data[const.DATA_KIDS][kid_id])
 
         const.LOGGER.debug(
-            "Added new kid '%s' with ID: %s",
+            "DEBUG: Kid Added - '%s', ID '%s'",
             self._data[const.DATA_KIDS][kid_id][const.DATA_KID_NAME],
             kid_id,
         )
@@ -1032,7 +1039,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._normalize_kid_lists(self._data[const.DATA_KIDS][kid_id])
 
         const.LOGGER.debug(
-            "Updated kid '%s' with ID: %s", kid_info[const.DATA_KID_NAME], kid_id
+            "DEBUG: Kid Updated - '%s', ID '%s'", kid_info[const.DATA_KID_NAME], kid_id
         )
 
     # -- Parents
@@ -1043,7 +1050,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 associated_kids_ids.append(kid_id)
             else:
                 const.LOGGER.warning(
-                    "Parent '%s': Kid ID '%s' not found. Skipping assignment to parent",
+                    "WARNING: Parent '%s': Kid ID '%s' not found. Skipping assignment to parent",
                     parent_data.get(const.DATA_PARENT_NAME, parent_id),
                     kid_id,
                 )
@@ -1068,7 +1075,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_PARENT_INTERNAL_ID: parent_id,
         }
         const.LOGGER.debug(
-            "Added new parent '%s' with ID: %s",
+            "DEBUG: Parent Added - '%s', ID '%s'",
             self._data[const.DATA_PARENTS][parent_id][const.DATA_PARENT_NAME],
             parent_id,
         )
@@ -1089,7 +1096,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 updated_kids.append(kid_id)
             else:
                 const.LOGGER.warning(
-                    "Parent '%s': Kid ID '%s' not found. Skipping assignment",
+                    "WARNING: Parent '%s': Kid ID '%s' not found. Skipping assignment to parent",
                     parent_info[const.DATA_PARENT_NAME],
                     kid_id,
                 )
@@ -1108,7 +1115,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         )
 
         const.LOGGER.debug(
-            "Updated parent '%s' with ID: %s",
+            "DEBUG: Parent Updated - '%s', ID '%s'",
             parent_info[const.DATA_PARENT_NAME],
             parent_id,
         )
@@ -1122,7 +1129,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 assigned_kids_ids.append(kid_id)
             else:
                 const.LOGGER.warning(
-                    "Chore '%s': Kid name '%s' not found. Skipping assignment",
+                    "WARNING: Chore '%s': Kid '%s' not found. Skipping assignment",
                     chore_data.get(const.DATA_CHORE_NAME, chore_id),
                     kid_name,
                 )
@@ -1141,7 +1148,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             default_due = now_local.replace(**const.DEFAULT_DUE_TIME)
             chore_data[const.DATA_CHORE_DUE_DATE] = default_due.isoformat()
             const.LOGGER.debug(
-                "Chore '%s' has freq '%s' but no due_date. Defaulting to 23:59 local time: %s",
+                "DEBUG: Chore '%s' has frequency set to '%s' but no due date. Defaulting to 23:59 local time: %s",
                 chore_data.get(const.DATA_CHORE_NAME, chore_id),
                 freq,
                 chore_data[const.DATA_CHORE_DUE_DATE],
@@ -1213,7 +1220,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_CHORE_INTERNAL_ID: chore_id,
         }
         const.LOGGER.debug(
-            "Added new chore '%s' with ID: %s",
+            "DEBUG: Chore Added - '%s', ID '%s'",
             self._data[const.DATA_CHORES][chore_id][const.DATA_CHORE_NAME],
             chore_id,
         )
@@ -1228,7 +1235,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 self._notify_kid(
                     kid_id,
                     title="KidsChores: New Chore",
-                    message=f"A new chore '{new_name}' was assigned to you! Due: {due_str}",
+                    message=f"New chore '{new_name}' was assigned to you! Due: {due_str}",
                     extra_data=extra_data,
                 )
             )
@@ -1273,7 +1280,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 assigned_kids_ids.append(kid_id)
             else:
                 const.LOGGER.warning(
-                    "Chore '%s': Kid name '%s' not found. Skipping assignment",
+                    "WARNING: Chore '%s': Kid '%s' not found. Skipping assignment",
                     chore_data.get(const.DATA_CHORE_NAME, chore_id),
                     kid_name,
                 )
@@ -1336,7 +1343,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             chore_info[const.DATA_CHORE_CUSTOM_INTERVAL_UNIT] = None
 
         const.LOGGER.debug(
-            "Updated chore '%s' with ID: %s",
+            "DEBUG: Chore Updated - '%s', ID '%s'",
             chore_info[const.DATA_CHORE_NAME],
             chore_id,
         )
@@ -1487,7 +1494,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 }
             )
         const.LOGGER.debug(
-            "Added new badge '%s' with ID: %s",
+            "DEBUG: Badge Added - '%s', ID '%s'",
             self._data[const.DATA_BADGES][badge_id][const.DATA_BADGE_NAME],
             badge_id,
         )
@@ -1657,7 +1664,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
 
         const.LOGGER.debug(
-            "Updated badge '%s' with ID: %s",
+            "DEBUG: Badge Updated - '%s', ID '%s'",
             badge_info[const.DATA_BADGE_NAME],
             badge_id,
         )
@@ -1681,7 +1688,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_REWARD_INTERNAL_ID: reward_id,
         }
         const.LOGGER.debug(
-            "Added new reward '%s' with ID: %s",
+            "DEBUG: Reward Added - '%s', ID '%s'",
             self._data[const.DATA_REWARDS][reward_id][const.DATA_REWARD_NAME],
             reward_id,
         )
@@ -1705,7 +1712,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_REWARD_ICON, reward_info[const.DATA_REWARD_ICON]
         )
         const.LOGGER.debug(
-            "Updated reward '%s' with ID: %s",
+            "DEBUG: Reward Updated - '%s', ID '%s'",
             reward_info[const.DATA_REWARD_NAME],
             reward_id,
         )
@@ -1729,7 +1736,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_BONUS_INTERNAL_ID: bonus_id,
         }
         const.LOGGER.debug(
-            "Added new bonus '%s' with ID: %s",
+            "DEBUG: Bonus Added - '%s', ID '%s'",
             self._data[const.DATA_BONUSES][bonus_id][const.DATA_BONUS_NAME],
             bonus_id,
         )
@@ -1752,7 +1759,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_BONUS_ICON, bonus_info[const.DATA_BONUS_ICON]
         )
         const.LOGGER.debug(
-            "Updated bonus '%s' with ID: %s",
+            "DEBUG: Bonus Updated - '%s', ID '%s'",
             bonus_info[const.DATA_BONUS_NAME],
             bonus_id,
         )
@@ -1776,7 +1783,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_PENALTY_INTERNAL_ID: penalty_id,
         }
         const.LOGGER.debug(
-            "Added new penalty '%s' with ID: %s",
+            "DEBUG: Penalty Added - '%s', ID '%s'",
             self._data[const.DATA_PENALTIES][penalty_id][const.DATA_PENALTY_NAME],
             penalty_id,
         )
@@ -1799,7 +1806,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_PENALTY_ICON, penalty_info[const.DATA_PENALTY_ICON]
         )
         const.LOGGER.debug(
-            "Updated penalty '%s' with ID: %s",
+            "DEBUG: Penalty Updated - '%s', ID '%s'",
             penalty_info[const.DATA_PENALTY_NAME],
             penalty_id,
         )
@@ -1846,7 +1853,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_ACHIEVEMENT_INTERNAL_ID: achievement_id,
         }
         const.LOGGER.debug(
-            "Added new achievement '%s' with ID: %s",
+            "DEBUG: Achievement Added - '%s', ID '%s'",
             self._data[const.DATA_ACHIEVEMENTS][achievement_id][
                 const.DATA_ACHIEVEMENT_NAME
             ],
@@ -1899,7 +1906,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             achievement_info[const.DATA_ACHIEVEMENT_REWARD_POINTS],
         )
         const.LOGGER.debug(
-            "Updated achievement '%s' with ID: %s",
+            "DEBUG: Achievement Updated - '%s', ID '%s'",
             achievement_info[const.DATA_ACHIEVEMENT_NAME],
             achievement_id,
         )
@@ -1954,7 +1961,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_CHALLENGE_INTERNAL_ID: challenge_id,
         }
         const.LOGGER.debug(
-            "Added new challenge '%s' with ID: %s",
+            "DEBUG: Challenge Added - '%s', ID '%s'",
             self._data[const.DATA_CHALLENGES][challenge_id][const.DATA_CHALLENGE_NAME],
             challenge_id,
         )
@@ -2010,7 +2017,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             else None
         )
         const.LOGGER.debug(
-            "Updated challenge '%s' with ID: %s",
+            "DEBUG: Challenge Updated - '%s', ID '%s'",
             challenge_info[const.DATA_CHALLENGE_NAME],
             challenge_id,
         )
@@ -2071,13 +2078,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     def claim_chore(self, kid_id: str, chore_id: str, user_name: str):
         """Kid claims chore => state=claimed; parent must then approve."""
         if chore_id not in self.chores_data:
-            const.LOGGER.warning("Chore ID '%s' not found for claim", chore_id)
-            raise HomeAssistantError(f"Chore with ID '{chore_id}' not found.")
+            const.LOGGER.warning(
+                "WARNING: Claim Chore - Chore ID '%s' not found", chore_id
+            )
+            raise HomeAssistantError(f"Chore ID '{chore_id}' not found.")
 
         chore_info = self.chores_data[chore_id]
         if kid_id not in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
             const.LOGGER.warning(
-                "Claim chore: Chore ID '%s' not assigned to kid ID '%s'",
+                "WARNING: Claim Chore - Chore ID '%s' not assigned to kid ID '%s'",
                 chore_id,
                 kid_id,
             )
@@ -2086,8 +2095,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
 
         if kid_id not in self.kids_data:
-            const.LOGGER.warning("Kid ID '%s' not found", kid_id)
-            raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+            const.LOGGER.warning("WARNING: Kid ID '%s' not found", kid_id)
+            raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
         kid_info = self.kids_data.get(kid_id)
 
@@ -2108,7 +2117,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if chore_id in kid_info.get(
                 const.DATA_KID_CLAIMED_CHORES, []
             ) or chore_id in kid_info.get(const.DATA_KID_APPROVED_CHORES, []):
-                error_message = f"Chore '{chore_info[const.DATA_CHORE_NAME]}' has already been claimed today and multiple claims are not allowed."
+                error_message = f"WARNING: Claim Chore - Chore '{chore_info[const.DATA_CHORE_NAME]}' has already been claimed today. Multiple claims not allowed."
                 const.LOGGER.warning(error_message)
                 raise HomeAssistantError(error_message)
 
@@ -2157,7 +2166,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     ):
         """Approve a chore for kid_id if assigned."""
         if chore_id not in self.chores_data:
-            raise HomeAssistantError(f"Chore with ID '{chore_id}' not found.")
+            raise HomeAssistantError(f"Chore ID '{chore_id}' not found.")
 
         chore_info = self.chores_data[chore_id]
         if kid_id not in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
@@ -2166,7 +2175,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
 
         if kid_id not in self.kids_data:
-            raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+            raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
         kid_info = self.kids_data.get(kid_id)
 
@@ -2175,7 +2184,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         )
         if not allow_multiple:
             if chore_id in kid_info.get(const.DATA_KID_APPROVED_CHORES, []):
-                error_message = f"Chore '{chore_info[const.DATA_CHORE_NAME]}' has already been approved today; multiple approvals not allowed."
+                error_message = f"WARNING: Claim Chore - Chore '{chore_info[const.DATA_CHORE_NAME]}' has already been approved today. Multiple approvals not allowed."
                 const.LOGGER.warning(error_message)
                 raise HomeAssistantError(error_message)
 
@@ -2300,7 +2309,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 selected_chore = challenge.get(const.DATA_CHALLENGE_SELECTED_CHORE_ID)
                 if not selected_chore:
                     const.LOGGER.warning(
-                        "Challenge '%s' of type daily min has no selected chore id set. Skipping progress update.",
+                        "WARNING: Challenge '%s' of type daily minimum has no selected chore id. Skipping progress update.",
                         challenge.get(const.DATA_CHALLENGE_NAME),
                     )
                     continue
@@ -2346,11 +2355,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Disapprove a chore for kid_id."""
         chore_info = self.chores_data.get(chore_id)
         if not chore_info:
-            raise HomeAssistantError(f"Chore with ID '{chore_id}' not found.")
+            raise HomeAssistantError(f"Chore ID '{chore_id}' not found.")
 
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
-            raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+            raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
         self._process_chore_state(kid_id, chore_id, const.CHORE_STATE_PENDING)
 
@@ -2376,7 +2385,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         chore_info = self.chores_data.get(chore_id)
         if not chore_info:
             const.LOGGER.warning(
-                "Update chore state: Chore ID '%s' not found", chore_id
+                "WARNING: Update Chore State -  Chore ID '%s' not found", chore_id
             )
             return
         # Set state for all kids assigned to the chore:
@@ -2385,7 +2394,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 self._process_chore_state(kid_id, chore_id, state)
         self._persist()
         self.async_set_updated_data(self._data)
-        const.LOGGER.debug(f"Chore ID '{chore_id}' state manually updated to '{state}'")
+        const.LOGGER.debug(
+            "DEBUG: Chore ID '%s' manually updated to '%s'", chore_id, state
+        )
 
     # -------------------------------------------------------------------------------------
     # Chore State Processing: Centralized Function
@@ -2407,7 +2418,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         points_awarded: Optional[float] = None,
     ) -> None:
         const.LOGGER.debug(
-            "Entering _process_chore_state with kid_id=%s, chore_id=%s, new_state=%s, points_awarded=%s",
+            "DEBUG: Chore State - Processing - Kid ID '%s', Chore ID '%s', State '%s', Points Awarded '%s'",
             kid_id,
             chore_id,
             new_state,
@@ -2420,7 +2431,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         if not kid_info or not chore_info:
             const.LOGGER.warning(
-                "State change skipped: Kid '%s' or Chore '%s' not found",
+                "WARNING: Chore State - Change skipped. Kid ID '%s' or Chore ID '%s' not found",
                 kid_id,
                 chore_id,
             )
@@ -2590,7 +2601,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             chore_info[const.DATA_CHORE_STATE] = const.CHORE_STATE_UNKNOWN
 
         const.LOGGER.debug(
-            "Chore '%s' global state computed as '%s'",
+            "DEBUG: Chore State - Chore ID '%s' Global State changed to '%s'",
             chore_id,
             chore_info[const.DATA_CHORE_STATE],
         )
@@ -2603,14 +2614,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Set a kid's points to 'new_points', updating daily/weekly/monthly counters."""
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
-            const.LOGGER.warning("Update kid points: Kid ID '%s' not found", kid_id)
+            const.LOGGER.warning(
+                "WARNING: Kid Points Update - Kid ID '%s' not found", kid_id
+            )
             return
 
         old_points = float(kid_info[const.DATA_KID_POINTS])
         delta = new_points - old_points
         if delta == const.DEFAULT_ZERO:
             const.LOGGER.debug(
-                "No change in points for kid '%s'. Skipping updates", kid_id
+                "DEBUG: Kid Points - No change for kid '%s'. Skipping updates", kid_id
             )
             return
 
@@ -2644,7 +2657,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self.async_set_updated_data(self._data)
 
         const.LOGGER.debug(
-            "Update Kid Points: Kid '%s' changed from %.2f to %.2f (delta=%.2f)",
+            "DEBUG: Kid Points Update - Kid ID '%s' Points changed from %.2f to %.2f (variation %.2f)",
             kid_id,
             old_points,
             new_points,
@@ -2659,11 +2672,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Kid claims a reward => mark as pending approval (no deduction yet)."""
         reward = self.rewards_data.get(reward_id)
         if not reward:
-            raise HomeAssistantError(f"Reward with ID '{reward_id}' not found.")
+            raise HomeAssistantError(f"Reward ID '{reward_id}' not found.")
 
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
-            raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+            raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
         cost = reward.get(const.DATA_REWARD_COST, const.DEFAULT_ZERO)
         if kid_info[const.DATA_KID_POINTS] < cost:
@@ -2736,11 +2749,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Parent approves the reward => deduct points."""
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
-            raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+            raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
         reward = self.rewards_data.get(reward_id)
         if not reward:
-            raise HomeAssistantError(f"Reward with ID '{reward_id}' not found.")
+            raise HomeAssistantError(f"Reward ID '{reward_id}' not found.")
 
         cost = reward.get(const.DATA_REWARD_COST, const.DEFAULT_ZERO)
 
@@ -2814,7 +2827,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         reward = self.rewards_data.get(reward_id)
         if not reward:
-            raise HomeAssistantError(f"Reward with ID '{reward_id}' not found.")
+            raise HomeAssistantError(f"Reward ID '{reward_id}' not found.")
 
         # Remove only one entry of each reward claim from pending approvals
         approvals = self._data.get(const.DATA_PENDING_REWARD_APPROVALS, [])
@@ -2982,7 +2995,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             end_date = dt_util.parse_datetime(end_date_str)
                             if start_date is None or end_date is None:
                                 const.LOGGER.error(
-                                    "Custom schedule dates invalid for badge '%s'",
+                                    "ERROR: Check Badge - Invalid schedule dates for badge '%s'",
                                     badge.get(const.DATA_BADGE_NAME),
                                 )
                                 continue
@@ -3004,7 +3017,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
                         except Exception as e:
                             const.LOGGER.error(
-                                "Error parsing custom schedule for badge '%s': %s",
+                                "ERROR: Check Badge - Error parsing schedule dates for badge '%s': %s",
                                 badge.get(const.DATA_BADGE_NAME),
                                 e,
                             )
@@ -3024,7 +3037,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                                     const.DATA_KID_PERIODIC_BADGE_SUCCESS, {}
                                 )[badge_id] = 0
                                 const.LOGGER.info(
-                                    "Rescheduled periodic badge '%s' for kid '%s' to new period %s - %s",
+                                    "INFO: Check Badge - Rescheduled Periodic Badge '%s' for Kid ID '%s' to new period %s - %s",
                                     badge.get(const.DATA_BADGE_NAME),
                                     kid_id,
                                     new_start.isoformat(),
@@ -3173,7 +3186,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                                         self._award_badge(kid_id, badge_id)
                     except Exception as e:
                         const.LOGGER.error(
-                            "Error processing special occasion badge '%s': %s",
+                            "ERROR: Check Badge - Error processing Special Occasion Badge '%s': %s",
                             badge.get(const.DATA_BADGE_NAME),
                             e,
                         )
@@ -3184,12 +3197,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         kid_info = self.kids_data.get(kid_id, {})
         if not kid_info:
-            const.LOGGER.error("Kid with ID '%s' not found when awarding badge", kid_id)
+            const.LOGGER.error("ERROR: Award Badge - Kid ID '%s' not found.", kid_id)
             return
 
         if not badge:
             const.LOGGER.error(
-                "Attempted to award non-existent badge ID '%s' to kid ID '%s'",
+                "ERROR: Award Badge - Badge ID '%s' not found. Cannot be awarded to Kid ID '%s'",
                 badge_id,
                 kid_id,
             )
@@ -3310,7 +3323,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         else:
             const.LOGGER.warning(
-                "Badge type '%s' is not ellegible for extra perks", badge_type
+                "WARNING: Badge Award - Badge '%s' is not ellegible for extra rewards",
+                badge_type,
             )
 
         # Send a notification to the kid and parents that a new badge was earned
@@ -3478,7 +3492,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     def _recalculate_all_badges(self):
         """Global re-check of all badges for all kids."""
-        const.LOGGER.info("Starting global badge recalculation")
+        const.LOGGER.debug("DEBUG: Badge - Starting Global Badge Recalculation")
 
         # Clear any per-kid periodic badge counters.
         for kid in self.kids_data.values():
@@ -3491,7 +3505,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         self._persist()
         self.async_set_updated_data(self._data)
-        const.LOGGER.info("Badge recalculation complete")
+        const.LOGGER.debug("DEBUG: Badge - Recalculation complete")
 
     def _determine_cumulative_badge_for_kid(self, kid_id: str) -> Optional[str]:
         """Determine which cumulative badge a kid should currently have."""
@@ -3615,11 +3629,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Apply penalty => negative points to reduce kid's points."""
         penalty = self.penalties_data.get(penalty_id)
         if not penalty:
-            raise HomeAssistantError(f"Penalty with ID '{penalty_id}' not found.")
+            raise HomeAssistantError(f"Penalty ID '{penalty_id}' not found.")
 
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
-            raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+            raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
         penalty_pts = penalty.get(const.DATA_PENALTY_POINTS, const.DEFAULT_ZERO)
         new_points = float(kid_info[const.DATA_KID_POINTS]) + penalty_pts
@@ -3653,11 +3667,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Apply bonus => positive points to increase kid's points."""
         bonus = self.bonuses_data.get(bonus_id)
         if not bonus:
-            raise HomeAssistantError(f"Bonus with ID '{bonus_id}' not found.")
+            raise HomeAssistantError(f"Bonus ID '{bonus_id}' not found.")
 
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
-            raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+            raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
         bonus_pts = bonus.get(const.DATA_BONUS_POINTS, const.DEFAULT_ZERO)
         new_points = float(kid_info[const.DATA_KID_POINTS]) + bonus_pts
@@ -3793,7 +3807,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         achievement = self.achievements_data.get(achievement_id)
         if not achievement:
             const.LOGGER.error(
-                "Attempted to award non-existent achievement '%s'", achievement_id
+                "ERROR: Achievement Award - Achievement ID '%s' not found.",
+                achievement_id,
             )
             return
 
@@ -3850,8 +3865,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 extra_data=extra_data,
             )
         )
-        const.LOGGER.info(
-            "Awarded achievement '%s' to kid '%s'",
+        const.LOGGER.debug(
+            "DEBUG: Achievement Award - Achievement ID '%s' to Kid ID '%s'",
             achievement.get(const.DATA_ACHIEVEMENT_NAME),
             kid_id,
         )
@@ -3953,7 +3968,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         challenge = self.challenges_data.get(challenge_id)
         if not challenge:
             const.LOGGER.error(
-                "Attempted to award non-existent challenge '%s'", challenge_id
+                "ERROR: Challenge Award - Challenge ID '%s' not found", challenge_id
             )
             return
 
@@ -4001,8 +4016,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 extra_data=extra_data,
             )
         )
-        const.LOGGER.info(
-            "Awarded challenge '%s' to kid '%s'",
+        const.LOGGER.debug(
+            "DEBUG: Challenge Award - Challenge ID '%s' to Kid ID '%s'",
             challenge.get(const.DATA_CHALLENGE_NAME),
             kid_id,
         )
@@ -4129,14 +4144,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         Send an overdue notification only if not sent in the last 24 hours.
         """
         now = dt_util.utcnow()
-        const.LOGGER.debug("Starting overdue check at %s", now.isoformat())
+        const.LOGGER.debug(
+            "DEBUG: Overdue Chores - Starting check at %s", now.isoformat()
+        )
 
         for chore_id, chore_info in self.chores_data.items():
-            # const.LOGGER.debug("Checking chore '%s' id '%s' (state=%s)", chore_info.get(const.DATA_CHORE_NAME), chore_id, chore_info.get(const.DATA_CHORE_STATE))
-
             # Get the list of assigned kids
             assigned_kids = chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
-            # const.LOGGER.debug("Chore '%s' id '%s' assigned to kids: %s", chore_info.get(const.DATA_CHORE_NAME), chore_id, assigned_kids,)
 
             # Check if all assigned kids have either claimed or approved the chore
             all_kids_claimed_or_approved = all(
@@ -4149,32 +4163,20 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 for kid_id in assigned_kids
             )
 
-            # Debugging: Log the claim/approval status of each assigned kid
             for kid_id in assigned_kids:
                 kid_info = self.kids_data.get(kid_id, {})
-                has_claimed = chore_id in kid_info.get(
-                    const.DATA_KID_CLAIMED_CHORES, []
-                )
-                has_approved = chore_id in kid_info.get(
-                    const.DATA_KID_APPROVED_CHORES, []
-                )
-
-                # const.LOGGER.debug("Kid '%s': claimed=%s, approved=%s", kid_id, has_claimed, has_approved
-
-            # Log the overall result of the check
-            # const.LOGGER.debug("Chore '%s': all_kids_claimed_or_approved=%s", chore_id, all_kids_claimed_or_approved)
 
             # Only skip the chore if ALL assigned kids have acted on it
             if all_kids_claimed_or_approved:
-                # const.LOGGER.debug("Skipping chore '%s': all assigned kids have claimed or approved", chore_id,)
                 continue
 
             due_str = chore_info.get(const.DATA_CHORE_DUE_DATE)
             if not due_str:
                 const.LOGGER.debug(
-                    "Chore '%s' has no due_date; checking to confirm it isn't overdue; then skipping if not",
+                    "DEBUG: Overdue Chores - Chore ID '%s' has no due date. Checking overdue status",
                     chore_info.get(const.DATA_CHORE_NAME, chore_id),
                 )
+
                 # If it has no due date, but is overdue, it should be marked as pending
                 # Also check if status is independent, just in case
                 if (
@@ -4188,7 +4190,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                                 kid_id, chore_id, const.CHORE_STATE_PENDING
                             )
                             const.LOGGER.debug(
-                                "Chore '%s' status is overdue but no due date; cleared overdue flags",
+                                "DEBUG: Overdue Chores - Chore ID '%s' status is overdue but no due date. Cleared overdue status",
                                 chore_id,
                             )
                 continue
@@ -4198,10 +4200,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 if due_date is None:
                     raise ValueError("Parsed datetime is None")
                 due_date = dt_util.as_utc(due_date)
-                # const.LOGGER.debug("Chore '%s' due_date parsed as %s", chore_id, due_date.isoformat())
+
             except Exception as err:
                 const.LOGGER.error(
-                    "Error parsing due_date '%s' for chore '%s': %s",
+                    "ERROR: Overdue Chores - Error parsing due date '%s' for Chore ID '%s': %s",
                     due_str,
                     chore_id,
                     err,
@@ -4209,7 +4211,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 continue
 
             # Check for applicable day is no longer required; the scheduling function ensures due_date matches applicable day criteria.
-            # const.LOGGER.debug("Chore '%s': now=%s, due_date=%s", chore_id, now.isoformat(), due_date.isoformat()
             if now < due_date:
                 # Not past due date, but before resetting the state back to pending, check if global state is currently overdue
                 for kid_id in assigned_kids:
@@ -4218,7 +4219,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             kid_id, chore_id, const.CHORE_STATE_PENDING
                         )
                         const.LOGGER.debug(
-                            "Chore '%s' status is overdue but not yet due; cleared overdue flags",
+                            "DEBUG: Overdue Chores - Chore ID '%s' status is overdue but not yet due. Cleared overdue status",
                             chore_id,
                         )
 
@@ -4239,7 +4240,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 # Mark chore as overdue for this kid.
                 self._process_chore_state(kid_id, chore_id, const.CHORE_STATE_OVERDUE)
                 const.LOGGER.debug(
-                    "Marking chore '%s' as overdue for kid '%s'", chore_id, kid_id
+                    "DEBUG: Overdue Chores - Setting Chore IS '%s' as overdue for Kid ID '%s'",
+                    chore_id,
+                    kid_id,
                 )
 
                 # Check notification timestamp.
@@ -4261,13 +4264,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             notify = True
                         else:
                             const.LOGGER.debug(
-                                "Chore '%s' for kid '%s' already notified within 24 hours",
+                                "DEBUG: Overdue Chores - Chore ID'%s' for Kid IS '%s' already notified in the last 24 hours",
                                 chore_id,
                                 kid_id,
                             )
                     except Exception as err:
                         const.LOGGER.error(
-                            "Error parsing overdue notification '%s' for chore '%s', kid '%s': %s",
+                            "ERROR: Overdue Chores - Error parsing overdue notification '%s' for Chore ID '%s', Kid ID '%s': %s",
                             last_notif_str,
                             chore_id,
                             kid_id,
@@ -4300,7 +4303,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         },
                     ]
                     const.LOGGER.debug(
-                        "Sending overdue notification for chore '%s' to kid '%s'",
+                        "DEBUG: Overdue Chores - Sending overdue notification for Chore ID '%s' to Kid ID '%s'",
                         chore_id,
                         kid_id,
                     )
@@ -4321,7 +4324,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             extra_data=extra_data,
                         )
                     )
-        const.LOGGER.debug("Overdue check completed")
+        const.LOGGER.debug("DEBUG: Overdue Chores - Check completed")
 
     async def _reset_all_chore_counts(self, now: datetime):
         """Trigger resets based on the current time for all frequencies."""
@@ -4370,7 +4373,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 kid_info[const.DATA_KID_COMPLETED_CHORES_MONTHLY] = const.DEFAULT_ZERO
                 kid_info[const.DATA_KID_POINTS_EARNED_MONTHLY] = const.DEFAULT_ZERO
 
-        const.LOGGER.info(f"{frequency.capitalize()} chore counts have been reset")
+        const.LOGGER.debug(
+            f"DEBUG: Reset Chore Counts: {frequency.capitalize()} chore counts have been reset"
+        )
 
         # If daily reset -> reset statuses
         if frequency == const.FREQUENCY_DAILY:
@@ -4399,8 +4404,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     chore_info[const.DATA_CHORE_DUE_DATE]
                 ) or datetime.fromisoformat(chore_info[const.DATA_CHORE_DUE_DATE])
             except Exception as e:
-                const.LOGGER.warning(
-                    "Error parsing due_date for chore '%s': %s", chore_id, e
+                const.LOGGER.debug(
+                    "DEBUG: Chore Rescheduling - Error parsing due date for Chore ID '%s': %s",
+                    chore_id,
+                    e,
                 )
                 continue
 
@@ -4412,17 +4419,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 # Reschedule the chore
                 self._reschedule_next_due_date(chore_info)
                 const.LOGGER.debug(
-                    "Rescheduled recurring chore '%s'",
+                    "DEBUG: Chore Rescheduling - Rescheduled recurring Chore ID '%s'",
                     chore_info.get(const.DATA_CHORE_NAME, chore_id),
                 )
 
         self._persist()
         self.async_set_updated_data(self._data)
-        const.LOGGER.debug("Daily rescheduling of recurring chores complete")
+        const.LOGGER.debug(
+            "DEBUG: Chore Rescheduling - Daily recurring chores rescheduling complete"
+        )
 
     async def _reset_daily_chore_statuses(self, target_freqs: list[str]):
         """Reset chore statuses and clear approved/claimed chores for chores with these freq."""
-        const.LOGGER.info("Executing _reset_daily_chore_statuses")
 
         now = dt_util.utcnow()
         for chore_id, chore_info in self.chores_data.items():
@@ -4441,8 +4449,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         if now < due_date:
                             continue
                     except Exception as e:
-                        const.LOGGER.warning(
-                            "Error parsing due_date '%s' for chore '%s': %s",
+                        const.LOGGER.debug(
+                            "DEBUG: Chore Reset - Error parsing due date '%s' for Chore ID '%s': %s",
                             due_date_str,
                             chore_id,
                             e,
@@ -4459,13 +4467,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                                 kid_id, chore_id, const.CHORE_STATE_PENDING
                             )
                     const.LOGGER.debug(
-                        "Resetting chore '%s' from '%s' to '%s'",
+                        "DEBUG: Chore Reset - Resetting Chore IF '%s' from '%s' to '%s'",
                         chore_id,
                         previous_state,
                         const.CHORE_STATE_PENDING,
                     )
 
-        # clear pending chore approvals
+        # Clear pending chore approvals
         target_chore_ids = [
             chore_id
             for chore_id, chore_info in self.chores_data.items()
@@ -4483,7 +4491,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Reset all kids' reward states daily."""
         # Remove from global pending reward approvals
         self._data[const.DATA_PENDING_REWARD_APPROVALS] = []
-        const.LOGGER.debug("Cleared all pending reward approvals globally")
+        const.LOGGER.debug(
+            "DEBUG: Daily Reset - Rewards - Pending approvals reset complete"
+        )
 
         # For each kid, clear pending/approved reward lists to reflect daily reset
         for kid_id, kid_info in self.kids_data.items():
@@ -4491,14 +4501,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             kid_info[const.DATA_KID_REDEEMED_REWARDS] = []
 
             const.LOGGER.debug(
-                "Cleared daily reward statuses for kid ID '%s' (%s)",
+                "DEBUG: Daily Reset - Rewards - Cleared daily reward statuses for Kid ID '%s' (%s)",
                 kid_id,
                 kid_info.get(const.DATA_KID_NAME, const.UNKNOWN_KID),
             )
 
         self._persist()
         self.async_set_updated_data(self._data)
-        const.LOGGER.info("Daily reward statuses have been reset")
 
     def _reschedule_next_due_date(self, chore_info: dict[str, Any]):
         """Reschedule the next due date based on the recurring frequency."""
@@ -4514,7 +4523,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.CONF_MONTHS,
             ]:
                 const.LOGGER.warning(
-                    "Custom frequency set but custom_interval or unit invalid for chore '%s'",
+                    "WARNING: Chore Due Date - Reschedule - Custom frequency set, but custom interval or unit invalid for Chore ID '%s'",
                     chore_info.get(const.DATA_CHORE_NAME),
                 )
                 return
@@ -4522,7 +4531,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         due_date_str = chore_info.get(const.DATA_CHORE_DUE_DATE)
         if not freq or freq == const.FREQUENCY_NONE or not due_date_str:
             const.LOGGER.debug(
-                "Skipping reschedule: recurring_frequency=%s, due_date=%s",
+                "DEBUG: Chore Due Date - Reschedule - Skipping reschedule. Recurring frequency '%s', Due date '%s'",
                 freq,
                 due_date_str,
             )
@@ -4532,7 +4541,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if not original_due:
                 original_due = datetime.fromisoformat(due_date_str)
         except ValueError:
-            const.LOGGER.warning("Unable to parse due_date '%s'", due_date_str)
+            const.LOGGER.debug(
+                "DEBUG: Chore Due Date - Reschedule - Unable to parse due date '%s'",
+                due_date_str,
+            )
             return
 
         applicable_days = chore_info.get(
@@ -4586,7 +4598,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             next_due_local = dt_util.as_local(next_due)
 
             const.LOGGER.debug(
-                "Rescheduling chore: Original Due: %s, New Attempt: %s (Local: %s), Now: %s (Local: %s), Weekday: %s, Applicable Days: %s",
+                "DEBUG: Chore Due Date - Rescheduling Chore - Original Due: %s, New Attempt: %s (Local: %s), Now: %s (Local: %s), Weekday: %s, Applicable Days: %s",
                 original_due,
                 next_due,
                 next_due_local,
@@ -4611,7 +4623,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 self._process_chore_state(kid_id, chore_id, const.CHORE_STATE_PENDING)
 
         const.LOGGER.info(
-            "Chore '%s' rescheduled: Original due date %s, Final new due date (local) %s",
+            "INFO: Chore Due Date - Rescheduling Chore ID '%s' - Original due date '%s', New due date (local) '%s'",
             chore_info.get(const.DATA_CHORE_NAME, chore_id),
             dt_util.as_local(original_due).isoformat(),
             next_due_local.isoformat(),
@@ -4637,7 +4649,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # Retrieve the chore data; raise error if not found.
         chore_info = self.chores_data.get(chore_id)
         if chore_info is None:
-            raise HomeAssistantError(f"Chore with ID '{chore_id}' not found.")
+            raise HomeAssistantError(f"Chore ID '{chore_id}' not found.")
 
         # Convert the due_date to an ISO-formatted string if provided; otherwise use None.
         new_due_date = due_date.isoformat() if due_date else None
@@ -4647,7 +4659,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             chore_info[const.DATA_CHORE_DUE_DATE] = new_due_date
         except KeyError as err:
             raise HomeAssistantError(
-                f"Missing 'due_date' key in chore data for '{chore_id}': {err}"
+                f"Missing 'due date' in Chore ID '{chore_id}': {err}"
             )
 
         # If the due date is cleared (None), then remove any recurring frequency
@@ -4661,7 +4673,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.FREQUENCY_WEEKLY,
             ):
                 const.LOGGER.debug(
-                    "Removing frequency for chore '%s': current frequency '%s' is does not work with a due date of None",
+                    "DEBUG: Chore Due Date - Removing frequency for Chore ID '%s' - Current frequency '%s' does not work with a due date of None",
                     chore_id,
                     current_frequency,
                 )
@@ -4687,7 +4699,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 self._process_chore_state(kid_id, chore_id, const.CHORE_STATE_PENDING)
 
         const.LOGGER.info(
-            "Chore '%s' due date set",
+            "INFO: Chore Due Date - Due date set for Chore ID '%s'",
             chore_info.get(const.DATA_CHORE_NAME, chore_id),
         )
 
@@ -4699,7 +4711,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Skip the current due date of a recurring chore and reschedule it."""
         chore = self.chores_data.get(chore_id)
         if not chore:
-            raise HomeAssistantError(f"Chore with ID '{chore_id}' not found.")
+            raise HomeAssistantError(f"Chore ID '{chore_id}' not found.")
 
         if (
             chore.get(const.DATA_CHORE_RECURRING_FREQUENCY, const.FREQUENCY_NONE)
@@ -4729,7 +4741,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # Specific chore reset (with or without kid_id)
             chore = self.chores_data.get(chore_id)
             if not chore:
-                raise HomeAssistantError(f"Chore with ID '{chore_id}' not found.")
+                raise HomeAssistantError(f"Chore ID '{chore_id}' not found.")
 
             # Reschedule happens at the chore level, so it is not necessary to check for kid_id
             # _rescheduled_next_due_date will also handle setting the status to Pending
@@ -4741,7 +4753,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # kid that are multi assigned will show as reset for those other kids
             kid = self.kids_data.get(kid_id)
             if not kid:
-                raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+                raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
             for cid, chore in self.chores_data.items():
                 if kid_id in chore.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
                     if cid in kid.get(const.DATA_KID_OVERDUE_CHORES, []):
@@ -4773,17 +4785,17 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             kid_info = self.kids_data.get(kid_id)
             if not kid_info:
                 const.LOGGER.error(
-                    "Reset Penalties: Kid with ID '%s' not found.", kid_id
+                    "ERROR: Reset Penalties - Kid ID '%s' not found.", kid_id
                 )
-                raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+                raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
             if penalty_id not in kid_info.get(const.DATA_KID_PENALTY_APPLIES, {}):
                 const.LOGGER.error(
-                    "Reset Penalties: Penalty '%s' does not apply to kid '%s'.",
+                    "ERROR: Reset Penalties - Penalty ID '%s' does not apply to Kid ID '%s'.",
                     penalty_id,
                     kid_id,
                 )
                 raise HomeAssistantError(
-                    f"Penalty '{penalty_id}' does not apply to kid '{kid_id}'."
+                    f"Penalty ID '{penalty_id}' does not apply to Kid ID '{kid_id}'."
                 )
 
             kid_info[const.DATA_KID_PENALTY_APPLIES].pop(penalty_id, None)
@@ -4798,7 +4810,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
             if not found:
                 const.LOGGER.warning(
-                    "Reset Penalties: Penalty '%s' not found in any kid's data.",
+                    "WARNING: Reset Penalties - Penalty ID '%s' not found in any kid's data.",
                     penalty_id,
                 )
 
@@ -4807,20 +4819,24 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             kid_info = self.kids_data.get(kid_id)
             if not kid_info:
                 const.LOGGER.error(
-                    "Reset Penalties: Kid with ID '%s' not found.", kid_id
+                    "ERROR: Reset Penalties - Kid ID '%s' not found.", kid_id
                 )
-                raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+                raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
             kid_info[const.DATA_KID_PENALTY_APPLIES].clear()
 
         else:
             # Reset all penalties for all kids
-            const.LOGGER.info("Reset Penalties: Resetting all penalties for all kids.")
+            const.LOGGER.info(
+                "INFO: Reset Penalties - Resetting all penalties for all kids"
+            )
             for kid_info in self.kids_data.values():
                 kid_info[const.DATA_KID_PENALTY_APPLIES].clear()
 
         const.LOGGER.debug(
-            "Penalties reset completed (kid_id=%s, penalty_id=%s)", kid_id, penalty_id
+            "DEBUG: Reset Penalties - Penalties reset completed - Kid ID '%s',  Penalty ID '%s'",
+            kid_id,
+            penalty_id,
         )
 
         self._persist()
@@ -4839,16 +4855,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # Reset a specific bonus for a specific kid
             kid_info = self.kids_data.get(kid_id)
             if not kid_info:
-                const.LOGGER.error("Reset Bonuses: Kid with ID '%s' not found.", kid_id)
-                raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+                const.LOGGER.error(
+                    "ERROR: Reset Bonuses - Kid ID '%s' not found.", kid_id
+                )
+                raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
             if bonus_id not in kid_info.get(const.DATA_KID_BONUS_APPLIES, {}):
                 const.LOGGER.error(
-                    "Reset Bonuses: Bonus '%s' does not apply to kid '%s'.",
+                    "ERROR: Reset Bonuses - Bonus '%s' does not apply to kid '%s'.",
                     bonus_id,
                     kid_id,
                 )
                 raise HomeAssistantError(
-                    f"Bonus '{bonus_id}' does not apply to kid '{kid_id}'."
+                    f"Bonus ID '{bonus_id}' does not apply to Kid ID '{kid_id}'."
                 )
 
             kid_info[const.DATA_KID_BONUS_APPLIES].pop(bonus_id, None)
@@ -4863,26 +4881,33 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
             if not found:
                 const.LOGGER.warning(
-                    "Reset Bonuses: Bonus '%s' not found in any kid's data.", bonus_id
+                    "WARNING: Reset Bonuses - Bonus '%s' not found in any kid's data.",
+                    bonus_id,
                 )
 
         elif kid_id:
             # Reset all bonuses for a specific kid
             kid_info = self.kids_data.get(kid_id)
             if not kid_info:
-                const.LOGGER.error("Reset Bonuses: Kid with ID '%s' not found.", kid_id)
-                raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+                const.LOGGER.error(
+                    "ERROR: Reset Bonuses - Kid ID '%s' not found.", kid_id
+                )
+                raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
             kid_info[const.DATA_KID_BONUS_APPLIES].clear()
 
         else:
             # Reset all bonuses for all kids
-            const.LOGGER.info("Reset Bonuses: Resetting all bonuses for all kids.")
+            const.LOGGER.info(
+                "INFO: Reset Bonuses - Resetting all bonuses for all kids."
+            )
             for kid_info in self.kids_data.values():
                 kid_info[const.DATA_KID_BONUS_APPLIES].clear()
 
         const.LOGGER.debug(
-            "Bonuses reset completed (kid_id=%s, bonus_id=%s)", kid_id, bonus_id
+            "DEBUG: Reset Bonuses - Bonuses reset completed - Kid ID '%s', Bonus ID '%s'",
+            kid_id,
+            bonus_id,
         )
 
         self._persist()
@@ -4904,8 +4929,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # Reset a specific reward for a specific kid
             kid_info = self.kids_data.get(kid_id)
             if not kid_info:
-                const.LOGGER.error("Reset Rewards: Kid with ID '%s' not found.", kid_id)
-                raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+                const.LOGGER.error(
+                    "ERROR: Reset Rewards - Kid ID '%s' not found.", kid_id
+                )
+                raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
             kid_info[const.DATA_KID_REWARD_CLAIMS].pop(reward_id, None)
             kid_info[const.DATA_KID_REWARD_APPROVALS].pop(reward_id, None)
@@ -4958,7 +4985,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             ]
             if not found:
                 const.LOGGER.warning(
-                    "Reset Rewards: Reward '%s' not found in any kid's data.",
+                    "WARNING: Reset Rewards - Reward '%s' not found in any kid's data.",
                     reward_id,
                 )
 
@@ -4966,8 +4993,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # Reset all rewards for a specific kid
             kid_info = self.kids_data.get(kid_id)
             if not kid_info:
-                const.LOGGER.error("Reset Rewards: Kid with ID '%s' not found.", kid_id)
-                raise HomeAssistantError(f"Kid with ID '{kid_id}' not found.")
+                const.LOGGER.error(
+                    "ERROR: Reset Rewards - Kid ID '%s' not found.", kid_id
+                )
+                raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
             kid_info[const.DATA_KID_REWARD_CLAIMS].clear()
             kid_info[const.DATA_KID_REWARD_APPROVALS].clear()
@@ -4983,7 +5012,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         else:
             # Reset all rewards for all kids
-            const.LOGGER.info("Reset Rewards: Resetting all rewards for all kids.")
+            const.LOGGER.info(
+                "INFO: Reset Rewards - Resetting all rewards for all kids."
+            )
             for kid_info in self.kids_data.values():
                 kid_info[const.DATA_KID_REWARD_CLAIMS].clear()
                 kid_info[const.DATA_KID_REWARD_APPROVALS].clear()
@@ -4994,7 +5025,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._data[const.DATA_PENDING_REWARD_APPROVALS].clear()
 
         const.LOGGER.debug(
-            "Rewards reset completed (kid_id=%s, reward_id=%s)", kid_id, reward_id
+            "DEBUG: Reset Rewards - Rewards reset completed - Kid ID '%s', Reward ID '%s'",
+            kid_id,
+            reward_id,
         )
 
         self._persist()
@@ -5065,7 +5098,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 # For custom frequency, custom_interval and custom_interval_unit are required.
                 if custom_interval is None or custom_interval_unit is None:
                     raise HomeAssistantError(
-                        "For custom frequency, both custom_interval and custom_interval_unit are required."
+                        "For custom frequency, both custom interval and custom interval unit are required."
                     )
                 existing_options[const.DATA_CHORE_CUSTOM_INTERVAL] = custom_interval
                 existing_options[const.DATA_CHORE_CUSTOM_INTERVAL_UNIT] = (
@@ -5109,7 +5142,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if not user_id:
             # If no user_id is provided, use a general notification
             const.LOGGER.debug(
-                "No user id provided. Sending a general persistent notification"
+                "DEBUG: Notification - No User ID provided. Sending a general persistent notification"
             )
             await hass.services.async_call(
                 const.NOTIFY_PERSISTENT_NOTIFICATION,
@@ -5127,7 +5160,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             user_obj: User = await hass.auth.async_get_user(user_id)
             if not user_obj:
                 const.LOGGER.warning(
-                    "User with ID '%s' not found. Sending fallback persistent notification",
+                    "WARNING: Notification - User ID '%s' not found. Sending fallback persistent notification",
                     user_id,
                 )
                 await hass.services.async_call(
@@ -5154,7 +5187,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
         except Exception as err:
             const.LOGGER.warning(
-                "Failed to send user-specific notification to '%s': %s. Fallback to persistent notification",
+                "WARNING: Notification - Failed to send notification to '%s': %s. Fallback to persistent notification",
                 user_id,
                 err,
             )
@@ -5183,7 +5216,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if not kid_info:
             return
         if not kid_info.get(const.DATA_KID_ENABLE_NOTIFICATIONS, True):
-            const.LOGGER.debug("Notifications disabled for kid '%s'", kid_id)
+            const.LOGGER.debug(
+                "DEBUG: Notification - Notifications disabled for Kid ID '%s'", kid_id
+            )
             return
         mobile_enabled = kid_info.get(const.CONF_ENABLE_MOBILE_NOTIFICATIONS, True)
         persistent_enabled = kid_info.get(
@@ -5214,7 +5249,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 blocking=True,
             )
         else:
-            const.LOGGER.debug("No notification method configured for kid '%s'", kid_id)
+            const.LOGGER.debug(
+                "DEBUG: Notification - No notification method configured for Kid ID '%s'",
+                kid_id,
+            )
 
     async def _notify_parents(
         self,
@@ -5229,7 +5267,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if kid_id not in parent_info.get(const.DATA_PARENT_ASSOCIATED_KIDS, []):
                 continue
             if not parent_info.get(const.DATA_PARENT_ENABLE_NOTIFICATIONS, True):
-                const.LOGGER.debug("Notifications disabled for parent '%s'", parent_id)
+                const.LOGGER.debug(
+                    "DEBUG: Notification - Notifications disabled for Parent ID '%s'",
+                    parent_id,
+                )
                 continue
             mobile_enabled = parent_info.get(
                 const.CONF_ENABLE_MOBILE_NOTIFICATIONS, True
@@ -5263,7 +5304,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
             else:
                 const.LOGGER.debug(
-                    "No notification method configured for parent '%s'", parent_id
+                    "DEBUG: Notification - No notification method configured for Parent ID '%s'",
+                    parent_id,
                 )
 
     async def remind_in_minutes(
@@ -5281,8 +5323,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         If a chore_id is provided, the method checks the corresponding chore’s state.
         If a reward_id is provided, it checks whether that reward is still pending.
         """
-        const.LOGGER.info(
-            "Scheduling reminder for kid '%s', chore '%s', reward '%s' in %d minutes",
+        const.LOGGER.debug(
+            "DEBUG: Notification - Scheduling reminder for Kid ID '%s', Chore ID '%s', Reward ID '%s' in %d minutes",
             kid_id,
             chore_id,
             reward_id,
@@ -5293,7 +5335,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             const.LOGGER.warning(
-                "Kid with ID '%s' not found during reminder check", kid_id
+                "WARNING: Notification - Kid ID '%s' not found during reminder check",
+                kid_id,
             )
             return
 
@@ -5301,7 +5344,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             chore_info = self.chores_data.get(chore_id)
             if not chore_info:
                 const.LOGGER.warning(
-                    "Chore with ID '%s' not found during reminder check", chore_id
+                    "WARNING: Notification - Chore ID '%s' not found during reminder check",
+                    chore_id,
                 )
                 return
             # Only resend if the chore is still in a pending-like state.
@@ -5311,7 +5355,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.CHORE_STATE_OVERDUE,
             ]:
                 const.LOGGER.info(
-                    "Chore '%s' is no longer pending approval; no reminder sent",
+                    "INFO: Notification - Chore ID '%s' is no longer pending approval. No reminder sent",
                     chore_id,
                 )
                 return
@@ -5338,13 +5382,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 extra_data=extra_data,
             )
             const.LOGGER.info(
-                "Resent reminder for chore '%s' for kid '%s'", chore_id, kid_id
+                "INFO: Notification - Resent reminder for Chore ID '%s' for Kid ID '%s'",
+                chore_id,
+                kid_id,
             )
         elif reward_id:
             # Check if the reward is still pending approval.
             if reward_id not in kid_info.get(const.DATA_KID_PENDING_REWARDS, []):
                 const.LOGGER.info(
-                    "Reward '%s' is no longer pending approval for kid '%s'; no reminder sent",
+                    "INFO: Notification - Reward ID '%s' is no longer pending approval for Kid ID '%s'. No reminder sent",
                     reward_id,
                     kid_id,
                 )
@@ -5374,11 +5420,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 extra_data=extra_data,
             )
             const.LOGGER.info(
-                "Resent reminder for reward '%s' for kid '%s'", reward_id, kid_id
+                "INFO: Notification - Resent reminder for Reward ID '%s' for Kid ID '%s'",
+                reward_id,
+                kid_id,
             )
         else:
             const.LOGGER.warning(
-                "No chore_id or reward_id provided for reminder action"
+                "WARNING: Notification - No Chore ID or Reward ID provided for reminder action"
             )
 
     # -------------------------------------------------------------------------------------

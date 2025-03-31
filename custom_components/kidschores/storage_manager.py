@@ -36,12 +36,12 @@ class KidsChoresStorageManager:
 
         If no data exists, initializes with an empty structure.
         """
-        const.LOGGER.debug("KidsChoresStorageManager: Loading data from storage")
+        const.LOGGER.debug("DEBUG: KidsChoresStorageManager: Loading data from storage")
         existing_data = await self._store.async_load()
 
         if existing_data is None:
             # No existing data, create a new default structure.
-            const.LOGGER.info("No existing storage found; initializing new data")
+            const.LOGGER.info("INFO: No existing storage found. Initializing new data")
             self._data = {
                 const.DATA_KIDS: {},  # Dictionary of kids keyed by internal_id.
                 const.DATA_CHORES: {},  # Dictionary of chores keyed by internal_id.
@@ -58,7 +58,7 @@ class KidsChoresStorageManager:
         else:
             # Load existing data into memory.
             self._data = existing_data
-            const.LOGGER.info("Storage data loaded successfully")
+            const.LOGGER.info("INFO: Storage data loaded successfully")
 
     @property
     def data(self):
@@ -141,14 +141,16 @@ class KidsChoresStorageManager:
         """Save the current data structure to storage asynchronously."""
         try:
             await self._store.async_save(self._data)
-            const.LOGGER.info("Data saved successfully to storage")
+            const.LOGGER.info("INFO: Data saved successfully to storage")
         except Exception as e:
-            const.LOGGER.error("Failed to save data to storage: %s", e)
+            const.LOGGER.error("ERROR: Failed to save data to storage: %s", e)
 
     async def async_clear_data(self):
         """Clear all stored data and reset to default structure."""
 
-        const.LOGGER.warning("Clearing all KidsChores data and resetting storage")
+        const.LOGGER.warning(
+            "WARNING: Clearing all KidsChores data and resetting storage"
+        )
         self._data = {
             const.DATA_KIDS: {},
             const.DATA_CHORES: {},
@@ -174,18 +176,20 @@ class KidsChoresStorageManager:
         if os.path.isfile(self._store.path):
             try:
                 os.remove(self._store.path)
-                const.LOGGER.info("Storage file removed: %s", self._store.path)
+                const.LOGGER.info("INFO: Storage file removed: %s", self._store.path)
             except Exception as e:
-                const.LOGGER.error("Failed to remove storage file: %s", e)
+                const.LOGGER.error("ERROR: Failed to remove storage file: %s", e)
         else:
-            const.LOGGER.info("Storage file not found: %s", self._store.path)
+            const.LOGGER.info("INFO: Storage file not found: %s", self._store.path)
 
     async def async_update_data(self, key, value):
         """Update a specific section of the data structure."""
 
         if key in self._data:
-            const.LOGGER.debug("Updating data for key: %s", key)
+            const.LOGGER.debug("DEBUG: Updating data for key: %s", key)
             self._data[key] = value
             await self.async_save()
         else:
-            const.LOGGER.warning("Attempted to update unknown data key: %s", key)
+            const.LOGGER.warning(
+                "WARNING: Attempted to update unknown data key: %s", key
+            )
