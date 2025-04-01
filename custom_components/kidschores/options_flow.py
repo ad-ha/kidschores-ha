@@ -324,7 +324,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     const.DATA_KID_HA_USER_ID: ha_user_id,
                     const.DATA_KID_ENABLE_NOTIFICATIONS: enable_mobile_notifications,
                     const.DATA_KID_MOBILE_NOTIFY_SERVICE: notify_service,
-                    const.DATA_KID_USER_PERSISTENT_NOTIFICATIONS: enable_persist,
+                    const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS: enable_persist,
                     const.DATA_KID_INTERNAL_ID: internal_id,
                 }
                 self._entry_options[const.CONF_KIDS] = kids_dict
