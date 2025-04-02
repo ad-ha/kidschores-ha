@@ -384,7 +384,7 @@
         },
         "data_description": {
           "custom_reset_date": "Define custom reset date, if reset type set to Custom.",
-          "reset_grace_period": "Define the reset grace period, in DAYS, while the kids main keep their badge, if they \nachieve the Minimum Maintenance Points during the Grace Period.",
+          "reset_grace_period": "Define the reset grace period, in DAYS, while the kids may keep their badge, if they \nachieve the Minimum Maintenance Points during the Grace Period.",
           "maintenance_rules": "Minimum points needed to be obtained during the Grace Period in order to keep the badge."
         }
       },

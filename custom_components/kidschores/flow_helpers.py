@@ -310,9 +310,9 @@ def build_chore_schema(kids_dict, default=None):
 def build_badge_cumulative_schema(default: dict = None, rewards_list: list = None):
     """Build schema for cumulative badges (by points or chore count)."""
     default = default or {}
-    rewards_list = rewards_list or [
+    rewards_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ]
+    ] + rewards_list
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     return vol.Schema(
@@ -439,9 +439,9 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
 def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
     """Build schema for daily badges that reset every day."""
     default = default or {}
-    rewards_list = rewards_list or [
+    rewards_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ]
+    ] + rewards_list
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     return vol.Schema(
