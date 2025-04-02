@@ -666,7 +666,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
                     ),
                     const.DATA_BADGE_MAINTENANCE_RULES: user_input.get(
-                        const.CFOF_BADGES_INPUT_MAINTENANCE_RULES, const.CONF_EMPTY
+                        const.CFOF_BADGES_INPUT_MAINTENANCE_RULES, const.DEFAULT_ZERO
                     ),
                     const.DATA_BADGE_TYPE: const.BADGE_TYPE_CUMULATIVE,
                     const.DATA_BADGE_INTERNAL_ID: internal_id,
@@ -1993,7 +1993,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     badge_data[const.DATA_BADGE_MAINTENANCE_RULES] = user_input.get(
                         const.CFOF_BADGES_INPUT_MAINTENANCE_RULES,
                         badge_data.get(
-                            const.DATA_BADGE_MAINTENANCE_RULES, const.CONF_EMPTY
+                            const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO
                         ),
                     )
 

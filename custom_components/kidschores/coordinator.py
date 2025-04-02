@@ -3455,8 +3455,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         cycle_points = kid_info.get(
             const.DATA_KID_CUMULATIVE_EARNED_POINTS, const.DEFAULT_ZERO
         )
-        maintenance_required = badge.get(
-            const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO
+        maintenance_required = float(
+            badge.get(const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO)
         )
 
         if now_local < grace_expiration:

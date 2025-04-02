@@ -583,7 +583,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                         const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
                     ),
                     const.DATA_BADGE_MAINTENANCE_RULES: user_input.get(
-                        const.CFOF_BADGES_INPUT_MAINTENANCE_RULES, const.CONF_EMPTY
+                        const.CFOF_BADGES_INPUT_MAINTENANCE_RULES, const.DEFAULT_ZERO
                     ),
                     const.DATA_BADGE_TYPE: const.BADGE_TYPE_CUMULATIVE,
                     const.DATA_BADGE_INTERNAL_ID: internal_id,
