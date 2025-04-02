@@ -753,7 +753,7 @@
           "calendar_show_period": "Anzahl der anzuzeigenden Kalendertage"
         },
         "data_description": {
-          "points_adjust_values": "Liste von Werten für die Schaltflächen zur manuellen Punkteanpassung, jeweils ein Wert pro Zeile.",
+          "points_adjust_values": "Liste von Werten für die Schaltflächen zur manuellen Punkteanpassung. Jeden Wert durch '|' trennen..",
           "update_interval": "Intervall (in Minuten) für die Aktualisierung des internen Zustands von KinderChores.",
           "calendar_show_period": "Anzahl zukünftiger Tage, für die geplante Hausarbeiten und Herausforderungen im Kalender angezeigt werden."
         }

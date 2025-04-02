@@ -132,25 +132,16 @@ def parse_points_adjust_values(points_str: str) -> list[float]:
     """Parse a multiline string into a list of float values."""
 
     values = []
-    for line in points_str.splitlines():
-        line = line.strip()
-        if not line:
+    for part in points_str.split("|"):
+        part = part.strip()
+        if not part:
             continue
 
         try:
-            value = float(line.replace(",", "."))
+            value = float(part.replace(",", "."))
             values.append(value)
         except ValueError:
-            for part in line.split(","):
-                part = part.strip()
-                if part:
-                    try:
-                        value = float(part.replace(",", "."))
-                        values.append(value)
-                    except ValueError:
-                        const.LOGGER.error(
-                            "Invalid number '%s' in points adjust values", part
-                        )
+            const.LOGGER.error("Invalid number '%s' in points adjust values", part)
     return values
 
 

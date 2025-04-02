@@ -753,7 +753,7 @@
           "calendar_show_period": "Number of Days to Show in Calendar"
         },
         "data_description": {
-          "points_adjust_values": "List of values for the manual points adjustment buttons, one value per line.",
+          "points_adjust_values": "List of values for the manual points adjustment buttons. Each value separate by '|'.",
           "update_interval": "Interval in minutes for updating the internal state of KidsChores.",
           "calendar_show_period": "Number of days in the future to show scheduled chores and challenges in the calendar."
         }

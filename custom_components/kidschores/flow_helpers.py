@@ -1284,9 +1284,9 @@ def build_general_options_schema(default: dict = None) -> vol.Schema:
     default = default or {}
     current_values = default.get(const.CONF_POINTS_ADJUST_VALUES)
     if current_values and isinstance(current_values, list):
-        default_points_str = "\n".join(str(v) for v in current_values)
+        default_points_str = "|".join(str(v) for v in current_values)
     else:
-        default_points_str = "\n".join(
+        default_points_str = "|".join(
             str(v) for v in const.DEFAULT_POINTS_ADJUST_VALUES
         )
 
@@ -1303,7 +1303,7 @@ def build_general_options_schema(default: dict = None) -> vol.Schema:
                 const.CONF_POINTS_ADJUST_VALUES, default=default_points_str
             ): selector.TextSelector(
                 selector.TextSelectorConfig(
-                    multiline=True,
+                    multiline=False,
                 )
             ),
             vol.Required(

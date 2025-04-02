@@ -753,7 +753,7 @@
           "calendar_show_period": "Cantidad de Días a Mostrar en el Calendario"
         },
         "data_description": {
-          "points_adjust_values": "Lista de valores para los botones de ajuste manual de puntos, un valor por línea.",
+          "points_adjust_values": "Lista de valores para los botones de ajuste manual de puntos. Cada valor separado por '|'.",
           "update_interval": "Intervalo (en minutos) para actualizar el estado interno de KidsChores.",
           "calendar_show_period": "Cantidad de días a futuro para mostrar tareas y retos programados en el calendario."
         }

@@ -2957,7 +2957,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 const.CONF_POINTS_ADJUST_VALUES, const.CONF_EMPTY
             ).strip()
             if points_str:
-                # Parse the values by splitting on newlines and commas.
+                # Parse the values by splitting on separator.
                 parsed_values = kh.parse_points_adjust_values(points_str)
                 # Always store as a list of floats.
                 self._entry_options[const.CONF_POINTS_ADJUST_VALUES] = parsed_values
@@ -2981,7 +2981,6 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             await self._update_and_reload()
             return await self.async_step_init()
 
-        # Use the helper schema (which now shows one value per line)
         general_schema = fh.build_general_options_schema(self._entry_options)
         return self.async_show_form(
             step_id=const.OPTIONS_FLOW_STEP_MANAGE_GENERAL_OPTIONS,
