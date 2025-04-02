@@ -42,11 +42,13 @@ async def async_send_notification(
         else:
             domain, service = notify_service.split(".", 1)
         await hass.services.async_call(domain, service, payload, blocking=True)
-        const.LOGGER.debug("Notification sent via '%s': %s", notify_service, payload)
+        const.LOGGER.debug(
+            "DEBUG: Notification sent via '%s': %s", notify_service, payload
+        )
 
     except Exception as err:
         const.LOGGER.error(
-            "Failed to send notification via '%s': %s. Payload: %s",
+            "ERROR: Failed to send notification via '%s': %s. Payload: %s",
             notify_service,
             err,
             payload,

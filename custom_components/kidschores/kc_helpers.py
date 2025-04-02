@@ -52,7 +52,7 @@ async def is_user_authorized_for_global_action(
 
     user: User = await hass.auth.async_get_user(user_id)
     if not user:
-        const.LOGGER.warning("%s: Invalid user ID '%s'", action, user_id)
+        const.LOGGER.warning("WARNING: %s: Invalid user ID '%s'", action, user_id)
         return False
 
     if user.is_admin:
@@ -66,7 +66,9 @@ async def is_user_authorized_for_global_action(
                 return True
 
     const.LOGGER.warning(
-        "%s: Non-admin user '%s' is not authorized in this logic", action, user.name
+        "WARNING: %s: Non-admin user '%s' is not authorized in this logic",
+        action,
+        user.name,
     )
     return False
 
@@ -89,7 +91,7 @@ async def is_user_authorized_for_kid(
 
     user: User = await hass.auth.async_get_user(user_id)
     if not user:
-        const.LOGGER.warning("Authorization: Invalid user ID '%s'", user_id)
+        const.LOGGER.warning("WARNING: Authorization: Invalid user ID '%s'", user_id)
         return False
 
     # Admin => automatically allowed
@@ -105,13 +107,13 @@ async def is_user_authorized_for_kid(
 
     coordinator: KidsChoresDataCoordinator = _get_kidschores_coordinator(hass)
     if not coordinator:
-        const.LOGGER.warning("Authorization: No KidsChores coordinator found")
+        const.LOGGER.warning("WARNING: Authorization: KidsChores coordinator not found")
         return False
 
     kid_info = coordinator.kids_data.get(kid_id)
     if not kid_info:
         const.LOGGER.warning(
-            "Authorization: Kid ID '%s' not found in coordinator data", kid_id
+            "WARNING: Authorization: Kid ID '%s' not found in coordinator data", kid_id
         )
         return False
 
@@ -120,7 +122,7 @@ async def is_user_authorized_for_kid(
         return True
 
     const.LOGGER.warning(
-        "Authorization: Non-admin user '%s' attempted to manage kid '%s' but is not linked",
+        "WARNING: Authorization: Non-admin user '%s' attempted to manage Kid ID '%s' but is not linked",
         user.name,
         kid_info.get(const.DATA_KID_NAME),
     )
@@ -141,7 +143,9 @@ def parse_points_adjust_values(points_str: str) -> list[float]:
             value = float(part.replace(",", "."))
             values.append(value)
         except ValueError:
-            const.LOGGER.error("Invalid number '%s' in points adjust values", part)
+            const.LOGGER.error(
+                "ERROR: Invalid number '%s' in points adjust values", part
+            )
     return values
 
 

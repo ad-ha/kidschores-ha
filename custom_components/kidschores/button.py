@@ -205,25 +205,29 @@ async def async_setup_entry(
     if not raw_values:
         points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
         const.LOGGER.debug(
-            "Using default points_adjust_values: %s", points_adjust_values
+            "DEBUG: Button - PointsAdjustValue - Using default points adjust values: %s",
+            points_adjust_values,
         )
     elif isinstance(raw_values, str):
         points_adjust_values = kh.parse_points_adjust_values(raw_values)
         if not points_adjust_values:
             points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
             const.LOGGER.warning(
-                "Parsed points_adjust_values empty; falling back to default"
+                "WARNING: Parsed points adjust values empty. Falling back to defaults"
             )
         else:
             const.LOGGER.debug(
-                "Parsed points_adjust_values from string: %s", points_adjust_values
+                "DEBUG: Parsed points adjust values from string: %s",
+                points_adjust_values,
             )
     elif isinstance(raw_values, list):
         try:
             points_adjust_values = [float(v) for v in raw_values]
         except (ValueError, TypeError):
             points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
-            const.LOGGER.error("Error converting raw_values to floats; using default")
+            const.LOGGER.error(
+                "ERROR: Failed converting RAW values to floats. Falling back to defaults"
+            )
     else:
         points_adjust_values = const.DEFAULT_POINTS_ADJUST_VALUES
 
@@ -234,7 +238,9 @@ async def async_setup_entry(
         )
         for delta in points_adjust_values:
             const.LOGGER.debug(
-                "Creating PointsAdjustButton for kid %s with delta %s", kid_name, delta
+                "DEBUG: Creating PointsAdjustButton for Kid '%s' with delta %s",
+                kid_name,
+                delta,
             )
             entities.append(
                 PointsAdjustButton(
@@ -307,7 +313,7 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
                 user_name=user_name,
             )
             const.LOGGER.info(
-                "Chore '%s' claimed by kid '%s' (user: %s)",
+                "INFO: Chore '%s' claimed by Kid '%s' (User: %s)",
                 self._chore_name,
                 self._kid_name,
                 user_name,
@@ -316,14 +322,14 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
 
         except HomeAssistantError as e:
             const.LOGGER.error(
-                "Authorization failed to claim chore '%s' for kid '%s': %s",
+                "ERROR: Authorization failed to Claim Chore '%s' for Kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
             const.LOGGER.error(
-                "Failed to claim chore '%s' for kid '%s': %s",
+                "ERROR: Failed to Claim Chore '%s' for Kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
                 e,
@@ -401,7 +407,7 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
                 chore_id=self._chore_id,
             )
             const.LOGGER.info(
-                "Chore '%s' approved for kid '%s'",
+                "INFO: Chore '%s' approved for Kid '%s'",
                 self._chore_name,
                 self._kid_name,
             )
@@ -409,14 +415,14 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
 
         except HomeAssistantError as e:
             const.LOGGER.error(
-                "Authorization failed to approve chore '%s' for kid '%s': %s",
+                "ERROR: Authorization failed to Approve Chore '%s' for Kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
             const.LOGGER.error(
-                "Failed to approve chore '%s' for kid '%s': %s",
+                "ERROR: Failed to approve Chore '%s' for Kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
                 e,
@@ -504,7 +510,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
                 chore_id=self._chore_id,
             )
             const.LOGGER.info(
-                "Chore '%s' disapproved for kid '%s' by parent '%s'",
+                "INFO: Chore '%s' disapproved for Kid '%s' by parent '%s'",
                 self._chore_name,
                 self._kid_name,
                 parent_name,
@@ -513,14 +519,14 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
 
         except HomeAssistantError as e:
             const.LOGGER.error(
-                "Authorization failed to disapprove chore '%s' for kid '%s': %s",
+                "ERROR: Authorization failed to Disapprove Chore '%s' for Kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
             const.LOGGER.error(
-                "Failed to disapprove chore '%s' for kid '%s': %s",
+                "ERROR: Failed to Disapprove Chore '%s' for Kid '%s': %s",
                 self._chore_name,
                 self._kid_name,
                 e,
@@ -598,7 +604,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
                 reward_id=self._reward_id,
             )
             const.LOGGER.info(
-                "Reward '%s' redeemed for kid '%s' by parent '%s'",
+                "INFO: Reward '%s' redeemed for Kid '%s' by Parent '%s'",
                 self._reward_name,
                 self._kid_name,
                 parent_name,
@@ -607,14 +613,14 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
 
         except HomeAssistantError as e:
             const.LOGGER.error(
-                "Authorization failed to redeem reward '%s' for kid '%s': %s",
+                "ERROR: Authorization failed to Redeem Reward '%s' for Kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
             const.LOGGER.error(
-                "Failed to redeem reward '%s' for kid '%s': %s",
+                "ERROR: Failed to Redeem Reward '%s' for Kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
                 e,
@@ -692,7 +698,7 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
             )
 
             const.LOGGER.info(
-                "Reward '%s' approved for kid '%s' by parent '%s'",
+                "INFO: Reward '%s' approved for Kid '%s' by Parent '%s'",
                 self._reward_name,
                 self._kid_name,
                 parent_name,
@@ -701,14 +707,14 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
 
         except HomeAssistantError as e:
             const.LOGGER.error(
-                "Authorization failed to approve reward '%s' for kid '%s': %s",
+                "ERROR: Authorization failed to Approve Reward '%s' for Kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
             const.LOGGER.error(
-                "Failed to approve reward '%s' for kid '%s': %s",
+                "ERROR: Failed to Approve Reward '%s' for Kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
                 e,
@@ -796,7 +802,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
                 reward_id=self._reward_id,
             )
             const.LOGGER.info(
-                "Reward '%s' disapproved for kid '%s' by parent '%s'",
+                "INFO: Reward '%s' disapproved for Kid '%s' by Parent '%s'",
                 self._reward_name,
                 self._kid_name,
                 parent_name,
@@ -805,14 +811,14 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
 
         except HomeAssistantError as e:
             const.LOGGER.error(
-                "Authorization failed to disapprove reward '%s' for kid '%s': %s",
+                "ERROR: Authorization failed to Disapprove Reward '%s' for Kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
             const.LOGGER.error(
-                "Failed to disapprove reward '%s' for kid '%s': %s",
+                "ERROR: Failed to Disapprove Reward '%s' for Kid '%s': %s",
                 self._reward_name,
                 self._kid_name,
                 e,
@@ -891,7 +897,7 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
                 penalty_id=self._penalty_id,
             )
             const.LOGGER.info(
-                "Penalty '%s' applied to kid '%s' by '%s'",
+                "INFO: Penalty '%s' applied to Kid '%s' by Parent '%s'",
                 self._penalty_name,
                 self._kid_name,
                 parent_name,
@@ -900,14 +906,14 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
 
         except HomeAssistantError as e:
             const.LOGGER.error(
-                "Authorization failed to apply penalty '%s' for kid '%s': %s",
+                "ERROR: Authorization failed to Apply Penalty '%s' for Kid '%s': %s",
                 self._penalty_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
             const.LOGGER.error(
-                "Failed to apply penalty '%s' for kid '%s': %s",
+                "ERROR: Failed to Apply Penalty '%s' for Kid '%s': %s",
                 self._penalty_name,
                 self._kid_name,
                 e,
@@ -1006,7 +1012,7 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
                 new_points=new_points,
             )
             const.LOGGER.info(
-                "Adjusted points for kid '%s' by %d => total %d",
+                "INFO: Adjusted points for Kid '%s' by %d. New points total: %d",
                 self._kid_name,
                 self._delta,
                 new_points,
@@ -1015,14 +1021,14 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
 
         except HomeAssistantError as e:
             const.LOGGER.error(
-                "Authorization failed to adjust points for kid '%s' by %d: %s",
+                "ERROR: Authorization failed to adjust points for Kid '%s' by %d: %s",
                 self._kid_name,
                 self._delta,
                 e,
             )
         except Exception as e:
             const.LOGGER.error(
-                "Failed to adjust points for kid '%s' by %d: %s",
+                "ERROR: Failed to adjust points for Kid '%s' by %d: %s",
                 self._kid_name,
                 self._delta,
                 e,
@@ -1084,7 +1090,7 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
                 bonus_id=self._bonus_id,
             )
             const.LOGGER.info(
-                "Bonus '%s' applied to kid '%s' by '%s'",
+                "INFO: Bonus '%s' applied to Kid '%s' by Parent '%s'",
                 self._bonus_name,
                 self._kid_name,
                 parent_name,
@@ -1093,14 +1099,14 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
 
         except HomeAssistantError as e:
             const.LOGGER.error(
-                "Authorization failed to apply bonus '%s' for kid '%s': %s",
+                "ERROR: Authorization failed to Apply Bonus '%s' for Kid '%s': %s",
                 self._bonus_name,
                 self._kid_name,
                 e,
             )
         except Exception as e:
             const.LOGGER.error(
-                "Failed to apply bonus '%s' for kid '%s': %s",
+                "ERROR: Failed to Apply bBonus '%s' for Kid '%s': %s",
                 self._bonus_name,
                 self._kid_name,
                 e,

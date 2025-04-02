@@ -19,9 +19,7 @@ async def async_setup_entry(
     try:
         coordinator = hass.data[const.DOMAIN][entry.entry_id][const.COORDINATOR]
     except KeyError:
-        const.LOGGER.error(
-            "Coordinator not found in hass.data for entry %s", entry.entry_id
-        )
+        const.LOGGER.error("ERROR: Coordinator not found for entry %s", entry.entry_id)
         return
 
     calendar_show_period_days = entry.options.get(

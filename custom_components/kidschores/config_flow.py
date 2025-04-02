@@ -168,7 +168,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                     const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS: enable_persist,
                     const.DATA_KID_INTERNAL_ID: internal_id,
                 }
-                const.LOGGER.debug("Added kid: %s with ID: %s", kid_name, internal_id)
+                const.LOGGER.debug(
+                    "DEBUG: Added Kid: %s with ID: %s", kid_name, internal_id
+                )
 
             self._kid_index += 1
             if self._kid_index >= self._kid_count:
@@ -275,7 +277,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                     const.DATA_PARENT_INTERNAL_ID: internal_id,
                 }
                 const.LOGGER.debug(
-                    "Added parent: %s with ID: %s", parent_name, internal_id
+                    "DEBUG: Added Parent: %s with ID: %s", parent_name, internal_id
                 )
 
             self._parents_index += 1
@@ -457,7 +459,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                 ),
                 const.DATA_CHORE_INTERNAL_ID: internal_id,
             }
-            const.LOGGER.debug("Added chore: %s with ID: %s", chore_name, internal_id)
+            const.LOGGER.debug(
+                "DEBUG: Added Chore: %s with ID: %s", chore_name, internal_id
+            )
 
             self._chore_index += 1
             if self._chore_index >= self._chore_count:
@@ -589,7 +593,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                     const.DATA_BADGE_INTERNAL_ID: internal_id,
                 }
                 const.LOGGER.debug(
-                    "Added badge: %s with ID: %s", badge_name, internal_id
+                    "DEBUG: Added Badge: %s with ID: %s", badge_name, internal_id
                 )
 
             self._badge_index += 1
@@ -678,7 +682,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                     const.DATA_REWARD_INTERNAL_ID: internal_id,
                 }
                 const.LOGGER.debug(
-                    "Added reward: %s with ID: %s", reward_name, internal_id
+                    "DEBUG: Added Reward: %s with ID: %s", reward_name, internal_id
                 )
 
             self._reward_index += 1
@@ -770,7 +774,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                     const.DATA_PENALTY_INTERNAL_ID: internal_id,
                 }
                 const.LOGGER.debug(
-                    "Added penalty: %s with ID: %s", penalty_name, internal_id
+                    "DEBUG: Added Penalty: %s with ID: %s", penalty_name, internal_id
                 )
 
             self._penalty_index += 1
@@ -858,7 +862,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                     const.DATA_BONUS_INTERNAL_ID: internal_id,
                 }
                 const.LOGGER.debug(
-                    "Added bonus '%s' with ID: %s", bonus_name, internal_id
+                    "DEBUG: Added Bonus '%s' with ID: %s", bonus_name, internal_id
                 )
 
             self._bonus_index += 1
@@ -1227,7 +1231,9 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
         }
 
         const.LOGGER.debug(
-            "Creating entry with data=%s, options=%s", entry_data, entry_options
+            "DEBUG: Creating KidsChores with data %s, options %s",
+            entry_data,
+            entry_options,
         )
         return self.async_create_entry(
             title=const.KIDSCHORES_TITLE, data=entry_data, options=entry_options
