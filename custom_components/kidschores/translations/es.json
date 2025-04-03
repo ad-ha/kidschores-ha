@@ -624,7 +624,14 @@
           "reset_period": "Periodo de reinicio",
           "reset_grace_period": "Período de gracia de reinicio",
           "maintenance_rules": "Reglas de mantenimiento",
+          "reset_type": "Tipo de Reinicio",
+          "custom_reset_date": "Fecha de Reinicio Personalizada",
           "internal_id": "ID Interno"
+        },
+        "data_description": {
+          "custom_reset_date": "Define una fecha de reinicio personalizada si el tipo de reinicio está configurado en Custom.",
+          "reset_grace_period": "Define el período de gracia, en DÍAS, en el que los niños pueden mantener su insignia si alcanzan los puntos de mantenimiento mínimos.",
+          "maintenance_rules": "Puntos mínimos que se deben obtener durante el período de gracia para conservar la insignia."
         }
       },
       "edit_reward": {

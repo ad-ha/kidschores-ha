@@ -636,7 +636,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 )
                 if float(points) <= 0:
                     errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
-                        "Award points must be greater than 0 when award mode is {}.".format(
+                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM.format(
                             "points+reward"
                             if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
                             else "points"
@@ -651,7 +651,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 )
                 if not reward or reward == const.CONF_EMPTY:
                     errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
-                        "An award reward must be selected when award mode is {}.".format(
+                        const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION.format(
                             "points+reward"
                             if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
                             else "reward"
@@ -2051,7 +2051,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 )
                 if float(points) <= 0:
                     errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
-                        "Award points must be greater than 0 when award mode is {}.".format(
+                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM.format(
                             "points+reward"
                             if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
                             else "points"
@@ -2066,13 +2066,12 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 )
                 if not reward or reward == const.CONF_EMPTY:
                     errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
-                        "An award reward must be selected when award mode is {}.".format(
+                        const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION.format(
                             "points+reward"
                             if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
                             else "reward"
                         )
                     )
-
             if errors:
                 schema = fh.build_badge_cumulative_schema(
                     default=badge_data, rewards_list=rewards_options

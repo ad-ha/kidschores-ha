@@ -532,7 +532,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 ):
                     ent_reg.async_remove(entity_entry.entity_id)
                     const.LOGGER.debug(
-                        "DEBUG: Removed orphaned Achievement Progress sensor '%s'. Kid '%s' is not assigned to Achievement '%s'",
+                        "DEBUG: Removed orphaned Achievement Progress sensor '%s'. Kid ID '%s' is not assigned to Achievement '%s'",
                         entity_entry.entity_id,
                         kid_id,
                         achievement_id,
@@ -562,7 +562,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 ):
                     ent_reg.async_remove(entity_entry.entity_id)
                     const.LOGGER.debug(
-                        "DEBUG: Removed orphaned Challenge Progress sensor '%s'. Kid '%s' is not assigned to Challenge '%s'",
+                        "DEBUG: Removed orphaned Challenge Progress sensor '%s'. Kid ID '%s' is not assigned to Challenge '%s'",
                         entity_entry.entity_id,
                         kid_id,
                         challenge_id,
@@ -577,7 +577,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             ):
                 ent_reg.async_remove(entity_entry.entity_id)
                 const.LOGGER.debug(
-                    "DEBUG: Removed kid-specific entity '%s' for Kid '%s' and Chore '%s'",
+                    "DEBUG: Removed kid-specific entity '%s' for Kid ID '%s' and Chore '%s'",
                     entity_entry.entity_id,
                     kid_id,
                     chore_id,
@@ -594,7 +594,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if chore_id in kid.get(key, []):
                 kid[key] = [c for c in kid[key] if c != chore_id]
                 const.LOGGER.debug(
-                    "DEBUG: Removed Chore '%s' from Kid '%s' list '%s'",
+                    "DEBUG: Removed Chore '%s' from Kid ID '%s' list '%s'",
                     chore_id,
                     kid_id,
                     key,
@@ -605,7 +605,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if chore_id in kid.get(dict_key, {}):
                 kid[dict_key].pop(chore_id)
                 const.LOGGER.debug(
-                    "DEBUG: Removed Chore '%s' from Kid '%s' dict '%s'",
+                    "DEBUG: Removed Chore '%s' from Kid ID '%s' dict '%s'",
                     chore_id,
                     kid_id,
                     dict_key,
@@ -618,7 +618,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         ):
             kid[const.DATA_KID_CHORE_STREAKS].pop(chore_id)
             const.LOGGER.debug(
-                "DEBUG: Removed Chore Streak for Chore '%s' from Kid '%s'",
+                "DEBUG: Removed Chore Streak for Chore '%s' from Kid ID '%s'",
                 chore_id,
                 kid_id,
             )
@@ -675,7 +675,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 for kid in keys_to_remove:
                     del progress[kid]
                     const.LOGGER.debug(
-                        "DEBUG: Removed Progress for deleted Kid '%s' in '%s'",
+                        "DEBUG: Removed Progress for deleted Kid ID '%s' in '%s'",
                         kid,
                         section,
                     )
@@ -1129,7 +1129,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 assigned_kids_ids.append(kid_id)
             else:
                 const.LOGGER.warning(
-                    "WARNING: Chore '%s': Kid '%s' not found. Skipping assignment",
+                    "WARNING: Chore '%s': Kid ID '%s' not found. Skipping assignment",
                     chore_data.get(const.DATA_CHORE_NAME, chore_id),
                     kid_name,
                 )
@@ -1280,7 +1280,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 assigned_kids_ids.append(kid_id)
             else:
                 const.LOGGER.warning(
-                    "WARNING: Chore '%s': Kid '%s' not found. Skipping assignment",
+                    "WARNING: Chore '%s': Kid ID '%s' not found. Skipping assignment",
                     chore_data.get(const.DATA_CHORE_NAME, chore_id),
                     kid_name,
                 )
@@ -2623,7 +2623,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         delta = new_points - old_points
         if delta == const.DEFAULT_ZERO:
             const.LOGGER.debug(
-                "DEBUG: Kid Points - No change for kid '%s'. Skipping updates", kid_id
+                "DEBUG: Kid Points - No change for Kid ID '%s'. Skipping updates",
+                kid_id,
             )
             return
 
@@ -4861,7 +4862,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
             if bonus_id not in kid_info.get(const.DATA_KID_BONUS_APPLIES, {}):
                 const.LOGGER.error(
-                    "ERROR: Reset Bonuses - Bonus '%s' does not apply to kid '%s'.",
+                    "ERROR: Reset Bonuses - Bonus '%s' does not apply to Kid ID '%s'.",
                     bonus_id,
                     kid_id,
                 )

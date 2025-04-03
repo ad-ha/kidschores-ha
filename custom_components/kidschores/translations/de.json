@@ -624,7 +624,14 @@
           "reset_period": "Zurücksetzintervall",
           "reset_grace_period": "Schonfrist",
           "maintenance_rules": "Wartungsregeln",
+          "reset_type": "Art des Zurücksetzens",
+          "custom_reset_date": "Benutzerdefiniertes Zurücksetzdatum",
           "internal_id": "Interne ID"
+        },
+        "data_description": {
+          "custom_reset_date": "Definieren Sie ein benutzerdefiniertes Zurücksetzdatum, wenn der Reset-Typ auf Benutzerdefiniert steht.",
+          "reset_grace_period": "Definieren Sie die Schonfrist (in TAGEN), in der das Kind das Abzeichen behalten kann, \nwenn es die erforderlichen Punkte erreicht.",
+          "maintenance_rules": "Minimale Punkte, die innerhalb der Schonfrist erreicht werden müssen, um das Abzeichen zu behalten."
         }
       },
       "edit_reward": {
