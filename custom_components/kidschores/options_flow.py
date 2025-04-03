@@ -601,6 +601,16 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         errors = {}
         badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
 
+        rewards_options = [
+            {
+                "value": reward_id,
+                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
+            }
+            for reward_id, reward in self._entry_options.get(
+                const.CONF_REWARDS, {}
+            ).items()
+        ]
+
         if user_input is not None:
             award_mode = user_input.get(
                 const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
@@ -615,6 +625,88 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
                 user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             # (If award mode is points + reward leave both fields)
+
+            # Validate award/reward values.
+            if award_mode in (
+                const.CFOF_BADGES_INPUT_AWARD_POINTS,
+                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
+            ):
+                points = user_input.get(
+                    const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
+                )
+                if float(points) <= 0:
+                    errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
+                        "Award points must be greater than 0 when award mode is {}.".format(
+                            "points+reward"
+                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
+                            else "points"
+                        )
+                    )
+            if award_mode in (
+                const.CFOF_BADGES_INPUT_AWARD_REWARD,
+                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
+            ):
+                reward = user_input.get(
+                    const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
+                )
+                if not reward or reward == const.CONF_EMPTY:
+                    errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
+                        "An award reward must be selected when award mode is {}.".format(
+                            "points+reward"
+                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
+                            else "reward"
+                        )
+                    )
+
+            if errors:
+                schema = fh.build_badge_cumulative_schema(
+                    default=user_input, rewards_list=rewards_options
+                )
+                return self.async_show_form(
+                    step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE_CUMULATIVE,
+                    data_schema=schema,
+                    errors=errors,
+                )
+
+            periodic_reset = user_input.get(
+                const.CFOF_BADGES_INPUT_RESET_PERIODICALLY, False
+            )
+            if periodic_reset:
+                # If periodic reset is enabled, the reset type must not be None or CONF_NONE.
+                reset_type = user_input.get(const.CFOF_BADGES_INPUT_RESET_TYPE)
+                if reset_type in (None, const.CONF_NONE):
+                    errors[const.CFOF_BADGES_INPUT_RESET_TYPE] = (
+                        "Reset type is required when periodic reset is enabled."
+                    )
+                # Additionally, if the reset type is custom then custom reset date must be provided.
+                elif reset_type == const.CONF_CUSTOM:
+                    custom_reset_date = user_input.get(
+                        const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE
+                    )
+                    if custom_reset_date in (None, const.CONF_NONE):
+                        errors[const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE] = (
+                            "Custom reset date is required when reset type is custom."
+                        )
+            else:
+                # Clean non‑applicable fields when periodic reset is not enabled.
+                user_input[const.CFOF_BADGES_INPUT_RESET_TYPE] = const.CONF_NONE
+                user_input[const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE] = const.CONF_NONE
+                user_input[const.CFOF_BADGES_INPUT_RESET_GRACE_PERIOD] = (
+                    const.DEFAULT_ZERO
+                )
+                user_input[const.CFOF_BADGES_INPUT_MAINTENANCE_RULES] = (
+                    const.DEFAULT_ZERO
+                )
+
+            if errors:
+                schema = fh.build_badge_cumulative_schema(
+                    default=user_input, rewards_list=rewards_options
+                )
+                return self.async_show_form(
+                    step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE_CUMULATIVE,
+                    data_schema=schema,
+                    errors=errors,
+                )
 
             badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
             internal_id = user_input.get(
@@ -683,16 +775,6 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 )
                 await self._update_and_reload()
                 return await self.async_step_init()
-
-        rewards_options = [
-            {
-                "value": reward_id,
-                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-            }
-            for reward_id, reward in self._entry_options.get(
-                const.CONF_REWARDS, {}
-            ).items()
-        ]
 
         schema = fh.build_badge_cumulative_schema(
             default=user_input, rewards_list=rewards_options
@@ -1934,6 +2016,16 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         errors = {}
 
+        rewards_options = [
+            {
+                "value": reward_id,
+                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
+            }
+            for reward_id, reward in self._entry_options.get(
+                const.CONF_REWARDS, {}
+            ).items()
+        ]
+
         if user_input is not None:
             award_mode = user_input.get(
                 const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
@@ -1948,6 +2040,48 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
                 user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             # (If award mode is points + reward leave both fields)
+
+            # Validate award/reward values.
+            if award_mode in (
+                const.CFOF_BADGES_INPUT_AWARD_POINTS,
+                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
+            ):
+                points = user_input.get(
+                    const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
+                )
+                if float(points) <= 0:
+                    errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
+                        "Award points must be greater than 0 when award mode is {}.".format(
+                            "points+reward"
+                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
+                            else "points"
+                        )
+                    )
+            if award_mode in (
+                const.CFOF_BADGES_INPUT_AWARD_REWARD,
+                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
+            ):
+                reward = user_input.get(
+                    const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
+                )
+                if not reward or reward == const.CONF_EMPTY:
+                    errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
+                        "An award reward must be selected when award mode is {}.".format(
+                            "points+reward"
+                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
+                            else "reward"
+                        )
+                    )
+
+            if errors:
+                schema = fh.build_badge_cumulative_schema(
+                    default=badge_data, rewards_list=rewards_options
+                )
+                return self.async_show_form(
+                    step_id=const.OPTIONS_FLOW_STEP_EDIT_BADGE,
+                    data_schema=schema,
+                    errors=errors,
+                )
 
             new_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
             if any(
@@ -1987,6 +2121,48 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
                 # Update type-specific fields:
                 if badge_type == const.BADGE_TYPE_CUMULATIVE:
+                    periodic_reset = user_input.get(
+                        const.CFOF_BADGES_INPUT_RESET_PERIODICALLY, False
+                    )
+                    if periodic_reset:
+                        # If periodic reset is enabled, the reset type must not be None or CONF_NONE.
+                        reset_type = user_input.get(const.CFOF_BADGES_INPUT_RESET_TYPE)
+                        if reset_type in (None, const.CONF_NONE):
+                            errors[const.CFOF_BADGES_INPUT_RESET_TYPE] = (
+                                "Reset type is required when periodic reset is enabled."
+                            )
+                        # Additionally, if the reset type is custom then custom reset date must be provided.
+                        elif reset_type == const.CONF_CUSTOM:
+                            custom_reset_date = user_input.get(
+                                const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE
+                            )
+                            if custom_reset_date in (None, const.CONF_NONE):
+                                errors[const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE] = (
+                                    "Custom reset date is required when reset type is custom."
+                                )
+                    else:
+                        # Clean non‑applicable fields when periodic reset is not enabled.
+                        user_input[const.CFOF_BADGES_INPUT_RESET_TYPE] = const.CONF_NONE
+                        user_input[const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE] = (
+                            const.CONF_NONE
+                        )
+                        user_input[const.CFOF_BADGES_INPUT_RESET_GRACE_PERIOD] = (
+                            const.DEFAULT_ZERO
+                        )
+                        user_input[const.CFOF_BADGES_INPUT_MAINTENANCE_RULES] = (
+                            const.DEFAULT_ZERO
+                        )
+
+                    if errors:
+                        schema = fh.build_badge_cumulative_schema(
+                            default=badge_data, rewards_list=rewards_options
+                        )
+                        return self.async_show_form(
+                            step_id=const.OPTIONS_FLOW_STEP_EDIT_BADGE,
+                            data_schema=schema,
+                            errors=errors,
+                        )
+
                     badge_data[const.DATA_BADGE_THRESHOLD_VALUE] = user_input.get(
                         const.CFOF_BADGES_INPUT_THRESHOLD_VALUE,
                         badge_data.get(const.DATA_BADGE_THRESHOLD_VALUE),
@@ -2145,19 +2321,12 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         # Build the schema based on badge_type:
         if badge_type == const.BADGE_TYPE_CUMULATIVE:
-            schema = fh.build_badge_cumulative_schema(default=badge_data)
+            schema = fh.build_badge_cumulative_schema(
+                default=badge_data, rewards_list=rewards_options
+            )
         elif badge_type == const.BADGE_TYPE_DAILY:
             schema = fh.build_badge_daily_schema(default=badge_data)
         elif badge_type == const.BADGE_TYPE_PERIODIC:
-            rewards_options = [
-                {
-                    "value": reward_id,
-                    "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-                }
-                for reward_id, reward in self._entry_options.get(
-                    const.CONF_REWARDS, {}
-                ).items()
-            ]
             chores_options = [
                 {
                     "value": chore_id,
@@ -2182,15 +2351,6 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     const.CONF_ACHIEVEMENTS, {}
                 ).items()
             ]
-            rewards_options = [
-                {
-                    "value": reward_id,
-                    "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-                }
-                for reward_id, reward in self._entry_options.get(
-                    const.CONF_REWARDS, {}
-                ).items()
-            ]
             schema = fh.build_badge_achievement_schema(
                 default=badge_data,
                 achievements_list=achievements_options,
@@ -2206,37 +2366,21 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     const.CONF_CHALLENGES, {}
                 ).items()
             ]
-            rewards_options = [
-                {
-                    "value": reward_id,
-                    "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-                }
-                for reward_id, reward in self._entry_options.get(
-                    const.CONF_REWARDS, {}
-                ).items()
-            ]
             schema = fh.build_badge_challenge_schema(
                 default=badge_data,
                 challenges_list=challenges_options,
                 rewards_list=rewards_options,
             )
         elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
-            rewards_options = [
-                {
-                    "value": reward_id,
-                    "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-                }
-                for reward_id, reward in self._entry_options.get(
-                    const.CONF_REWARDS, {}
-                ).items()
-            ]
             schema = fh.build_badge_special_occasions_schema(
                 default=badge_data,
                 rewards_list=rewards_options,
                 kids_dict=kids_dict,
             )
         else:
-            schema = fh.build_badge_cumulative_schema(default=badge_data)
+            schema = fh.build_badge_cumulative_schema(
+                default=badge_data, rewards_list=rewards_options
+            )
 
         return self.async_show_form(
             step_id=const.OPTIONS_FLOW_STEP_EDIT_BADGE,

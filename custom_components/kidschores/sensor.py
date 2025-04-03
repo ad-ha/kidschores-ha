@@ -767,12 +767,6 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
         badge_type = badge_info.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
         if badge_type == const.BADGE_TYPE_DAILY:
             return badge_info.get(const.DATA_BADGE_DAILY_THRESHOLD, const.DEFAULT_ZERO)
-        elif badge_type in (
-            const.BADGE_TYPE_ACHIEVEMENT_LINKED,
-            const.BADGE_TYPE_CHALLENGE_LINKED,
-            const.BADGE_TYPE_SPECIAL_OCCASION,
-        ):
-            return badge_info.get(const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_ZERO)
         else:
             return badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO)
 
@@ -846,6 +840,8 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
             const.ATTR_DESCRIPTION: description,
             const.ATTR_KIDS_EARNED: kids_earned_names,
             const.ATTR_LABELS: friendly_labels,
+            const.ATTR_BADGE_TYPE: badge_type,
+            const.ATTR_BADGE_AWARD_MODE: award_mode,
         }
 
         if award_mode in (

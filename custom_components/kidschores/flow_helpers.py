@@ -310,9 +310,9 @@ def build_chore_schema(kids_dict, default=None):
 def build_badge_cumulative_schema(default: dict = None, rewards_list: list = None):
     """Build schema for cumulative badges (by points or chore count)."""
     default = default or {}
-    rewards_list = [
-        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + rewards_list
+    rewards_list = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}] + (
+        rewards_list or []
+    )
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     return vol.Schema(
@@ -397,18 +397,23 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
             # Following fields are used only when periodic reset is enabled.
             vol.Optional(
                 const.CONF_BADGE_RESET_TYPE,
-                default=default.get(const.CONF_BADGE_RESET_TYPE, const.CONF_YEAR_END),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.BADGE_CUMULATIVE_RESET_TYPE_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_RESET_PERIOD,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
+                default=default.get(const.CONF_BADGE_RESET_TYPE, const.CONF_NONE),
+            ): vol.Any(
+                None,
+                selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=const.BADGE_CUMULATIVE_RESET_TYPE_OPTIONS,
+                        translation_key=const.TRANS_KEY_FLOW_HELPERS_RESET_PERIOD,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
+                ),
             ),
             vol.Optional(
                 const.CONF_BADGE_CUSTOM_RESET_DATE,
-                default=default.get(const.CONF_BADGE_CUSTOM_RESET_DATE),
-            ): selector.DateSelector(),
+                default=default.get(
+                    const.CONF_BADGE_CUSTOM_RESET_DATE, const.CONF_NONE
+                ),
+            ): vol.Any(None, selector.DateSelector()),
             vol.Optional(
                 const.CONF_BADGE_RESET_GRACE_PERIOD,
                 default=default.get(
