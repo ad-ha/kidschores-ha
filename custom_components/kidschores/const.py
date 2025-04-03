@@ -401,7 +401,6 @@ CONF_BADGE_PERIODIC_RECURRENT = "recurrent"
 CONF_BADGE_POINTS_MULTIPLIER = "points_multiplier"
 CONF_BADGE_REQUIRED_CHORES = "required_chores"
 CONF_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"
-CONF_BADGE_RESET_PERIOD = "reset_period"
 CONF_BADGE_RESET_PERIODICALLY = "reset_periodically"
 CONF_BADGE_RESET_SCHEDULE = "reset_schedule"
 CONF_BADGE_RESET_TYPE = "reset_type"
@@ -607,7 +606,6 @@ DATA_BADGE_POINTS_MULTIPLIER = "points_multiplier"
 DATA_BADGE_REQUIRED_CHORES = "required_chores"
 DATA_BADGE_RESET_CRITERIA = "reset_criteria"
 DATA_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"
-DATA_BADGE_RESET_PERIOD = "reset_period"
 DATA_BADGE_RESET_PERIODICALLY = "reset_periodically"
 DATA_BADGE_RESET_SCHEDULE = "reset_schedule"
 DATA_BADGE_RESET_TYPE = "reset_type"
@@ -1167,8 +1165,21 @@ TRANS_KEY_CFOF_DUPLICATE_PENALTY = "duplicate_penalty"
 TRANS_KEY_CFOF_DUPLICATE_REWARD = "duplicate_reward"
 TRANS_KEY_CFOF_END_DATE_IN_PAST = "end_date_in_past"
 TRANS_KEY_CFOF_END_DATE_NOT_AFTER_START_DATE = "end_date_not_after_start_date"
+TRANS_KEY_CFOF_ERROR_ASSIGNED_KIDS = "At least one kid must be assigned."
 TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM = (
     "Award points must be greater than 0 when award mode is {}."
+)
+TRANS_KEY_CFOF_ERROR_BADGE_CUSTOM_RESET_DATE_REQUIRED = (
+    "Custom reset date is required when reset type is custom."
+)
+TRANS_KEY_CFOF_ERROR_BADGE_END_DATE_REQUIRED = (
+    "End date is required when reset schedule is custom."
+)
+TRANS_KEY_CFOF_ERROR_BADGE_RESET_TYPE_REQUIRED = (
+    "Reset type is required when periodic reset is enabled."
+)
+TRANS_KEY_CFOF_ERROR_BADGE_START_DATE_REQUIRED = (
+    "Start date is required when reset schedule is custom."
 )
 TRANS_KEY_CFOF_ERROR_REWARD_SELECTION = (
     "An award reward must be selected when award mode is {}."

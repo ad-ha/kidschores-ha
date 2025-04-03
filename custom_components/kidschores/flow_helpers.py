@@ -444,9 +444,9 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
 def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
     """Build schema for daily badges that reset every day."""
     default = default or {}
-    rewards_list = [
-        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + rewards_list
+    rewards_list = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}] + (
+        rewards_list or []
+    )
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     return vol.Schema(
@@ -537,8 +537,10 @@ def build_badge_periodic_schema(
 
     rewards_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + rewards_list
-    chores_list = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}] + chores_list
+    ] + rewards_list or []
+    chores_list = [
+        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
+    ] + chores_list or []
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
 
     return vol.Schema(
@@ -571,11 +573,11 @@ def build_badge_periodic_schema(
             vol.Optional(
                 const.CONF_BADGE_START_DATE,
                 default=default.get(const.CONF_BADGE_START_DATE, None),
-            ): selector.DateSelector(),
+            ): vol.Any(None, selector.DateSelector()),
             vol.Optional(
                 const.CONF_BADGE_END_DATE,
                 default=default.get(const.CONF_BADGE_END_DATE, None),
-            ): selector.DateSelector(),
+            ): vol.Any(None, selector.DateSelector()),
             vol.Optional(
                 const.CONF_BADGE_PERIODIC_RECURRENT,
                 default=default.get(const.CONF_BADGE_PERIODIC_RECURRENT, False),
@@ -660,10 +662,10 @@ def build_badge_achievement_schema(
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
     achievements_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + achievements_list
+    ] + achievements_list or []
     rewards_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + rewards_list
+    ] + rewards_list or []
 
     return vol.Schema(
         {
@@ -740,10 +742,10 @@ def build_badge_challenge_schema(
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
     challenges_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + challenges_list
+    ] + challenges_list or []
     rewards_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + rewards_list
+    ] + rewards_list or []
 
     return vol.Schema(
         {
@@ -820,7 +822,7 @@ def build_badge_special_occasions_schema(
     internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
     rewards_list = [
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + rewards_list
+    ] + rewards_list or []
 
     kids_options = [
         {"value": kid_id, "label": kid_name} for kid_name, kid_id in kids_dict.items()
