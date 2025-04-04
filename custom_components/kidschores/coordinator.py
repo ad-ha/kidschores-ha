@@ -171,12 +171,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         average_points = (total_points / count) if count > 0 else const.DEFAULT_POINTS
 
         # Process each badge.
+
+        #### *** CLS - This needs additional review.  It was continually running on all badges, but I'm not sure if badge type can be set to "cumulative" or mark already migrated chores *** ####
+
         for badge in badges.values():
             # Check if the badge uses the legacy "chore_count" threshold type.
-            if (
-                badge.get(const.DATA_BADGE_THRESHOLD_TYPE)
-                == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT
-            ):
+            if badge.get(
+                const.DATA_BADGE_THRESHOLD_TYPE
+            ) == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT and badge.get(
+                const.DATA_BADGE_TYPE
+            ) in (None, "", "unavailable"):
                 old_threshold = badge.get(
                     const.DATA_BADGE_THRESHOLD_VALUE,
                     const.DEFAULT_BADGE_THRESHOLD_VALUE,
@@ -193,9 +197,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
                 # Set reset-related fields to empty and disable periodic resets.
                 badge[const.DATA_BADGE_RESET_PERIODICALLY] = False
-                badge[const.DATA_BADGE_RESET_PERIOD] = const.CONF_EMPTY
-                badge[const.DATA_BADGE_RESET_GRACE_PERIOD] = const.CONF_EMPTY
-                badge[const.DATA_BADGE_MAINTENANCE_RULES] = const.CONF_EMPTY
+                badge[const.DATA_BADGE_RESET_TYPE] = const.CONF_NONE
+                badge[const.DATA_BADGE_RESET_GRACE_PERIOD] = (
+                    const.DEFAULT_BADGE_RESET_GRACE_PERIOD
+                )
+                badge[const.DATA_BADGE_MAINTENANCE_RULES] = (
+                    const.DEFAULT_BADGE_MAINTENANCE_THRESHOLD
+                )
 
                 const.LOGGER.info(
                     "INFO: Legacy Chore Count Badge '%s' migrated: Old threshold %s -> New threshold %s (average_points=%.2f)",
@@ -3025,6 +3033,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             continue
 
                         # Now both start_date and end_date are aware UTC datetimes.
+
+                        ### **** CLS - It doesn't look like this is respecting time zone **** ###
+
                         if now < start_date or now > end_date:
                             if now > end_date and is_recurrent:
                                 period_delta = end_date - start_date

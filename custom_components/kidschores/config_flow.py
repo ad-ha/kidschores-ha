@@ -530,6 +530,68 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                 user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
             # (If award mode is points + reward leave both fields)
 
+            # Validate award/reward values.
+            if award_mode in (
+                const.CFOF_BADGES_INPUT_AWARD_POINTS,
+                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
+            ):
+                points = user_input.get(
+                    const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
+                )
+                if float(points) <= 0:
+                    errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
+                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM.format(
+                            "points+reward"
+                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
+                            else "points"
+                        )
+                    )
+            if award_mode in (
+                const.CFOF_BADGES_INPUT_AWARD_REWARD,
+                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
+            ):
+                reward = user_input.get(
+                    const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
+                )
+                if not reward or reward == const.CONF_EMPTY:
+                    errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
+                        const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION.format(
+                            "points+reward"
+                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
+                            else "reward"
+                        )
+                    )
+
+            periodic_reset = user_input.get(
+                const.CFOF_BADGES_INPUT_RESET_PERIODICALLY, False
+            )
+            if periodic_reset:
+                # If periodic reset is enabled, the reset type must not be None or CONF_NONE.
+                reset_type = user_input.get(const.CFOF_BADGES_INPUT_RESET_TYPE)
+                if reset_type in (None, const.CONF_NONE):
+                    errors[const.CFOF_BADGES_INPUT_RESET_TYPE] = (
+                        const.TRANS_KEY_CFOF_ERROR_BADGE_RESET_TYPE_REQUIRED
+                    )
+                # Additionally, if the reset type is custom then custom reset date must be provided.
+                elif reset_type == const.CONF_CUSTOM:
+                    custom_reset_date = user_input.get(
+                        const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE
+                    )
+                    if custom_reset_date in (None, const.CONF_NONE):
+                        errors[const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE] = (
+                            const.TRANS_KEY_CFOF_ERROR_BADGE_CUSTOM_RESET_DATE_REQUIRED
+                        )
+            else:
+                # Clean non‑applicable fields when periodic reset is not enabled.
+                user_input[const.CFOF_BADGES_INPUT_RESET_TYPE] = const.CONF_NONE
+                user_input[const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE] = const.CONF_NONE
+                user_input[const.CFOF_BADGES_INPUT_RESET_GRACE_PERIOD] = (
+                    const.DEFAULT_ZERO
+                )
+                user_input[const.CFOF_BADGES_INPUT_MAINTENANCE_RULES] = (
+                    const.DEFAULT_ZERO
+                )
+
             badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
             internal_id = user_input.get(
                 const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
@@ -546,7 +608,8 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                 errors[const.CFOP_ERROR_BADGE_NAME] = (
                     const.TRANS_KEY_CFOF_DUPLICATE_BADGE
                 )
-            else:
+
+            if not errors:
                 self._badges_temp[internal_id] = {
                     const.DATA_BADGE_NAME: badge_name,
                     const.DATA_BADGE_DESCRIPTION: user_input.get(
