@@ -403,7 +403,7 @@ def build_badge_cumulative_schema(default: dict = None, rewards_list: list = Non
                 selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=const.BADGE_CUMULATIVE_RESET_TYPE_OPTIONS,
-                        translation_key=const.TRANS_KEY_FLOW_HELPERS_RESET_PERIOD,
+                        translation_key=const.TRANS_KEY_FLOW_HELPERS_RESET_TYPE,
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),

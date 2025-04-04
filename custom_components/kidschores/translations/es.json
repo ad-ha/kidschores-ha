@@ -621,10 +621,9 @@
           "daily_threshold": "Valor del umbral diario",
           "points_multiplier": "Multiplicador de puntos",
           "reset_periodically": "Reiniciar periódicamente",
-          "reset_period": "Periodo de reinicio",
+          "reset_type": "Periodo de reinicio",
           "reset_grace_period": "Período de gracia de reinicio",
           "maintenance_rules": "Reglas de mantenimiento",
-          "reset_type": "Tipo de Reinicio",
           "custom_reset_date": "Fecha de Reinicio Personalizada",
           "internal_id": "ID Interno"
         },
@@ -864,7 +863,7 @@
         "award_points_reward": "Puntos y Recompensa"
       }
     },
-    "reset_period": {
+    "reset_type": {
       "options": {
         "year_end": "Fin de año",
         "quarter": "Trimestral",
