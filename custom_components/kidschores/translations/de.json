@@ -867,7 +867,10 @@
     "reset_period": {
       "options": {
         "year_end": "Jahresende",
-        "custom": "Benutzerdefiniert"
+        "quarter": "Vierteljährlich",
+        "monthly": "Monatlich",
+        "custom_1_year": "Benutzerdefinierter: 1-Jahres-Periode",
+        "custom_1_month": "Benutzerdefinierter: 1-Monats-Zeitrau"
       }
     },
     "recurring_frequency": {

@@ -40,6 +40,11 @@ STORAGE_MANAGER = "storage_manager"
 STORAGE_KEY = "kidschores_data"
 STORAGE_VERSION = 1
 
+# Migration Flags
+MIGRATION_PERFORMED = "migration_performed"
+MIGRATION_KEY_VERSION = "migration_key_version"
+MIGRATION_KEY_VERSION_NUMBER = 40
+
 # Update Interval
 DEFAULT_UPDATE_INTERVAL = 5
 
@@ -318,6 +323,8 @@ CONF_BIWEEKLY = "biweekly"
 CONF_CALENDAR_SHOW_PERIOD = "calendar_show_period"
 CONF_COST = "cost"
 CONF_CUSTOM = "custom"
+CONF_CUSTOM_1_MONTH = "custom_1_month"
+CONF_CUSTOM_1_YEAR = "custom_1_year"
 CONF_DAYS = "days"
 CONF_DESCRIPTION = "description"
 CONF_DOT = "."
@@ -334,6 +341,7 @@ CONF_NONE_TEXT = "None"
 CONF_POINTS = "points"
 CONF_QUARTER = "quarter"
 CONF_SHARED_CHORE = "shared_chore"
+CONF_UNAVAILABLE = "unavailable"
 CONF_UNKNOWN = "Unknown"
 CONF_VALUE = "value"
 CONF_WEEKS = "weeks"
@@ -401,7 +409,6 @@ CONF_BADGE_PERIODIC_RECURRENT = "recurrent"
 CONF_BADGE_POINTS_MULTIPLIER = "points_multiplier"
 CONF_BADGE_REQUIRED_CHORES = "required_chores"
 CONF_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"
-CONF_BADGE_RESET_PERIOD = "reset_period"
 CONF_BADGE_RESET_PERIODICALLY = "reset_periodically"
 CONF_BADGE_RESET_SCHEDULE = "reset_schedule"
 CONF_BADGE_RESET_TYPE = "reset_type"
@@ -526,6 +533,7 @@ DATA_KID_OVERALL_CHORE_STREAK = "overall_chore_streak"
 DATA_KID_PENALTY_APPLIES = "penalty_applies"
 DATA_KID_PENDING_REWARDS = "pending_rewards"
 DATA_KID_PERIODIC_BADGE_POINTS = "periodic_badge_points"
+DATA_KID_PERIODIC_BADGE_PROGRESS = "periodic_badge_progress"
 DATA_KID_PERIODIC_BADGE_SUCCESS = "periodic_badge_success"
 DATA_KID_POINTS = "points"
 DATA_KID_POINTS_EARNED_MONTHLY = "points_earned_monthly"
@@ -607,7 +615,6 @@ DATA_BADGE_POINTS_MULTIPLIER = "points_multiplier"
 DATA_BADGE_REQUIRED_CHORES = "required_chores"
 DATA_BADGE_RESET_CRITERIA = "reset_criteria"
 DATA_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"
-DATA_BADGE_RESET_PERIOD = "reset_period"
 DATA_BADGE_RESET_PERIODICALLY = "reset_periodically"
 DATA_BADGE_RESET_SCHEDULE = "reset_schedule"
 DATA_BADGE_RESET_TYPE = "reset_type"
@@ -1407,7 +1414,8 @@ BADGE_CUMULATIVE_RESET_TYPE_OPTIONS = [
     {"value": CONF_YEAR_END, "label": "Year-End"},
     {"value": CONF_QUARTER, "label": "Quarterly"},
     {"value": CONF_MONTHLY, "label": "Monthly"},
-    {"value": CONF_CUSTOM, "label": "Custom"},
+    {"value": CONF_CUSTOM_1_YEAR, "label": "Custom 1-Year"},
+    {"value": CONF_CUSTOM_1_MONTH, "label": "Custom 1-Month"},
 ]
 
 # Badge Reset Period

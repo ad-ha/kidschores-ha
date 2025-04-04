@@ -180,7 +180,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.DATA_BADGE_THRESHOLD_TYPE
             ) == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT and badge.get(
                 const.DATA_BADGE_TYPE
-            ) in (None, const.CONF_EMPTY, "unavailable"):
+            ) in (None, const.CONF_EMPTY, const.CONF_UNAVAILABLE):
                 old_threshold = badge.get(
                     const.DATA_BADGE_THRESHOLD_VALUE,
                     const.DEFAULT_BADGE_THRESHOLD_VALUE,
@@ -251,14 +251,32 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if stored_data:
             self._data = stored_data
 
-            # Migrate any datetime fields in stored data to UTC-aware strings
-            self._migrate_stored_datetimes()
+            # Run migrations only if not done before
+            current_version = const.MIGRATION_KEY_VERSION_NUMBER
+            stored_version = self._data.get(
+                const.MIGRATION_KEY_VERSION, const.DEFAULT_ZERO
+            )
+            if (not self._data.get(const.MIGRATION_PERFORMED, False)) or (
+                stored_version < current_version
+            ):
+                # Migrate any datetime fields in stored data to UTC-aware strings
+                self._migrate_stored_datetimes()
 
-            # Migrate chore data and add new fields
-            self._migrate_chore_data()
+                # Migrate chore data and add new fields
+                self._migrate_chore_data()
 
-            #  Migrate Badge Data for Legacy Badges
-            self._migrate_badges()
+                #  Migrate Badge Data for Legacy Badges
+                self._migrate_badges()
+
+                # Flag migrations as done
+                self._data[const.MIGRATION_PERFORMED] = True
+                self._data[const.MIGRATION_KEY_VERSION] = current_version
+
+            else:
+                const.LOGGER.debug(
+                    "DEBUG: Data migration to version '%s' already performed. Skipping migration.",
+                    current_version,
+                )
 
         else:
             self._data = {
@@ -274,6 +292,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.DATA_PENDING_CHORE_APPROVALS: [],
                 const.DATA_PENDING_REWARD_APPROVALS: [],
             }
+            self._data[const.MIGRATION_PERFORMED] = True
 
         if not isinstance(self._data.get(const.DATA_PENDING_CHORE_APPROVALS), list):
             self._data[const.DATA_PENDING_CHORE_APPROVALS] = []
@@ -873,7 +892,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     # -------------------------------------------------------------------------------------
     # Create/Update Entities
-    # (Kids, Parents, Chores, Badges, Rewards, Penalties, Achievements and Challenges)
+    # (Kids, Parents, Chores, Badges, Rewards, Penalties, Bonus, Achievements and Challenges)
     # -------------------------------------------------------------------------------------
 
     # -- Kids
@@ -955,6 +974,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_KID_LAST_CHORE_DATE: None,
             const.DATA_KID_OVERDUE_CHORES: [],
             const.DATA_KID_OVERDUE_NOTIFICATIONS: {},
+            const.DATA_KID_PERIODIC_BADGE_PROGRESS: {},
         }
 
         self._normalize_kid_lists(self._data[const.DATA_KIDS][kid_id])
@@ -1043,6 +1063,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         kid_info.setdefault(const.DATA_KID_LAST_CHORE_DATE, None)
         kid_info.setdefault(const.DATA_KID_OVERDUE_CHORES, [])
         kid_info.setdefault(const.DATA_KID_OVERDUE_NOTIFICATIONS, {})
+        kid_info.setdefault(const.DATA_KID_PERIODIC_BADGE_PROGRESS, {})
 
         self._normalize_kid_lists(self._data[const.DATA_KIDS][kid_id])
 
@@ -2187,6 +2208,17 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         kid_info = self.kids_data.get(kid_id)
 
+        for badge_id, badge in self.badges_data.items():
+            if badge.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_PERIODIC:
+                # If periodic badge defines required chores, update if this chore is required.
+                required_chores = badge.get(const.DATA_BADGE_REQUIRED_CHORES, [])
+                if required_chores and chore_id in required_chores:
+                    # Increment the progress counter specifically for this badge
+                    progress = kid_info.setdefault(
+                        const.DATA_KID_PERIODIC_BADGE_PROGRESS, {}
+                    )
+                    progress[badge_id] = progress.get(badge_id, 0) + 1
+
         allow_multiple = chore_info.get(
             const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY, False
         )
@@ -2928,6 +2960,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
                 now = dt_util.utcnow()
 
+                required_chores = badge.get(const.DATA_BADGE_REQUIRED_CHORES, [])
+
+                if required_chores:
+                    # Use the separate progress counter for required chores
+                    progress = kid_info.get(
+                        const.DATA_KID_PERIODIC_BADGE_PROGRESS, {}
+                    ).get(badge_id, 0)
+                    if progress >= threshold:
+                        self._award_badge(kid_id, badge_id)
+
                 if reset_schedule in [
                     const.CONF_WEEKLY,
                     const.CONF_MONTHLY,
@@ -3448,14 +3490,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 second=const.DEFAULT_YEAR_END_SECOND,
             )
 
-        elif reset_type == const.CONF_CUSTOM and custom_reset_date:
-            expected_reset = dt_util.parse_datetime(custom_reset_date)
-
-            if expected_reset and expected_reset.tzinfo is None:
-                local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
-                expected_reset = expected_reset.replace(tzinfo=local_tz)
-
-            expected_reset = dt_util.as_local(expected_reset)
+        elif reset_type in (const.CONF_CUSTOM_1_YEAR, const.CONF_CUSTOM_1_MONTH):
+            if custom_reset_date:
+                expected_reset = dt_util.parse_datetime(custom_reset_date)
+                if expected_reset and expected_reset.tzinfo is None:
+                    local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
+                    expected_reset = expected_reset.replace(tzinfo=local_tz)
+                expected_reset = dt_util.as_local(expected_reset)
+            else:
+                # Fallback: if no custom date stored, default to now
+                expected_reset = now_local
 
         else:
             expected_reset = now_local
@@ -3485,6 +3529,23 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     + cycle_points
                 )
                 kid_info[const.DATA_KID_CUMULATIVE_EARNED_POINTS] = const.DEFAULT_ZERO
+
+                # Update custom reset date based on the selected option.
+                if reset_type == const.CONF_CUSTOM_1_YEAR:
+                    new_reset_date = self._add_months(expected_reset, 12)
+                elif reset_type == const.CONF_CUSTOM_1_MONTH:
+                    new_reset_date = self._add_months(expected_reset, 1)
+                else:
+                    new_reset_date = expected_reset  # fallback
+
+                badge[const.DATA_BADGE_CUSTOM_RESET_DATE] = new_reset_date.isoformat()
+
+                const.LOGGER.info(
+                    "INFO: Cumulative Badge '%s' rescheduled. New custom reset date %s",
+                    badge.get(const.DATA_BADGE_NAME),
+                    new_reset_date.isoformat(),
+                )
+
                 return True
 
             else:

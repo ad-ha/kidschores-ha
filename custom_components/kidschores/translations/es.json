@@ -866,8 +866,11 @@
     },
     "reset_period": {
       "options": {
-        "year_end": "Fin de Año",
-        "custom": "Personalizado"
+        "year_end": "Fin de año",
+        "quarter": "Trimestral",
+        "monthly": "Mensual",
+        "custom_1_year": "Período personalizado: de 1 año",
+        "custom_1_month": "Período personalizado: de 1 mes"
       }
     },
     "recurring_frequency": {

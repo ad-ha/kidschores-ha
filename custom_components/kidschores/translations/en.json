@@ -867,7 +867,10 @@
     "reset_period": {
       "options": {
         "year_end": "Year-End",
-        "custom": "Custom"
+        "quarter": "Quarterly",
+        "monthly": "Monthly",
+        "custom_1_year": "Custom: 1-Year Period",
+        "custom_1_month": "Custom: 1-Month Period"
       }
     },
     "recurring_frequency": {
