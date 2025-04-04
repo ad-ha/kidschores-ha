@@ -180,7 +180,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.DATA_BADGE_THRESHOLD_TYPE
             ) == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT and badge.get(
                 const.DATA_BADGE_TYPE
-            ) in (None, "", "unavailable"):
+            ) in (None, const.CONF_EMPTY, "unavailable"):
                 old_threshold = badge.get(
                     const.DATA_BADGE_THRESHOLD_VALUE,
                     const.DEFAULT_BADGE_THRESHOLD_VALUE,
@@ -3533,7 +3533,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         cumulative_badges.sort(
             key=lambda badge: badge.get(
-                const.CONF_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
+                const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
             )
         )
         baseline = kid_info.get(
@@ -3560,14 +3560,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO
                 )
                 current_threshold = current_badge.get(
-                    const.CONF_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
+                    const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
                 )
 
                 if cycle_points >= maintenance_required:
                     # Check for upgrade possibility.
                     for badge in cumulative_badges:
                         badge_threshold = badge.get(
-                            const.CONF_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
+                            const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
                         )
                         if (
                             badge_threshold > current_threshold
@@ -3591,7 +3591,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
             for badge in cumulative_badges:
                 threshold = badge.get(
-                    const.CONF_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
+                    const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
                 )
                 if total >= threshold:
                     awarded_badge = badge
@@ -3610,7 +3610,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         ]
         cumulative_badges.sort(
             key=lambda badge: badge.get(
-                const.CONF_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
+                const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
             )
         )
         current_index = None
