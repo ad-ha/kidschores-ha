@@ -866,7 +866,10 @@
     "reset_type": {
       "options": {
         "year_end": "Jahresende",
-        "custom": "Benutzerdefiniert"
+        "quarter": "Quartalsweise",
+        "monthly": "Monatlich",
+        "custom_1_year": "Benutzerdefiniert: 1-Jahres-Zeitraum",
+        "custom_1_month": "Benutzerdefiniert: 1-Monats-Zeitraum"
       }
     },
     "recurring_frequency": {
