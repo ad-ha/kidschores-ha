@@ -621,10 +621,9 @@
           "daily_threshold": "Täglicher Schwellenwert",
           "points_multiplier": "Punkte-Multiplikator",
           "reset_periodically": "Periodisches Zurücksetzen",
-          "reset_period": "Zurücksetzintervall",
+          "reset_type": "Art des Zurücksetzens",
           "reset_grace_period": "Schonfrist",
           "maintenance_rules": "Wartungsregeln",
-          "reset_type": "Art des Zurücksetzens",
           "custom_reset_date": "Benutzerdefiniertes Zurücksetzdatum",
           "internal_id": "Interne ID"
         },
@@ -864,13 +863,13 @@
         "award_points_reward": "Punkte & Belohnung"
       }
     },
-    "reset_period": {
+    "reset_type": {
       "options": {
         "year_end": "Jahresende",
-        "quarter": "Vierteljährlich",
+        "quarter": "Quartalsweise",
         "monthly": "Monatlich",
-        "custom_1_year": "Benutzerdefinierter: 1-Jahres-Periode",
-        "custom_1_month": "Benutzerdefinierter: 1-Monats-Zeitrau"
+        "custom_1_year": "Benutzerdefiniert: 1-Jahres-Zeitraum",
+        "custom_1_month": "Benutzerdefiniert: 1-Monats-Zeitraum"
       }
     },
     "recurring_frequency": {

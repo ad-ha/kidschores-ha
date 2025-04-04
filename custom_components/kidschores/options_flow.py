@@ -658,8 +658,8 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     errors[const.CFOF_BADGES_INPUT_RESET_TYPE] = (
                         const.TRANS_KEY_CFOF_ERROR_BADGE_RESET_TYPE_REQUIRED
                     )
-                # Additionally, if the reset type is custom then custom reset date must be provided.
-                elif reset_type == const.CONF_CUSTOM:
+                # Additionally, if the reset type begins with custom then custom reset date must be provided.
+                elif reset_type.startswith(const.CONF_CUSTOM):
                     custom_reset_date = user_input.get(
                         const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE
                     )
@@ -2312,7 +2312,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                                 const.TRANS_KEY_CFOF_ERROR_BADGE_RESET_TYPE_REQUIRED
                             )
                         # Additionally, if the reset type is custom then custom reset date must be provided.
-                        elif reset_type == const.CONF_CUSTOM:
+                        elif reset_type.startswith(const.CONF_CUSTOM):
                             custom_reset_date = user_input.get(
                                 const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE
                             )
