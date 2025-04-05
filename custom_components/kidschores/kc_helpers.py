@@ -208,6 +208,16 @@ def get_penalty_id_by_name(
     return None
 
 
+def get_badge_id_by_name(
+    coordinator: KidsChoresDataCoordinator, badge_name: str
+) -> Optional[str]:
+    """Retrieve the badge_id for a given badge_name."""
+    for badge_id, badges_info in coordinator.badges_data.items():
+        if badges_info.get(const.DATA_BADGE_NAME) == badge_name:
+            return badge_id
+    return None
+
+
 def get_bonus_id_by_name(
     coordinator: KidsChoresDataCoordinator, bonus_name: str
 ) -> Optional[str]:

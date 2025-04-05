@@ -1036,6 +1036,7 @@ SERVICE_CLAIM_CHORE = "claim_chore"
 SERVICE_DISAPPROVE_CHORE = "disapprove_chore"
 SERVICE_DISAPPROVE_REWARD = "disapprove_reward"
 SERVICE_REDEEM_REWARD = "redeem_reward"
+SERVICE_REMOVE_AWARDED_BADGES = "remove_awarded_badges"
 SERVICE_RESET_ALL_CHORES = "reset_all_chores"
 SERVICE_RESET_ALL_DATA = "reset_all_data"
 SERVICE_RESET_BONUSES = "reset_bonuses"
@@ -1049,6 +1050,7 @@ SERVICE_SKIP_CHORE_DUE_DATE = "skip_chore_due_date"
 # ------------------------------------------------------------------------------------------------
 # Field Names (for service calls)
 # ------------------------------------------------------------------------------------------------
+FIELD_BADGE_NAME = "badge_name"
 FIELD_BONUS_NAME = "bonus_name"
 FIELD_CHORE_ID = "chore_id"
 FIELD_CHORE_NAME = "chore_name"

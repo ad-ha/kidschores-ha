@@ -1204,6 +1204,22 @@
           "example": "Eiscreme"
         }
       }
+    },
+    "remove_awarded_badges": {
+      "name": "Entferne vergebene Abzeichen",
+      "description": "Entferne alle vergebenen Abzeichen für alle Kinder. Optional: Gib einen Abzeichennamen an, um ein bestimmtes Abzeichen bei allen Kindern zurückzusetzen. Verwende den Kindnamen, um alle Abzeichen für ein bestimmtes Kind zurückzusetzen. Kombiniere beides, um ein bestimmtes Abzeichen für ein bestimmtes Kind zurückzusetzen.",
+      "fields": {
+        "kid_name": {
+          "name": "Kindname",
+          "description": "Von welchem Kind die vergebenen Abzeichen entfernt werden.",
+          "example": "Bob"
+        },
+        "badge_name": {
+          "name": "Abzeichenname",
+          "description": "Der Name des Abzeichens, das entfernt werden soll.",
+          "example": "Chore Master"
+        }
+      }
     }
   },
   "entity": {

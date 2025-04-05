@@ -368,3 +368,25 @@ reset_rewards:
       required: false
       selector:
         text:
+
+remove_awarded_badges:
+  name: "Remove Awarded Badges"
+  description: >
+    Remove all awarded badges for all kids. Optionally, provide badge_name to reset a
+    specific badge across all kids. Use kid_name to reset all badges for a specific kid.
+    Combine both to reset a specific badge for a specific kid.
+  fields:
+    kid_name:
+      name: "Kid Name"
+      description: "The kid awarded badges will be removed from."
+      example: "Bob"
+      required: false
+      selector:
+        text:
+    badge_name:
+      name: "Badge Name"
+      description: "The name of the badge to remove."
+      example: "Chore Master"
+      required: false
+      selector:
+        text:
