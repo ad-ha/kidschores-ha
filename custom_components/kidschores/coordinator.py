@@ -171,9 +171,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         average_points = (total_points / count) if count > 0 else const.DEFAULT_POINTS
 
         # Process each badge.
-
-        #### *** CLS - This needs additional review.  It was continually running on all badges, but I'm not sure if badge type can be set to "cumulative" or mark already migrated chores *** ####
-
         for badge in badges.values():
             # Check if the badge uses the legacy "chore_count" threshold type.
             if badge.get(
@@ -192,6 +189,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     new_threshold = old_threshold
 
                 # Update the badge data to be a cumulative points badge.
+                badge[const.DATA_BADGE_TYPE] = const.BADGE_TYPE_CUMULATIVE
                 badge[const.DATA_BADGE_THRESHOLD_VALUE] = new_threshold
                 badge[const.DATA_BADGE_THRESHOLD_TYPE] = const.CONF_POINTS
 
@@ -2910,6 +2908,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             return
 
         for badge_id, badge in self.badges_data.items():
+            badge_name = badge.get(const.DATA_BADGE_NAME)
             badge_type = badge.get(const.DATA_BADGE_TYPE)
 
             # For non-cumulative badges, if assigned kids is defined, only award if kid_id is in it.
@@ -2922,16 +2921,38 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if badge_type != const.BADGE_TYPE_SPECIAL_OCCASION and kid_id in badge.get(
                 const.DATA_BADGE_EARNED_BY, []
             ):
+                const.LOGGER.debug(
+                    "DEBUG: Check Badge - Skipping badge '%s' (%s) for kid '%s': Already earned.",
+                    badge_id,
+                    badge_name,
+                    kid_id,
+                )
                 continue
 
             if badge_type == const.BADGE_TYPE_CUMULATIVE:
                 effective_badge_id = self._determine_cumulative_badge_for_kid(kid_id)
-
+                const.LOGGER.debug(
+                    "DEBUG: Check Badge - Cumulative badge '%s' for kid '%s' has effective badge id '%s'.",
+                    badge_id,
+                    kid_id,
+                    effective_badge_id,
+                )
                 if effective_badge_id == badge_id:
+                    const.LOGGER.debug(
+                        "DEBUG: Check Badge - Awarding cumulative badge '%s' (%s) to kid '%s'.",
+                        badge_id,
+                        badge_name,
+                        kid_id,
+                    )
                     self._award_badge(kid_id, badge_id)
-
                 else:
-                    self._remove_badge_from_kid(kid_id, badge)
+                    const.LOGGER.debug(
+                        "DEBUG: Check Badge - Removing cumulative badge '%s' (%s) from kid '%s'.",
+                        badge_id,
+                        badge_name,
+                        kid_id,
+                    )
+                    self._remove_awarded_badges_by_id(kid_id, badge_id)
 
             elif badge_type == const.BADGE_TYPE_DAILY:
                 # Award daily badge if the kid completed enough chores today.
@@ -3439,11 +3460,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Check and reset cumulative badges for all kids."""
         for kid_id, kid_info in self.kids_data.items():
             for badge in self.badges_data.values():
-                if badge.get(const.DATA_BADGE_TYPE) != const.BADGE_TYPE_CUMULATIVE:
+                # Only reset if badge type is cumulative and set to periodically reset
+                badge_type = badge.get(const.DATA_BADGE_TYPE)
+                if badge_type != const.BADGE_TYPE_CUMULATIVE or badge.get(
+                    const.DATA_BADGE_RESET_PERIODICALLY, False
+                ):
                     continue
 
                 if not self._process_cumulative_badge_reset(kid_id, badge):
-                    self._remove_badge_from_kid(kid_id, badge)
+                    badge_id = badge.get(const.DATA_BADGE_ID)
+                    self._remove_awarded_badges_by_id(kid_id, badge_id)
 
     def _process_cumulative_badge_reset(self, kid_id: str, badge: dict) -> bool:
         """Determine whether a cumulative badge is maintained for a kid."""
@@ -3552,16 +3578,213 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 kid_info[const.DATA_KID_CUMULATIVE_EARNED_POINTS] = const.DEFAULT_ZERO
                 return False
 
-    def _remove_badge_from_kid(self, kid_id: str, badge: dict) -> None:
-        """Remove a cumulative badge from a kid if they no longer qualify."""
-        if kid_id in badge.get(const.DATA_BADGE_EARNED_BY, []):
-            badge[const.DATA_BADGE_EARNED_BY].remove(kid_id)
+    # -------------------------------------------------------------------------------------
+    # Badges: Remove Awarded Badges
+    # Removes awarded badges from kids based on provided kid name and/or badge name.
+    # Converts kid name to kid ID and badge name to badge ID for targeted removal using
+    # the _remove_awarded_badges_by_id method.
+    # If badge_id is not found, it assumes the badge was deleted and removes it from the kid's data.
+    # If neither is provided, it globally removes all awarded badges from all kids.
+    # -------------------------------------------------------------------------------------
+    def remove_awarded_badges(
+        self, kid_name: Optional[str] = None, badge_name: Optional[str] = None
+    ) -> None:
+        """Remove awarded badges based on provided kid_name and badge_name."""
+        # Convert kid_name to kid_id if provided.
+        kid_id = None
+        if kid_name:
+            kid_id = next(
+                (
+                    kid_id
+                    for kid_id, kid_info in self.kids_data.items()
+                    if kid_info.get(const.DATA_KID_NAME) == kid_name
+                ),
+                None,
+            )
+            if kid_id is None:
+                const.LOGGER.error(
+                    "ERROR: Remove Awarded Badges - Kid name '%s' not found.", kid_name
+                )
+                raise HomeAssistantError(f"Kid name '{kid_name}' not found.")
+        else:
+            kid_id = None
 
-        kid_info = self.kids_data.get(kid_id, {})
-        badge_name = badge.get(const.DATA_BADGE_NAME)
+        # If badge_name is provided, try to find its corresponding badge_id.
+        if badge_name:
+            badge_id = next(
+                (
+                    bid
+                    for bid, badge_info in self.badges_data.items()
+                    if badge_info.get(const.DATA_BADGE_NAME) == badge_name
+                ),
+                None,
+            )
+            if not badge_id:
+                # If the badge isn't found, assume it was deleted.
+                const.LOGGER.warning(
+                    "WARNING: Remove Awarded Badges - Badge name '%s' not found in badges_data. Removing from kid data only.",
+                    badge_name,
+                )
+                # Remove badge name from a specific kid if kid_id is provided,
+                # or from all kids if not.
+                if kid_id:
+                    kid_info = self.kids_data.get(kid_id)
+                    if kid_info:
+                        badge_list = kid_info.get(const.DATA_KID_BADGES, [])
+                        if badge_name in badge_list:
+                            badge_list.remove(badge_name)
+                else:
+                    for kid_info in self.kids_data.values():
+                        badge_list = kid_info.get(const.DATA_KID_BADGES, [])
+                        if badge_name in badge_list:
+                            badge_list.remove(badge_name)
 
-        if badge_name in kid_info.get(const.DATA_KID_BADGES, []):
-            kid_info[const.DATA_KID_BADGES].remove(badge_name)
+                self._persist()
+                self.async_set_updated_data(self._data)
+                return
+        else:
+            badge_id = None
+
+        self._remove_awarded_badges_by_id(kid_id, badge_id)
+
+    def _remove_awarded_badges_by_id(
+        self, kid_id: Optional[str] = None, badge_id: Optional[str] = None
+    ) -> None:
+        """Removes awarded badges based on provided kid_id and badge_id."""
+
+        # Define a mapping for cleaning extra fields based on badge type
+        clear_extra_fields = {
+            const.BADGE_TYPE_CUMULATIVE: lambda kid_info, badge_id: kid_info.update(
+                {
+                    const.DATA_KID_CUMULATIVE_EARNED_POINTS: const.DEFAULT_ZERO
+                    if kid_info.get(const.DATA_KID_PRE_RESET_BADGE) == badge_id
+                    else kid_info.get(const.DATA_KID_CUMULATIVE_EARNED_POINTS),
+                    const.DATA_KID_CUMULATIVE_BADGE_BASELINE: const.DEFAULT_ZERO
+                    if kid_info.get(const.DATA_KID_PRE_RESET_BADGE) == badge_id
+                    else kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_BASELINE),
+                    const.DATA_KID_PRE_RESET_BADGE: const.CONF_NONE
+                    if kid_info.get(const.DATA_KID_PRE_RESET_BADGE) == badge_id
+                    else kid_info.get(const.DATA_KID_PRE_RESET_BADGE),
+                }
+            ),
+            const.BADGE_TYPE_PERIODIC: lambda kid_info, badge_id: (
+                kid_info.setdefault(const.DATA_KID_PERIODIC_BADGE_SUCCESS, {}),
+                kid_info.setdefault(const.DATA_KID_PERIODIC_BADGE_PROGRESS, {}),
+                kid_info[const.DATA_KID_PERIODIC_BADGE_SUCCESS].pop(badge_id, None),
+                kid_info[const.DATA_KID_PERIODIC_BADGE_PROGRESS].pop(badge_id, None),
+            ),
+            const.BADGE_TYPE_SPECIAL_OCCASION: lambda kid_info, badge_id: kid_info.pop(
+                f"{const.DATA_BADGE_SPECIAL_OCCASION_LAST_AWARDED}_{badge_id}", None
+            ),
+        }
+
+        if badge_id and kid_id:
+            # Reset a specific badge for a specific kid
+            kid_info = self.kids_data.get(kid_id)
+            badge_info = self.badges_data.get(badge_id)
+            badge_name = badge_info.get(const.DATA_BADGE_NAME)
+            if not kid_info:
+                const.LOGGER.error(
+                    "ERROR: Remove Awarded Badges - Kid ID '%s' not found.", kid_id
+                )
+                raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
+            if not badge_info:
+                const.LOGGER.error(
+                    "ERROR: Remove Awarded Badges - Badge ID '%s' not found.", badge_id
+                )
+                raise HomeAssistantError(f"Badge ID '{badge_id}' not found.")
+            badge_list = kid_info.get(const.DATA_KID_BADGES, [])
+            if badge_name in badge_list:
+                badge_list.remove(badge_name)
+            earned_by_list = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
+            if kid_id in earned_by_list:
+                earned_by_list.remove(kid_id)
+            badge_type = badge_info.get(const.DATA_BADGE_TYPE)
+            if badge_type in clear_extra_fields:
+                clear_extra_fields[badge_type](kid_info, badge_id)
+
+        elif badge_id:
+            # Remove a specific awarded badge for all kids
+            badge_info = self.badges_data.get(badge_id)
+            badge_name = badge_info.get(const.DATA_BADGE_NAME)
+            found = False
+            for kid_info in self.kids_data.values():
+                badge_list = kid_info.get(const.DATA_KID_BADGES, [])
+                if badge_name in badge_list:
+                    found = True
+                    badge_list.remove(badge_name)
+                    kid_id = kid_info.get(const.DATA_KID_ID)
+                    earned_by_list = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
+                    if kid_id in earned_by_list:
+                        earned_by_list.remove(kid_id)
+                    badge_type = badge_info.get(const.DATA_BADGE_TYPE)
+                    if badge_type in clear_extra_fields:
+                        clear_extra_fields[badge_type](kid_info, badge_id)
+            if not found:
+                const.LOGGER.warning(
+                    "WARNING: Remove Awarded Badges - Badge '%s' not found in any kid's data.",
+                    badge_id,
+                )
+        elif kid_id:
+            # Remove all awarded badges for a specific kid
+            kid_info = self.kids_data.get(kid_id)
+            if not kid_info:
+                const.LOGGER.error(
+                    "ERROR: Remove Awarded Badges - Kid ID '%s' not found.", kid_id
+                )
+                raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
+            found = False
+            for badge_info in self.badges_data.values():
+                badge_name = badge_info.get(const.DATA_BADGE_NAME)
+                earned_by_list = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
+                if kid_id in earned_by_list:
+                    earned_by_list.remove(kid_id)
+                    badge_list = kid_info.get(const.DATA_KID_BADGES, [])
+                    if badge_name in badge_list:
+                        badge_list.remove(badge_name)
+                    badge_type = badge_info.get(const.DATA_BADGE_TYPE)
+                    if badge_type in clear_extra_fields:
+                        clear_extra_fields[badge_type](kid_info, badge_id)
+            if not found:
+                const.LOGGER.warning(
+                    "WARNING: Remove Awarded Badges - No Badge found for kid '%s'.",
+                    kid_id,
+                )
+        else:
+            # Remove Awarded Badges for all kids
+            const.LOGGER.info(
+                "INFO: Remove Awarded Badges - Removing all awarded badges for all kids."
+            )
+            found = False
+            # Iterate over each badge in badges_data
+            for badge_id, badge_info in self.badges_data.items():
+                badge_name = badge_info.get(const.DATA_BADGE_NAME)
+                earned_by_list = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
+                # Iterate over the list of kid IDs for this badge
+                for kid_id in earned_by_list:
+                    kid_info = self.kids_data.get(kid_id)
+                    earned_by_list.remove(kid_id)
+                    badge_list = kid_info.get(const.DATA_KID_BADGES, [])
+                    if kid_info and badge_list:
+                        if badge_name in badge_list:
+                            found = True
+                            badge_list.remove(badge_name)
+                            badge_type = badge_info.get(const.DATA_BADGE_TYPE)
+                            if badge_type in clear_extra_fields:
+                                clear_extra_fields[badge_type](kid_info, badge_id)
+            if not found:
+                const.LOGGER.warning(
+                    "WARNING: Remove Awarded Badges - No awarded badges found in any kid's data."
+                )
+
+        const.LOGGER.debug(
+            "DEBUG: Remove Awarded Badges - Badge removal completed - Kid ID '%s', Badge ID '%s'",
+            kid_id,
+            badge_id,
+        )
+
+        self._persist()
+        self.async_set_updated_data(self._data)
 
     def _recalculate_all_badges(self):
         """Global re-check of all badges for all kids."""
@@ -4264,7 +4487,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             )
                             const.LOGGER.debug(
                                 "DEBUG: Overdue Chores - Chore ID '%s' status is overdue but no due date. Cleared overdue status",
-                                chore_id,
+                                chore_info.get(const.DATA_CHORE_NAME, chore_id),
                             )
                 continue
 
@@ -4278,7 +4501,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.LOGGER.error(
                     "ERROR: Overdue Chores - Error parsing due date '%s' for Chore ID '%s': %s",
                     due_str,
-                    chore_id,
+                    chore_info.get(const.DATA_CHORE_NAME, chore_id),
                     err,
                 )
                 continue
@@ -4293,7 +4516,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         )
                         const.LOGGER.debug(
                             "DEBUG: Overdue Chores - Chore ID '%s' status is overdue but not yet due. Cleared overdue status",
-                            chore_id,
+                            chore_info.get(const.DATA_CHORE_NAME, chore_id),
                         )
 
                 continue
@@ -4314,7 +4537,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 self._process_chore_state(kid_id, chore_id, const.CHORE_STATE_OVERDUE)
                 const.LOGGER.debug(
                     "DEBUG: Overdue Chores - Setting Chore IS '%s' as overdue for Kid ID '%s'",
-                    chore_id,
+                    chore_info.get(const.DATA_CHORE_NAME, chore_id),
                     kid_id,
                 )
 
@@ -4345,7 +4568,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         const.LOGGER.error(
                             "ERROR: Overdue Chores - Error parsing overdue notification '%s' for Chore ID '%s', Kid ID '%s': %s",
                             last_notif_str,
-                            chore_id,
+                            chore_info.get(const.DATA_CHORE_NAME, chore_id),
                             kid_id,
                             err,
                         )
@@ -4377,7 +4600,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     ]
                     const.LOGGER.debug(
                         "DEBUG: Overdue Chores - Sending overdue notification for Chore ID '%s' to Kid ID '%s'",
-                        chore_id,
+                        chore_info.get(const.DATA_CHORE_NAME, chore_id),
                         kid_id,
                     )
                     self.hass.async_create_task(
@@ -4812,13 +5035,17 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         if chore_id:
             # Specific chore reset (with or without kid_id)
-            chore = self.chores_data.get(chore_id)
-            if not chore:
+            chore_info = self.chores_data.get(chore_id)
+            if not chore_info:
                 raise HomeAssistantError(f"Chore ID '{chore_id}' not found.")
 
+            const.LOGGER.info(
+                "INFO: Reset Overdue Chores - Rescheduling chore: %s",
+                chore_info.get(const.DATA_CHORE_NAME, chore_id),
+            )
             # Reschedule happens at the chore level, so it is not necessary to check for kid_id
             # _rescheduled_next_due_date will also handle setting the status to Pending
-            self._reschedule_next_due_date(chore)
+            self._reschedule_next_due_date(chore_info)
 
         elif kid_id:
             # Kid-only reset: reset all overdue chores for the specified kid.
@@ -4827,19 +5054,29 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             kid = self.kids_data.get(kid_id)
             if not kid:
                 raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
-            for cid, chore in self.chores_data.items():
-                if kid_id in chore.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
+            for cid, chore_info in self.chores_data.items():
+                if kid_id in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
                     if cid in kid.get(const.DATA_KID_OVERDUE_CHORES, []):
+                        const.LOGGER.info(
+                            "INFO: Reset Overdue Chores - Rescheduling chore: %s for kid: %s",
+                            chore_info.get(const.DATA_CHORE_NAME, chore_id),
+                            kid_id,
+                        )
                         # Reschedule chore which will also set status to Pending
-                        self._reschedule_next_due_date(chore)
+                        self._reschedule_next_due_date(chore_info)
         else:
             # Global reset: Reset all chores that are overdue.
             for kid_id, kid in self.kids_data.items():
-                for cid, chore in self.chores_data.items():
-                    if kid_id in chore.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
+                for cid, chore_info in self.chores_data.items():
+                    if kid_id in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
                         if cid in kid.get(const.DATA_KID_OVERDUE_CHORES, []):
+                            const.LOGGER.info(
+                                "INFO: Reset Overdue Chores - Rescheduling chore: %s for kid: %s",
+                                chore_info.get(const.DATA_CHORE_NAME, chore_id),
+                                kid_id,
+                            )
                             # Reschedule chore which will also set status to Pending
-                            self._reschedule_next_due_date(chore)
+                            self._reschedule_next_due_date(chore_info)
 
         self._persist()
         self.async_set_updated_data(self._data)

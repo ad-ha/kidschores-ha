@@ -1204,6 +1204,22 @@
           "example": "Helado"
         }
       }
+    },
+    "remove_awarded_badges": {
+      "name": "Eliminar Insignias Otorgadas",
+      "description": "Elimina todas las insignias otorgadas a todos los niños. Opcionalmente, proporciona el nombre de la insignia para reiniciar una insignia específica en todos los niños. Usa el nombre del niño para reiniciar todas las insignias de un niño específico. Combínalos para reiniciar una insignia específica para un niño específico.",
+      "fields": {
+        "kid_name": {
+          "name": "Nombre del Niño",
+          "description": "El niño del que se eliminarán las insignias otorgadas.",
+          "example": "Bob"
+        },
+        "badge_name": {
+          "name": "Nombre de la Insignia",
+          "description": "El nombre de la insignia que se eliminará.",
+          "example": "Chore Master"
+        }
+      }
     }
   },
   "entity": {

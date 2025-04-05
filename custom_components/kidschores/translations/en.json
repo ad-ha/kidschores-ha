@@ -1204,6 +1204,22 @@
           "example": "Ice Cream"
         }
       }
+    },
+    "remove_awarded_badges": {
+      "name": "Remove Awarded Badges",
+      "description": "Remove all awarded badges for all kids. Optionally, provide badge name to reset a specific badge across all kids. Use kid name to reset all badges for a specific kid. Combine both to reset a specific badge for a specific kid.",
+      "fields": {
+        "kid_name": {
+          "name": "Kid Name",
+          "description": "The kid awarded badges will be removed from.",
+          "example": "Bob"
+        },
+        "badge_name": {
+          "name": "Badge Name",
+          "description": "The name of the badge to remove.",
+          "example": "Chore Master"
+        }
+      }
     }
   },
   "entity": {

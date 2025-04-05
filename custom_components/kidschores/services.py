@@ -112,6 +112,13 @@ RESET_REWARDS_SCHEMA = vol.Schema(
     }
 )
 
+REMOVE_AWARDED_BADGES_SCHEMA = vol.Schema(
+    {
+        vol.Optional(const.FIELD_KID_NAME): vol.Any(cv.string, None),
+        vol.Optional(const.FIELD_BADGE_NAME): vol.Any(cv.string, None),
+    }
+)
+
 RESET_ALL_DATA_SCHEMA = vol.Schema({})
 
 RESET_ALL_CHORES_SCHEMA = vol.Schema({})
@@ -747,6 +754,46 @@ def async_setup_services(hass: HomeAssistant):
         coordinator.reset_rewards(kid_id=kid_id, reward_id=reward_id)
         await coordinator.async_request_refresh()
 
+    async def handle_remove_awarded_badges(call: ServiceCall):
+        """Handle removing awarded badges."""
+        entry_id = kh.get_first_kidschores_entry(hass)
+        if not entry_id:
+            const.LOGGER.warning(
+                "WARNING: Remove Awarded Badges: %s", const.MSG_NO_ENTRY_FOUND
+            )
+            return
+
+        coordinator: KidsChoresDataCoordinator = hass.data[const.DOMAIN][entry_id][
+            const.COORDINATOR
+        ]
+
+        kid_name = call.data.get(const.FIELD_KID_NAME)
+        badge_name = call.data.get(const.FIELD_BADGE_NAME)
+
+        # Check if user is authorized
+        user_id = call.context.user_id
+        if user_id and not await kh.is_user_authorized_for_global_action(
+            hass, user_id, kid_name
+        ):
+            const.LOGGER.warning("WARNING: Remove Awarded Badges: User not authorized.")
+            raise HomeAssistantError("You are not authorized to remove awarded badges.")
+
+        # Log action based on parameters provided
+        if kid_name is None and badge_name is None:
+            const.LOGGER.info("INFO: Removing all badges for all kids.")
+        elif kid_name is None:
+            const.LOGGER.info("INFO: Removing badge '%s' for all kids.", badge_name)
+        elif badge_name is None:
+            const.LOGGER.info("INFO: Removing all badges for kid '%s'.", kid_name)
+        else:
+            const.LOGGER.info(
+                "INFO: Removing badge '%s' for kid '%s'.", badge_name, kid_name
+            )
+
+        # Remove awarded badges
+        coordinator.remove_awarded_badges(kid_name=kid_name, badge_name=badge_name)
+        await coordinator.async_request_refresh()
+
     async def handle_apply_bonus(call: ServiceCall):
         """Handle applying a bonus."""
         entry_id = kh.get_first_kidschores_entry(hass)
@@ -1097,6 +1144,13 @@ def async_setup_services(hass: HomeAssistant):
 
     hass.services.async_register(
         const.DOMAIN,
+        const.SERVICE_REMOVE_AWARDED_BADGES,
+        handle_remove_awarded_badges,
+        schema=REMOVE_AWARDED_BADGES_SCHEMA,
+    )
+
+    hass.services.async_register(
+        const.DOMAIN,
         const.SERVICE_SET_CHORE_DUE_DATE,
         handle_set_chore_due_date,
         schema=SET_CHORE_DUE_DATE_SCHEMA,
@@ -1136,6 +1190,7 @@ async def async_unload_services(hass: HomeAssistant):
         const.SERVICE_RESET_PENALTIES,
         const.SERVICE_RESET_BONUSES,
         const.SERVICE_RESET_REWARDS,
+        const.SERVICE_REMOVE_AWARDED_BADGES,
         const.SERVICE_SET_CHORE_DUE_DATE,
         const.SERVICE_SKIP_CHORE_DUE_DATE,
     ]
