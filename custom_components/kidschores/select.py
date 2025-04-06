@@ -217,10 +217,10 @@ class ChoresKidSelect(KidsChoresSelectBase):
         """Return a list of chore names assigned to this kid, with a 'None' option."""
         # Start with a "None" entry
         options = [const.CONF_NONE_TEXT]
-        for chore_id, chore in self.coordinator.chores_data.items():
-            if self._kid_id in chore.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
+        for chore_id, chore_info in self.coordinator.chores_data.items():
+            if self._kid_id in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
                 options.append(
-                    chore.get(
+                    chore_info.get(
                         const.DATA_CHORE_NAME,
                         f"{const.TRANS_KEY_LABEL_CHORE} {chore_id}",
                     )
