@@ -3901,7 +3901,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # Remove a specific awarded badge for all kids.
             badge_info = self.badges_data.get(badge_id)
             badge_name = badge_info.get(const.DATA_BADGE_NAME, badge_id)
-            for kid_id, kid_info in self.kids_data.values():
+            for kid_id, kid_info in self.kids_data.items():
                 kid_name = kid_info.get(const.DATA_KID_NAME, "Unknown Kid")
                 # Remove the badge from the kid's badges_earned.
                 badges_earned = kid_info.get(const.DATA_KID_BADGES_EARNED, {})
@@ -3927,7 +3927,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     earned_by_list.remove(kid_id)
 
             # All kids should already be removed from the badge earned_by list, but in case of orphans, clear those fields
-            badge_info[const.DATA_BADGE_EARNED_BY].clear()
+            if const.DATA_BADGE_EARNED_BY in badge_info:
+                badge_info[const.DATA_BADGE_EARNED_BY].clear()
 
             if not found:
                 const.LOGGER.warning(
@@ -3972,8 +3973,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         badge_list.remove(badge_name)
 
             # All badges should already be removed from the kid's badges list, but in case of orphans, clear those fields
-            kid_info[const.DATA_KID_BADGES].clear()
-            kid_info[const.DATA_KID_BADGES_EARNED].clear()
+            if const.DATA_KID_BADGES in kid_info:
+                kid_info[const.DATA_KID_BADGES].clear()
+            if const.DATA_KID_BADGES_EARNED in kid_info:
+                kid_info[const.DATA_KID_BADGES_EARNED].clear()
             # CLS Should also clear all extra fields for all badge types later
 
             if not found:
@@ -3989,7 +3992,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             for badge_id, badge_info in self.badges_data.items():
                 badge_name = badge_info.get(const.DATA_BADGE_NAME)
-                for kid_id, kid_info in self.kids_data.values():
+                for kid_id, kid_info in self.kids_data.items():
                     kid_name = kid_info.get(const.DATA_KID_NAME, "Unknown Kid")
                     # Remove the badge from the kid's badges_earned.
                     badges_earned = kid_info.get(const.DATA_KID_BADGES_EARNED, {})
@@ -4015,12 +4018,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         earned_by_list.remove(kid_id)
 
                     # All badges should already be removed from the kid's badges list, but in case of orphans, clear those fields
-                    kid_info[const.DATA_KID_BADGES].clear()
-                    kid_info[const.DATA_KID_BADGES_EARNED].clear()
+                    if const.DATA_KID_BADGES in kid_info:
+                        kid_info[const.DATA_KID_BADGES].clear()
+                    if const.DATA_KID_BADGES_EARNED in kid_info:
+                        kid_info[const.DATA_KID_BADGES_EARNED].clear()
                     # CLS Should also clear all extra fields for all badge types later
 
                 # All kids should already be removed from the badge earned_by list, but in case of orphans, clear those fields
-                badge_info[const.DATA_BADGE_EARNED_BY].clear()
+                if const.DATA_BADGE_EARNED_BY in badge_info:
+                    badge_info[const.DATA_BADGE_EARNED_BY].clear()
 
             if not found:
                 const.LOGGER.warning(
