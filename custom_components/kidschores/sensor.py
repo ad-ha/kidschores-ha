@@ -654,6 +654,11 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         including the points needed to reach the next cumulative badge.
         """
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        # This grabs the list of earned badge names using the constant for "badge_name"
+        earned_badge_list = [
+            badge_name.get(const.DATA_BADGE_NAME)
+            for badge_name in kid_info.get(const.DATA_KID_BADGES_EARNED, {}).values()
+        ]
         cumulative_badge_progress_info = kid_info.get(
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {}
         )
@@ -690,7 +695,7 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
 
         return {
             const.ATTR_KID_NAME: self._kid_name,
-            const.ATTR_ALL_EARNED_BADGES: kid_info.get(const.DATA_KID_BADGES, []),
+            const.ATTR_ALL_EARNED_BADGES: earned_badge_list,
             const.ATTR_HIGHEST_BADGE_THRESHOLD_VALUE: highest_badge_threshold_value,
             const.ATTR_CURRENT_BADGE_ID: current_badge_id,
             const.ATTR_CURRENT_BADGE_NAME: current_badge_name,
