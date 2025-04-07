@@ -43,17 +43,17 @@ class KidsChoresStorageManager:
             # No existing data, create a new default structure.
             const.LOGGER.info("INFO: No existing storage found. Initializing new data")
             self._data = {
-                const.DATA_KIDS: {},  # Dictionary of kids keyed by internal_id.
-                const.DATA_CHORES: {},  # Dictionary of chores keyed by internal_id.
-                const.DATA_BADGES: {},  # Dictionary of badges keyed by internal_id.
-                const.DATA_REWARDS: {},  # Dictionary of rewards keyed by internal_id.
-                const.DATA_PENALTIES: {},  # Dictionary of penalties keyed by internal_id.
-                const.DATA_BONUSES: {},  # Dictionary of bonuses keyed by internal_id.
-                const.DATA_PARENTS: {},  # Dictionary of parents keyed by internal_id.
-                const.DATA_ACHIEVEMENTS: {},  # Dictionary of achievements keyed by internal_id.
-                const.DATA_CHALLENGES: {},  # Dictionary of challenges keyed by internal_id.
-                const.DATA_PENDING_CHORE_APPROVALS: [],  # List of pending chore approvals keyed by internal_id.
-                const.DATA_PENDING_REWARD_APPROVALS: [],  # List of pending rewar approvals keyed by internal_id.
+                const.DATA_KIDS: {},
+                const.DATA_CHORES: {},
+                const.DATA_BADGES: {},
+                const.DATA_REWARDS: {},
+                const.DATA_PENALTIES: {},
+                const.DATA_BONUSES: {},
+                const.DATA_PARENTS: {},
+                const.DATA_ACHIEVEMENTS: {},
+                const.DATA_CHALLENGES: {},
+                const.DATA_PENDING_CHORE_APPROVALS: [],
+                const.DATA_PENDING_REWARD_APPROVALS: [],
             }
         else:
             # Load existing data into memory.
@@ -151,6 +151,10 @@ class KidsChoresStorageManager:
         const.LOGGER.warning(
             "WARNING: Clearing all KidsChores data and resetting storage"
         )
+        # Completely clear any existing data.
+        self._data.clear()
+
+        # Set the default empty structure
         self._data = {
             const.DATA_KIDS: {},
             const.DATA_CHORES: {},
