@@ -245,7 +245,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 badges_earned[badge_id] = {
                     const.DATA_KID_BADGE_EARNED_NAME: badge_name,
                     const.DATA_KID_BADGE_EARNED_LAST_AWARDED: today_local_iso,
-                    const.DATA_KID_BADGE_EARNED_COUNT: 1,
+                    const.DATA_KID_BADGE_EARNED_AWARD_COUNT: 1,
                 }
 
                 const.LOGGER.info(
