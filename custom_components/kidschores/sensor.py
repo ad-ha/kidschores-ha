@@ -618,62 +618,35 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_KID_HIGHEST_BADGE_SENSOR}"
 
-    def _find_highest_badge(self):
-        """Determine which cumulative badge has the highest threshold
-        among those the kid has earned.
-        """
-
-        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        earned_badge_names = kid_info.get(const.DATA_KID_BADGES, [])
-
-        highest_badge = None
-        highest_value = -1
-
-        for badge_name in earned_badge_names:
-            # Find badge by name. Only consider badges that are cumulative
-            badge_data = next(
-                (
-                    info
-                    for bid, info in self.coordinator.badges_data.items()
-                    if info.get(const.DATA_BADGE_NAME) == badge_name
-                    and info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
-                ),
-                None,
-            )
-            if not badge_data:
-                continue
-
-            threshold_val = badge_data.get(
-                const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
-            )
-            if threshold_val > highest_value:
-                highest_value = threshold_val
-                highest_badge = badge_name
-
-        return highest_badge, highest_value
-
     @property
     def native_value(self) -> str:
         """Return the badge name of the highest-threshold badge the kid has earned."""
-        highest_badge, _ = self._find_highest_badge()
-        return highest_badge if highest_badge else const.CONF_NONE_TEXT
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        cumulative_badge_progress_info = kid_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {}
+        )
+        highest_badge_name = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_HIGHEST_EARNED_BADGE_NAME,
+            const.CONF_NONE_TEXT,
+        )
+        return highest_badge_name
 
     @property
     def icon(self):
         """Return the icon for the highest badge."""
-        highest_badge, _ = self._find_highest_badge()
-        if highest_badge:
-            badge_data = next(
-                (
-                    info
-                    for bid, info in self.coordinator.badges_data.items()
-                    if info.get(const.DATA_BADGE_NAME) == highest_badge
-                    and info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
-                ),
-                {},
-            )
-            return badge_data.get(const.DATA_BADGE_ICON, const.DEFAULT_TROPHY_ICON)
-        return const.DEFAULT_TROPHY_OUTLINE
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        cumulative_badge_progress_info = kid_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {}
+        )
+        highest_badge_id = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_HIGHEST_EARNED_BADGE_ID,
+            const.CONF_NONE_TEXT,
+        )
+        highest_badge_info = self.coordinator.badges_data.get(highest_badge_id, {})
+        highest_badge_icon = highest_badge_info.get(
+            const.DATA_BADGE_ICON, const.DEFAULT_TROPHY_ICON
+        )
+        return highest_badge_icon
 
     @property
     def extra_state_attributes(self):
@@ -681,52 +654,48 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         including the points needed to reach the next cumulative badge.
         """
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        highest_badge, highest_val = self._find_highest_badge()
+        cumulative_badge_progress_info = kid_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {}
+        )
+        current_badge_id = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_ID,
+            const.CONF_NONE_TEXT,
+        )
+        current_badge_name = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_NAME,
+            const.CONF_NONE_TEXT,
+        )
+        badge_status = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS,
+            const.CONF_NONE_TEXT,
+        )
+        highest_badge_threshold_value = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_HIGHEST_EARNED_THRESHOLD,
+            const.DEFAULT_ZERO,
+        )
+        points_to_next_badge = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_POINTS_NEEDED,
+            const.DEFAULT_ZERO,
+        )
+        current_badge_info = self.coordinator.badges_data.get(current_badge_id, {})
+        current_badge_multiplier = current_badge_info.get(
+            const.DATA_BADGE_POINTS_MULTIPLIER, const.DEFAULT_KID_POINTS_MULTIPLIER
+        )
 
-        current_multiplier = const.DEFAULT_KID_POINTS_MULTIPLIER
+        stored_labels = current_badge_info.get(const.DATA_BADGE_LABELS, [])
         friendly_labels = []
-
-        if highest_badge:
-            badge_data = next(
-                (
-                    info
-                    for bid, info in self.coordinator.badges_data.items()
-                    if info.get(const.DATA_BADGE_NAME) == highest_badge
-                    and info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
-                ),
-                {},
-            )
-            current_multiplier = badge_data.get(
-                const.DATA_BADGE_POINTS_MULTIPLIER, const.DEFAULT_KID_POINTS_MULTIPLIER
-            )
-            stored_labels = badge_data.get(const.DATA_BADGE_LABELS, [])
-            friendly_labels = [
-                kh.get_friendly_label(self.hass, label) for label in stored_labels
-            ]
-
-        # Compute points needed for next badge:
-        current_points = kid_info.get(const.DATA_KID_POINTS, const.DEFAULT_ZERO)
-
-        # Gather thresholds for badges that are higher than current points
-        thresholds = [
-            badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO)
-            for badge_info in self.coordinator.badges_data.values()
-            if badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO)
-            > current_points
+        friendly_labels = [
+            kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
-        if thresholds:
-            next_threshold = min(thresholds)
-            points_to_next_badge = next_threshold - current_points
-        else:
-            points_to_next_badge = const.DEFAULT_ZERO
 
         return {
             const.ATTR_KID_NAME: self._kid_name,
             const.ATTR_ALL_EARNED_BADGES: kid_info.get(const.DATA_KID_BADGES, []),
-            const.ATTR_HIGHEST_BADGE_THRESHOLD_VALUE: highest_val
-            if highest_badge
-            else const.DEFAULT_ZERO,
-            const.ATTR_POINTS_MULTIPLIER: current_multiplier,
+            const.ATTR_HIGHEST_BADGE_THRESHOLD_VALUE: highest_badge_threshold_value,
+            const.ATTR_CURRENT_BADGE_ID: current_badge_id,
+            const.ATTR_CURRENT_BADGE_NAME: current_badge_name,
+            const.ATTR_BADGE_STATUS: badge_status,
+            const.ATTR_POINTS_MULTIPLIER: current_badge_multiplier,
             const.ATTR_POINTS_TO_NEXT_BADGE: points_to_next_badge,
             const.ATTR_LABELS: friendly_labels,
         }
