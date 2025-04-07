@@ -709,9 +709,9 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
 
         # Gather thresholds for badges that are higher than current points
         thresholds = [
-            badge.get(const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO)
-            for badge in self.coordinator.badges_data.values()
-            if badge.get(const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO)
+            badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO)
+            for badge_info in self.coordinator.badges_data.values()
+            if badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO)
             > current_points
         ]
         if thresholds:
@@ -812,10 +812,10 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
         # Convert each kid_id to kid_name
         kids_earned_names = []
         for kid_id in kids_earned_ids:
-            kid = self.coordinator.kids_data.get(kid_id)
-            if kid is not None:
+            kid_info = self.coordinator.kids_data.get(kid_id)
+            if kid_info is not None:
                 kids_earned_names.append(
-                    kid.get(
+                    kid_info.get(
                         const.DATA_KID_NAME,
                         f"{const.TRANS_KEY_LABEL_KID} {kid_id}",
                     )

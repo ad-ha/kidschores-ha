@@ -87,18 +87,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     def _migrate_stored_datetimes(self):
         """Walk through stored data and convert known datetime fields to UTC-aware ISO strings."""
         # For each chore, migrate due_date, last_completed, and last_claimed
-        for chore in self._data.get(const.DATA_CHORES, {}).values():
-            if chore.get(const.DATA_CHORE_DUE_DATE):
-                chore[const.DATA_CHORE_DUE_DATE] = self._migrate_datetime(
-                    chore[const.DATA_CHORE_DUE_DATE]
+        for chore_info in self._data.get(const.DATA_CHORES, {}).values():
+            if chore_info.get(const.DATA_CHORE_DUE_DATE):
+                chore_info[const.DATA_CHORE_DUE_DATE] = self._migrate_datetime(
+                    chore_info[const.DATA_CHORE_DUE_DATE]
                 )
-            if chore.get(const.DATA_CHORE_LAST_COMPLETED):
-                chore[const.DATA_CHORE_LAST_COMPLETED] = self._migrate_datetime(
-                    chore[const.DATA_CHORE_LAST_COMPLETED]
+            if chore_info.get(const.DATA_CHORE_LAST_COMPLETED):
+                chore_info[const.DATA_CHORE_LAST_COMPLETED] = self._migrate_datetime(
+                    chore_info[const.DATA_CHORE_LAST_COMPLETED]
                 )
-            if chore.get(const.DATA_CHORE_LAST_CLAIMED):
-                chore[const.DATA_CHORE_LAST_CLAIMED] = self._migrate_datetime(
-                    chore[const.DATA_CHORE_LAST_CLAIMED]
+            if chore_info.get(const.DATA_CHORE_LAST_CLAIMED):
+                chore_info[const.DATA_CHORE_LAST_CLAIMED] = self._migrate_datetime(
+                    chore_info[const.DATA_CHORE_LAST_CLAIMED]
                 )
         # Also, migrate timestamps in pending approvals
         for approval in self._data.get(const.DATA_PENDING_CHORE_APPROVALS, []):
@@ -113,33 +113,37 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
 
         # Migrate datetime on Challenges
-        for challenge in self._data.get(const.DATA_CHALLENGES, {}).values():
-            start_date = challenge.get(const.DATA_CHALLENGE_START_DATE)
+        for challenge_info in self._data.get(const.DATA_CHALLENGES, {}).values():
+            start_date = challenge_info.get(const.DATA_CHALLENGE_START_DATE)
             if not isinstance(start_date, str) or not start_date.strip():
-                challenge[const.DATA_CHALLENGE_START_DATE] = None
+                challenge_info[const.DATA_CHALLENGE_START_DATE] = None
             else:
-                challenge[const.DATA_CHALLENGE_START_DATE] = self._migrate_datetime(
-                    start_date
+                challenge_info[const.DATA_CHALLENGE_START_DATE] = (
+                    self._migrate_datetime(start_date)
                 )
 
-            end_date = challenge.get(const.DATA_CHALLENGE_END_DATE)
+            end_date = challenge_info.get(const.DATA_CHALLENGE_END_DATE)
             if not isinstance(end_date, str) or not end_date.strip():
-                challenge[const.DATA_CHALLENGE_END_DATE] = None
+                challenge_info[const.DATA_CHALLENGE_END_DATE] = None
             else:
-                challenge[const.DATA_CHALLENGE_END_DATE] = self._migrate_datetime(
+                challenge_info[const.DATA_CHALLENGE_END_DATE] = self._migrate_datetime(
                     end_date
                 )
 
     def _migrate_chore_data(self):
         """Migrate each chore's data to include new fields if missing."""
         chores = self._data.get(const.DATA_CHORES, {})
-        for chore in chores.values():
-            chore.setdefault(const.CONF_APPLICABLE_DAYS, const.DEFAULT_APPLICABLE_DAYS)
-            chore.setdefault(const.CONF_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM)
-            chore.setdefault(
+        for chore_info in chores.values():
+            chore_info.setdefault(
+                const.CONF_APPLICABLE_DAYS, const.DEFAULT_APPLICABLE_DAYS
+            )
+            chore_info.setdefault(
+                const.CONF_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM
+            )
+            chore_info.setdefault(
                 const.CONF_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
             )
-            chore.setdefault(
+            chore_info.setdefault(
                 const.CONF_NOTIFY_ON_DISAPPROVAL, const.DEFAULT_NOTIFY_ON_DISAPPROVAL
             )
         const.LOGGER.info("INFO: Chore data migration complete.")
@@ -157,10 +161,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # Calculate the average default points over all chores.
         total_points = 0.0
         count = 0
-        for chore in chores.values():
+        for chore_info in chores.values():
             try:
                 default_points = float(
-                    chore.get(const.DATA_CHORE_DEFAULT_POINTS, const.DEFAULT_POINTS)
+                    chore_info.get(
+                        const.DATA_CHORE_DEFAULT_POINTS, const.DEFAULT_POINTS
+                    )
                 )
                 total_points += default_points
                 count += 1
@@ -171,14 +177,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         average_points = (total_points / count) if count > 0 else const.DEFAULT_POINTS
 
         # Process each badge.
-        for badge in badges.values():
+        for badge_info in badges.values():
             # Check if the badge uses the legacy "chore_count" threshold type.
-            if badge.get(
+            if badge_info.get(
                 const.DATA_BADGE_THRESHOLD_TYPE
-            ) == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT and badge.get(
+            ) == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT and badge_info.get(
                 const.DATA_BADGE_TYPE
             ) in (None, const.CONF_EMPTY, const.CONF_UNAVAILABLE):
-                old_threshold = badge.get(
+                old_threshold = badge_info.get(
                     const.DATA_BADGE_THRESHOLD_VALUE,
                     const.DEFAULT_BADGE_THRESHOLD_VALUE,
                 )
@@ -189,23 +195,23 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     new_threshold = old_threshold
 
                 # Update the badge data to be a cumulative points badge.
-                badge[const.DATA_BADGE_TYPE] = const.BADGE_TYPE_CUMULATIVE
-                badge[const.DATA_BADGE_THRESHOLD_VALUE] = new_threshold
-                badge[const.DATA_BADGE_THRESHOLD_TYPE] = const.CONF_POINTS
+                badge_info[const.DATA_BADGE_TYPE] = const.BADGE_TYPE_CUMULATIVE
+                badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = new_threshold
+                badge_info[const.DATA_BADGE_THRESHOLD_TYPE] = const.CONF_POINTS
 
                 # Set reset-related fields to empty and disable periodic resets.
-                badge[const.DATA_BADGE_RESET_PERIODICALLY] = False
-                badge[const.DATA_BADGE_RESET_TYPE] = const.CONF_NONE
-                badge[const.DATA_BADGE_RESET_GRACE_PERIOD] = (
+                badge_info[const.DATA_BADGE_RESET_PERIODICALLY] = False
+                badge_info[const.DATA_BADGE_RESET_TYPE] = const.CONF_NONE
+                badge_info[const.DATA_BADGE_RESET_GRACE_PERIOD] = (
                     const.DEFAULT_BADGE_RESET_GRACE_PERIOD
                 )
-                badge[const.DATA_BADGE_MAINTENANCE_RULES] = (
+                badge_info[const.DATA_BADGE_MAINTENANCE_RULES] = (
                     const.DEFAULT_BADGE_MAINTENANCE_THRESHOLD
                 )
 
                 const.LOGGER.info(
                     "INFO: Legacy Chore Count Badge '%s' migrated: Old threshold %s -> New threshold %s (average_points=%.2f)",
-                    badge.get(const.DATA_BADGE_NAME),
+                    badge_info.get(const.DATA_BADGE_NAME),
                     old_threshold,
                     new_threshold,
                     average_points,
@@ -549,10 +555,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     continue
 
                 kid_id, achievement_id = parts
-                achievement = self._data.get(const.DATA_ACHIEVEMENTS, {}).get(
+                achievement_info = self._data.get(const.DATA_ACHIEVEMENTS, {}).get(
                     achievement_id
                 )
-                if not achievement or kid_id not in achievement.get(
+                if not achievement_info or kid_id not in achievement_info.get(
                     const.DATA_ACHIEVEMENT_ASSIGNED_KIDS, []
                 ):
                     ent_reg.async_remove(entity_entry.entity_id)
@@ -581,8 +587,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     continue
 
                 kid_id, challenge_id = parts
-                challenge = self._data.get(const.DATA_CHALLENGES, {}).get(challenge_id)
-                if not challenge or kid_id not in challenge.get(
+                challenge_info = self._data.get(const.DATA_CHALLENGES, {}).get(
+                    challenge_id
+                )
+                if not challenge_info or kid_id not in challenge_info.get(
                     const.DATA_CHALLENGE_ASSIGNED_KIDS, []
                 ):
                     ent_reg.async_remove(entity_entry.entity_id)
@@ -610,14 +618,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     def _cleanup_chore_from_kid(self, kid_id: str, chore_id: str) -> None:
         """Remove references to a specific chore from a kid's data."""
-        kid = self.kids_data.get(kid_id)
-        if not kid:
+        kid_info = self.kids_data.get(kid_id)
+        if not kid_info:
             return
 
         # Remove from lists if present
         for key in [const.DATA_KID_CLAIMED_CHORES, const.DATA_KID_APPROVED_CHORES]:
-            if chore_id in kid.get(key, []):
-                kid[key] = [c for c in kid[key] if c != chore_id]
+            if chore_id in kid_info.get(key, []):
+                kid_info[key] = [c for c in kid_info[key] if c != chore_id]
                 const.LOGGER.debug(
                     "DEBUG: Removed Chore '%s' from Kid ID '%s' list '%s'",
                     chore_id,
@@ -627,8 +635,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Remove from dictionary fields if present
         for dict_key in [const.DATA_KID_CHORE_CLAIMS, const.DATA_KID_CHORE_APPROVALS]:
-            if chore_id in kid.get(dict_key, {}):
-                kid[dict_key].pop(chore_id)
+            if chore_id in kid_info.get(dict_key, {}):
+                kid_info[dict_key].pop(chore_id)
                 const.LOGGER.debug(
                     "DEBUG: Removed Chore '%s' from Kid ID '%s' dict '%s'",
                     chore_id,
@@ -638,10 +646,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Remove from chore streaks if present
         if (
-            const.DATA_KID_CHORE_STREAKS in kid
-            and chore_id in kid[const.DATA_KID_CHORE_STREAKS]
+            const.DATA_KID_CHORE_STREAKS in kid_info
+            and chore_id in kid_info[const.DATA_KID_CHORE_STREAKS]
         ):
-            kid[const.DATA_KID_CHORE_STREAKS].pop(chore_id)
+            kid_info[const.DATA_KID_CHORE_STREAKS].pop(chore_id)
             const.LOGGER.debug(
                 "DEBUG: Removed Chore Streak for Chore '%s' from Kid ID '%s'",
                 chore_id,
@@ -681,15 +689,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         valid_kid_ids = set(self.kids_data.keys())
 
         # Remove deleted kid IDs from all chore assignments
-        for chore in self._data.get(const.DATA_CHORES, {}).values():
-            if const.DATA_CHORE_ASSIGNED_KIDS in chore:
-                original = chore[const.DATA_CHORE_ASSIGNED_KIDS]
+        for chore_info in self._data.get(const.DATA_CHORES, {}).values():
+            if const.DATA_CHORE_ASSIGNED_KIDS in chore_info:
+                original = chore_info[const.DATA_CHORE_ASSIGNED_KIDS]
                 filtered = [kid for kid in original if kid in valid_kid_ids]
                 if filtered != original:
-                    chore[const.DATA_CHORE_ASSIGNED_KIDS] = filtered
+                    chore_info[const.DATA_CHORE_ASSIGNED_KIDS] = filtered
                     const.LOGGER.debug(
                         "DEBUG: Removed Assigned Kids in Chore '%s'",
-                        chore.get(const.DATA_CHORE_NAME),
+                        chore_info.get(const.DATA_CHORE_NAME),
                     )
 
         # Remove progress in achievements and challenges
@@ -720,32 +728,32 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     def _cleanup_deleted_chore_references(self) -> None:
         """Remove references to chores that no longer exist from kid data."""
         valid_chore_ids = set(self.chores_data.keys())
-        for kid in self.kids_data.values():
+        for kid_info in self.kids_data.values():
             # Clean up list fields
             for key in [const.DATA_KID_CLAIMED_CHORES, const.DATA_KID_APPROVED_CHORES]:
-                if key in kid:
-                    original = kid[key]
+                if key in kid_info:
+                    original = kid_info[key]
                     filtered = [chore for chore in original if chore in valid_chore_ids]
                     if filtered != original:
-                        kid[key] = filtered
+                        kid_info[key] = filtered
 
             # Clean up dictionary fields
             for dict_key in [
                 const.DATA_KID_CHORE_CLAIMS,
                 const.DATA_KID_CHORE_APPROVALS,
             ]:
-                if dict_key in kid:
-                    kid[dict_key] = {
+                if dict_key in kid_info:
+                    kid_info[dict_key] = {
                         chore: count
-                        for chore, count in kid[dict_key].items()
+                        for chore, count in kid_info[dict_key].items()
                         if chore in valid_chore_ids
                     }
 
             # Clean up chore streaks
-            if const.DATA_KID_CHORE_STREAKS in kid:
-                for chore in list(kid[const.DATA_KID_CHORE_STREAKS].keys()):
+            if const.DATA_KID_CHORE_STREAKS in kid_info:
+                for chore in list(kid_info[const.DATA_KID_CHORE_STREAKS].keys()):
                     if chore not in valid_chore_ids:
-                        del kid[const.DATA_KID_CHORE_STREAKS][chore]
+                        del kid_info[const.DATA_KID_CHORE_STREAKS][chore]
                         const.LOGGER.debug(
                             "DEBUG: Removed Chore Streak for deleted Chore '%s'", chore
                         )
@@ -753,39 +761,41 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     def _cleanup_parent_assignments(self) -> None:
         """Remove any kid IDs from parent's 'associated_kids' that no longer exist."""
         valid_kid_ids = set(self.kids_data.keys())
-        for parent in self._data.get(const.DATA_PARENTS, {}).values():
-            original = parent.get(const.DATA_PARENT_ASSOCIATED_KIDS, [])
+        for parent_info in self._data.get(const.DATA_PARENTS, {}).values():
+            original = parent_info.get(const.DATA_PARENT_ASSOCIATED_KIDS, [])
             filtered = [kid_id for kid_id in original if kid_id in valid_kid_ids]
             if filtered != original:
-                parent[const.DATA_PARENT_ASSOCIATED_KIDS] = filtered
+                parent_info[const.DATA_PARENT_ASSOCIATED_KIDS] = filtered
                 const.LOGGER.debug(
                     "DEBUG: Removed Associated Kids for Parent '%s'. Current Associated Kids: %s",
-                    parent.get(const.DATA_PARENT_NAME),
+                    parent_info.get(const.DATA_PARENT_NAME),
                     filtered,
                 )
 
     def _cleanup_deleted_chore_in_achievements(self) -> None:
         """Clear selected_chore_id in achievements if the chore no longer exists."""
         valid_chore_ids = set(self.chores_data.keys())
-        for achievement in self._data.get(const.DATA_ACHIEVEMENTS, {}).values():
-            selected = achievement.get(const.DATA_ACHIEVEMENT_SELECTED_CHORE_ID)
+        for achievement_info in self._data.get(const.DATA_ACHIEVEMENTS, {}).values():
+            selected = achievement_info.get(const.DATA_ACHIEVEMENT_SELECTED_CHORE_ID)
             if selected and selected not in valid_chore_ids:
-                achievement[const.DATA_ACHIEVEMENT_SELECTED_CHORE_ID] = ""
+                achievement_info[const.DATA_ACHIEVEMENT_SELECTED_CHORE_ID] = ""
                 const.LOGGER.debug(
                     "DEBUG: Removed Selected Chore ID in Achievement '%s'",
-                    achievement.get(const.DATA_ACHIEVEMENT_NAME),
+                    achievement_info.get(const.DATA_ACHIEVEMENT_NAME),
                 )
 
     def _cleanup_deleted_chore_in_challenges(self) -> None:
         """Clear selected_chore_id in challenges if the chore no longer exists."""
         valid_chore_ids = set(self.chores_data.keys())
-        for challenge in self._data.get(const.DATA_CHALLENGES, {}).values():
-            selected = challenge.get(const.DATA_CHALLENGE_SELECTED_CHORE_ID)
+        for challenge_info in self._data.get(const.DATA_CHALLENGES, {}).values():
+            selected = challenge_info.get(const.DATA_CHALLENGE_SELECTED_CHORE_ID)
             if selected and selected not in valid_chore_ids:
-                challenge[const.DATA_CHALLENGE_SELECTED_CHORE_ID] = const.CONF_EMPTY
+                challenge_info[const.DATA_CHALLENGE_SELECTED_CHORE_ID] = (
+                    const.CONF_EMPTY
+                )
                 const.LOGGER.debug(
                     "DEBUG: Removed Selected Chore ID in Challenge '%s'",
-                    challenge.get(const.DATA_CHALLENGE_NAME),
+                    challenge_info.get(const.DATA_CHALLENGE_NAME),
                 )
 
     async def remove_deprecated_entities(
@@ -2206,10 +2216,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         kid_info = self.kids_data.get(kid_id)
 
-        for badge_id, badge in self.badges_data.items():
-            if badge.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_PERIODIC:
+        for badge_id, badge_info in self.badges_data.items():
+            if badge_info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_PERIODIC:
                 # If periodic badge defines required chores, update if this chore is required.
-                required_chores = badge.get(const.DATA_BADGE_REQUIRED_CHORES, [])
+                required_chores = badge_info.get(const.DATA_BADGE_REQUIRED_CHORES, [])
                 if required_chores and chore_id in required_chores:
                     # Increment the progress counter specifically for this badge
                     progress = kid_info.setdefault(
@@ -2281,17 +2291,17 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Manage Achievements
         today = dt_util.as_local(dt_util.utcnow()).date()
-        for achievement_id, achievement in self.achievements_data.items():
+        for achievement_id, achievement_info in self.achievements_data.items():
             if (
-                achievement.get(const.DATA_ACHIEVEMENT_TYPE)
+                achievement_info.get(const.DATA_ACHIEVEMENT_TYPE)
                 == const.ACHIEVEMENT_TYPE_STREAK
             ):
-                selected_chore_id = achievement.get(
+                selected_chore_id = achievement_info.get(
                     const.DATA_ACHIEVEMENT_SELECTED_CHORE_ID
                 )
                 if selected_chore_id == chore_id:
                     # Get or create the progress dict for this kid
-                    progress = achievement.setdefault(
+                    progress = achievement_info.setdefault(
                         const.DATA_ACHIEVEMENT_PROGRESS, {}
                     ).setdefault(
                         kid_id,
@@ -2305,15 +2315,17 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Manage Challenges
         today_iso = dt_util.as_local(dt_util.utcnow()).date().isoformat()
-        for challenge_id, challenge in self.challenges_data.items():
-            challenge_type = challenge.get(const.DATA_CHALLENGE_TYPE)
+        for challenge_id, challenge_info in self.challenges_data.items():
+            challenge_type = challenge_info.get(const.DATA_CHALLENGE_TYPE)
 
             if challenge_type == const.CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
-                selected_chore = challenge.get(const.DATA_CHALLENGE_SELECTED_CHORE_ID)
+                selected_chore = challenge_info.get(
+                    const.DATA_CHALLENGE_SELECTED_CHORE_ID
+                )
                 if selected_chore and selected_chore != chore_id:
                     continue
 
-                start_date_raw = challenge.get(const.DATA_CHALLENGE_START_DATE)
+                start_date_raw = challenge_info.get(const.DATA_CHALLENGE_START_DATE)
                 if isinstance(start_date_raw, str):
                     start_date = dt_util.parse_datetime(start_date_raw)
                     if start_date and start_date.tzinfo is None:
@@ -2321,7 +2333,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 else:
                     start_date = None
 
-                end_date_raw = challenge.get(const.DATA_CHALLENGE_END_DATE)
+                end_date_raw = challenge_info.get(const.DATA_CHALLENGE_END_DATE)
                 if isinstance(end_date_raw, str):
                     end_date = dt_util.parse_datetime(end_date_raw)
                     if end_date and end_date.tzinfo is None:
@@ -2332,7 +2344,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 now = dt_util.utcnow()
 
                 if start_date and end_date and start_date <= now <= end_date:
-                    progress = challenge.setdefault(
+                    progress = challenge_info.setdefault(
                         const.DATA_CHALLENGE_PROGRESS, {}
                     ).setdefault(
                         kid_id,
@@ -2344,19 +2356,21 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     progress[const.DATA_CHALLENGE_COUNT] += 1
 
             elif challenge_type == const.CHALLENGE_TYPE_DAILY_MIN:
-                selected_chore = challenge.get(const.DATA_CHALLENGE_SELECTED_CHORE_ID)
+                selected_chore = challenge_info.get(
+                    const.DATA_CHALLENGE_SELECTED_CHORE_ID
+                )
                 if not selected_chore:
                     const.LOGGER.warning(
                         "WARNING: Challenge '%s' of type daily minimum has no selected chore id. Skipping progress update.",
-                        challenge.get(const.DATA_CHALLENGE_NAME),
+                        challenge_info.get(const.DATA_CHALLENGE_NAME),
                     )
                     continue
 
                 if selected_chore != chore_id:
                     continue
 
-                if kid_id in challenge.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, []):
-                    progress = challenge.setdefault(
+                if kid_id in challenge_info.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, []):
+                    progress = challenge_info.setdefault(
                         const.DATA_CHALLENGE_PROGRESS, {}
                     ).setdefault(
                         kid_id,
@@ -2709,15 +2723,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     def redeem_reward(self, parent_name: str, kid_id: str, reward_id: str):
         """Kid claims a reward => mark as pending approval (no deduction yet)."""
-        reward = self.rewards_data.get(reward_id)
-        if not reward:
+        reward_info = self.rewards_data.get(reward_id)
+        if not reward_info:
             raise HomeAssistantError(f"Reward ID '{reward_id}' not found.")
 
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
-        cost = reward.get(const.DATA_REWARD_COST, const.DEFAULT_ZERO)
+        cost = reward_info.get(const.DATA_REWARD_COST, const.DEFAULT_ZERO)
         if kid_info[const.DATA_KID_POINTS] < cost:
             raise HomeAssistantError(
                 f"'{kid_info[const.DATA_KID_NAME]}' does not have enough points ({cost} needed)."
@@ -2769,7 +2783,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._notify_parents(
                 kid_id,
                 title="KidsChores: Reward Claimed",
-                message=f"'{kid_info[const.DATA_KID_NAME]}' claimed reward '{reward[const.DATA_REWARD_NAME]}'",
+                message=f"'{kid_info[const.DATA_KID_NAME]}' claimed reward '{reward_info[const.DATA_REWARD_NAME]}'",
                 actions=actions,
                 extra_data=extra_data,
             )
@@ -2790,11 +2804,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if not kid_info:
             raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
-        reward = self.rewards_data.get(reward_id)
-        if not reward:
+        reward_info = self.rewards_data.get(reward_id)
+        if not reward_info:
             raise HomeAssistantError(f"Reward ID '{reward_id}' not found.")
 
-        cost = reward.get(const.DATA_REWARD_COST, const.DEFAULT_ZERO)
+        cost = reward_info.get(const.DATA_REWARD_COST, const.DEFAULT_ZERO)
 
         pending_count = kid_info.get(const.DATA_KID_PENDING_REWARDS, []).count(
             reward_id
@@ -2802,7 +2816,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if pending_count > 0:
             if kid_info[const.DATA_KID_POINTS] < cost:
                 raise HomeAssistantError(
-                    f"'{kid_info[const.DATA_KID_NAME]}' does not have enough points to redeem '{reward[const.DATA_REWARD_NAME]}'."
+                    f"'{kid_info[const.DATA_KID_NAME]}' does not have enough points to redeem '{reward_info[const.DATA_REWARD_NAME]}'."
                 )
 
             # Deduct points for one claim.
@@ -2817,7 +2831,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # Direct approval (no pending claim present).
             if kid_info[const.DATA_KID_POINTS] < cost:
                 raise HomeAssistantError(
-                    f"'{kid_info[const.DATA_KID_NAME]}' does not have enough points to redeem '{reward[const.DATA_REWARD_NAME]}'."
+                    f"'{kid_info[const.DATA_KID_NAME]}' does not have enough points to redeem '{reward_info[const.DATA_REWARD_NAME]}'."
                 )
             kid_info[const.DATA_KID_POINTS] -= cost
             kid_info[const.DATA_KID_REDEEMED_REWARDS].append(reward_id)
@@ -2853,7 +2867,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._notify_kid(
                 kid_id,
                 title="KidsChores: Reward Approved",
-                message=f"Your reward '{reward[const.DATA_REWARD_NAME]}' was approved.",
+                message=f"Your reward '{reward_info[const.DATA_REWARD_NAME]}' was approved.",
                 extra_data=extra_data,
             )
         )
@@ -2864,8 +2878,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     def disapprove_reward(self, parent_name: str, kid_id: str, reward_id: str):
         """Disapprove a reward for kid_id."""
 
-        reward = self.rewards_data.get(reward_id)
-        if not reward:
+        reward_info = self.rewards_data.get(reward_id)
+        if not reward_info:
             raise HomeAssistantError(f"Reward ID '{reward_id}' not found.")
 
         # Remove only one entry of each reward claim from pending approvals
@@ -2889,7 +2903,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._notify_kid(
                 kid_id,
                 title="KidsChores: Reward Disapproved",
-                message=f"Your reward '{reward[const.DATA_REWARD_NAME]}' was disapproved.",
+                message=f"Your reward '{reward_info[const.DATA_REWARD_NAME]}' was disapproved.",
                 extra_data=extra_data,
             )
         )
@@ -2907,19 +2921,21 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if not kid_info:
             return
 
-        for badge_id, badge in self.badges_data.items():
-            badge_name = badge.get(const.DATA_BADGE_NAME)
-            badge_type = badge.get(const.DATA_BADGE_TYPE)
+        for badge_id, badge_info in self.badges_data.items():
+            badge_name = badge_info.get(const.DATA_BADGE_NAME)
+            badge_type = badge_info.get(const.DATA_BADGE_TYPE)
 
             # For non-cumulative badges, if assigned kids is defined, only award if kid_id is in it.
-            if badge.get(const.DATA_BADGE_TYPE) != const.BADGE_TYPE_CUMULATIVE:
-                assigned = badge.get(const.DATA_BADGE_ASSIGNED_KIDS, [])
+            if badge_info.get(const.DATA_BADGE_TYPE) != const.BADGE_TYPE_CUMULATIVE:
+                assigned = badge_info.get(const.DATA_BADGE_ASSIGNED_KIDS, [])
                 if assigned and kid_id not in assigned:
                     continue
 
-            # For all types except special occasion, skip if already earned.
-            if badge_type != const.BADGE_TYPE_SPECIAL_OCCASION and kid_id in badge.get(
-                const.DATA_BADGE_EARNED_BY, []
+            # For all types except special occasion and daily, skip if already earned.
+            #### **** This needs reviewed to ensure badges with maintenance or resets are being handled correctly somewhere else. ****
+            if (
+                badge_type != const.BADGE_TYPE_SPECIAL_OCCASION
+                and kid_id in badge_info.get(const.DATA_BADGE_EARNED_BY, [])
             ):
                 const.LOGGER.debug(
                     "DEBUG: Check Badge - Skipping badge '%s' (%s) for kid '%s': Already earned.",
@@ -2932,11 +2948,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if badge_type == const.BADGE_TYPE_CUMULATIVE:
                 effective_badge_id = self._determine_cumulative_badge_for_kid(kid_id)
                 const.LOGGER.debug(
-                    "DEBUG: Check Badge - Cumulative badge '%s' for kid '%s' has effective badge id '%s'.",
+                    "DEBUG: Check Badge - Cumulative badge '%s' (%s) for kid '%s' has effective badge id '%s'.",
                     badge_id,
-                    kid_id,
+                    badge_name,
+                    kid_info.get(const.DATA_KID_NAME, kid_id),
                     effective_badge_id,
                 )
+                # Award cumulative this cumulative badge if the kid has enough points.
                 if effective_badge_id == badge_id:
                     const.LOGGER.debug(
                         "DEBUG: Check Badge - Awarding cumulative badge '%s' (%s) to kid '%s'.",
@@ -2945,18 +2963,21 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         kid_id,
                     )
                     self._award_badge(kid_id, badge_id)
-                else:
+                # Remove cumulative badge if the effective badge id returned is different and has already been earned
+                # It wouldn't have processed this far if it was already earned, so it indicates a lower badge was
+                # returned, so kid did not maintain the higher badge
+                elif kid_id in badge_info.get(const.DATA_BADGE_EARNED_BY, []):
                     const.LOGGER.debug(
                         "DEBUG: Check Badge - Removing cumulative badge '%s' (%s) from kid '%s'.",
                         badge_id,
                         badge_name,
-                        kid_id,
+                        kid_info.get(const.DATA_KID_NAME, kid_id),
                     )
                     self._remove_awarded_badges_by_id(kid_id, badge_id)
 
             elif badge_type == const.BADGE_TYPE_DAILY:
                 # Award daily badge if the kid completed enough chores today.
-                threshold = badge.get(
+                threshold = badge_info.get(
                     const.DATA_BADGE_DAILY_THRESHOLD,
                     const.DEFAULT_BADGE_DAILY_THRESHOLD,
                 )
@@ -2969,19 +2990,19 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     self._award_badge(kid_id, badge_id)
 
             elif badge_type == const.BADGE_TYPE_PERIODIC:
-                threshold = badge.get(
+                threshold = badge_info.get(
                     const.DATA_BADGE_THRESHOLD_VALUE,
                     const.DEFAULT_BADGE_THRESHOLD_VALUE,
                 )
-                criteria_type = badge.get(
+                criteria_type = badge_info.get(
                     const.DATA_BADGE_THRESHOLD_TYPE, const.BADGE_THRESHOLD_TYPE_POINTS
                 )
-                reset_schedule = badge.get(
+                reset_schedule = badge_info.get(
                     const.DATA_BADGE_RESET_SCHEDULE, const.CONF_WEEKLY
                 )
                 now = dt_util.utcnow()
 
-                required_chores = badge.get(const.DATA_BADGE_REQUIRED_CHORES, [])
+                required_chores = badge_info.get(const.DATA_BADGE_REQUIRED_CHORES, [])
 
                 if required_chores:
                     # Use the separate progress counter for required chores
@@ -3018,7 +3039,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         # For example, assume the week starts on Monday:
                         week_start = today_local - timedelta(days=today_local.weekday())
                         all_completed = True
-                        required_chores = badge.get(
+                        required_chores = badge_info.get(
                             const.DATA_BADGE_REQUIRED_CHORES, []
                         )
                         for req_chore in required_chores:
@@ -3028,11 +3049,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             ):
                                 all_completed = False
                                 break
-                            chore = self.chores_data.get(req_chore)
-                            if not chore:
+                            chore_info = self.chores_data.get(req_chore)
+                            if not chore_info:
                                 all_completed = False
                                 break
-                            last_completed_str = chore.get(
+                            last_completed_str = chore_info.get(
                                 const.DATA_CHORE_LAST_COMPLETED
                             )
                             if not last_completed_str:
@@ -3057,9 +3078,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
                 elif reset_schedule == const.CONF_CUSTOM:
                     # Custom reset schedule: use start and end dates from the badge.
-                    start_date_str = badge.get(const.DATA_BADGE_START_DATE, "").strip()
-                    end_date_str = badge.get(const.DATA_BADGE_END_DATE, "").strip()
-                    is_recurrent = badge.get(const.DATA_BADGE_PERIODIC_RECURRENT, False)
+                    start_date_str = badge_info.get(
+                        const.DATA_BADGE_START_DATE, ""
+                    ).strip()
+                    end_date_str = badge_info.get(const.DATA_BADGE_END_DATE, "").strip()
+                    is_recurrent = badge_info.get(
+                        const.DATA_BADGE_PERIODIC_RECURRENT, False
+                    )
 
                     if start_date_str and end_date_str:
                         try:
@@ -3068,7 +3093,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             if start_date is None or end_date is None:
                                 const.LOGGER.error(
                                     "ERROR: Check Badge - Invalid schedule dates for badge '%s'",
-                                    badge.get(const.DATA_BADGE_NAME),
+                                    badge_info.get(const.DATA_BADGE_NAME),
                                 )
                                 continue
 
@@ -3090,7 +3115,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         except Exception as e:
                             const.LOGGER.error(
                                 "ERROR: Check Badge - Error parsing schedule dates for badge '%s': %s",
-                                badge.get(const.DATA_BADGE_NAME),
+                                badge_info.get(const.DATA_BADGE_NAME),
                                 e,
                             )
                             continue
@@ -3104,16 +3129,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                                 period_delta = end_date - start_date
                                 new_start = start_date + period_delta
                                 new_end = end_date + period_delta
-                                badge[const.DATA_BADGE_START_DATE] = (
+                                badge_info[const.DATA_BADGE_START_DATE] = (
                                     new_start.isoformat()
                                 )
-                                badge[const.DATA_BADGE_END_DATE] = new_end.isoformat()
+                                badge_info[const.DATA_BADGE_END_DATE] = (
+                                    new_end.isoformat()
+                                )
                                 kid_info.setdefault(
                                     const.DATA_KID_PERIODIC_BADGE_SUCCESS, {}
                                 )[badge_id] = 0
                                 const.LOGGER.info(
                                     "INFO: Check Badge - Rescheduled Periodic Badge '%s' for Kid ID '%s' to new period %s - %s",
-                                    badge.get(const.DATA_BADGE_NAME),
+                                    badge_info.get(const.DATA_BADGE_NAME),
                                     kid_id,
                                     new_start.isoformat(),
                                     new_end.isoformat(),
@@ -3127,16 +3154,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             if kid_points >= threshold:
                                 self._award_badge(kid_id, badge_id)
                         elif criteria_type == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT:
-                            required_chores = badge.get(
+                            required_chores = badge_info.get(
                                 const.DATA_BADGE_REQUIRED_CHORES, []
                             )
                             all_completed = True
                             for req_chore in required_chores:
-                                chore = self.chores_data.get(req_chore)
-                                if not chore:
+                                chore_info = self.chores_data.get(req_chore)
+                                if not chore_info:
                                     all_completed = False
                                     break
-                                last_completed_str = chore.get(
+                                last_completed_str = chore_info.get(
                                     const.DATA_CHORE_LAST_COMPLETED
                                 )
                                 if not last_completed_str:
@@ -3164,32 +3191,36 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
             elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
                 # Award if the linked achievement has been awarded.
-                linked_achievement = badge.get(const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT)
+                linked_achievement = badge_info.get(
+                    const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT
+                )
                 if linked_achievement:
-                    achievement = self.achievements_data.get(linked_achievement)
-                    if achievement:
-                        progress = achievement.get(const.DATA_ACHIEVEMENT_PROGRESS, {})
+                    achievement_info = self.achievements_data.get(linked_achievement)
+                    if achievement_info:
+                        progress = achievement_info.get(
+                            const.DATA_ACHIEVEMENT_PROGRESS, {}
+                        )
                         kid_prog = progress.get(kid_id, {})
                         if kid_prog.get(const.DATA_ACHIEVEMENT_AWARDED, False):
                             self._award_badge(kid_id, badge_id)
 
             elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
                 # Award if the linked challenge has been completed.
-                linked_challenge = badge.get(const.DATA_BADGE_ASSOCIATED_CHALLENGE)
+                linked_challenge = badge_info.get(const.DATA_BADGE_ASSOCIATED_CHALLENGE)
                 if linked_challenge:
-                    challenge = self.challenges_data.get(linked_challenge)
-                    if challenge:
-                        progress = challenge.get(const.DATA_CHALLENGE_PROGRESS, {})
+                    challenge_info = self.challenges_data.get(linked_challenge)
+                    if challenge_info:
+                        progress = challenge_info.get(const.DATA_CHALLENGE_PROGRESS, {})
                         kid_prog = progress.get(kid_id, {})
                         if kid_prog.get(const.DATA_CHALLENGE_AWARDED, False):
                             self._award_badge(kid_id, badge_id)
 
             elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
                 # Special Occasion badges are re‑evaluated even if previously awarded.
-                occasion_date_str = badge.get(
+                occasion_date_str = badge_info.get(
                     const.DATA_BADGE_SPECIAL_OCCASION_DATE, const.CONF_EMPTY
                 ).strip()
-                is_recurrent = badge.get(
+                is_recurrent = badge_info.get(
                     const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY, False
                 )
                 if occasion_date_str:
@@ -3222,7 +3253,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                                             new_date = occasion_date.replace(
                                                 year=next_year, day=28
                                             )
-                                        badge[
+                                        badge_info[
                                             const.DATA_BADGE_SPECIAL_OCCASION_DATE
                                         ] = new_date.isoformat()
                                         updated_options = dict(
@@ -3262,20 +3293,20 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     except Exception as e:
                         const.LOGGER.error(
                             "ERROR: Check Badge - Error processing Special Occasion Badge '%s': %s",
-                            badge.get(const.DATA_BADGE_NAME),
+                            badge_info.get(const.DATA_BADGE_NAME),
                             e,
                         )
 
     def _award_badge(self, kid_id: str, badge_id: str):
         """Add the badge to kid's 'earned_by' and kid's 'badges' list."""
-        badge = self.badges_data.get(badge_id)
+        badge_info = self.badges_data.get(badge_id)
 
         kid_info = self.kids_data.get(kid_id, {})
         if not kid_info:
             const.LOGGER.error("ERROR: Award Badge - Kid ID '%s' not found.", kid_id)
             return
 
-        if not badge:
+        if not badge_info:
             const.LOGGER.error(
                 "ERROR: Award Badge - Badge ID '%s' not found. Cannot be awarded to Kid ID '%s'",
                 badge_id,
@@ -3283,59 +3314,99 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             return
 
-        badge_type = badge.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
+        badge_type = badge_info.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
+        badge_name = badge_info.get(const.DATA_BADGE_NAME)
+        kid_name = kid_info[const.DATA_KID_NAME]
+
         # For non-special occasion badges, do not re‑award if already earned.
-        if badge_type != const.BADGE_TYPE_SPECIAL_OCCASION and kid_id in badge.get(
+        # Note that kid only has a single cumulative badge at any time, so all the other
+        # cumulative badges will still be processed through, even if they previously had the cumulative badge
+        if badge_type != const.BADGE_TYPE_SPECIAL_OCCASION and kid_id in badge_info.get(
             const.DATA_BADGE_EARNED_BY, []
         ):
+            const.LOGGER.warning(
+                "WARNING: Award Badge - Badge '%s' (%s) already awarded to kid '%s' (%s).",
+                badge_id,
+                badge_name,
+                kid_id,
+                kid_name,
+            )
             return
 
         # For special occasion badges, only award once per day.
         if badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
-            kid_info = self.kids_data.get(kid_id, {})
             today = dt_util.as_local(dt_util.utcnow()).date().isoformat()
-            # Track the last award date for this badge.
-            last_award_key = (
-                f"{const.DATA_BADGE_SPECIAL_OCCASION_LAST_AWARDED}_{badge_id}"
-            )
-            if kid_info.get(last_award_key) == today:
-                return  # Already awarded today.
-            # Store last awarded date
-            kid_info[last_award_key] = today
-            # If it was awarded previously, remove it so we can award again.
-            if kid_id in badge.get(const.DATA_BADGE_EARNED_BY, []):
-                badge[const.DATA_BADGE_EARNED_BY].remove(kid_id)
-            # After awarding below, we’ll update kid_info[last_award_key] = today.
-
-        # When awarding a periodic cumulative badge, record baseline and current badge if not already set.
-        if badge_type == const.BADGE_TYPE_CUMULATIVE and badge.get(
-            const.DATA_BADGE_RESET_PERIODICALLY, False
-        ):
-            if const.DATA_KID_CUMULATIVE_BADGE_BASELINE not in kid_info:
-                kid_info[const.DATA_KID_CUMULATIVE_BADGE_BASELINE] = kid_info.get(
-                    const.DATA_KID_CUMULATIVE_EARNED_POINTS, const.DEFAULT_ZERO
+            # Use the dictionary for tracking earned badges.
+            badges_earned = kid_info.setdefault(const.DATA_KID_BADGES_EARNED, {})
+            tracking_entry = badges_earned.get(badge_id)
+            if (
+                tracking_entry
+                and tracking_entry.get(const.DATA_KID_BADGE_EARNED_LAST_AWARDED)
+                == today
+            ):
+                const.LOGGER.warning(
+                    "WARNING: Award Badge - Special occasion badge '%s' (%s) already awarded today to kid '%s' (%s).",
+                    badge_id,
+                    badge_name,
+                    kid_id,
+                    kid_name,
                 )
-            if const.DATA_KID_PRE_RESET_BADGE not in kid_info:
+                return  # Already awarded today.
+
+        # When awarding a cumulative badge, record baseline and current badge if not already set.
+        if badge_type == const.BADGE_TYPE_CUMULATIVE:
+            # If peridoc reset true, then capture the new badge_id for future reset processing
+            if badge_info.get(const.DATA_BADGE_RESET_PERIODICALLY, False):
                 kid_info[const.DATA_KID_PRE_RESET_BADGE] = badge_id
+            # When awarding a badge, set the baseline and zero the cumulative earned
+            try:
+                baseline_points = float(
+                    kid_info.get(
+                        const.DATA_KID_CUMULATIVE_BADGE_BASELINE, const.DEFAULT_ZERO
+                    )
+                )
+                cycle_points = float(
+                    kid_info.get(
+                        const.DATA_KID_CUMULATIVE_EARNED_POINTS, const.DEFAULT_ZERO
+                    )
+                )
+            except (ValueError, TypeError) as err:
+                const.LOGGER.error(
+                    "ERROR: Award Badge - Non-numeric values for cumulative points for kid '%s': %s",
+                    kid_info.get(const.DATA_KID_NAME, kid_id),
+                    err,
+                )
+                return
+            kid_info[const.DATA_KID_CUMULATIVE_BADGE_BASELINE] = (
+                baseline_points + cycle_points
+            )
+            kid_info[const.DATA_KID_CUMULATIVE_EARNED_POINTS] = const.DEFAULT_ZERO
 
         # Award the badge (for all types, including special occasion).
-        badge.setdefault(const.DATA_BADGE_EARNED_BY, []).append(kid_id)
-
-        badge_name = badge.get(const.DATA_BADGE_NAME)
-        kid_name = kid_info[const.DATA_KID_NAME]
-
+        const.LOGGER.info(
+            "INFO: Award Badge - Awarding badge '%s' (%s) to kid '%s' (%s).",
+            badge_id,
+            badge_name,
+            kid_id,
+            kid_name,
+        )
+        badge_info.setdefault(const.DATA_BADGE_EARNED_BY, []).append(kid_id)
+        self._update_badges_earned_for_kid(kid_id, badge_id)
         if badge_name not in kid_info.get(const.DATA_KID_BADGES, []):
             kid_info.setdefault(const.DATA_KID_BADGES, []).append(badge_name)
 
-        badge_type = badge.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
-
-        one_time_reward = badge.get(const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY)
+        # Process the awards for the achievement including multiplier, points, and rewards
+        one_time_reward = badge_info.get(
+            const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
+        )
 
         if badge_type == const.BADGE_TYPE_CUMULATIVE:
             # Update the kid's multiplier based on all earned cumulative badges.
             self._update_kid_multiplier(kid_id)
 
-        elif badge_type in [
+        # For all badge types listed, check if the badge is eligible for extra points or one-time reward.
+        if badge_type in [
+            const.BADGE_TYPE_CUMULATIVE,
             const.BADGE_TYPE_DAILY,
             const.BADGE_TYPE_PERIODIC,
             const.BADGE_TYPE_ACHIEVEMENT_LINKED,
@@ -3343,32 +3414,32 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.BADGE_TYPE_SPECIAL_OCCASION,
         ]:
             # Determine award mode and apply accordingly:
-            award_mode = badge.get(
+            award_mode = badge_info.get(
                 const.DATA_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
             )
             if award_mode == const.DATA_BADGE_AWARD_POINTS:
-                extra_points = badge.get(
+                extra_points = badge_info.get(
                     const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_ZERO
                 )
                 one_time_reward = const.CONF_EMPTY
             elif award_mode == const.DATA_BADGE_AWARD_REWARD:
                 extra_points = 0
-                one_time_reward = badge.get(
+                one_time_reward = badge_info.get(
                     const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
                 )
             elif award_mode == const.DATA_BADGE_AWARD_POINTS_REWARD:
-                extra_points = badge.get(
+                extra_points = badge_info.get(
                     const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_ZERO
                 )
-                one_time_reward = badge.get(
+                one_time_reward = badge_info.get(
                     const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
                 )
             else:
                 # Fallback behavior
-                extra_points = badge.get(
+                extra_points = badge_info.get(
                     const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_ZERO
                 )
-                one_time_reward = badge.get(
+                one_time_reward = badge_info.get(
                     const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
                 )
 
@@ -3378,6 +3449,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     kid_info.get(const.DATA_KID_POINTS, const.DEFAULT_ZERO)
                 )
                 new_points = current_points + extra_points
+                const.LOGGER.info(
+                    "INFO: Award Badge - Adding extra points: %s (current: %s, new: %s) for kid '%s'.",
+                    extra_points,
+                    current_points,
+                    new_points,
+                    kid_name,
+                )
                 self.update_kid_points(kid_id, new_points)
 
             # Process one-time reward if applicable
@@ -3385,6 +3463,19 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 if one_time_reward in kid_info.get(const.DATA_KID_PENDING_REWARDS, []):
                     kid_info[const.DATA_KID_PENDING_REWARDS].remove(one_time_reward)
                 kid_info.setdefault(const.DATA_KID_REWARD_APPROVALS, {})
+                if one_time_reward not in kid_info.get(
+                    const.DATA_KID_REDEEMED_REWARDS, []
+                ):
+                    kid_info.setdefault(const.DATA_KID_REDEEMED_REWARDS, []).append(
+                        one_time_reward
+                    )
+                    const.LOGGER.info(
+                        "INFO: Award Badge - Added one-time reward '%s' to redeemed rewards for kid '%s'.",
+                        self.rewards_data.get(one_time_reward).get(
+                            const.DATA_REWARD_NAME, one_time_reward
+                        ),
+                        kid_name,
+                    )
                 if one_time_reward in kid_info[const.DATA_KID_REWARD_APPROVALS]:
                     kid_info[const.DATA_KID_REWARD_APPROVALS][one_time_reward] += 1
                 else:
@@ -3398,7 +3489,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         else:
             const.LOGGER.warning(
-                "WARNING: Badge Award - Badge '%s' is not ellegible for extra rewards",
+                "WARNING: Badge Award - Badge '%s' is not eligible for extra rewards",
                 badge_type,
             )
 
@@ -3432,15 +3523,62 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._persist()
         self.async_set_updated_data(self._data)
 
+    def _update_badges_earned_for_kid(self, kid_id: str, badge_id: str) -> None:
+        """Update the kid's badges-earned tracking for the given badge."""
+        kid_info = self.kids_data.get(kid_id)
+        if not kid_info:
+            const.LOGGER.error(
+                "ERROR: Update Kid Badges Earned - Kid ID '%s' not found.", kid_id
+            )
+            return
+
+        badge_info = self.badges_data.get(badge_id)
+        if not badge_info:
+            const.LOGGER.error(
+                "ERROR: Update Kid Badges Earned - Badge ID '%s' not found.", badge_id
+            )
+            return
+
+        today_local = dt_util.as_local(dt_util.utcnow()).date().isoformat()
+        # Initialize badges-earned as a dict if not already present.
+        badges_earned = kid_info.setdefault(const.DATA_KID_BADGES_EARNED, {})
+
+        if badge_id in badges_earned:
+            tracking_entry = badges_earned[badge_id]
+            tracking_entry[const.DATA_KID_BADGE_EARNED_NAME] = badge_info.get(
+                const.DATA_BADGE_NAME
+            )
+            tracking_entry[const.DATA_KID_BADGE_EARNED_LAST_AWARDED] = today_local
+            tracking_entry[const.DATA_KID_BADGE_EARNED_AWARD_COUNT] = (
+                tracking_entry.get(const.DATA_KID_BADGE_EARNED_AWARD_COUNT, 0) + 1
+            )
+            const.LOGGER.info(
+                "INFO: Update Kid Badges Earned - Updated tracking for badge '%s' for kid '%s'.",
+                badge_info.get(const.DATA_BADGE_NAME, badge_id),
+                kid_info.get(const.DATA_KID_NAME, kid_id),
+            )
+        else:
+            new_entry = {
+                const.DATA_KID_BADGE_EARNED_NAME: badge_info.get(const.DATA_BADGE_NAME),
+                const.DATA_KID_BADGE_EARNED_LAST_AWARDED: today_local,
+                const.DATA_KID_BADGE_EARNED_AWARD_COUNT: 1,
+            }
+            badges_earned[badge_id] = new_entry
+            const.LOGGER.info(
+                "INFO: Update Kid Badges Earned - Created new tracking for badge '%s' for kid '%s'.",
+                badge_info.get(const.DATA_BADGE_NAME, badge_id),
+                kid_info.get(const.DATA_KID_NAME, kid_id),
+            )
+
     def _update_kid_multiplier(self, kid_id: str):
         """Update the kid's points multiplier based on highest badge achieved."""
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             return
         earned_badges = [
-            badge
-            for badge in self.badges_data.values()
-            if kid_id in badge.get(const.DATA_BADGE_EARNED_BY, [])
+            badge_info
+            for badge_info in self.badges_data.values()
+            if kid_id in badge_info.get(const.DATA_BADGE_EARNED_BY, [])
         ]
         if not earned_badges:
             kid_info[const.DATA_KID_POINTS_MULTIPLIER] = (
@@ -3448,38 +3586,53 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
         else:
             highest_mult = max(
-                badge.get(
+                badge_info.get(
                     const.DATA_BADGE_POINTS_MULTIPLIER,
                     const.DEFAULT_KID_POINTS_MULTIPLIER,
                 )
-                for badge in earned_badges
+                for badge_info in earned_badges
             )
             kid_info[const.DATA_KID_POINTS_MULTIPLIER] = highest_mult
 
     async def _reset_cumulative_badges(self):
         """Check and reset cumulative badges for all kids."""
+        const.LOGGER.info(
+            "INFO: Reset Cumulative Badges - Starting reset process for cumulative badges."
+        )
         for kid_id, kid_info in self.kids_data.items():
-            for badge in self.badges_data.values():
+            for badge_info in self.badges_data.values():
                 # Only reset if badge type is cumulative and set to periodically reset
-                badge_type = badge.get(const.DATA_BADGE_TYPE)
-                if badge_type != const.BADGE_TYPE_CUMULATIVE or badge.get(
+                badge_type = badge_info.get(const.DATA_BADGE_TYPE)
+                if badge_type != const.BADGE_TYPE_CUMULATIVE or not badge_info.get(
                     const.DATA_BADGE_RESET_PERIODICALLY, False
                 ):
                     continue
 
-                if not self._process_cumulative_badge_reset(kid_id, badge):
-                    badge_id = badge.get(const.DATA_BADGE_ID)
+                if not self._process_cumulative_badge_reset(kid_id, badge_info):
+                    badge_id = badge_info.get(const.DATA_BADGE_ID)
+                    badge_name = badge_info.get(const.DATA_BADGE_NAME, badge_id)
+                    kid_name = kid_info.get(const.DATA_KID_NAME, kid_id)
+                    const.LOGGER.warning(
+                        "WARNING: Reset Cumulative Badges - Removing awarded badge '%s' (ID: %s) for kid '%s' (ID: %s).",
+                        badge_name,
+                        badge_id,
+                        kid_name,
+                        kid_id,
+                    )
                     self._remove_awarded_badges_by_id(kid_id, badge_id)
+        const.LOGGER.info(
+            "INFO: Reset Cumulative Badges - Completed reset process for cumulative badges."
+        )
 
-    def _process_cumulative_badge_reset(self, kid_id: str, badge: dict) -> bool:
+    def _process_cumulative_badge_reset(self, kid_id: str, badge_info: dict) -> bool:
         """Determine whether a cumulative badge is maintained for a kid."""
         now_local = dt_util.as_local(dt_util.utcnow())
-        reset_type = badge.get(const.DATA_BADGE_RESET_TYPE, const.CONF_YEAR_END)
-        grace_period_days = badge.get(
+        reset_type = badge_info.get(const.DATA_BADGE_RESET_TYPE, const.CONF_YEAR_END)
+        grace_period_days = badge_info.get(
             const.DATA_BADGE_RESET_GRACE_PERIOD,
             const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
         )
-        custom_reset_date = badge.get(const.DATA_BADGE_CUSTOM_RESET_DATE)
+        custom_reset_date = badge_info.get(const.DATA_BADGE_CUSTOM_RESET_DATE)
 
         # Determine expected reset date based on reset_type.
         if reset_type == const.CONF_YEAR_END:
@@ -3538,7 +3691,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_KID_CUMULATIVE_EARNED_POINTS, const.DEFAULT_ZERO
         )
         maintenance_required = float(
-            badge.get(const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO)
+            badge_info.get(const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO)
         )
 
         if now_local < grace_expiration:
@@ -3564,11 +3717,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 else:
                     new_reset_date = expected_reset  # fallback
 
-                badge[const.DATA_BADGE_CUSTOM_RESET_DATE] = new_reset_date.isoformat()
+                badge_info[const.DATA_BADGE_CUSTOM_RESET_DATE] = (
+                    new_reset_date.isoformat()
+                )
 
                 const.LOGGER.info(
                     "INFO: Cumulative Badge '%s' rescheduled. New custom reset date %s",
-                    badge.get(const.DATA_BADGE_NAME),
+                    badge_info.get(const.DATA_BADGE_NAME),
                     new_reset_date.isoformat(),
                 )
 
@@ -3620,7 +3775,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 None,
             )
             if not badge_id:
-                # If the badge isn't found, assume it was deleted.
+                # If the badge isn't found, assume the actual badge was deleted but still listed in kid data
                 const.LOGGER.warning(
                     "WARNING: Remove Awarded Badges - Badge name '%s' not found in badges_data. Removing from kid data only.",
                     badge_name,
@@ -3630,14 +3785,34 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 if kid_id:
                     kid_info = self.kids_data.get(kid_id)
                     if kid_info:
+                        # Remove badge name from the kid's badges list
                         badge_list = kid_info.get(const.DATA_KID_BADGES, [])
                         if badge_name in badge_list:
                             badge_list.remove(badge_name)
+                        # Remove badge from the kid's earned badges
+                        badges_earned = kid_info.get(const.DATA_KID_BADGES_EARNED, {})
+                        to_remove = [
+                            badge_id
+                            for badge_id, entry in badges_earned.items()
+                            if entry.get(const.DATA_KID_BADGE_EARNED_NAME) == badge_name
+                        ]
+                        for badge_id in to_remove:
+                            del badges_earned[badge_id]
                 else:
                     for kid_info in self.kids_data.values():
+                        # Remove badge name from the kid's badges list
                         badge_list = kid_info.get(const.DATA_KID_BADGES, [])
                         if badge_name in badge_list:
                             badge_list.remove(badge_name)
+                        # Remove badge from the kid's earned badges
+                        badges_earned = kid_info.get(const.DATA_KID_BADGES_EARNED, {})
+                        to_remove = [
+                            badge_id
+                            for badge_id, entry in badges_earned.items()
+                            if entry.get(const.DATA_KID_BADGE_EARNED_NAME) == badge_name
+                        ]
+                        for badge_id in to_remove:
+                            del badges_earned[badge_id]
 
                 self._persist()
                 self.async_set_updated_data(self._data)
@@ -3651,17 +3826,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self, kid_id: Optional[str] = None, badge_id: Optional[str] = None
     ) -> None:
         """Removes awarded badges based on provided kid_id and badge_id."""
-
-        # Define a mapping for cleaning extra fields based on badge type
+        # Mapping for cleaning extra fields based on badge type.
         clear_extra_fields = {
             const.BADGE_TYPE_CUMULATIVE: lambda kid_info, badge_id: kid_info.update(
                 {
-                    const.DATA_KID_CUMULATIVE_EARNED_POINTS: const.DEFAULT_ZERO
-                    if kid_info.get(const.DATA_KID_PRE_RESET_BADGE) == badge_id
-                    else kid_info.get(const.DATA_KID_CUMULATIVE_EARNED_POINTS),
-                    const.DATA_KID_CUMULATIVE_BADGE_BASELINE: const.DEFAULT_ZERO
-                    if kid_info.get(const.DATA_KID_PRE_RESET_BADGE) == badge_id
-                    else kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_BASELINE),
                     const.DATA_KID_PRE_RESET_BADGE: const.CONF_NONE
                     if kid_info.get(const.DATA_KID_PRE_RESET_BADGE) == badge_id
                     else kid_info.get(const.DATA_KID_PRE_RESET_BADGE),
@@ -3678,11 +3846,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             ),
         }
 
+        const.LOGGER.info("INFO: Remove Awarded Badges - Starting removal process.")
+        found = False
+
         if badge_id and kid_id:
-            # Reset a specific badge for a specific kid
+            # Reset a specific badge for a specific kid.
             kid_info = self.kids_data.get(kid_id)
             badge_info = self.badges_data.get(badge_id)
-            badge_name = badge_info.get(const.DATA_BADGE_NAME)
             if not kid_info:
                 const.LOGGER.error(
                     "ERROR: Remove Awarded Badges - Kid ID '%s' not found.", kid_id
@@ -3693,107 +3863,190 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     "ERROR: Remove Awarded Badges - Badge ID '%s' not found.", badge_id
                 )
                 raise HomeAssistantError(f"Badge ID '{badge_id}' not found.")
+            badge_name = badge_info.get(const.DATA_BADGE_NAME, badge_id)
+            kid_name = kid_info.get(const.DATA_KID_NAME, kid_id)
+            # Remove the badge from the kid's badges_earned.
+            badges_earned = kid_info.get(const.DATA_KID_BADGES_EARNED, {})
+            if badge_id in badges_earned:
+                found = True
+                const.LOGGER.warning(
+                    "WARNING: Remove Awarded Badges - Removing badge '%s' from kid '%s'.",
+                    badge_name,
+                    kid_name,
+                )
+                del badges_earned[badge_id]
+                # Remove extra fields based on badge type.
+                badge_type = badge_info.get(const.DATA_BADGE_TYPE)
+                if badge_type in clear_extra_fields:
+                    clear_extra_fields[badge_type](kid_info, badge_id)
+            # Remove the badge from the kid's badges list.
             badge_list = kid_info.get(const.DATA_KID_BADGES, [])
             if badge_name in badge_list:
                 badge_list.remove(badge_name)
+            # Remove the kid from the badge earned_by list.
             earned_by_list = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
             if kid_id in earned_by_list:
                 earned_by_list.remove(kid_id)
-            badge_type = badge_info.get(const.DATA_BADGE_TYPE)
-            if badge_type in clear_extra_fields:
-                clear_extra_fields[badge_type](kid_info, badge_id)
+
+            if not found:
+                const.LOGGER.warning(
+                    "WARNING: Remove Awarded Badges - Badge '%s' ('%s') not found in kid '%s' ('%s') data.",
+                    badge_id,
+                    badge_name,
+                    kid_id,
+                    kid_name,
+                )
 
         elif badge_id:
-            # Remove a specific awarded badge for all kids
+            # Remove a specific awarded badge for all kids.
             badge_info = self.badges_data.get(badge_id)
-            badge_name = badge_info.get(const.DATA_BADGE_NAME)
-            found = False
-            for kid_info in self.kids_data.values():
-                badge_list = kid_info.get(const.DATA_KID_BADGES, [])
-                if badge_name in badge_list:
+            badge_name = badge_info.get(const.DATA_BADGE_NAME, badge_id)
+            for kid_id, kid_info in self.kids_data.items():
+                kid_name = kid_info.get(const.DATA_KID_NAME, "Unknown Kid")
+                # Remove the badge from the kid's badges_earned.
+                badges_earned = kid_info.get(const.DATA_KID_BADGES_EARNED, {})
+                if badge_id in badges_earned:
                     found = True
-                    badge_list.remove(badge_name)
-                    kid_id = kid_info.get(const.DATA_KID_ID)
-                    earned_by_list = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
-                    if kid_id in earned_by_list:
-                        earned_by_list.remove(kid_id)
+                    const.LOGGER.warning(
+                        "WARNING: Remove Awarded Badges - Removing badge '%s' from kid '%s'.",
+                        badge_name,
+                        kid_name,
+                    )
+                    del badges_earned[badge_id]
+                    # Remove extra fields based on badge type.
                     badge_type = badge_info.get(const.DATA_BADGE_TYPE)
                     if badge_type in clear_extra_fields:
                         clear_extra_fields[badge_type](kid_info, badge_id)
+                # Remove the badge from the kid's badges list.
+                badge_list = kid_info.get(const.DATA_KID_BADGES, [])
+                if badge_name in badge_list:
+                    badge_list.remove(badge_name)
+                # Remove the kid from the badge earned_by list.
+                earned_by_list = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
+                if kid_id in earned_by_list:
+                    earned_by_list.remove(kid_id)
+
+            # All kids should already be removed from the badge earned_by list, but in case of orphans, clear those fields
+            if const.DATA_BADGE_EARNED_BY in badge_info:
+                badge_info[const.DATA_BADGE_EARNED_BY].clear()
+
             if not found:
                 const.LOGGER.warning(
-                    "WARNING: Remove Awarded Badges - Badge '%s' not found in any kid's data.",
+                    "WARNING: Remove Awarded Badges - Badge '%s' ('%s') not found in any kid's data.",
                     badge_id,
+                    badge_name,
                 )
+
         elif kid_id:
-            # Remove all awarded badges for a specific kid
+            # Remove all awarded badges for a specific kid.
             kid_info = self.kids_data.get(kid_id)
             if not kid_info:
                 const.LOGGER.error(
                     "ERROR: Remove Awarded Badges - Kid ID '%s' not found.", kid_id
                 )
                 raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
-            found = False
-            for badge_info in self.badges_data.values():
+            kid_name = kid_info.get(const.DATA_KID_NAME, "Unknown Kid")
+            for badge_id, badge_info in self.badges_data.values():
                 badge_name = badge_info.get(const.DATA_BADGE_NAME)
                 earned_by_list = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
+                badges_earned = kid_info.get(const.DATA_KID_BADGES_EARNED, {})
+                badge_list = kid_info.get(const.DATA_KID_BADGES, [])
                 if kid_id in earned_by_list:
+                    found = True
+                    # Remove kid from badge earned_by list
                     earned_by_list.remove(kid_id)
-                    badge_list = kid_info.get(const.DATA_KID_BADGES, [])
+                    # Remove the badge from the kid's badges_earned.
+                    if badge_id in badges_earned:
+                        found = True
+                        const.LOGGER.warning(
+                            "WARNING: Remove Awarded Badges - Removing badge '%s' from kid '%s'.",
+                            badge_name,
+                            kid_name,
+                        )
+                        del badges_earned[badge_id]
+                        # Remove extra fields based on badge type.
+                        badge_type = badge_info.get(const.DATA_BADGE_TYPE)
+                        if badge_type in clear_extra_fields:
+                            clear_extra_fields[badge_type](kid_info, badge_id)
+                    # Remove badge from kid's badges list
                     if badge_name in badge_list:
                         badge_list.remove(badge_name)
-                    badge_type = badge_info.get(const.DATA_BADGE_TYPE)
-                    if badge_type in clear_extra_fields:
-                        clear_extra_fields[badge_type](kid_info, badge_id)
+
+            # All badges should already be removed from the kid's badges list, but in case of orphans, clear those fields
+            if const.DATA_KID_BADGES in kid_info:
+                kid_info[const.DATA_KID_BADGES].clear()
+            if const.DATA_KID_BADGES_EARNED in kid_info:
+                kid_info[const.DATA_KID_BADGES_EARNED].clear()
+            # CLS Should also clear all extra fields for all badge types later
+
             if not found:
                 const.LOGGER.warning(
-                    "WARNING: Remove Awarded Badges - No Badge found for kid '%s'.",
-                    kid_id,
+                    "WARNING: Remove Awarded Badges - No badge found for kid '%s'.",
+                    kid_info.get(const.DATA_KID_NAME, kid_id),
                 )
+
         else:
-            # Remove Awarded Badges for all kids
+            # Remove Awarded Badges for all kids.
             const.LOGGER.info(
                 "INFO: Remove Awarded Badges - Removing all awarded badges for all kids."
             )
-            found = False
-            # Iterate over each badge in badges_data
             for badge_id, badge_info in self.badges_data.items():
                 badge_name = badge_info.get(const.DATA_BADGE_NAME)
-                earned_by_list = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
-                # Iterate over the list of kid IDs for this badge
-                for kid_id in earned_by_list:
-                    kid_info = self.kids_data.get(kid_id)
-                    earned_by_list.remove(kid_id)
+                for kid_id, kid_info in self.kids_data.items():
+                    kid_name = kid_info.get(const.DATA_KID_NAME, "Unknown Kid")
+                    # Remove the badge from the kid's badges_earned.
+                    badges_earned = kid_info.get(const.DATA_KID_BADGES_EARNED, {})
+                    if badge_id in badges_earned:
+                        found = True
+                        const.LOGGER.warning(
+                            "WARNING: Remove Awarded Badges - Removing badge '%s' from kid '%s'.",
+                            badge_name,
+                            kid_name,
+                        )
+                        del badges_earned[badge_id]
+                        # Remove extra fields based on badge type.
+                        badge_type = badge_info.get(const.DATA_BADGE_TYPE)
+                        if badge_type in clear_extra_fields:
+                            clear_extra_fields[badge_type](kid_info, badge_id)
+                    # Remove the badge from the kid's badges list.
                     badge_list = kid_info.get(const.DATA_KID_BADGES, [])
-                    if kid_info and badge_list:
-                        if badge_name in badge_list:
-                            found = True
-                            badge_list.remove(badge_name)
-                            badge_type = badge_info.get(const.DATA_BADGE_TYPE)
-                            if badge_type in clear_extra_fields:
-                                clear_extra_fields[badge_type](kid_info, badge_id)
+                    if badge_name in badge_list:
+                        badge_list.remove(badge_name)
+                    # Remove the kid from the badge earned_by list.
+                    earned_by_list = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
+                    if kid_id in earned_by_list:
+                        earned_by_list.remove(kid_id)
+
+                    # All badges should already be removed from the kid's badges list, but in case of orphans, clear those fields
+                    if const.DATA_KID_BADGES in kid_info:
+                        kid_info[const.DATA_KID_BADGES].clear()
+                    if const.DATA_KID_BADGES_EARNED in kid_info:
+                        kid_info[const.DATA_KID_BADGES_EARNED].clear()
+                    # CLS Should also clear all extra fields for all badge types later
+
+                # All kids should already be removed from the badge earned_by list, but in case of orphans, clear those fields
+                if const.DATA_BADGE_EARNED_BY in badge_info:
+                    badge_info[const.DATA_BADGE_EARNED_BY].clear()
+
             if not found:
                 const.LOGGER.warning(
                     "WARNING: Remove Awarded Badges - No awarded badges found in any kid's data."
                 )
 
-        const.LOGGER.debug(
-            "DEBUG: Remove Awarded Badges - Badge removal completed - Kid ID '%s', Badge ID '%s'",
-            kid_id,
-            badge_id,
+        const.LOGGER.info(
+            "INFO: Remove Awarded Badges - Badge removal process completed."
         )
-
         self._persist()
         self.async_set_updated_data(self._data)
 
     def _recalculate_all_badges(self):
         """Global re-check of all badges for all kids."""
-        const.LOGGER.debug("DEBUG: Badge - Starting Global Badge Recalculation")
+        const.LOGGER.info("INFO: Recalculate All Badges - Starting Recalculation")
 
         # Clear any per-kid periodic badge counters.
-        for kid in self.kids_data.values():
-            if const.DATA_KID_PERIODIC_BADGE_SUCCESS in kid:
-                kid[const.DATA_KID_PERIODIC_BADGE_SUCCESS].clear()
+        for kid_info in self.kids_data.values():
+            if const.DATA_KID_PERIODIC_BADGE_SUCCESS in kid_info:
+                kid_info[const.DATA_KID_PERIODIC_BADGE_SUCCESS].clear()
 
         # Re-evaluate badge criteria for each kid.
         for kid_id in self.kids_data.keys():
@@ -3801,7 +4054,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         self._persist()
         self.async_set_updated_data(self._data)
-        const.LOGGER.debug("DEBUG: Badge - Recalculation complete")
+        const.LOGGER.info("INFO: Recalculate All Badges - Recalculation Complete")
 
     def _determine_cumulative_badge_for_kid(self, kid_id: str) -> Optional[str]:
         """Determine which cumulative badge a kid should currently have."""
@@ -3810,13 +4063,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             return None
 
         cumulative_badges = [
-            badge
-            for badge in self.badges_data.values()
-            if badge.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
+            badge_info
+            for badge_info in self.badges_data.values()
+            if badge_info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
         ]
 
         cumulative_badges.sort(
-            key=lambda badge: badge.get(
+            key=lambda badge_info: badge_info.get(
                 const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
             )
         )
@@ -3832,9 +4085,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if current_badge_id:
             current_badge = next(
                 (
-                    badge
-                    for badge in cumulative_badges
-                    if badge.get(const.DATA_BADGE_INTERNAL_ID) == current_badge_id
+                    badge_info
+                    for badge_info in cumulative_badges
+                    if badge_info.get(const.DATA_BADGE_INTERNAL_ID) == current_badge_id
                 ),
                 None,
             )
@@ -3849,36 +4102,36 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
                 if cycle_points >= maintenance_required:
                     # Check for upgrade possibility.
-                    for badge in cumulative_badges:
-                        badge_threshold = badge.get(
+                    for badge_info in cumulative_badges:
+                        badge_threshold = badge_info.get(
                             const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
                         )
                         if (
                             badge_threshold > current_threshold
                             and total >= badge_threshold
                         ):
-                            # Upgrade: record the new badge and update baseline.
-                            kid_info[const.DATA_KID_PRE_RESET_BADGE] = badge.get(
+                            # Upgrade: Met criteria for next badge
+                            upgrade_badge_id = badge_info.get(
                                 const.DATA_BADGE_INTERNAL_ID
                             )
-                            kid_info[const.DATA_KID_CUMULATIVE_BADGE_BASELINE] = total
-                            return badge.get(const.DATA_BADGE_INTERNAL_ID)
+                            return upgrade_badge_id
                     return current_badge_id
 
                 else:
                     # Not maintained: downgrade by one level.
-                    return self._get_next_lower_badge(current_badge_id)
+                    downgrade_badge_id = self._get_next_lower_badge(current_badge_id)
+                    return downgrade_badge_id
 
         else:
             # No pre-reset badge recorded: award the highest badge that qualifies.
             awarded_badge = None
 
-            for badge in cumulative_badges:
-                threshold = badge.get(
+            for badge_info in cumulative_badges:
+                threshold = badge_info.get(
                     const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
                 )
                 if total >= threshold:
-                    awarded_badge = badge
+                    awarded_badge = badge_info
 
             if awarded_badge:
                 return awarded_badge.get(const.DATA_BADGE_INTERNAL_ID)
@@ -3888,19 +4141,19 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     def _get_next_lower_badge(self, current_badge_id: str) -> Optional[str]:
         """Given a cumulative badge ID, return the badge ID immediately lower in threshold."""
         cumulative_badges = [
-            badge
-            for badge in self.badges_data.values()
-            if badge.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
+            badge_info
+            for badge_info in self.badges_data.values()
+            if badge_info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
         ]
         cumulative_badges.sort(
-            key=lambda badge: badge.get(
+            key=lambda badge_info: badge_info.get(
                 const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO
             )
         )
         current_index = None
 
-        for index, badge in enumerate(cumulative_badges):
-            if badge.get(const.DATA_BADGE_INTERNAL_ID) == current_badge_id:
+        for index, badge_info in enumerate(cumulative_badges):
+            if badge_info.get(const.DATA_BADGE_INTERNAL_ID) == current_badge_id:
                 current_index = index
                 break
 
@@ -3923,15 +4176,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     def apply_penalty(self, parent_name: str, kid_id: str, penalty_id: str):
         """Apply penalty => negative points to reduce kid's points."""
-        penalty = self.penalties_data.get(penalty_id)
-        if not penalty:
+        penalty_info = self.penalties_data.get(penalty_id)
+        if not penalty_info:
             raise HomeAssistantError(f"Penalty ID '{penalty_id}' not found.")
 
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
-        penalty_pts = penalty.get(const.DATA_PENALTY_POINTS, const.DEFAULT_ZERO)
+        penalty_pts = penalty_info.get(const.DATA_PENALTY_POINTS, const.DEFAULT_ZERO)
         new_points = float(kid_info[const.DATA_KID_POINTS]) + penalty_pts
         self.update_kid_points(kid_id, new_points)
 
@@ -3947,7 +4200,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._notify_kid(
                 kid_id,
                 title="KidsChores: Penalty Applied",
-                message=f"A '{penalty[const.DATA_PENALTY_NAME]}' penalty was applied. Your points changed by {penalty_pts}.",
+                message=f"A '{penalty_info[const.DATA_PENALTY_NAME]}' penalty was applied. Your points changed by {penalty_pts}.",
                 extra_data=extra_data,
             )
         )
@@ -3961,15 +4214,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     def apply_bonus(self, parent_name: str, kid_id: str, bonus_id: str):
         """Apply bonus => positive points to increase kid's points."""
-        bonus = self.bonuses_data.get(bonus_id)
-        if not bonus:
+        bonus_info = self.bonuses_data.get(bonus_id)
+        if not bonus_info:
             raise HomeAssistantError(f"Bonus ID '{bonus_id}' not found.")
 
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
-        bonus_pts = bonus.get(const.DATA_BONUS_POINTS, const.DEFAULT_ZERO)
+        bonus_pts = bonus_info.get(const.DATA_BONUS_POINTS, const.DEFAULT_ZERO)
         new_points = float(kid_info[const.DATA_KID_POINTS]) + bonus_pts
         self.update_kid_points(kid_id, new_points)
 
@@ -3985,7 +4238,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._notify_kid(
                 kid_id,
                 title="KidsChores: Bonus Applied",
-                message=f"A '{bonus[const.DATA_BONUS_NAME]}' bonus was applied. Your points changed by {bonus_pts}.",
+                message=f"A '{bonus_info[const.DATA_BONUS_NAME]}' bonus was applied. Your points changed by {bonus_pts}.",
                 extra_data=extra_data,
             )
         )
@@ -4007,15 +4260,17 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         now_date = dt_util.as_local(dt_util.utcnow()).date()
 
-        for achievement_id, achievement in self._data[const.DATA_ACHIEVEMENTS].items():
-            progress = achievement.setdefault(const.DATA_ACHIEVEMENT_PROGRESS, {})
+        for achievement_id, achievement_info in self._data[
+            const.DATA_ACHIEVEMENTS
+        ].items():
+            progress = achievement_info.setdefault(const.DATA_ACHIEVEMENT_PROGRESS, {})
             if kid_id in progress and progress[kid_id].get(
                 const.DATA_ACHIEVEMENT_AWARDED, False
             ):
                 continue
 
-            ach_type = achievement.get(const.DATA_ACHIEVEMENT_TYPE)
-            target = achievement.get(const.DATA_ACHIEVEMENT_TARGET_VALUE, 1)
+            ach_type = achievement_info.get(const.DATA_ACHIEVEMENT_TYPE)
+            target = achievement_info.get(const.DATA_ACHIEVEMENT_TARGET_VALUE, 1)
 
             # For a streak achievement, update a streak counter:
             if ach_type == const.ACHIEVEMENT_TYPE_STREAK:
@@ -4035,7 +4290,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # For a total achievement, simply compare total completed chores:
             elif ach_type == const.ACHIEVEMENT_TYPE_TOTAL:
                 # Get per–kid progress for this achievement.
-                progress = achievement.setdefault(
+                progress = achievement_info.setdefault(
                     const.DATA_ACHIEVEMENT_PROGRESS, {}
                 ).setdefault(
                     kid_id,
@@ -4070,7 +4325,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # For daily minimum achievement, compare total daily chores:
             elif ach_type == const.ACHIEVEMENT_TYPE_DAILY_MIN:
                 # Initialize progress for this achievement if missing.
-                progress = achievement.setdefault(
+                progress = achievement_info.setdefault(
                     const.DATA_ACHIEVEMENT_PROGRESS, {}
                 ).setdefault(
                     kid_id,
@@ -4100,8 +4355,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         Update the achievement progress to indicate it is earned,
         and send notifications to both the kid and their parents.
         """
-        achievement = self.achievements_data.get(achievement_id)
-        if not achievement:
+        achievement_info = self.achievements_data.get(achievement_id)
+        if not achievement_info:
             const.LOGGER.error(
                 "ERROR: Achievement Award - Achievement ID '%s' not found.",
                 achievement_id,
@@ -4109,7 +4364,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             return
 
         # Get or create the existing progress dictionary for this kid
-        progress_for_kid = achievement.setdefault(
+        progress_for_kid = achievement_info.setdefault(
             const.DATA_ACHIEVEMENT_PROGRESS, {}
         ).get(kid_id)
         if progress_for_kid is None:
@@ -4122,17 +4377,17 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.DATA_ACHIEVEMENT_CURRENT_VALUE: const.DEFAULT_ZERO,
                 const.DATA_ACHIEVEMENT_AWARDED: False,
             }
-            achievement[const.DATA_ACHIEVEMENT_PROGRESS][kid_id] = progress_dict
+            achievement_info[const.DATA_ACHIEVEMENT_PROGRESS][kid_id] = progress_dict
             progress_for_kid = progress_dict
 
         # Mark achievement as earned for the kid by storing progress (e.g. set to target)
         progress_for_kid[const.DATA_ACHIEVEMENT_AWARDED] = True
-        progress_for_kid[const.DATA_ACHIEVEMENT_CURRENT_VALUE] = achievement.get(
+        progress_for_kid[const.DATA_ACHIEVEMENT_CURRENT_VALUE] = achievement_info.get(
             const.DATA_ACHIEVEMENT_TARGET_VALUE, 1
         )
 
         # Award the extra reward points defined in the achievement
-        extra_points = achievement.get(
+        extra_points = achievement_info.get(
             const.DATA_ACHIEVEMENT_REWARD_POINTS, const.DEFAULT_ZERO
         )
         kid_info = self.kids_data.get(kid_id)
@@ -4149,7 +4404,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._notify_kid(
                 kid_id,
                 title="KidsChores: Achievement Earned",
-                message=f"You have earned the achievement: '{achievement.get(const.DATA_ACHIEVEMENT_NAME)}'.",
+                message=f"You have earned the achievement: '{achievement_info.get(const.DATA_ACHIEVEMENT_NAME)}'.",
                 extra_data=extra_data,
             )
         )
@@ -4157,13 +4412,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._notify_parents(
                 kid_id,
                 title="KidsChores: Achievement Earned",
-                message=f"{self.kids_data[kid_id][const.DATA_KID_NAME]} has earned the achievement: '{achievement.get(const.DATA_ACHIEVEMENT_NAME)}'.",
+                message=f"{self.kids_data[kid_id][const.DATA_KID_NAME]} has earned the achievement: '{achievement_info.get(const.DATA_ACHIEVEMENT_NAME)}'.",
                 extra_data=extra_data,
             )
         )
         const.LOGGER.debug(
             "DEBUG: Achievement Award - Achievement ID '%s' to Kid ID '%s'",
-            achievement.get(const.DATA_ACHIEVEMENT_NAME),
+            achievement_info.get(const.DATA_ACHIEVEMENT_NAME),
             kid_id,
         )
         self._persist()
@@ -4182,21 +4437,21 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             return
 
         now = dt_util.utcnow()
-        for challenge_id, challenge in self.challenges_data.items():
-            progress = challenge.setdefault(const.DATA_CHALLENGE_PROGRESS, {})
+        for challenge_id, challenge_info in self.challenges_data.items():
+            progress = challenge_info.setdefault(const.DATA_CHALLENGE_PROGRESS, {})
             if kid_id in progress and progress[kid_id].get(
                 const.DATA_CHALLENGE_AWARDED, False
             ):
                 continue
 
             # Check challenge window
-            start_date_raw = challenge.get(const.DATA_CHALLENGE_START_DATE)
+            start_date_raw = challenge_info.get(const.DATA_CHALLENGE_START_DATE)
             if isinstance(start_date_raw, str):
                 start = dt_util.parse_datetime(start_date_raw)
             else:
                 start = None
 
-            end_date_raw = challenge.get(const.DATA_CHALLENGE_END_DATE)
+            end_date_raw = challenge_info.get(const.DATA_CHALLENGE_END_DATE)
             if isinstance(end_date_raw, str):
                 end = dt_util.parse_datetime(end_date_raw)
             else:
@@ -4207,8 +4462,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if end and now > end:
                 continue
 
-            target = challenge.get(const.DATA_CHALLENGE_TARGET_VALUE, 1)
-            challenge_type = challenge.get(const.DATA_CHALLENGE_TYPE)
+            target = challenge_info.get(const.DATA_CHALLENGE_TARGET_VALUE, 1)
+            challenge_type = challenge_info.get(const.DATA_CHALLENGE_TYPE)
 
             # For a total count challenge:
             if challenge_type == const.CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
@@ -4232,12 +4487,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     },
                 )
 
-                required_daily = challenge.get(const.DATA_CHALLENGE_REQUIRED_DAILY, 1)
+                required_daily = challenge_info.get(
+                    const.DATA_CHALLENGE_REQUIRED_DAILY, 1
+                )
                 start = dt_util.parse_datetime(
-                    challenge.get(const.DATA_CHALLENGE_START_DATE)
+                    challenge_info.get(const.DATA_CHALLENGE_START_DATE)
                 )
                 end = dt_util.parse_datetime(
-                    challenge.get(const.DATA_CHALLENGE_END_DATE)
+                    challenge_info.get(const.DATA_CHALLENGE_END_DATE)
                 )
                 if start and end:
                     num_days = (end - start).days + 1
@@ -4261,15 +4518,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         Update progress and notify kid/parents.
         """
-        challenge = self.challenges_data.get(challenge_id)
-        if not challenge:
+        challenge_info = self.challenges_data.get(challenge_id)
+        if not challenge_info:
             const.LOGGER.error(
                 "ERROR: Challenge Award - Challenge ID '%s' not found", challenge_id
             )
             return
 
         # Get or create the existing progress dictionary for this kid
-        progress_for_kid = challenge.setdefault(
+        progress_for_kid = challenge_info.setdefault(
             const.DATA_CHALLENGE_PROGRESS, {}
         ).setdefault(
             kid_id,
@@ -4281,12 +4538,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Mark challenge as earned for the kid by storing progress
         progress_for_kid[const.DATA_CHALLENGE_AWARDED] = True
-        progress_for_kid[const.DATA_CHALLENGE_COUNT] = challenge.get(
+        progress_for_kid[const.DATA_CHALLENGE_COUNT] = challenge_info.get(
             const.DATA_CHALLENGE_TARGET_VALUE, 1
         )
 
         # Award extra reward points from the challenge
-        extra_points = challenge.get(
+        extra_points = challenge_info.get(
             const.DATA_CHALLENGE_REWARD_POINTS, const.DEFAULT_ZERO
         )
         kid_info = self.kids_data.get(kid_id)
@@ -4300,7 +4557,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._notify_kid(
                 kid_id,
                 title="KidsChores: Challenge Completed",
-                message=f"You have completed the challenge: '{challenge.get(const.DATA_CHALLENGE_NAME)}'.",
+                message=f"You have completed the challenge: '{challenge_info.get(const.DATA_CHALLENGE_NAME)}'.",
                 extra_data=extra_data,
             )
         )
@@ -4308,13 +4565,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._notify_parents(
                 kid_id,
                 title="KidsChores: Challenge Completed",
-                message=f"{self.kids_data[kid_id][const.DATA_KID_NAME]} has completed the challenge: '{challenge.get(const.DATA_CHALLENGE_NAME)}'.",
+                message=f"{self.kids_data[kid_id][const.DATA_KID_NAME]} has completed the challenge: '{challenge_info.get(const.DATA_CHALLENGE_NAME)}'.",
                 extra_data=extra_data,
             )
         )
         const.LOGGER.debug(
             "DEBUG: Challenge Award - Challenge ID '%s' to Kid ID '%s'",
-            challenge.get(const.DATA_CHALLENGE_NAME),
+            challenge_info.get(const.DATA_CHALLENGE_NAME),
             kid_id,
         )
         self._persist()
@@ -4631,8 +4888,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # Process Cumulative Badge Resets
         await self._reset_cumulative_badges()
 
-        for kid in self.kids_data.values():
-            kid[const.DATA_KID_TODAY_CHORE_APPROVALS] = {}
+        for kid_info in self.kids_data.values():
+            kid_info[const.DATA_KID_TODAY_CHORE_APPROVALS] = {}
 
     async def _handle_recurring_chore_resets(self, now: datetime):
         """Handle recurring resets for daily, weekly, and monthly frequencies."""
@@ -5005,24 +5262,24 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     # Skip Chore Due Date
     def skip_chore_due_date(self, chore_id: str) -> None:
         """Skip the current due date of a recurring chore and reschedule it."""
-        chore = self.chores_data.get(chore_id)
-        if not chore:
+        chore_info = self.chores_data.get(chore_id)
+        if not chore_info:
             raise HomeAssistantError(f"Chore ID '{chore_id}' not found.")
 
         if (
-            chore.get(const.DATA_CHORE_RECURRING_FREQUENCY, const.FREQUENCY_NONE)
+            chore_info.get(const.DATA_CHORE_RECURRING_FREQUENCY, const.FREQUENCY_NONE)
             == const.FREQUENCY_NONE
         ):
             raise HomeAssistantError(
-                f"Chore '{chore.get(const.DATA_CHORE_NAME, chore_id)}' does not have a recurring frequency."
+                f"Chore '{chore_info.get(const.DATA_CHORE_NAME, chore_id)}' does not have a recurring frequency."
             )
-        if not chore.get(const.DATA_CHORE_DUE_DATE):
+        if not chore_info.get(const.DATA_CHORE_DUE_DATE):
             raise HomeAssistantError(
-                f"Chore '{chore.get(const.DATA_CHORE_NAME, chore_id)}' does not have a due date set."
+                f"Chore '{chore_info.get(const.DATA_CHORE_NAME, chore_id)}' does not have a due date set."
             )
 
         # Compute the next due date and update the chore options/config.
-        self._reschedule_next_due_date(chore)
+        self._reschedule_next_due_date(chore_info)
 
         self._persist()
         self.async_set_updated_data(self._data)
@@ -5051,12 +5308,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # Kid-only reset: reset all overdue chores for the specified kid.
             # Note that reschedule happens at the chore level, so it chores assigned to this
             # kid that are multi assigned will show as reset for those other kids
-            kid = self.kids_data.get(kid_id)
-            if not kid:
+            kid_info = self.kids_data.get(kid_id)
+            if not kid_info:
                 raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
-            for cid, chore_info in self.chores_data.items():
+            for chore_id, chore_info in self.chores_data.items():
                 if kid_id in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
-                    if cid in kid.get(const.DATA_KID_OVERDUE_CHORES, []):
+                    if chore_id in kid_info.get(const.DATA_KID_OVERDUE_CHORES, []):
                         const.LOGGER.info(
                             "INFO: Reset Overdue Chores - Rescheduling chore: %s for kid: %s",
                             chore_info.get(const.DATA_CHORE_NAME, chore_id),
@@ -5066,10 +5323,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         self._reschedule_next_due_date(chore_info)
         else:
             # Global reset: Reset all chores that are overdue.
-            for kid_id, kid in self.kids_data.items():
-                for cid, chore_info in self.chores_data.items():
+            for kid_id, kid_info in self.kids_data.items():
+                for chore_id, chore_info in self.chores_data.items():
                     if kid_id in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
-                        if cid in kid.get(const.DATA_KID_OVERDUE_CHORES, []):
+                        if chore_id in kid_info.get(const.DATA_KID_OVERDUE_CHORES, []):
                             const.LOGGER.info(
                                 "INFO: Reset Overdue Chores - Rescheduling chore: %s for kid: %s",
                                 chore_info.get(const.DATA_CHORE_NAME, chore_id),
@@ -5720,8 +5977,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 },
             ]
             extra_data = {const.DATA_KID_ID: kid_id, const.DATA_REWARD_ID: reward_id}
-            reward = self.rewards_data.get(reward_id, {})
-            reward_name = reward.get(const.DATA_REWARD_NAME, "the reward")
+            reward_info = self.rewards_data.get(reward_id, {})
+            reward_name = reward_info.get(const.DATA_REWARD_NAME, "the reward")
             await self._notify_parents(
                 kid_id,
                 title="KidsChores: Reminder for Pending Reward",
