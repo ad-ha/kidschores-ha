@@ -517,8 +517,42 @@ DATA_KID_COMPLETED_CHORES_MONTHLY = "completed_chores_monthly"
 DATA_KID_COMPLETED_CHORES_TOTAL = "completed_chores_total"
 DATA_KID_COMPLETED_CHORES_TODAY = "completed_chores_today"
 DATA_KID_COMPLETED_CHORES_WEEKLY = "completed_chores_weekly"
-DATA_KID_CUMULATIVE_BADGE_BASELINE = "cumulative_badge_baseline"
-DATA_KID_CUMULATIVE_EARNED_POINTS = "cumulative_earned_points"
+# --- Badge Progress Tracking ---
+DATA_KID_CUMULATIVE_BADGE_PROGRESS = "cumulative_badge_progress"
+
+# Current badge (in effect)
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_ID = "current_badge_id"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_NAME = "current_badge_name"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_THRESHOLD = "current_threshold"
+
+# Highest earned badge (lifetime)
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_HIGHEST_EARNED_BADGE_ID = "highest_earned_badge_id"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_HIGHEST_EARNED_BADGE_NAME = (
+    "highest_earned_badge_name"
+)
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_HIGHEST_EARNED_THRESHOLD = "highest_earned_threshold"
+
+# Next higher badge
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_BADGE_ID = "next_higher_badge_id"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_BADGE_NAME = "next_higher_badge_name"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_THRESHOLD = "next_higher_threshold"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_POINTS_NEEDED = (
+    "next_higher_points_needed"
+)
+
+# Next lower badge
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_LOWER_BADGE_ID = "next_lower_badge_id"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_LOWER_BADGE_NAME = "next_lower_badge_name"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_LOWER_THRESHOLD = "next_lower_threshold"
+
+# Maintenance tracking
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_BASELINE = "baseline"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS = "cycle_points"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS = "status"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE = "maintenance_end_date"
+DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE = (
+    "maintenance_grace_end_date"
+)
 DATA_KID_CURRENT_STREAK = "current_streak"
 DATA_KID_ENABLE_NOTIFICATIONS = "enable_notifications"
 DATA_KID_HA_USER_ID = "ha_user_id"
@@ -859,6 +893,7 @@ ATTR_ASSOCIATED_CHORE = "associated_chore"
 ATTR_AWARD_POINTS = "award_points"
 ATTR_AWARD_REWARD = "award_reward"
 ATTR_BADGE_AWARD_MODE = "award_mode"
+ATTR_BADGE_STATUS = "badge_status"
 ATTR_BADGE_TYPE = "badge_type"
 ATTR_BONUS_NAME = "bonus_name"
 ATTR_BONUS_POINTS = "bonus_points"
@@ -873,6 +908,8 @@ ATTR_CHORE_NAME = "chore_name"
 ATTR_CLAIMED_ON = "Claimed on"
 ATTR_COST = "cost"
 ATTR_CRITERIA = "criteria"
+ATTR_CURRENT_BADGE_ID = "current_badge_id"
+ATTR_CURRENT_BADGE_NAME = "current_badge_name"
 ATTR_CUSTOM_FREQUENCY_INTERVAL = "custom_frequency_interval"
 ATTR_CUSTOM_FREQUENCY_UNIT = "custom_frequency_unit"
 ATTR_DAILY_THRESHOLD = "daily_threshold"
