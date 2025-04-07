@@ -7,6 +7,9 @@ from typing import Optional, TYPE_CHECKING
 from homeassistant.core import HomeAssistant
 from homeassistant.auth.models import User
 from homeassistant.helpers.label_registry import async_get
+from datetime import datetime, date, timedelta
+
+import homeassistant.util.dt as dt_util
 
 from . import const
 
@@ -234,3 +237,98 @@ def get_friendly_label(hass, label_name: str) -> str:
     entries = registry.async_list_labels()
     label_entry = registry.async_get_label(label_name)
     return label_entry.name if label_entry else label_name
+
+
+# ────────────────────────────────────────────────────────────────
+# 🕒 Date & Time Helpers (Local, UTC, Parsing, Formatting)
+# These functions provide reusable, timezone-safe utilities for:
+# - Getting current date/time in local or ISO formats
+# - Parsing date or datetime strings safely
+# - Converting naive/local times to UTC
+# - Supporting badge and chore scheduling logic
+# ────────────────────────────────────────────────────────────────
+
+
+def get_today_local_date() -> date:
+    """
+    Return today's date in local timezone as a `datetime.date`.
+
+    Example:
+        datetime.date(2025, 4, 7)
+    """
+    return dt_util.as_local(dt_util.utcnow()).date()
+
+
+def get_today_local_iso() -> str:
+    """
+    Return today's date in local timezone as ISO string (YYYY-MM-DD).
+
+    Example:
+        "2025-04-07"
+    """
+    return get_today_local_date().isoformat()
+
+
+def get_now_local_time() -> datetime:
+    """
+    Return the current datetime in local timezone (timezone-aware).
+
+    Example:
+        datetime.datetime(2025, 4, 7, 14, 30, tzinfo=...)
+    """
+    return dt_util.as_local(dt_util.utcnow())
+
+
+def get_now_local_iso() -> str:
+    """
+    Return the current local datetime as an ISO 8601 string.
+
+    Example:
+        "2025-04-07T14:30:00-05:00"
+    """
+    return get_now_local_time().isoformat()
+
+
+def parse_datetime_to_utc(hass, dt_str: str) -> Optional[datetime]:
+    """
+    Parse a datetime string, apply timezone if naive, and convert to UTC.
+
+    Returns:
+        UTC-aware datetime object, or None if parsing fails.
+
+    Example:
+        "2025-04-07T14:30:00" → datetime.datetime(2025, 4, 7, 19, 30, tzinfo=UTC)
+    """
+    if not isinstance(dt_str, str):
+        return None
+
+    try:
+        dt_obj = dt_util.parse_datetime(dt_str)
+        if dt_obj is None:
+            dt_obj = datetime.fromisoformat(dt_str)
+
+        if dt_obj.tzinfo is None:
+            local_tz = dt_util.get_time_zone(hass.config.time_zone)
+            dt_obj = dt_obj.replace(tzinfo=local_tz)
+
+        return dt_util.as_utc(dt_obj)
+    except Exception:
+        return None
+
+
+def parse_date_safe(date_str: str) -> Optional[date]:
+    """
+    Safely parse a date string into a `datetime.date`.
+
+    Accepts a variety of common formats, including:
+    - "2025-04-07"
+    - "04/07/2025"
+    - "April 7, 2025"
+
+    Returns:
+        `datetime.date` or None if parsing fails.
+    """
+    try:
+        return dt_util.parse_date(date_str)
+    except Exception:
+        return None

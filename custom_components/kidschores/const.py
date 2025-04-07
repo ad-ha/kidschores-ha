@@ -45,6 +45,9 @@ MIGRATION_PERFORMED = "migration_performed"
 MIGRATION_KEY_VERSION = "migration_key_version"
 MIGRATION_KEY_VERSION_NUMBER = 40
 
+# Migration Data
+MIGRATION_DATA_LEGACY_ORPHAN = "legacy_orphan"
+
 # Update Interval
 DEFAULT_UPDATE_INTERVAL = 5
 

@@ -65,22 +65,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             return dt_str
 
         try:
-            # Try to parse using Home Assistant’s utility first:
-            dt_obj = dt_util.parse_datetime(dt_str)
-            if dt_obj is None:
-                # Fallback using fromisoformat
-                dt_obj = datetime.fromisoformat(dt_str)
-            # If naive, assume local time and make it aware:
-            if dt_obj.tzinfo is None:
-                dt_obj = dt_obj.replace(
-                    tzinfo=dt_util.get_time_zone(self.hass.config.time_zone)
-                )
-            # Convert to UTC
-            dt_obj_utc = dt_util.as_utc(dt_obj)
-            return dt_obj_utc.isoformat()
+            dt_obj_utc = kh.parse_datetime_to_utc(self.hass, dt_str)
+            if dt_obj_utc:
+                return dt_obj_utc.isoformat()
+            else:
+                raise ValueError("Parsed datetime is None")
         except Exception as err:
             const.LOGGER.warning(
-                "WARNING: Error migrating datetime '%s': %s", dt_str, err
+                "WARNING: Migrate DateTime - Error migrating datetime '%s': %s",
+                dt_str,
+                err,
             )
             return dt_str
 
@@ -216,6 +210,57 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     new_threshold,
                     average_points,
                 )
+
+    def _migrate_kid_legacy_badges_to_badges_earned(self):
+        """One-time migration from legacy 'badges' list to structured 'badges_earned' dict for each kid."""
+        import random
+
+        today_local_iso = kh.get_today_local_iso()
+
+        for kid_id, kid_info in self.kids_data.items():
+            legacy_badge_names = kid_info.get(const.DATA_KID_BADGES, [])
+            badges_earned = kid_info.setdefault(const.DATA_KID_BADGES_EARNED, {})
+
+            for badge_name in legacy_badge_names:
+                badge_id = kh.get_badge_id_by_name(self, badge_name)
+
+                if not badge_id:
+                    badge_id = f"{const.MIGRATION_DATA_LEGACY_ORPHAN}_{random.randint(100000, 999999)}"
+                    const.LOGGER.warning(
+                        "WARNING: Migrate - Badge '%s' not found in badge data. Assigning legacy orphan ID '%s' for kid '%s'.",
+                        badge_name,
+                        badge_id,
+                        kid_info.get(const.DATA_KID_NAME, kid_id),
+                    )
+
+                if badge_id in badges_earned:
+                    const.LOGGER.debug(
+                        "DEBUG: Migration - Badge '%s' (%s) already in badges_earned for kid '%s', skipping.",
+                        badge_name,
+                        badge_id,
+                        kid_id,
+                    )
+                    continue
+
+                badges_earned[badge_id] = {
+                    const.DATA_KID_BADGE_EARNED_NAME: badge_name,
+                    const.DATA_KID_BADGE_EARNED_LAST_AWARDED: today_local_iso,
+                    const.DATA_KID_BADGE_EARNED_COUNT: 1,
+                }
+
+                const.LOGGER.info(
+                    "INFO: Migration - Migrated badge '%s' (%s) to badges_earned for kid '%s'.",
+                    badge_name,
+                    badge_id,
+                    kid_info.get(const.DATA_KID_NAME, kid_id),
+                )
+
+            # Cleanup: remove the legacy badges list after migration
+            if const.DATA_KID_BADGES in kid_info:
+                del kid_info[const.DATA_KID_BADGES]
+
+        self._persist()
+        self.async_set_updated_data(self._data)
 
     # -------------------------------------------------------------------------------------
     # Normalize Lists
