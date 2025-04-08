@@ -2971,10 +2971,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._manage_cumulative_badge_maintenance(kid_id)
 
         # Get cumulative badge progress for this kid and write it to kid data
+        # The double update is the recommended approach to merge those lists and ensure no loss
         cumulative_badge_progress = self._get_cumulative_badge_progress(kid_id)
         if cumulative_badge_progress:
+            stored_cumulative_badge_progress = self.kids_data[kid_id].get(
+                const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {}
+            )
+            stored_cumulative_badge_progress.update(cumulative_badge_progress)
             self.kids_data[kid_id][const.DATA_KID_CUMULATIVE_BADGE_PROGRESS] = (
-                cumulative_badge_progress
+                stored_cumulative_badge_progress
             )
 
         for badge_id, badge_info in self.badges_data.items():
@@ -3379,11 +3384,20 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         badge_name = badge_info.get(const.DATA_BADGE_NAME)
         kid_name = kid_info[const.DATA_KID_NAME]
 
-        # For non-special occasion badges, do not re‑award if already earned.
-        # Note that kid only has a single cumulative badge at any time, so all the other
-        # cumulative badges will still be processed through, even if they previously had the cumulative badge
-        if badge_type != const.BADGE_TYPE_SPECIAL_OCCASION and kid_id in badge_info.get(
-            const.DATA_BADGE_EARNED_BY, []
+        # Skip re-award check only if:
+        # - Badge is NOT special occasion
+        # - AND it's already earned
+        # - AND it's NOT a resettable cumulative badge (which can be re-earned)
+        already_earned = kid_id in badge_info.get(const.DATA_BADGE_EARNED_BY, [])
+        is_resettable_cumulative = (
+            badge_type == const.BADGE_TYPE_CUMULATIVE
+            and badge_info.get(const.DATA_BADGE_RESET_PERIODICALLY, False)
+        )
+
+        if (
+            badge_type != const.BADGE_TYPE_SPECIAL_OCCASION
+            and already_earned
+            and not is_resettable_cumulative
         ):
             const.LOGGER.warning(
                 "WARNING: Award Badge - Badge '%s' (%s) already awarded to kid '%s' (%s).",
@@ -3584,6 +3598,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._persist()
         self.async_set_updated_data(self._data)
 
+        # Checking badges at the end of the award ensures that the badge maintenance items
+        # like end date are set when required.
+        self._check_badges_for_kid(kid_id)
+
     def _update_badges_earned_for_kid(self, kid_id: str, badge_id: str) -> None:
         """Update the kid's badges-earned tracking for the given badge."""
         kid_info = self.kids_data.get(kid_id)
@@ -3632,28 +3650,26 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
 
     def _update_kid_multiplier(self, kid_id: str):
-        """Update the kid's points multiplier based on highest badge achieved."""
+        """Update the kid's points multiplier based on the current (effective) cumulative badge only."""
+
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             return
-        earned_badges = [
-            badge_info
-            for badge_info in self.badges_data.values()
-            if kid_id in badge_info.get(const.DATA_BADGE_EARNED_BY, [])
-        ]
-        if not earned_badges:
-            kid_info[const.DATA_KID_POINTS_MULTIPLIER] = (
-                const.DEFAULT_KID_POINTS_MULTIPLIER
+
+        progress = kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {})
+        current_badge_id = progress.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_ID
+        )
+
+        if current_badge_id:
+            current_badge_info = self.badges_data.get(current_badge_id, {})
+            multiplier = current_badge_info.get(
+                const.DATA_BADGE_POINTS_MULTIPLIER, const.DEFAULT_KID_POINTS_MULTIPLIER
             )
         else:
-            highest_mult = max(
-                badge_info.get(
-                    const.DATA_BADGE_POINTS_MULTIPLIER,
-                    const.DEFAULT_KID_POINTS_MULTIPLIER,
-                )
-                for badge_info in earned_badges
-            )
-            kid_info[const.DATA_KID_POINTS_MULTIPLIER] = highest_mult
+            multiplier = const.DEFAULT_KID_POINTS_MULTIPLIER
+
+        kid_info[const.DATA_KID_POINTS_MULTIPLIER] = multiplier
 
     # -------------------------------------------------------------------------------------
     # Badges: Remove Awarded Badges
@@ -3742,13 +3758,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """Removes awarded badges based on provided kid_id and badge_id."""
         # Mapping for cleaning extra fields based on badge type.
         clear_extra_fields = {
-            const.BADGE_TYPE_CUMULATIVE: lambda kid_info, badge_id: kid_info.update(
-                {
-                    const.DATA_KID_PRE_RESET_BADGE: const.CONF_NONE
-                    if kid_info.get(const.DATA_KID_PRE_RESET_BADGE) == badge_id
-                    else kid_info.get(const.DATA_KID_PRE_RESET_BADGE),
-                }
-            ),
             const.BADGE_TYPE_PERIODIC: lambda kid_info, badge_id: (
                 kid_info.setdefault(const.DATA_KID_PERIODIC_BADGE_SUCCESS, {}),
                 kid_info.setdefault(const.DATA_KID_PERIODIC_BADGE_PROGRESS, {}),
@@ -3956,34 +3965,43 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         Uses badge level logic, progress tracking, and next-tier metadata.
         Does not mutate state.
         """
-
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             return {}
 
-        progress = kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {})
+        # Make a copy of the existing progress so that we don't modify the stored data.
+        stored_progress = kid_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {}
+        ).copy()
 
-        (
-            highest_earned,
-            next_higher,
-            next_lower,
-            baseline,
-            cycle_points,
-        ) = self._get_cumulative_badge_levels(kid_id)
-
-        total_points = baseline + cycle_points
-        current_badge_info = (
-            highest_earned  # For now — until maintenance manager overrides it
+        # Compute values from badge level logic.
+        (highest_earned, next_higher, next_lower, baseline, cycle_points) = (
+            self._get_cumulative_badge_levels(kid_id)
         )
+        total_points = baseline + cycle_points
 
-        return {
-            # Maintenance tracking
-            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS: progress.get(
-                const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS, "active"
+        # Determine which badge should be considered current.
+        # If the stored status is "demoted", then set current badge to next_lower; otherwise, use highest_earned.
+        current_status = stored_progress.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS,
+            const.CUMULATIVE_BADGE_STATE_ACTIVE,
+        )
+        if current_status == const.CUMULATIVE_BADGE_STATE_DEMOTED:
+            current_badge_info = next_lower
+        else:
+            current_badge_info = highest_earned
+
+        # Build a new dictionary with computed values.
+        computed_progress = {
+            # Maintenance tracking (we'll merge stored values below)
+            # For keys like status we prefer the stored value, or the default.
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS: stored_progress.get(
+                const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS,
+                const.CUMULATIVE_BADGE_STATE_ACTIVE,
             ),
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_BASELINE: baseline,
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS: cycle_points,
-            # Highest earned badge (based on lifetime points)
+            # Highest earned badge
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_HIGHEST_EARNED_BADGE_ID: highest_earned.get(
                 const.DATA_BADGE_INTERNAL_ID
             )
@@ -3999,7 +4017,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             if highest_earned
             else None,
-            # Current badge in effect (could be demoted externally)
+            # Current badge in effect
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_ID: current_badge_info.get(
                 const.DATA_BADGE_INTERNAL_ID
             )
@@ -4015,7 +4033,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             if current_badge_info
             else None,
-            # Next higher tier (if available)
+            # Next higher tier
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_BADGE_ID: next_higher.get(
                 const.DATA_BADGE_INTERNAL_ID
             )
@@ -4031,14 +4049,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             if next_higher
             else None,
-            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_POINTS_NEEDED: max(
-                0.0,
-                float(next_higher.get(const.DATA_BADGE_THRESHOLD_VALUE, 0))
-                - total_points,
-            )
-            if next_higher
-            else None,
-            # Next lower tier (if available)
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_POINTS_NEEDED: (
+                max(
+                    0.0,
+                    float(next_higher.get(const.DATA_BADGE_THRESHOLD_VALUE, 0))
+                    - total_points,
+                )
+                if next_higher
+                else None
+            ),
+            # Next lower tier
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_LOWER_BADGE_ID: next_lower.get(
                 const.DATA_BADGE_INTERNAL_ID
             )
@@ -4056,134 +4076,263 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             else None,
         }
 
+        # Merge the computed values over the stored progress.
+        stored_progress.update(computed_progress)
+
+        # Return the merged dictionary without modifying the underlying stored data.
+        return stored_progress
+
     def _manage_cumulative_badge_maintenance(self, kid_id: str) -> None:
         """
         Manages cumulative badge maintenance for a kid:
-        - Evaluates whether maintenance period or grace period has ended
-        - Updates badge status: active, grace, or demoted
-        - Resets cycle points and maintenance windows if needed
-        - Updates current badge to reflect maintenance status
+        - Evaluates whether the maintenance or grace period has ended.
+        - Updates badge status (active, grace, or demoted) based on cycle points.
+        - Resets cycle points and updates maintenance windows if needed.
+        - Updates the current badge information based on maintenance outcome.
         """
-        import homeassistant.util.dt as dt_util
 
+        # Retrieve kid-specific information from the kids_data dictionary.
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             return
 
-        progress = kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {})
+        # Retrieve the cumulative badge progress data for the kid.
+        cumulative_badge_progress = kid_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {}
+        )
 
-        end_date = progress.get(
+        # DEBUG: Log starting state for the kid.
+        const.LOGGER.debug(
+            "DEBUG: Manage Cumulative Badge Maintenance - Starting maintenance for kid=%s, initial progress=%s",
+            kid_info.get(const.DATA_KID_NAME, kid_id),
+            cumulative_badge_progress,
+        )
+
+        # Extract current maintenance and grace end dates, status, and accumulated cycle points.
+        end_date = cumulative_badge_progress.get(
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE
         )
-        grace_date = progress.get(
+        grace_date = cumulative_badge_progress.get(
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE
         )
-        status = progress.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS, "active")
+        status = cumulative_badge_progress.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS,
+            const.CUMULATIVE_BADGE_STATE_ACTIVE,
+        )
         cycle_points = float(
-            progress.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS, 0)
+            cumulative_badge_progress.get(
+                const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS, 0
+            )
         )
 
-        today_local = dt_util.as_local(dt_util.utcnow()).date().isoformat()
+        # Get today's date in ISO format using the local timezone.
+        today_local = kh.get_today_local_iso()
 
+        # Get badge level information: highest earned badge, next lower badge, baseline, etc.
         highest_earned, _, next_lower, baseline, _ = self._get_cumulative_badge_levels(
             kid_id
         )
         if not highest_earned:
             return
 
+        # Determine the maintenance threshold, reset type, grace period duration, and whether reset is enabled.
         maintenance_required = float(
-            highest_earned.get(const.DATA_BADGE_MAINTENANCE_RULES, 0)
+            highest_earned.get(const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO)
         )
         reset_type = highest_earned.get(const.DATA_BADGE_RESET_TYPE)
-        grace_days = int(highest_earned.get(const.DATA_BADGE_RESET_GRACE_PERIOD, 0))
+        grace_days = int(
+            highest_earned.get(const.DATA_BADGE_RESET_GRACE_PERIOD, const.DEFAULT_ZERO)
+        )
         reset_enabled = highest_earned.get(const.DATA_BADGE_RESET_PERIODICALLY, False)
 
+        # DEBUG: Log the key parameters derived from today's date and the highest earned badge.
+        const.LOGGER.debug(
+            "DEBUG: Manage Cumulative Badge Maintenance - today_local=%s, highest_earned=%s, maintenance_required=%.2f, reset_type=%s, grace_days=%d, reset_enabled=%s",
+            today_local,
+            highest_earned,
+            maintenance_required,
+            reset_type,
+            grace_days,
+            reset_enabled,
+        )
+
+        # If the badge is not recurring (reset not enabled):
+        # clear any existing maintenance and grace dates and exit the function.
         if not reset_enabled:
+            cumulative_badge_progress.update(
+                {
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE: None,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE: None,
+                }
+            )
+            self.kids_data[kid_id][const.DATA_KID_CUMULATIVE_BADGE_PROGRESS] = (
+                cumulative_badge_progress
+            )
+            self._persist()
+            self.async_set_updated_data(self._data)
             return
 
+        award_success = False
         demotion_required = False
 
-        if status in ("active", "demoted") and end_date and today_local >= end_date:
+        # Check if the maintenance period (or grace period) has ended based on the current status.
+        if (
+            status
+            in (
+                const.CUMULATIVE_BADGE_STATE_ACTIVE,
+                const.CUMULATIVE_BADGE_STATE_DEMOTED,
+            )
+            and end_date
+            and today_local >= end_date
+        ):
+            # If cycle points meet or exceed the required maintenance threshold, the badge is maintained.
             if cycle_points >= maintenance_required:
-                next_end = self._calculate_next_date(today_local, reset_type, 1)
-                next_grace = self._calculate_next_date(next_end, "days", grace_days)
-                progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_BASELINE] = (
-                    baseline + cycle_points
-                )
-                progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS] = 0
-                progress[
-                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE
-                ] = next_end
-                progress[
-                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE
-                ] = next_grace
-                progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS] = "active"
-                progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_ID] = (
-                    highest_earned.get(const.DATA_BADGE_INTERNAL_ID)
-                )
-                progress[
-                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_NAME
-                ] = highest_earned.get(const.DATA_BADGE_NAME)
-                progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_THRESHOLD] = (
-                    highest_earned.get(const.DATA_BADGE_THRESHOLD_VALUE)
-                )
-            elif grace_days > 0:
-                progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS] = "grace"
+                award_success = True
+            # Otherwise, if a grace period is allowed, move the badge status into the grace state.
+            elif grace_days > const.DEFAULT_ZERO:
+                cumulative_badge_progress[
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS
+                ] = const.CUMULATIVE_BADGE_STATE_GRACE
+            # If neither condition is met, then a demotion is required.
             else:
                 demotion_required = True
 
-        elif status == "grace":
+        elif status == const.CUMULATIVE_BADGE_STATE_GRACE:
+            # While in the grace period, if the required cycle points are met, maintain the badge.
             if cycle_points >= maintenance_required:
-                next_end = self._calculate_next_date(today_local, reset_type, 1)
-                next_grace = self._calculate_next_date(next_end, "days", grace_days)
-                progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_BASELINE] = (
-                    baseline + cycle_points
-                )
-                progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS] = 0
-                progress[
-                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE
-                ] = next_end
-                progress[
-                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE
-                ] = next_grace
-                progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS] = "active"
-                progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_ID] = (
-                    highest_earned.get(const.DATA_BADGE_INTERNAL_ID)
-                )
-                progress[
-                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_NAME
-                ] = highest_earned.get(const.DATA_BADGE_NAME)
-                progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_THRESHOLD] = (
-                    highest_earned.get(const.DATA_BADGE_THRESHOLD_VALUE)
-                )
+                award_success = True
+            # If the grace period has expired, then a demotion is required.
             elif grace_date and today_local >= grace_date:
                 demotion_required = True
 
-        if demotion_required:
-            progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS] = "demoted"
-            progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_ID] = (
-                next_lower.get(const.DATA_BADGE_INTERNAL_ID) if next_lower else None
-            )
-            progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_NAME] = (
-                next_lower.get(const.DATA_BADGE_NAME) if next_lower else None
-            )
-            progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_THRESHOLD] = (
-                next_lower.get(const.DATA_BADGE_THRESHOLD_VALUE) if next_lower else None
-            )
-            next_end = self._calculate_next_date(today_local, reset_type, 1)
-            next_grace = self._calculate_next_date(next_end, "days", grace_days)
-            progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_BASELINE] = (
-                baseline + cycle_points
-            )
-            progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS] = 0
-            progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE] = (
-                next_end
-            )
-            progress[
-                const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE
-            ] = next_grace
+        # Initialize the variables for the next maintenance end date and grace end date.
+        next_end = None
+        next_grace = None
 
-        self.kids_data[kid_id][const.DATA_KID_CUMULATIVE_BADGE_PROGRESS] = progress
+        # Determine the reference datetime for calculating the next maintenance window.
+        # For custom reset types, use a stored custom date; otherwise, default to today's date.
+        if reset_type in {
+            const.CONF_CUSTOM_1_WEEK,
+            const.CONF_CUSTOM_1_MONTH,
+            const.CONF_CUSTOM_1_YEAR,
+        }:
+            reference_dt = highest_earned.get(
+                const.DATA_BADGE_CUSTOM_RESET_DATE, today_local
+            )
+        else:
+            reference_dt = today_local
+
+        # Calculate the next maintenance end and grace dates if an award or demotion action is required.
+        if award_success or demotion_required:
+            # Compute the next maintenance end date using the new scheduling helper.
+            next_end = kh.get_next_scheduled_datetime(
+                reference_dt,
+                interval_type=reset_type,
+                return_type=const.HELPER_RETURN_ISO_DATE,
+            )
+            # Compute the grace period end date by adding the grace period (in days) to the maintenance end date.
+            next_grace = kh.add_interval_to_datetime(
+                next_end, const.CONF_DAYS, grace_days, const.HELPER_RETURN_ISO_DATE
+            )
+
+        # If the badge maintenance requirements are met, update the badge as successfully maintained.
+        if award_success:
+            cumulative_badge_progress.update(
+                {
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE: next_end,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE: next_grace,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS: const.CUMULATIVE_BADGE_STATE_ACTIVE,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_ID: highest_earned.get(
+                        const.DATA_BADGE_INTERNAL_ID
+                    ),
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_NAME: highest_earned.get(
+                        const.DATA_BADGE_NAME
+                    ),
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_THRESHOLD: highest_earned.get(
+                        const.DATA_BADGE_THRESHOLD_VALUE
+                    ),
+                }
+            )
+            # Award the badge through the helper function.
+            self._award_badge(kid_id, highest_earned.get(const.DATA_BADGE_INTERNAL_ID))
+
+        # If demotion is required due to failure to meet maintenance requirements:
+        if demotion_required:
+            cumulative_badge_progress.update(
+                {
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS: const.CUMULATIVE_BADGE_STATE_DEMOTED,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_ID: next_lower.get(
+                        const.DATA_BADGE_INTERNAL_ID
+                    )
+                    if next_lower
+                    else None,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_NAME: next_lower.get(
+                        const.DATA_BADGE_NAME
+                    )
+                    if next_lower
+                    else None,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_THRESHOLD: next_lower.get(
+                        const.DATA_BADGE_THRESHOLD_VALUE
+                    )
+                    if next_lower
+                    else None,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_BASELINE: baseline
+                    + cycle_points,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS: 0,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE: next_end,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE: next_grace,
+                }
+            )
+            self._update_kid_multiplier(kid_id)
+
+        # First-Time Assignment:
+        # If the badge is reset-enabled but no maintenance end date is set (i.e., first-time award),
+        # then calculate and set the maintenance and grace dates.
+        if reset_enabled and not cumulative_badge_progress.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE
+        ):
+            next_end = kh.get_next_scheduled_datetime(
+                reference_dt,
+                interval_type=reset_type,
+                return_type=const.HELPER_RETURN_ISO_DATE,
+            )
+            next_grace = kh.add_interval_to_datetime(
+                next_end,
+                const.CONF_DAYS,
+                grace_days,
+                const.HELPER_RETURN_ISO_DATE,
+            )
+            cumulative_badge_progress.update(
+                {
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE: next_end,
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE: next_grace,
+                }
+            )
+
+        # DEBUG: Log the calculated next maintenance end and grace dates.
+        const.LOGGER.debug(
+            "DEBUG: Manage Cumulative Badge Maintenance - Calculated next_end=%s, next_grace=%s",
+            next_end,
+            next_grace,
+        )
+
+        # DEBUG: Log the final cumulative badge progress before saving.
+        const.LOGGER.debug(
+            "DEBUG: Manage Cumulative Badge Maintenance - Final cumulative badge progress for kid=%s: %s",
+            kid_info.get(const.DATA_KID_NAME, kid_id),
+            cumulative_badge_progress,
+        )
+
+        # Save the updated progress and notify any listeners. The extra update here is to do a merge
+        # as a precaution ensuring nothing gets lost if other keys have been changed during processign
+        existing_progress = self.kids_data[kid_id].get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {}
+        )
+        existing_progress.update(cumulative_badge_progress)
+        self.kids_data[kid_id][const.DATA_KID_CUMULATIVE_BADGE_PROGRESS] = (
+            existing_progress
+        )
+
         self._persist()
         self.async_set_updated_data(self._data)
 
@@ -4245,39 +4394,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             previous_badge_info = badge_info
 
         return highest_earned, next_higher, next_lower, baseline, cycle_points
-
-    def _calculate_next_date(
-        self, date_str: str, interval_type: str, amount: int
-    ) -> str:
-        """Returns a future ISO date string after adding a specific interval to a base date."""
-        date_obj = datetime.fromisoformat(date_str)
-
-        if interval_type == "days":
-            next_date = date_obj + timedelta(days=amount)
-
-        elif interval_type == "months":
-            month = date_obj.month - 1 + amount
-            year = date_obj.year + month // 12
-            month = month % 12 + 1
-            day = min(date_obj.day, monthrange(year, month)[1])
-            next_date = date_obj.replace(year=year, month=month, day=day)
-
-        elif interval_type == "quarters":
-            month = date_obj.month - 1 + (amount * 3)
-            year = date_obj.year + month // 12
-            month = month % 12 + 1
-            day = min(date_obj.day, monthrange(year, month)[1])
-            next_date = date_obj.replace(year=year, month=month, day=day)
-
-        elif interval_type == "years":
-            year = date_obj.year + amount
-            day = min(date_obj.day, monthrange(year, date_obj.month)[1])
-            next_date = date_obj.replace(year=year, day=day)
-
-        else:
-            raise ValueError(f"Unsupported interval type: {interval_type}")
-
-        return next_date.date().isoformat()
 
     # -------------------------------------------------------------------------------------
     # Penalties: Apply
@@ -4998,7 +5114,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             kid_info[const.DATA_KID_TODAY_CHORE_APPROVALS] = {}
 
             # Process Cumulative Badge Maintenance
-            await self._manage_cumulative_badge_maintenance(kid_id)
+            await self.hass.async_add_executor_job(
+                self._manage_cumulative_badge_maintenance, kid_id
+            )
 
     async def _handle_recurring_chore_resets(self, now: datetime):
         """Handle recurring resets for daily, weekly, and monthly frequencies."""

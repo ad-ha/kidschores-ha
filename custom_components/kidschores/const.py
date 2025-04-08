@@ -327,30 +327,43 @@ CONF_CALENDAR_SHOW_PERIOD = "calendar_show_period"
 CONF_COST = "cost"
 CONF_CUSTOM = "custom"
 CONF_CUSTOM_1_MONTH = "custom_1_month"
+CONF_CUSTOM_1_WEEK = "custom_1_week"
 CONF_CUSTOM_1_YEAR = "custom_1_year"
+CONF_DAILY = "daily"
+CONF_DAY = "day"
 CONF_DAYS = "days"
+CONF_DAY_END = "day_end"
 CONF_DESCRIPTION = "description"
 CONF_DOT = "."
 CONF_EMPTY = ""
 CONF_HOLIDAY = "holiday"
 CONF_HOUR = "hour"
+CONF_HOURS = "hours"
 CONF_ICON = "icon"
 CONF_INTERNAL_ID = "internal_id"
+CONF_MINUTES = "minutes"
 CONF_MONTHS = "months"
 CONF_MONTHLY = "monthly"
+CONF_MONTH_END = "month_end"
 CONF_NAME = "name"
 CONF_NONE = None
 CONF_NONE_TEXT = "None"
 CONF_POINTS = "points"
 CONF_QUARTER = "quarter"
+CONF_QUARTERLY = "quarterly"
+CONF_QUARTERS = "quarters"
+CONF_QUARTER_END = "quarter_end"
 CONF_SHARED_CHORE = "shared_chore"
 CONF_UNAVAILABLE = "unavailable"
 CONF_UNKNOWN = "Unknown"
 CONF_VALUE = "value"
 CONF_WEEKS = "weeks"
 CONF_WEEKLY = "weekly"
+CONF_WEEK_END = "week_end"
 CONF_YEAR_END = "year_end"
 CONF_YEARLY = "yearly"
+CONF_YEARS = "years"
+CONF_YEAR_END = "year_end"
 
 # Points configuration keys
 CONF_POINTS_ICON = "points_icon"
@@ -863,6 +876,10 @@ REWARD_STATE_APPROVED = "approved"
 REWARD_STATE_CLAIMED = "claimed"
 REWARD_STATE_NOT_CLAIMED = "not_claimed"
 
+# Badge States
+CUMULATIVE_BADGE_STATE_ACTIVE = "active"
+CUMULATIVE_BADGE_STATE_GRACE = "grace"
+CUMULATIVE_BADGE_STATE_DEMOTED = "demoted"
 
 # ------------------------------------------------------------------------------------------------
 # Actions
@@ -1068,6 +1085,13 @@ CALENDAR_KC_PREFIX = "calendar.kc_"
 # Calendar Unique ID Mid & Suffixes
 CALENDAR_KC_UID_SUFFIX_CALENDAR = "_calendar"
 
+# ------------------------------------------------------------------------------------------------
+# Helper Return Types
+# ------------------------------------------------------------------------------------------------
+HELPER_RETURN_ISO_DATE = "iso_date"
+HELPER_RETURN_ISO_DATETIME = "iso_datetime"
+HELPER_RETURN_DATE = "date"
+HELPER_RETURN_DATETIME = "datetime"
 
 # ------------------------------------------------------------------------------------------------
 # Services
@@ -1456,11 +1480,18 @@ THRESHOLD_TYPE_OPTIONS = [BADGE_THRESHOLD_TYPE_POINTS, BADGE_THRESHOLD_TYPE_CHOR
 
 # Badge Cumulative Reset Period
 BADGE_CUMULATIVE_RESET_TYPE_OPTIONS = [
-    {"value": CONF_YEAR_END, "label": "Year-End"},
-    {"value": CONF_QUARTER, "label": "Quarterly"},
+    {"value": CONF_WEEKLY, "label": "Weekly"},
+    {"value": CONF_BIWEEKLY, "label": "Biweekly"},
     {"value": CONF_MONTHLY, "label": "Monthly"},
-    {"value": CONF_CUSTOM_1_YEAR, "label": "Custom 1-Year"},
+    {"value": CONF_QUARTER, "label": "Quarterly"},
+    {"value": CONF_YEARLY, "label": "Yearly"},
+    {"value": CONF_WEEK_END, "label": "Week-End"},
+    {"value": CONF_MONTH_END, "label": "Month-End"},
+    {"value": CONF_QUARTER_END, "label": "Quarter-End"},
+    {"value": CONF_YEAR_END, "label": "Year-End"},
+    {"value": CONF_CUSTOM_1_WEEK, "label": "Custom 1-Week"},
     {"value": CONF_CUSTOM_1_MONTH, "label": "Custom 1-Month"},
+    {"value": CONF_CUSTOM_1_YEAR, "label": "Custom 1-Year"},
 ]
 
 # Badge Reset Period

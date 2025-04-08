@@ -656,7 +656,7 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
         # This grabs the list of earned badge names using the constant for "badge_name"
         earned_badge_list = [
-            badge_name.get(const.DATA_BADGE_NAME)
+            badge_name.get(const.DATA_KID_BADGE_EARNED_NAME)
             for badge_name in kid_info.get(const.DATA_KID_BADGES_EARNED, {}).values()
         ]
         cumulative_badge_progress_info = kid_info.get(
