@@ -3028,18 +3028,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             kid_id,
                         )
                         self._award_badge(kid_id, badge_id)
-                    # Remove cumulative badge if the effective badge id returned is different and has already been earned
-                    # It wouldn't have processed this far if it was already earned, so it indicates a lower badge was
-                    # returned, so kid did not maintain the higher badge
-                    elif kid_id in badge_info.get(const.DATA_BADGE_EARNED_BY, []):
-                        const.LOGGER.debug(
-                            "DEBUG: Check Badge - Removing cumulative badge '%s' (%s) from kid '%s'.",
-                            badge_id,
-                            badge_name,
-                            kid_info.get(const.DATA_KID_NAME, kid_id),
-                        )
-                        # intent is not to remove badges from cumulative, but rather demote
-                        # self._remove_awarded_badges_by_id(kid_id, badge_id)
 
             elif badge_type == const.BADGE_TYPE_DAILY:
                 # Award daily badge if the kid completed enough chores today.
@@ -3410,7 +3398,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # For special occasion badges, only award once per day.
         if badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
-            today = dt_util.as_local(dt_util.utcnow()).date().isoformat()
+            today = kh.get_today_local_iso()
             # Use the dictionary for tracking earned badges.
             badges_earned = kid_info.setdefault(const.DATA_KID_BADGES_EARNED, {})
             tracking_entry = badges_earned.get(badge_id)
@@ -3618,7 +3606,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             return
 
-        today_local = dt_util.as_local(dt_util.utcnow()).date().isoformat()
+        today_local = kh.get_today_local_iso()
         # Initialize badges-earned as a dict if not already present.
         badges_earned = kid_info.setdefault(const.DATA_KID_BADGES_EARNED, {})
 
@@ -4102,10 +4090,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         )
 
         # DEBUG: Log starting state for the kid.
+        kid_name = kid_info.get(const.DATA_KID_NAME, kid_id)
         const.LOGGER.debug(
-            "DEBUG: Manage Cumulative Badge Maintenance - Starting maintenance for kid=%s, initial progress=%s",
-            kid_info.get(const.DATA_KID_NAME, kid_id),
-            cumulative_badge_progress,
+            "DEBUG: Manage Cumulative Badge Maintenance - Kid=%s, Initial Status=%s, Cycle Points=%.2f",
+            kid_name,
+            cumulative_badge_progress.get(
+                const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS, "active"
+            ),
+            float(
+                cumulative_badge_progress.get(
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS, 0
+                )
+            ),
         )
 
         # Extract current maintenance and grace end dates, status, and accumulated cycle points.
@@ -4149,7 +4145,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         const.LOGGER.debug(
             "DEBUG: Manage Cumulative Badge Maintenance - today_local=%s, highest_earned=%s, maintenance_required=%.2f, reset_type=%s, grace_days=%d, reset_enabled=%s",
             today_local,
-            highest_earned,
+            highest_earned.get(const.DATA_BADGE_NAME),
             maintenance_required,
             reset_type,
             grace_days,
@@ -4188,6 +4184,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             # If cycle points meet or exceed the required maintenance threshold, the badge is maintained.
             if cycle_points >= maintenance_required:
                 award_success = True
+            # If it is already past the grace date, then a demotion is required (edge case)
+            elif grace_date and today_local >= grace_date:
+                demotion_required = True
             # Otherwise, if a grace period is allowed, move the badge status into the grace state.
             elif grace_days > const.DEFAULT_ZERO:
                 cumulative_badge_progress[
@@ -4232,7 +4231,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             # Compute the grace period end date by adding the grace period (in days) to the maintenance end date.
             next_grace = kh.add_interval_to_datetime(
-                next_end, const.CONF_DAYS, grace_days, const.HELPER_RETURN_ISO_DATE
+                next_end,
+                const.CONF_DAYS,
+                grace_days,
+                return_type=const.HELPER_RETURN_ISO_DATE,
             )
 
         # If the badge maintenance requirements are met, update the badge as successfully maintained.
@@ -4300,7 +4302,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 next_end,
                 const.CONF_DAYS,
                 grace_days,
-                const.HELPER_RETURN_ISO_DATE,
+                return_type=const.HELPER_RETURN_ISO_DATE,
             )
             cumulative_badge_progress.update(
                 {
@@ -4309,18 +4311,24 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 }
             )
 
-        # DEBUG: Log the calculated next maintenance end and grace dates.
+        # Simplified final debug: show only key maintenance info.
         const.LOGGER.debug(
-            "DEBUG: Manage Cumulative Badge Maintenance - Calculated next_end=%s, next_grace=%s",
-            next_end,
-            next_grace,
-        )
-
-        # DEBUG: Log the final cumulative badge progress before saving.
-        const.LOGGER.debug(
-            "DEBUG: Manage Cumulative Badge Maintenance - Final cumulative badge progress for kid=%s: %s",
-            kid_info.get(const.DATA_KID_NAME, kid_id),
-            cumulative_badge_progress,
+            "DEBUG: Manage Cumulative Badge Maintenance - Final (Kid=%s): Status=%s, End=%s, Grace=%s, CyclePts=%.2f",
+            kid_name,
+            cumulative_badge_progress.get(
+                const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS
+            ),
+            cumulative_badge_progress.get(
+                const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE
+            ),
+            cumulative_badge_progress.get(
+                const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE
+            ),
+            float(
+                cumulative_badge_progress.get(
+                    const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS, 0
+                )
+            ),
         )
 
         # Save the updated progress and notify any listeners. The extra update here is to do a merge
