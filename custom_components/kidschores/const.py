@@ -8,8 +8,16 @@ services, and options flow.
 """
 
 import logging
+import homeassistant.util.dt as dt_util
 
 from homeassistant.const import Platform
+
+
+def set_default_timezone(hass):
+    """Set the default timezone based on the Home Assistant configuration."""
+    global DEFAULT_TIME_ZONE
+    DEFAULT_TIME_ZONE = dt_util.get_time_zone(hass.config.time_zone)
+
 
 # ------------------------------------------------------------------------------------------------
 # General / Integration Information
@@ -39,6 +47,9 @@ COORDINATOR_SUFFIX = "_coordinator"
 STORAGE_MANAGER = "storage_manager"
 STORAGE_KEY = "kidschores_data"
 STORAGE_VERSION = 1
+
+# Default timezone: initially None, to be set once hass is available.
+DEFAULT_TIME_ZONE = None
 
 # Migration Flags
 MIGRATION_PERFORMED = "migration_performed"
@@ -844,10 +855,25 @@ DEFAULT_ZERO = 0
 # ------------------------------------------------------------------------------------------------
 FREQUENCY_BIWEEKLY = "biweekly"
 FREQUENCY_CUSTOM = "custom"
+FREQUENCY_CUSTOM_1_MONTH = "custom_1_month"
+FREQUENCY_CUSTOM_1_QUARTER = "custom_1_quarter"
+FREQUENCY_CUSTOM_1_WEEK = "custom_1_week"
+FREQUENCY_CUSTOM_1_YEAR = "custom_1_year"
 FREQUENCY_DAILY = "daily"
 FREQUENCY_MONTHLY = "monthly"
 FREQUENCY_NONE = "none"
+FREQUENCY_QUARTERLY = "quarterly"
 FREQUENCY_WEEKLY = "weekly"
+FREQUENCY_YEARLY = "yearly"
+
+# ------------------------------------------------------------------------------------------------
+# Periods
+# ------------------------------------------------------------------------------------------------
+PERIOD_DAY_END = "day_end"
+PERIOD_MONTH_END = "month_end"
+PERIOD_QUARTER_END = "quarter_end"
+PERIOD_WEEK_END = "week_end"
+PERIOD_YEAR_END = "year_end"
 
 
 # ------------------------------------------------------------------------------------------------
@@ -1480,18 +1506,18 @@ THRESHOLD_TYPE_OPTIONS = [BADGE_THRESHOLD_TYPE_POINTS, BADGE_THRESHOLD_TYPE_CHOR
 
 # Badge Cumulative Reset Period
 BADGE_CUMULATIVE_RESET_TYPE_OPTIONS = [
-    {"value": CONF_WEEKLY, "label": "Weekly"},
-    {"value": CONF_BIWEEKLY, "label": "Biweekly"},
-    {"value": CONF_MONTHLY, "label": "Monthly"},
-    {"value": CONF_QUARTER, "label": "Quarterly"},
-    {"value": CONF_YEARLY, "label": "Yearly"},
-    {"value": CONF_WEEK_END, "label": "Week-End"},
-    {"value": CONF_MONTH_END, "label": "Month-End"},
-    {"value": CONF_QUARTER_END, "label": "Quarter-End"},
-    {"value": CONF_YEAR_END, "label": "Year-End"},
-    {"value": CONF_CUSTOM_1_WEEK, "label": "Custom 1-Week"},
-    {"value": CONF_CUSTOM_1_MONTH, "label": "Custom 1-Month"},
-    {"value": CONF_CUSTOM_1_YEAR, "label": "Custom 1-Year"},
+    {"value": FREQUENCY_WEEKLY, "label": "Weekly"},
+    {"value": FREQUENCY_BIWEEKLY, "label": "Biweekly"},
+    {"value": FREQUENCY_MONTHLY, "label": "Monthly"},
+    {"value": FREQUENCY_QUARTERLY, "label": "Quarterly"},
+    {"value": FREQUENCY_YEARLY, "label": "Yearly"},
+    {"value": PERIOD_WEEK_END, "label": "Week-End"},
+    {"value": PERIOD_MONTH_END, "label": "Month-End"},
+    {"value": PERIOD_QUARTER_END, "label": "Quarter-End"},
+    {"value": PERIOD_YEAR_END, "label": "Year-End"},
+    {"value": FREQUENCY_CUSTOM_1_WEEK, "label": "Custom 1-Week"},
+    {"value": FREQUENCY_CUSTOM_1_MONTH, "label": "Custom 1-Month"},
+    {"value": FREQUENCY_CUSTOM_1_YEAR, "label": "Custom 1-Year"},
 ]
 
 # Badge Reset Period

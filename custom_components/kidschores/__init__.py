@@ -64,6 +64,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ),
     )
 
+    # Set the home assistant configured timezone for date/time operations
+    const.set_default_timezone(hass)
+
     const.LOGGER.info("INFO: KidsChores setup complete for entry: %s", entry.entry_id)
     return True
 
