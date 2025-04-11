@@ -8,7 +8,6 @@ Manages entities primarily using internal_id for consistency.
 
 import asyncio
 import uuid
-
 from calendar import monthrange
 from datetime import date, datetime, timedelta
 from typing import Any, Optional
@@ -17,15 +16,15 @@ from homeassistant.auth.models import User
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.event import async_track_time_change
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.event import async_track_time_change
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
 from . import const
 from . import kc_helpers as kh
-from .storage_manager import KidsChoresStorageManager
 from .notification_helper import async_send_notification
+from .storage_manager import KidsChoresStorageManager
 
 
 class KidsChoresDataCoordinator(DataUpdateCoordinator):
@@ -1436,318 +1435,34 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     def _create_badge(self, badge_id: str, badge_data: dict[str, Any]):
         """Create a new badge entity."""
 
-        # Base fields common to all types:
-        self._data[const.DATA_BADGES][badge_id] = {
-            const.DATA_BADGE_NAME: badge_data.get(
-                const.DATA_BADGE_NAME, const.CONF_EMPTY
-            ),
-            const.DATA_BADGE_DESCRIPTION: badge_data.get(
-                const.DATA_BADGE_DESCRIPTION, const.CONF_EMPTY
-            ),
-            const.DATA_BADGE_LABELS: badge_data.get(const.DATA_BADGE_LABELS, []),
-            const.DATA_BADGE_ICON: badge_data.get(
-                const.DATA_BADGE_ICON, const.DEFAULT_ICON
-            ),
-            const.DATA_BADGE_INTERNAL_ID: badge_id,
-            const.DATA_BADGE_TYPE: badge_data.get(
-                const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE
-            ),
-            const.DATA_BADGE_AWARD_MODE: badge_data.get(
-                const.DATA_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-            ),
-            const.DATA_BADGE_AWARD_POINTS: badge_data.get(
-                const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
-            ),
-            const.DATA_BADGE_AWARD_REWARD: badge_data.get(
-                const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
-            ),
-        }
+        # --- Simplified Logic ---
+        # Directly assign badge_data to badge_info.
+        # This assumes badge_data is already validated and contains all necessary fields.
+        self._data.setdefault(const.DATA_BADGES, {})[badge_id] = badge_data
 
-        # For non‑cumulative badges, store assigned kids
-        if (
-            self._data[const.DATA_BADGES][badge_id].get(const.DATA_BADGE_TYPE)
-            != const.BADGE_TYPE_CUMULATIVE
-        ):
-            self._data[const.DATA_BADGES][badge_id][const.DATA_BADGE_ASSIGNED_KIDS] = (
-                badge_data.get(const.DATA_BADGE_ASSIGNED_KIDS, [])
-            )
+        badge_info = self._data[const.DATA_BADGES][badge_id]
+        badge_name = badge_info.get(const.DATA_BADGE_NAME, const.CONF_EMPTY)
 
-        badge_type = badge_data.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
-        if badge_type == const.BADGE_TYPE_CUMULATIVE:
-            self._data[const.DATA_BADGES][badge_id].update(
-                {
-                    const.DATA_BADGE_THRESHOLD_TYPE: const.CONF_POINTS,
-                    const.DATA_BADGE_THRESHOLD_VALUE: badge_data.get(
-                        const.DATA_BADGE_THRESHOLD_VALUE,
-                        const.DEFAULT_BADGE_THRESHOLD_VALUE,
-                    ),
-                    const.DATA_BADGE_POINTS_MULTIPLIER: badge_data.get(
-                        const.DATA_BADGE_POINTS_MULTIPLIER,
-                        const.DEFAULT_POINTS_MULTIPLIER,
-                    ),
-                    const.DATA_BADGE_RESET_PERIODICALLY: badge_data.get(
-                        const.DATA_BADGE_RESET_PERIODICALLY, False
-                    ),
-                    const.DATA_BADGE_RESET_TYPE: badge_data.get(
-                        const.DATA_BADGE_RESET_TYPE, const.CONF_YEAR_END
-                    ),
-                    const.DATA_BADGE_CUSTOM_RESET_DATE: badge_data.get(
-                        const.DATA_BADGE_CUSTOM_RESET_DATE, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_RESET_GRACE_PERIOD: badge_data.get(
-                        const.DATA_BADGE_RESET_GRACE_PERIOD,
-                        const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
-                    ),
-                    const.DATA_BADGE_MAINTENANCE_RULES: badge_data.get(
-                        const.DATA_BADGE_MAINTENANCE_RULES,
-                        const.DEFAULT_BADGE_MAINTENANCE_THRESHOLD,
-                    ),
-                }
-            )
-        elif badge_type == const.BADGE_TYPE_DAILY:
-            self._data[const.DATA_BADGES][badge_id].update(
-                {
-                    const.DATA_BADGE_DAILY_THRESHOLD: badge_data.get(
-                        const.DATA_BADGE_DAILY_THRESHOLD
-                    ),
-                    const.DATA_BADGE_REWARD: badge_data.get(const.DATA_BADGE_REWARD),
-                }
-            )
-        elif badge_type == const.BADGE_TYPE_PERIODIC:
-            self._data[const.DATA_BADGES][badge_id].update(
-                {
-                    const.DATA_BADGE_RESET_SCHEDULE: badge_data.get(
-                        const.DATA_BADGE_RESET_SCHEDULE, const.CONF_WEEKLY
-                    ),
-                    const.DATA_BADGE_START_DATE: badge_data.get(
-                        const.DATA_BADGE_START_DATE, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_END_DATE: badge_data.get(
-                        const.DATA_BADGE_END_DATE, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_PERIODIC_RECURRENT: badge_data.get(
-                        const.DATA_BADGE_PERIODIC_RECURRENT, False
-                    ),
-                    const.DATA_BADGE_THRESHOLD_TYPE: badge_data.get(
-                        const.DATA_BADGE_THRESHOLD_TYPE,
-                        const.DEFAULT_BADGE_THRESHOLD_TYPE,
-                    ),
-                    const.DATA_BADGE_REQUIRED_CHORES: badge_data.get(
-                        const.DATA_BADGE_REQUIRED_CHORES, []
-                    ),
-                    const.DATA_BADGE_THRESHOLD_VALUE: badge_data.get(
-                        const.DATA_BADGE_THRESHOLD_VALUE,
-                        const.DEFAULT_BADGE_THRESHOLD_VALUE,
-                    ),
-                    const.DATA_BADGE_LAST_RESET: None,
-                }
-            )
-        elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
-            self._data[const.DATA_BADGES][badge_id].update(
-                {
-                    const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT: badge_data.get(
-                        const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY
-                    ),
-                }
-            )
-        elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
-            self._data[const.DATA_BADGES][badge_id].update(
-                {
-                    const.DATA_BADGE_ASSOCIATED_CHALLENGE: badge_data.get(
-                        const.DATA_BADGE_ASSOCIATED_CHALLENGE, const.CONF_EMPTY
-                    ),
-                }
-            )
-        elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
-            self._data[const.DATA_BADGES][badge_id].update(
-                {
-                    const.DATA_BADGE_OCCASION_TYPE: badge_data.get(
-                        const.DATA_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY
-                    ),
-                    const.DATA_BADGE_SPECIAL_OCCASION_DATE: badge_data.get(
-                        const.DATA_BADGE_SPECIAL_OCCASION_DATE, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY: badge_data.get(
-                        const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY, False
-                    ),
-                    const.DATA_BADGE_ASSIGNED_KIDS: badge_data.get(
-                        const.DATA_BADGE_ASSIGNED_KIDS, []
-                    ),
-                }
-            )
         const.LOGGER.debug(
-            "DEBUG: Badge Added - '%s', ID '%s'",
-            self._data[const.DATA_BADGES][badge_id][const.DATA_BADGE_NAME],
+            "DEBUG: Badge Updated - '%s', ID '%s'",
+            badge_name,
             badge_id,
         )
 
     def _update_badge(self, badge_id: str, badge_data: dict[str, Any]):
         """Update an existing badge entity."""
 
+        # --- Simplified Logic ---
+        # Directly assign badge_data to badge_info.
+        # This assumes badge_data is already validated and contains all necessary fields.
+        self._data.setdefault(const.DATA_BADGES, {})[badge_id] = badge_data
+
         badge_info = self._data[const.DATA_BADGES][badge_id]
-        badge_info[const.DATA_BADGE_NAME] = badge_data.get(
-            const.DATA_BADGE_NAME, badge_info[const.DATA_BADGE_NAME]
-        )
-        badge_info[const.DATA_BADGE_DESCRIPTION] = badge_data.get(
-            const.DATA_BADGE_DESCRIPTION,
-            badge_info[const.DATA_BADGE_DESCRIPTION],
-        )
-        badge_info[const.DATA_BADGE_LABELS] = badge_data.get(
-            const.DATA_BADGE_LABELS,
-            badge_info.get(const.DATA_BADGE_LABELS, []),
-        )
-        badge_info[const.DATA_BADGE_ICON] = badge_data.get(
-            const.DATA_BADGE_ICON,
-            badge_info.get(const.DATA_BADGE_ICON, const.DEFAULT_ICON),
-        )
-        badge_type = badge_data.get(
-            const.DATA_BADGE_TYPE,
-            badge_info.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE),
-        )
-        badge_info[const.DATA_BADGE_AWARD_MODE] = badge_data.get(
-            const.DATA_BADGE_AWARD_MODE,
-            badge_info.get(const.DATA_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE),
-        )
-        badge_info[const.DATA_BADGE_AWARD_POINTS] = badge_data.get(
-            const.DATA_BADGE_AWARD_POINTS,
-            badge_info.get(
-                const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
-            ),
-        )
-        badge_info[const.DATA_BADGE_AWARD_REWARD] = badge_data.get(
-            const.DATA_BADGE_AWARD_REWARD,
-            badge_info.get(const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY),
-        )
-
-        badge_info[const.DATA_BADGE_TYPE] = badge_type
-
-        # For non‑cumulative badges, update the "assigned_kids" field
-        if badge_type != const.BADGE_TYPE_CUMULATIVE:
-            badge_info[const.DATA_BADGE_ASSIGNED_KIDS] = badge_data.get(
-                const.DATA_BADGE_ASSIGNED_KIDS,
-                badge_info.get(const.DATA_BADGE_ASSIGNED_KIDS, []),
-            )
-
-        if badge_type == const.BADGE_TYPE_CUMULATIVE:
-            badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = badge_data.get(
-                const.DATA_BADGE_THRESHOLD_VALUE,
-                badge_info.get(
-                    const.DATA_BADGE_THRESHOLD_VALUE,
-                    const.DEFAULT_BADGE_THRESHOLD_VALUE,
-                ),
-            )
-            badge_info[const.DATA_BADGE_POINTS_MULTIPLIER] = badge_data.get(
-                const.DATA_BADGE_POINTS_MULTIPLIER,
-                badge_info.get(
-                    const.DATA_BADGE_POINTS_MULTIPLIER, const.DEFAULT_POINTS_MULTIPLIER
-                ),
-            )
-            badge_info[const.DATA_BADGE_RESET_PERIODICALLY] = badge_data.get(
-                const.DATA_BADGE_RESET_PERIODICALLY,
-                badge_info.get(const.DATA_BADGE_RESET_PERIODICALLY, False),
-            )
-            badge_info[const.DATA_BADGE_RESET_TYPE] = badge_data.get(
-                const.DATA_BADGE_RESET_TYPE,
-                badge_info.get(const.DATA_BADGE_RESET_TYPE, const.CONF_YEAR_END),
-            )
-            badge_info[const.DATA_BADGE_CUSTOM_RESET_DATE] = badge_data.get(
-                const.DATA_BADGE_CUSTOM_RESET_DATE,
-                badge_info.get(const.DATA_BADGE_CUSTOM_RESET_DATE, const.CONF_EMPTY),
-            )
-            badge_info[const.DATA_BADGE_RESET_GRACE_PERIOD] = badge_data.get(
-                const.DATA_BADGE_RESET_GRACE_PERIOD,
-                badge_info.get(
-                    const.DATA_BADGE_RESET_GRACE_PERIOD,
-                    const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
-                ),
-            )
-            badge_info[const.DATA_BADGE_MAINTENANCE_RULES] = badge_data.get(
-                const.DATA_BADGE_MAINTENANCE_RULES,
-                badge_info.get(
-                    const.DATA_BADGE_MAINTENANCE_RULES,
-                    const.DEFAULT_BADGE_MAINTENANCE_THRESHOLD,
-                ),
-            )
-        elif badge_type == const.BADGE_TYPE_DAILY:
-            badge_info[const.DATA_BADGE_DAILY_THRESHOLD] = badge_data.get(
-                const.DATA_BADGE_DAILY_THRESHOLD,
-                badge_info.get(const.DATA_BADGE_DAILY_THRESHOLD),
-            )
-            badge_info[const.DATA_BADGE_REWARD] = badge_data.get(
-                const.DATA_BADGE_REWARD, badge_info.get(const.DATA_BADGE_REWARD)
-            )
-        elif badge_type == const.BADGE_TYPE_PERIODIC:
-            badge_info[const.DATA_BADGE_RESET_SCHEDULE] = badge_data.get(
-                const.DATA_BADGE_RESET_SCHEDULE,
-                badge_info.get(const.DATA_BADGE_RESET_SCHEDULE, const.CONF_WEEKLY),
-            )
-            badge_info[const.DATA_BADGE_START_DATE] = badge_data.get(
-                const.DATA_BADGE_START_DATE,
-                badge_info.get(const.DATA_BADGE_START_DATE, const.CONF_EMPTY),
-            )
-            badge_info[const.DATA_BADGE_END_DATE] = badge_data.get(
-                const.DATA_BADGE_END_DATE,
-                badge_info.get(const.DATA_BADGE_END_DATE, const.CONF_EMPTY),
-            )
-            badge_info[const.DATA_BADGE_PERIODIC_RECURRENT] = badge_data.get(
-                const.DATA_BADGE_PERIODIC_RECURRENT,
-                badge_info.get(const.DATA_BADGE_PERIODIC_RECURRENT, False),
-            )
-            badge_info[const.DATA_BADGE_THRESHOLD_TYPE] = badge_data.get(
-                const.DATA_BADGE_THRESHOLD_TYPE,
-                badge_info.get(
-                    const.DATA_BADGE_THRESHOLD_TYPE, const.DEFAULT_BADGE_THRESHOLD_TYPE
-                ),
-            )
-            badge_info[const.DATA_BADGE_REQUIRED_CHORES] = badge_data.get(
-                const.DATA_BADGE_REQUIRED_CHORES,
-                badge_info.get(const.DATA_BADGE_REQUIRED_CHORES, []),
-            )
-            badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = badge_data.get(
-                const.DATA_BADGE_THRESHOLD_VALUE,
-                badge_info.get(
-                    const.DATA_BADGE_THRESHOLD_VALUE,
-                    const.DEFAULT_BADGE_THRESHOLD_VALUE,
-                ),
-            )
-
-        elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
-            badge_info[const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT] = badge_data.get(
-                const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT,
-                badge_info.get(
-                    const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY
-                ),
-            )
-
-        elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
-            badge_info[const.DATA_BADGE_ASSOCIATED_CHALLENGE] = badge_data.get(
-                const.DATA_BADGE_ASSOCIATED_CHALLENGE,
-                badge_info.get(const.DATA_BADGE_ASSOCIATED_CHALLENGE, const.CONF_EMPTY),
-            )
-
-        elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
-            badge_info[const.DATA_BADGE_OCCASION_TYPE] = badge_data.get(
-                const.DATA_BADGE_OCCASION_TYPE,
-                badge_info.get(const.DATA_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY),
-            )
-            badge_info[const.DATA_BADGE_SPECIAL_OCCASION_DATE] = badge_data.get(
-                const.DATA_BADGE_SPECIAL_OCCASION_DATE,
-                badge_info.get(
-                    const.DATA_BADGE_SPECIAL_OCCASION_DATE, const.CONF_EMPTY
-                ),
-            )
-            badge_info[const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY] = badge_data.get(
-                const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY,
-                badge_info.get(const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY, False),
-            )
-            badge_info[const.DATA_BADGE_ASSIGNED_KIDS] = badge_data.get(
-                const.DATA_BADGE_ASSIGNED_KIDS,
-                badge_info[const.DATA_BADGE_ASSIGNED_KIDS],
-            )
+        badge_name = badge_info.get(const.DATA_BADGE_NAME, const.CONF_EMPTY)
 
         const.LOGGER.debug(
             "DEBUG: Badge Updated - '%s', ID '%s'",
-            badge_info[const.DATA_BADGE_NAME],
+            badge_name,
             badge_id,
         )
 
@@ -2510,15 +2225,20 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         *,
         points_awarded: Optional[float] = None,
     ) -> None:
-        const.LOGGER.debug(
-            "DEBUG: Chore State - Processing - Kid ID '%s', Chore ID '%s', State '%s', Points Awarded '%s'",
-            kid_id,
-            chore_id,
-            new_state,
-            points_awarded,
-        )
-
         """Centralized function to update a chore’s state for a given kid."""
+
+        # Add a flag to control debug messages
+        debug_enabled = False
+
+        if debug_enabled:
+            const.LOGGER.debug(
+                "DEBUG: Chore State - Processing - Kid ID '%s', Chore ID '%s', State '%s', Points Awarded '%s'",
+                kid_id,
+                chore_id,
+                new_state,
+                points_awarded,
+            )
+
         kid_info = self.kids_data.get(kid_id)
         chore_info = self.chores_data.get(chore_id)
 
@@ -2687,11 +2407,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         else:
             chore_info[const.DATA_CHORE_STATE] = const.CHORE_STATE_UNKNOWN
 
-        const.LOGGER.debug(
-            "DEBUG: Chore State - Chore ID '%s' Global State changed to '%s'",
-            chore_id,
-            chore_info[const.DATA_CHORE_STATE],
-        )
+        if debug_enabled:
+            const.LOGGER.debug(
+                "DEBUG: Chore State - Chore ID '%s' Global State changed to '%s'",
+                chore_id,
+                chore_info[const.DATA_CHORE_STATE],
+            )
 
     # -------------------------------------------------------------------------------------
     # Kids: Update Points
@@ -2699,6 +2420,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
     def update_kid_points(self, kid_id: str, new_points: float):
         """Set a kid's points to 'new_points', updating daily/weekly/monthly counters."""
+
+        import math
+
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             const.LOGGER.warning(
@@ -2706,7 +2430,30 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             return
 
-        old_points = float(kid_info[const.DATA_KID_POINTS])
+        # Handle None or invalid values for new_points and old_points
+        try:
+            new_points = float(new_points)
+        except (ValueError, TypeError):
+            const.LOGGER.warning(
+                "WARNING: Kid Points Update - Invalid new_points value '%s' for Kid ID '%s'. Skipping update.",
+                new_points,
+                kid_id,
+            )
+            return
+
+        try:
+            old_points = float(kid_info.get(const.DATA_KID_POINTS, 0.0))
+        except (ValueError, TypeError):
+            const.LOGGER.warning(
+                "WARNING: Kid Points Update - Invalid old_points value for Kid ID '%s'. Defaulting to 0.0.",
+                kid_id,
+            )
+            old_points = 0.0
+
+        # Round to 1 decimal place
+        new_points = math.floor(new_points * 10) / 10
+        old_points = math.floor(old_points * 10) / 10
+
         delta = new_points - old_points
         if delta == const.DEFAULT_ZERO:
             const.LOGGER.debug(
@@ -2970,15 +2717,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 stored_cumulative_badge_progress
             )
 
+        # Check all badges to see if any should be awarded to this kid.
         for badge_id, badge_info in self.badges_data.items():
             badge_name = badge_info.get(const.DATA_BADGE_NAME)
             badge_type = badge_info.get(const.DATA_BADGE_TYPE)
 
-            # For non-cumulative badges, if assigned kids is defined, only award if kid_id is in it.
-            if badge_info.get(const.DATA_BADGE_TYPE) != const.BADGE_TYPE_CUMULATIVE:
-                assigned = badge_info.get(const.DATA_BADGE_ASSIGNED_KIDS, [])
-                if assigned and kid_id not in assigned:
-                    continue
+            # Set the is_assigned_to flag: True if the list is empty or if kid_id is in the assigned list
+            is_assigned_to = not badge_info.get(
+                const.DATA_BADGE_ASSIGNED_TO, []
+            ) or kid_id in badge_info.get(const.DATA_BADGE_ASSIGNED_TO, [])
 
             # For all types except special occasion and daily, skip if already earned.
             #### **** This needs reviewed to ensure badges with maintenance or resets are being handled correctly somewhere else. ****
@@ -3374,9 +3121,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # - AND it's already earned
         # - AND it's NOT a resettable cumulative badge (which can be re-earned)
         already_earned = kid_id in badge_info.get(const.DATA_BADGE_EARNED_BY, [])
+        reset_schedule = badge_info.get(const.DATA_BADGE_RESET_SCHEDULE, {})
         is_resettable_cumulative = (
             badge_type == const.BADGE_TYPE_CUMULATIVE
-            and badge_info.get(const.DATA_BADGE_RESET_PERIODICALLY, False)
+            and reset_schedule.get(const.DATA_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY)
+            != const.FREQUENCY_NONE
         )
 
         if (
@@ -3457,7 +3206,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Process the awards for the achievement including multiplier, points, and rewards
         one_time_reward = badge_info.get(
-            const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
+            const.DATA_BADGE_AWARDS_AWARD_REWARD, const.CONF_EMPTY
         )
 
         if badge_type == const.BADGE_TYPE_CUMULATIVE:
@@ -3474,33 +3223,35 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.BADGE_TYPE_SPECIAL_OCCASION,
         ]:
             # Determine award mode and apply accordingly:
-            award_mode = badge_info.get(
-                const.DATA_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+            award_data = badge_info.get(const.DATA_BADGE_AWARDS, {})
+            award_mode = award_data.get(
+                const.DATA_BADGE_AWARDS_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
             )
-            if award_mode == const.DATA_BADGE_AWARD_POINTS:
-                extra_points = badge_info.get(
-                    const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_ZERO
+
+            if award_mode == const.DATA_BADGE_AWARDS_AWARD_POINTS:
+                extra_points = award_data.get(
+                    const.DATA_BADGE_AWARDS_AWARD_POINTS, const.DEFAULT_ZERO
                 )
                 one_time_reward = const.CONF_EMPTY
-            elif award_mode == const.DATA_BADGE_AWARD_REWARD:
-                extra_points = 0
-                one_time_reward = badge_info.get(
-                    const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
+            elif award_mode == const.DATA_BADGE_AWARDS_AWARD_REWARD:
+                extra_points = const.DEFAULT_ZERO
+                one_time_reward = award_data.get(
+                    const.DATA_BADGE_AWARDS_AWARD_REWARD, const.CONF_EMPTY
                 )
-            elif award_mode == const.DATA_BADGE_AWARD_POINTS_REWARD:
-                extra_points = badge_info.get(
-                    const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_ZERO
+            elif award_mode == const.DATA_BADGE_AWARDS_AWARD_POINTS_REWARD:
+                extra_points = award_data.get(
+                    const.DATA_BADGE_AWARDS_AWARD_POINTS, const.DEFAULT_ZERO
                 )
-                one_time_reward = badge_info.get(
-                    const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
+                one_time_reward = award_data.get(
+                    const.DATA_BADGE_AWARDS_AWARD_REWARD, const.CONF_EMPTY
                 )
             else:
                 # Fallback behavior
-                extra_points = badge_info.get(
-                    const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_ZERO
+                extra_points = award_data.get(
+                    const.DATA_BADGE_AWARDS_AWARD_POINTS, const.DEFAULT_ZERO
                 )
-                one_time_reward = badge_info.get(
-                    const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
+                one_time_reward = award_data.get(
+                    const.DATA_BADGE_AWARDS_AWARD_REWARD, const.CONF_EMPTY
                 )
 
             # Process extra points if applicable
@@ -3648,8 +3399,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         if current_badge_id:
             current_badge_info = self.badges_data.get(current_badge_id, {})
-            multiplier = current_badge_info.get(
-                const.DATA_BADGE_POINTS_MULTIPLIER, const.DEFAULT_KID_POINTS_MULTIPLIER
+            badge_awards = current_badge_info.get(const.DATA_BADGE_AWARDS, {})
+            multiplier = badge_awards.get(
+                const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
+                const.DEFAULT_KID_POINTS_MULTIPLIER,
             )
         else:
             multiplier = const.DEFAULT_KID_POINTS_MULTIPLIER
@@ -4102,10 +3855,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         )
 
         # Extract current maintenance and grace end dates, status, and accumulated cycle points.
-        end_date = cumulative_badge_progress.get(
+        end_date_iso = cumulative_badge_progress.get(
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE
         )
-        grace_date = cumulative_badge_progress.get(
+        grace_date_iso = cumulative_badge_progress.get(
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE
         )
         status = cumulative_badge_progress.get(
@@ -4130,13 +3883,20 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Determine the maintenance threshold, reset type, grace period duration, and whether reset is enabled.
         maintenance_required = float(
-            highest_earned.get(const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO)
+            highest_earned.get(const.DATA_BADGE_TARGET, {}).get(
+                const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO
+            )
         )
-        reset_type = highest_earned.get(const.DATA_BADGE_RESET_TYPE)
+        reset_schedule = highest_earned.get(const.DATA_BADGE_RESET_SCHEDULE, {})
+        frequency = reset_schedule.get(
+            const.DATA_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY
+        )
         grace_days = int(
-            highest_earned.get(const.DATA_BADGE_RESET_GRACE_PERIOD, const.DEFAULT_ZERO)
+            reset_schedule.get(
+                const.DATA_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS, const.DEFAULT_ZERO
+            )
         )
-        reset_enabled = highest_earned.get(const.DATA_BADGE_RESET_PERIODICALLY, False)
+        reset_enabled = frequency != const.FREQUENCY_NONE
 
         # DEBUG: Log the key parameters derived from today's date and the highest earned badge.
         const.LOGGER.debug(
@@ -4144,7 +3904,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             today_local_iso,
             highest_earned.get(const.DATA_BADGE_NAME),
             maintenance_required,
-            reset_type,
+            frequency,
             grace_days,
             reset_enabled,
         )
@@ -4175,14 +3935,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.CUMULATIVE_BADGE_STATE_ACTIVE,
                 const.CUMULATIVE_BADGE_STATE_DEMOTED,
             )
-            and end_date
-            and today_local_iso >= end_date
+            and end_date_iso
+            and today_local_iso >= end_date_iso
         ):
             # If cycle points meet or exceed the required maintenance threshold, the badge is maintained.
             if cycle_points >= maintenance_required:
                 award_success = True
             # If it is already past the grace date, then a demotion is required (edge case)
-            elif grace_date and today_local_iso >= grace_date:
+            elif grace_date_iso and today_local_iso >= grace_date_iso:
                 demotion_required = True
             # Otherwise, if a grace period is allowed, move the badge status into the grace state.
             elif grace_days > const.DEFAULT_ZERO:
@@ -4198,35 +3958,61 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if cycle_points >= maintenance_required:
                 award_success = True
             # If the grace period has expired, then a demotion is required.
-            elif grace_date and today_local_iso >= grace_date:
+            elif grace_date_iso and today_local_iso >= grace_date_iso:
                 demotion_required = True
 
-        # Initialize the variables for the next maintenance end date and grace end date.
+        # Determine the frequency and custom fields before proceeding
+        reset_schedule = highest_earned.get(const.DATA_BADGE_RESET_SCHEDULE, {})
+        frequency = reset_schedule.get(
+            const.DATA_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY, const.FREQUENCY_NONE
+        )
+        custom_interval = reset_schedule.get(
+            const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL
+        )
+        custom_interval_unit = reset_schedule.get(
+            const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT
+        )
+        # Use reference_dt if available; otherwise, default to today's date
+        reference_dt = reset_schedule.get(
+            const.DATA_BADGE_RESET_SCHEDULE_END_DATE, today_local_iso
+        )
+
+        # Fallback to today's date if reference_dt is None
+        if not reference_dt:
+            reference_dt = today_local_iso
+
+        # Initialize the variables for the next maintenance end date and grace end date
         next_end = None
         next_grace = None
 
-        # Determine the reference datetime for calculating the next maintenance window.
-        # For custom reset types, use a stored custom date; otherwise, default to today's date.
-        if reset_type in {
-            const.CONF_CUSTOM_1_WEEK,
-            const.CONF_CUSTOM_1_MONTH,
-            const.CONF_CUSTOM_1_YEAR,
-        }:
-            reference_dt = highest_earned.get(
-                const.DATA_BADGE_CUSTOM_RESET_DATE, today_local_iso
-            )
-        else:
-            reference_dt = today_local_iso
-
-        # Calculate the next maintenance end and grace dates if an award or demotion action is required.
+        # Check if the maintenance period or grace period has ended
         if award_success or demotion_required:
-            # Compute the next maintenance end date using the new scheduling helper.
-            next_end = kh.get_next_scheduled_datetime(
-                reference_dt,
-                interval_type=reset_type,
-                return_type=const.HELPER_RETURN_ISO_DATE,
-            )
-            # Compute the grace period end date by adding the grace period (in days) to the maintenance end date.
+            if frequency == const.CONF_CUSTOM:
+                # If custom interval and unit are valid, calculate next_end
+                if custom_interval and custom_interval_unit:
+                    next_end = kh.add_interval_to_datetime(
+                        reference_dt,
+                        custom_interval_unit,
+                        custom_interval,
+                        return_type=const.HELPER_RETURN_ISO_DATE,
+                    )
+                else:
+                    # Fallback to existing logic if custom interval/unit are invalid
+                    next_end = kh.get_next_scheduled_datetime(
+                        reference_dt,
+                        interval_type=frequency,
+                        return_type=const.HELPER_RETURN_ISO_DATE,
+                    )
+            else:
+                # Default behavior for non-custom frequencies
+                reference_dt = today_local_iso
+                next_end = kh.get_next_scheduled_datetime(
+                    reference_dt,
+                    interval_type=frequency,
+                    return_type=const.HELPER_RETURN_ISO_DATE,
+                )
+
+            # Compute the grace period end date by adding the grace period (in days) to the maintenance end date
             next_grace = kh.add_interval_to_datetime(
                 next_end,
                 const.CONF_DAYS,
@@ -4292,7 +4078,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         ):
             next_end = kh.get_next_scheduled_datetime(
                 reference_dt,
-                interval_type=reset_type,
+                interval_type=frequency,
                 return_type=const.HELPER_RETURN_ISO_DATE,
             )
             next_grace = kh.add_interval_to_datetime(
@@ -4375,7 +4161,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 for badge_id, badge_info in self.badges_data.items()
                 if badge_info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
             ),
-            key=lambda item: float(item[1].get(const.DATA_BADGE_THRESHOLD_VALUE, 0)),
+            key=lambda item: float(
+                item[1]
+                .get(const.DATA_BADGE_TARGET, {})
+                .get(const.DATA_BADGE_TARGET_THRESHOLD_VALUE, 0)
+            ),
         )
 
         if not cumulative_badges:
@@ -4387,7 +4177,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         previous_badge_info = None
 
         for badge_id, badge_info in cumulative_badges:
-            threshold = float(badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, 0))
+            threshold = float(
+                badge_info.get(const.DATA_BADGE_TARGET, {}).get(
+                    const.DATA_BADGE_TARGET_THRESHOLD_VALUE, 0
+                )
+            )
 
             if total_points >= threshold:
                 highest_earned = badge_info
@@ -4920,8 +4714,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """
         now_utc = dt_util.utcnow()
         const.LOGGER.debug(
-            "DEBUG: Overdue Chores - Starting check at %s", now_utc.isoformat()
+            "DEBUG: Overdue Chores - Starting check at %s. Enable debug flag to see more details.",
+            now_utc.isoformat(),
         )
+
+        # Add a flag to control debug messages
+        debug_enabled = False
 
         for chore_id, chore_info in self.chores_data.items():
             # Get the list of assigned kids
@@ -4947,10 +4745,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
             due_str = chore_info.get(const.DATA_CHORE_DUE_DATE)
             if not due_str:
-                const.LOGGER.debug(
-                    "DEBUG: Overdue Chores - Chore ID '%s' has no due date. Checking overdue status",
-                    chore_info.get(const.DATA_CHORE_NAME, chore_id),
-                )
+                if debug_enabled:
+                    const.LOGGER.debug(
+                        "DEBUG: Overdue Chores - Chore ID '%s' has no due date. Checking overdue status",
+                        chore_info.get(const.DATA_CHORE_NAME, chore_id),
+                    )
 
                 # If it has no due date, but is overdue, it should be marked as pending
                 # Also check if status is independent, just in case
@@ -4964,10 +4763,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             self._process_chore_state(
                                 kid_id, chore_id, const.CHORE_STATE_PENDING
                             )
-                            const.LOGGER.debug(
-                                "DEBUG: Overdue Chores - Chore ID '%s' status is overdue but no due date. Cleared overdue status",
-                                chore_info.get(const.DATA_CHORE_NAME, chore_id),
-                            )
+                            if debug_enabled:
+                                const.LOGGER.debug(
+                                    "DEBUG: Overdue Chores - Chore ID '%s' status is overdue but no due date. Cleared overdue status",
+                                    chore_info.get(const.DATA_CHORE_NAME, chore_id),
+                                )
                 continue
 
             try:
@@ -4990,10 +4790,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         self._process_chore_state(
                             kid_id, chore_id, const.CHORE_STATE_PENDING
                         )
-                        const.LOGGER.debug(
-                            "DEBUG: Overdue Chores - Chore ID '%s' status is overdue but not yet due. Cleared overdue status",
-                            chore_info.get(const.DATA_CHORE_NAME, chore_id),
-                        )
+                        if debug_enabled:
+                            const.LOGGER.debug(
+                                "DEBUG: Overdue Chores - Chore ID '%s' status is overdue but not yet due. Cleared overdue status",
+                                chore_info.get(const.DATA_CHORE_NAME, chore_id),
+                            )
 
                 continue
 
@@ -5011,11 +4812,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
                 # Mark chore as overdue for this kid.
                 self._process_chore_state(kid_id, chore_id, const.CHORE_STATE_OVERDUE)
-                const.LOGGER.debug(
-                    "DEBUG: Overdue Chores - Setting Chore IS '%s' as overdue for Kid ID '%s'",
-                    chore_info.get(const.DATA_CHORE_NAME, chore_id),
-                    kid_id,
-                )
+                if debug_enabled:
+                    const.LOGGER.debug(
+                        "DEBUG: Overdue Chores - Setting Chore ID '%s' as overdue for Kid ID '%s'",
+                        chore_info.get(const.DATA_CHORE_NAME, chore_id),
+                        kid_id,
+                    )
 
                 # Check notification timestamp.
                 last_notif_str = kid_info[const.DATA_KID_OVERDUE_NOTIFICATIONS].get(
@@ -5035,11 +4837,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         ):
                             notify = True
                         else:
-                            const.LOGGER.debug(
-                                "DEBUG: Overdue Chores - Chore ID'%s' for Kid IS '%s' already notified in the last 24 hours",
-                                chore_id,
-                                kid_id,
-                            )
+                            if debug_enabled:
+                                const.LOGGER.debug(
+                                    "DEBUG: Overdue Chores - Chore ID '%s' for Kid ID '%s' already notified in the last 24 hours",
+                                    chore_id,
+                                    kid_id,
+                                )
                     except Exception as err:
                         const.LOGGER.error(
                             "ERROR: Overdue Chores - Error parsing overdue notification '%s' for Chore ID '%s', Kid ID '%s': %s",
@@ -5074,11 +4877,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             const.NOTIFY_TITLE: const.ACTION_TITLE_REMIND_30,
                         },
                     ]
-                    const.LOGGER.debug(
-                        "DEBUG: Overdue Chores - Sending overdue notification for Chore ID '%s' to Kid ID '%s'",
-                        chore_info.get(const.DATA_CHORE_NAME, chore_id),
-                        kid_id,
-                    )
+                    if debug_enabled:
+                        const.LOGGER.debug(
+                            "DEBUG: Overdue Chores - Sending overdue notification for Chore ID '%s' to Kid ID '%s'",
+                            chore_info.get(const.DATA_CHORE_NAME, chore_id),
+                            kid_id,
+                        )
                     self.hass.async_create_task(
                         self._notify_kid(
                             kid_id,
@@ -5096,7 +4900,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                             extra_data=extra_data,
                         )
                     )
-        const.LOGGER.debug("DEBUG: Overdue Chores - Check completed")
+        if debug_enabled:
+            const.LOGGER.debug("DEBUG: Overdue Chores - Check completed")
 
     async def _reset_all_chore_counts(self, now: datetime):
         """Trigger resets based on the current time for all frequencies."""
@@ -5106,11 +4911,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         for kid_id, kid_info in self.kids_data.items():
             kid_info[const.DATA_KID_TODAY_CHORE_APPROVALS] = {}
-
-            # Process Cumulative Badge Maintenance
-            await self.hass.async_add_executor_job(
-                self._manage_cumulative_badge_maintenance, kid_id
-            )
 
     async def _handle_recurring_chore_resets(self, now: datetime):
         """Handle recurring resets for daily, weekly, and monthly frequencies."""
@@ -5355,7 +5155,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             helper_interval = freq
 
             next_due_utc = kh.get_next_scheduled_datetime(
-                start_date=original_due_utc,
+                base_date=original_due_utc,
                 interval_type=helper_interval,
                 require_future=True,
                 reference_datetime=now_local,

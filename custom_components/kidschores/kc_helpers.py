@@ -2,14 +2,15 @@
 """KidsChores helper functions and shared logic."""
 
 from __future__ import annotations
-from typing import Optional, Iterable, TYPE_CHECKING, Union
 
-from homeassistant.core import HomeAssistant
-from homeassistant.auth.models import User
-from homeassistant.helpers.label_registry import async_get
-from datetime import datetime, date, timedelta, time, tzinfo
 from calendar import monthrange
+from datetime import date, datetime, time, timedelta, tzinfo
+from typing import TYPE_CHECKING, Iterable, Optional, Union
+
 import homeassistant.util.dt as dt_util
+from homeassistant.auth.models import User
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.label_registry import async_get
 
 from . import const
 
@@ -369,6 +370,14 @@ def add_interval_to_datetime(
     - Preserves timezone awareness if present in input.
     - If input is naive (no tzinfo), output will also be naive.
     """
+
+    # Handle the case where start_date is None
+    if not base_date:
+        const.LOGGER.error(
+            "ERROR: Get Add Interval to DateTime - base_date is None. Cannot calculate next scheduled datetime."
+        )
+        return None
+
     # Convert base_date to a datetime object.
     if isinstance(base_date, str):
         base_date = datetime.fromisoformat(base_date)
@@ -445,7 +454,7 @@ def add_interval_to_datetime(
 
 
 def get_next_scheduled_datetime(
-    start_date: Union[str, date, datetime],
+    base_date: Union[str, date, datetime],
     interval_type: str,
     require_future: bool = True,
     reference_datetime: Optional[Union[str, date, datetime]] = None,
@@ -487,30 +496,37 @@ def get_next_scheduled_datetime(
           → datetime.date(2025, 6, 1)
     """
     const.LOGGER.debug(
-        "DEBUG: Get Next Schedule DateTime - Helper called with start_date=%s, interval_type=%s, require_future=%s, reference_datetime=%s, return_type=%s",
-        start_date,
+        "DEBUG: Get Next Schedule DateTime - Helper called with base_date=%s, interval_type=%s, require_future=%s, reference_datetime=%s, return_type=%s",
+        base_date,
         interval_type,
         require_future,
         reference_datetime,
         return_type,
     )
 
+    # Handle the case where base_date is None
+    if not base_date:
+        const.LOGGER.error(
+            "ERROR: Get Next Schedule DateTime - base_date is None. Cannot calculate next scheduled datetime."
+        )
+        return None
+
     # Get the local timezone.
     local_tz = const.DEFAULT_TIME_ZONE
 
-    # Convert start_date to a timezone-aware datetime if required.
-    if isinstance(start_date, str):
-        dt_obj = parse_datetime_to_utc(start_date) or datetime.fromisoformat(start_date)
+    # Convert base_date to a timezone-aware datetime if required.
+    if isinstance(base_date, str):
+        dt_obj = parse_datetime_to_utc(base_date) or datetime.fromisoformat(base_date)
         if dt_obj.tzinfo is None:
             dt_obj = dt_obj.replace(tzinfo=local_tz)
-        start_date = dt_obj
-    elif isinstance(start_date, date) and not isinstance(start_date, datetime):
-        start_date = datetime.combine(start_date, datetime.min.time()).replace(
+        base_date = dt_obj
+    elif isinstance(base_date, date) and not isinstance(base_date, datetime):
+        base_date = datetime.combine(base_date, datetime.min.time()).replace(
             tzinfo=local_tz
         )
     else:
-        if start_date.tzinfo is None:
-            start_date = start_date.replace(tzinfo=local_tz)
+        if base_date.tzinfo is None:
+            base_date = base_date.replace(tzinfo=local_tz)
 
     # Internal function to calculate the next interval.
     def calculate_next_interval(base_dt: datetime) -> datetime:
@@ -609,7 +625,7 @@ def get_next_scheduled_datetime(
             raise ValueError(f"Unsupported interval type: {interval_type}")
 
     # Calculate the initial next scheduled datetime.
-    result = calculate_next_interval(start_date)
+    result = calculate_next_interval(base_date)
     const.LOGGER.debug(
         "DEBUG: Get Next Schedule DateTime - After calculate_next_interval, result=%s",
         result,
@@ -654,8 +670,8 @@ def get_next_scheduled_datetime(
     # If require_future is True, loop until result_utc is strictly after reference_dt_utc.
     if require_future:
         while result_utc <= reference_dt_utc:
-            start_date = result  # We keep result in local time.
-            result = calculate_next_interval(start_date)
+            base_date = result  # We keep result in local time.
+            result = calculate_next_interval(base_date)
             result_utc = dt_util.as_utc(result)
         const.LOGGER.debug(
             "DEBUG: Get Next Schedule DateTime - After require_future loop, result=%s",
@@ -681,8 +697,8 @@ def get_next_scheduled_datetime(
     return final_result
 
 
-from datetime import datetime, date, timedelta, tzinfo
-from typing import Union, Iterable, Optional
+from datetime import date, datetime, timedelta, tzinfo
+from typing import Iterable, Optional, Union
 
 
 def get_next_applicable_day(

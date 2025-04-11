@@ -6,10 +6,12 @@ Provides schema builders and input-processing logic for internal_id-based manage
 
 import datetime
 import uuid
-import voluptuous as vol
+from typing import Any, Dict, List, Optional
 
+import voluptuous as vol
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import selector, config_validation as cv
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import selector
 from homeassistant.util import dt as dt_util
 
 from . import const
@@ -529,7 +531,7 @@ def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
     )
 
 
-def build_badge_periodic_schema(
+def old_build_badge_periodic_schema(
     default: dict = None, rewards_list: list = None, chores_list: list = None
 ):
     """Build schema for periodic badges (e.g. weekly or monthly)."""
@@ -913,6 +915,1107 @@ def build_badge_special_occasions_schema(
             vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
         }
     )
+
+
+# ----------------------------------------------------------------------------------
+# BADGES - HELPERS
+# ----------------------------------------------------------------------------------
+
+
+# --- Consolidated Build Function ---
+def build_badge_common_data(
+    user_input: Dict[str, Any],
+    internal_id: str,  # Pass internal_id explicitly
+    badge_type: str = const.BADGE_TYPE_CUMULATIVE,
+) -> Dict[str, Any]:
+    """
+    Build the badge data dictionary, including common fields and selected components.
+
+    Args:
+        user_input: The dictionary containing user inputs from the form.
+        internal_id: The internal ID for the badge.
+        badge_type: The type of the badge (e.g., cumulative, daily, periodic). Default is cumulative.
+
+    Returns:
+        A dictionary representing the badge's configuration data.
+    """
+    # --- Set include_ flags based on badge type ---
+    include_target = badge_type in const.INCLUDE_TARGET_BADGE_TYPES
+    include_special_occasion = badge_type in const.INCLUDE_SPECIAL_OCCASION_BADGE_TYPES
+    include_achievement_linked = (
+        badge_type in const.INCLUDE_ACHIEVEMENT_LINKED_BADGE_TYPES
+    )
+    include_challenge_linked = badge_type in const.INCLUDE_CHALLENGE_LINKED_BADGE_TYPES
+    include_tracked_chores = badge_type in const.INCLUDE_TRACKED_CHORES_BADGE_TYPES
+    include_assigned_to = badge_type in const.INCLUDE_ASSIGNED_TO_BADGE_TYPES
+    include_awards = badge_type in const.INCLUDE_AWARDS_BADGE_TYPES
+    include_reset_schedule = badge_type in const.INCLUDE_RESET_SCHEDULE_BADGE_TYPES
+    include_legacy_cumulative = badge_type in const.INCLUDE_LEGACY_CUMULATIVE_BADGE_TYPE
+
+    # --- Start Common Data ---
+    badge_data = {
+        const.DATA_BADGE_NAME: user_input.get(const.CFOF_BADGES_INPUT_NAME, "").strip(),
+        const.DATA_BADGE_DESCRIPTION: user_input.get(
+            const.CFOF_BADGES_INPUT_DESCRIPTION, const.CONF_EMPTY
+        ),
+        const.DATA_BADGE_LABELS: user_input.get(const.CFOF_BADGES_INPUT_LABELS, []),
+        const.DATA_BADGE_ICON: user_input.get(
+            const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
+        ),
+        const.DATA_BADGE_INTERNAL_ID: internal_id,
+    }
+    # --- End Common Data ---
+
+    # --- Target Component ---
+    if include_target:
+        target_type = user_input.get(
+            const.CFOF_BADGES_INPUT_TARGET_TYPE, const.DEFAULT_BADGE_TARGET_TYPE
+        )
+        threshold_value_input = user_input.get(
+            const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE,
+            const.DEFAULT_BADGE_TARGET_THRESHOLD_VALUE,
+        )
+        threshold_value = const.DEFAULT_BADGE_TARGET_THRESHOLD_VALUE  # Default
+        try:
+            if target_type == const.BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED:
+                threshold_value = int(threshold_value_input)
+            else:
+                threshold_value = int(threshold_value_input)
+        except (TypeError, ValueError, AttributeError):
+            const.LOGGER.warning(
+                "Could not parse target threshold value '%s' for type '%s'. Using default.",
+                threshold_value_input,
+                target_type,
+            )
+            pass
+
+        maintenance_rules = user_input.get(
+            const.CFOF_BADGES_INPUT_MAINTENANCE_RULES,
+            const.DEFAULT_BADGE_MAINTENANCE_THRESHOLD,
+        )
+
+        badge_data[const.DATA_BADGE_TARGET] = {
+            const.DATA_BADGE_TARGET_TYPE: target_type,
+            const.DATA_BADGE_TARGET_THRESHOLD_VALUE: threshold_value,
+            const.DATA_BADGE_MAINTENANCE_RULES: maintenance_rules,
+        }
+
+    # --- Special Occasion Component ---
+    if include_special_occasion:
+        occasion_type = user_input.get(
+            const.CFOF_BADGES_INPUT_OCCASION_TYPE, const.CONF_EMPTY
+        )
+        badge_data[const.DATA_BADGE_SPECIAL_OCCASION_TYPE] = {
+            const.DATA_BADGE_OCCASION_TYPE: occasion_type
+        }
+
+    # --- Achievement-Linked Component ---
+    if include_achievement_linked:
+        achievement_id = user_input.get(
+            const.CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY
+        )
+        badge_data[const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT] = achievement_id
+
+    # --- Challenge-Linked Component ---
+    if include_challenge_linked:
+        challenge_id = user_input.get(
+            const.CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE, const.CONF_EMPTY
+        )
+        badge_data[const.DATA_BADGE_ASSOCIATED_CHALLENGE] = challenge_id
+
+    # --- Tracked Chores Component ---
+    if include_tracked_chores:  # Use renamed flag
+        selected_chores = user_input.get(const.CFOF_BADGES_INPUT_SELECTED_CHORES, [])
+        if not isinstance(selected_chores, list):
+            selected_chores = [selected_chores] if selected_chores else []
+        selected_chores = [
+            chore_id
+            for chore_id in selected_chores
+            if chore_id and chore_id != const.CONF_EMPTY
+        ]
+        # Output key remains 'tracked' as per spec example, flag name is just for clarity
+        badge_data[const.DATA_BADGE_TRACKED_CHORES] = {
+            const.DATA_BADGE_TRACKED_CHORES_SELECTED_CHORES: selected_chores
+        }
+
+    # --- Assigned To Component ---
+    if include_assigned_to:
+        assigned = user_input.get(const.CFOF_BADGES_INPUT_ASSIGNED_TO, [])
+        if not isinstance(assigned, list):
+            assigned = [assigned] if assigned else []
+        assigned = [
+            kid_id for kid_id in assigned if kid_id and kid_id != const.CONF_EMPTY
+        ]
+        badge_data[const.DATA_BADGE_ASSIGNED_TO] = assigned
+
+    # --- Awards Component ---
+    if include_awards:
+        # Logic from build_badge_awards_data
+        mode = user_input.get(
+            const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+        )
+        points_input = user_input.get(
+            const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
+        )
+        points = const.DEFAULT_BADGE_AWARD_POINTS  # Default
+        try:
+            points = float(points_input)
+        except (TypeError, ValueError, AttributeError):
+            const.LOGGER.warning(
+                "Could not parse award points value '%s'. Using default.", points_input
+            )
+            pass  # Use default
+        reward = user_input.get(const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY)
+        multiplier = user_input.get(
+            const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER, const.CONF_NONE
+        )
+
+        # Apply cleaning based on mode
+        if mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
+            reward = const.CONF_EMPTY
+        elif mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
+            points = const.DEFAULT_ZERO  # Store zero
+        elif mode == const.CONF_BADGE_AWARD_NONE:
+            points = const.DEFAULT_ZERO
+            reward = const.CONF_EMPTY
+
+        badge_data[const.DATA_BADGE_AWARDS] = {
+            const.DATA_BADGE_AWARDS_AWARD_MODE: mode,
+            const.DATA_BADGE_AWARDS_AWARD_POINTS: points,
+            const.DATA_BADGE_AWARDS_AWARD_REWARD: reward,
+            const.DATA_BADGE_AWARDS_POINT_MULTIPLIER: multiplier,
+        }
+
+    # --- Reset Component ---
+    if include_reset_schedule:
+        recurring_frequency = user_input.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY,
+            const.CONF_WEEKLY,  # Default mode if not provided
+        )
+        start_date = user_input.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE, None
+        )
+        end_date = user_input.get(const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE, None)
+        grace_period_days = user_input.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
+            const.DEFAULT_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
+        )
+        custom_interval = user_input.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL,
+            const.DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL,
+        )
+        custom_interval_unit = user_input.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
+            const.DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
+        )
+
+        # Clean empty strings to None
+        start_date = None if start_date in (None, "") else start_date
+        end_date = None if end_date in (None, "") else end_date
+
+        if recurring_frequency == const.CONF_CUSTOM:
+            start_date = user_input.get(
+                const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE
+            )  # Get raw
+            end_date = user_input.get(
+                const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE
+            )  # Get raw
+            # Clean empty strings to None
+            start_date = None if start_date in (None, "") else start_date
+            end_date = None if end_date in (None, "") else end_date
+        # For CONF_NONE or any other non-CUSTOM mode, dates remain None
+
+        badge_data[const.DATA_BADGE_RESET_SCHEDULE] = {
+            const.DATA_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY: recurring_frequency,
+            const.DATA_BADGE_RESET_SCHEDULE_START_DATE: start_date,
+            const.DATA_BADGE_RESET_SCHEDULE_END_DATE: end_date,
+            const.DATA_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS: grace_period_days,
+            const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL: custom_interval,
+            const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT: custom_interval_unit,
+        }
+
+    # --- Return the constructed badge data ---
+    return badge_data
+
+
+# --- Consolidated Validation Function ---
+
+
+def validate_badge_common_inputs(  # Renamed
+    user_input: Dict[str, Any],
+    internal_id: str,
+    existing_badges: Optional[Dict[str, Any]] = None,
+    badge_type: str = const.BADGE_TYPE_CUMULATIVE,
+) -> Dict[str, str]:
+    """
+    Validate common badge inputs and selected component inputs.
+
+    Args:
+        user_input: The dictionary containing user inputs from the form.
+        internal_id: The internal ID for the badge.
+        existing_badges: Dictionary of existing badge configurations for uniqueness checks.
+        badge_type: The type of the badge (e.g., cumulative, daily, periodic). Default is cumulative.
+
+    Returns:
+        A dictionary of validation errors {field_key: error_message_or_translation_key}.
+    """
+    errors: Dict[str, str] = {}
+    existing_badges = existing_badges or {}
+
+    # --- Set include_ flags based on badge type ---
+    include_target = badge_type in const.INCLUDE_TARGET_BADGE_TYPES
+    include_special_occasion = badge_type in const.INCLUDE_SPECIAL_OCCASION_BADGE_TYPES
+    include_achievement_linked = (
+        badge_type in const.INCLUDE_ACHIEVEMENT_LINKED_BADGE_TYPES
+    )
+    include_challenge_linked = badge_type in const.INCLUDE_CHALLENGE_LINKED_BADGE_TYPES
+    include_tracked_chores = badge_type in const.INCLUDE_TRACKED_CHORES_BADGE_TYPES
+    include_assigned_to = badge_type in const.INCLUDE_ASSIGNED_TO_BADGE_TYPES
+    include_awards = badge_type in const.INCLUDE_AWARDS_BADGE_TYPES
+    include_reset_schedule = badge_type in const.INCLUDE_RESET_SCHEDULE_BADGE_TYPES
+    include_legacy_cumulative = badge_type in const.INCLUDE_LEGACY_CUMULATIVE_BADGE_TYPE
+
+    is_cumulative = badge_type == const.BADGE_TYPE_CUMULATIVE
+
+    # --- Start Common Validation ---
+    badge_name = user_input.get(const.CFOF_BADGES_INPUT_NAME, "").strip()
+
+    if not badge_name:
+        errors[const.CFOF_BADGES_INPUT_NAME] = const.TRANS_KEY_CFOF_INVALID_BADGE_NAME
+
+    # Validate badge is not duplicate (exclude the badge being edited)
+    for badge_id, badge_info in existing_badges.items():
+        if badge_id == internal_id:
+            continue  # Skip the badge being edited
+        if (
+            badge_info.get(const.DATA_BADGE_NAME, "").strip().lower()
+            == badge_name.lower()
+        ):
+            errors[const.CFOF_BADGES_INPUT_NAME] = const.TRANS_KEY_CFOF_DUPLICATE_BADGE
+            break
+    # --- End Common Validation ---
+
+    # --- Target Component Validation ---
+    if include_target:
+        target_type = user_input.get(
+            const.CFOF_BADGES_INPUT_TARGET_TYPE, const.DEFAULT_BADGE_TARGET_TYPE
+        )
+        target_threshold = user_input.get(
+            const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE
+        )
+        allowed_types = [
+            const.BADGE_TARGET_THRESHOLD_TYPE_POINTS,
+            const.BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT,
+            const.BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED,
+        ]
+
+        if target_type not in allowed_types:
+            errors[const.CFOF_BADGES_INPUT_TARGET_TYPE] = (
+                "invalid_target_type"  # Use translation key
+            )
+
+        if target_threshold is None or str(target_threshold).strip() == "":
+            errors[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = (
+                "target_threshold_required"  # Use translation key
+            )
+        else:
+            try:
+                value = int(target_threshold)
+                if value <= 0:
+                    errors[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = (
+                        const.TRANS_KEY_CFOF_INVALID_BADGE_TARGET_THRESHOLD_VALUE
+                    )
+            except (TypeError, ValueError):
+                errors[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = (
+                    const.TRANS_KEY_CFOF_INVALID_BADGE_TARGET_THRESHOLD_VALUE
+                )
+        # Validate maintenance rules if cumulative
+        if is_cumulative:
+            maintenance_rules = user_input.get(
+                const.CFOF_BADGES_INPUT_MAINTENANCE_RULES
+            )
+            if maintenance_rules is None or maintenance_rules < 0:
+                errors[const.CFOF_BADGES_INPUT_MAINTENANCE_RULES] = (
+                    "invalid_maintenance_rules"
+                )
+        else:
+            # If not cumulative, set maintenance rules to Zero
+            user_input[const.CFOF_BADGES_INPUT_MAINTENANCE_RULES] = const.DEFAULT_ZERO
+
+    # --- Special Occasion Validation ---
+    if include_special_occasion:
+        occasion_type = user_input.get(
+            const.CFOF_BADGES_INPUT_OCCASION_TYPE, const.CONF_EMPTY
+        )
+        if not occasion_type or occasion_type == const.CONF_EMPTY:
+            errors[const.CFOF_BADGES_INPUT_OCCASION_TYPE] = (
+                const.TRANS_KEY_CFOF_ERROR_BADGE_OCCASION_TYPE_REQUIRED
+            )
+
+    # --- Achievement-Linked Validation ---
+    if include_achievement_linked:
+        achievement_id = user_input.get(
+            const.CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY
+        )
+        if not achievement_id or achievement_id == const.CONF_EMPTY:
+            errors[const.CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT] = (
+                const.TRANS_KEY_CFOF_ERROR_BADGE_ACHIEVEMENT_REQUIRED
+            )
+
+    # --- Challenge-Linked Validation ---
+    if include_challenge_linked:
+        challenge_id = user_input.get(
+            const.CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE, const.CONF_EMPTY
+        )
+        if not challenge_id or challenge_id == const.CONF_EMPTY:
+            errors[const.CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE] = (
+                const.TRANS_KEY_CFOF_ERROR_BADGE_CHALLENGE_REQUIRED
+            )
+
+    # --- Tracked Chores Component Validation ---
+    if include_tracked_chores:  # Use renamed flag
+        selected_chores = user_input.get(const.CFOF_BADGES_INPUT_SELECTED_CHORES, [])
+        if not isinstance(selected_chores, list):
+            errors[const.CFOF_BADGES_INPUT_SELECTED_CHORES] = (
+                "invalid_format_list_expected"  # Use translation keys
+            )
+        target_type = user_input.get(const.CFOF_BADGES_INPUT_TARGET_TYPE)
+        # Require chores only if target type necessitates it
+        if target_type in [
+            const.BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED,
+        ]:
+            actual_chores = [
+                chore_id
+                for chore_id in selected_chores
+                if chore_id and chore_id != const.CONF_EMPTY
+            ]
+            if not actual_chores:
+                errors[const.CFOF_BADGES_INPUT_SELECTED_CHORES] = (
+                    "chores_required_for_target_type"  # Use translation keys
+                )
+        # Optional: Check existence of chore IDs here if needed
+
+    # --- Assigned To Component Validation ---
+    if include_assigned_to:
+        assigned = user_input.get(const.CFOF_BADGES_INPUT_ASSIGNED_TO, [])
+        if not isinstance(assigned, list):
+            errors[const.CFOF_BADGES_INPUT_ASSIGNED_TO] = (
+                "invalid_format_list_expected"  # Use translation keys
+            )
+        # Optional: Check existence of kid IDs here if needed
+
+    # --- Awards Component Validation ---
+    if include_awards:
+        # Logic from validate_badge_awards_inputs
+        award_mode = user_input.get(
+            const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+        )
+        # Perform cleaning within validation - modifies user_input dict passed in!
+        # Consider if this is desired, or if cleaning should only happen in build_data.
+        # Let's keep it as per original function for now.
+        if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
+            user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
+        elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
+            user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+        elif award_mode == const.CONF_BADGE_AWARD_NONE:
+            user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
+            user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
+
+        # Validate based on potentially cleaned user_input
+        if award_mode in (
+            const.CFOF_BADGES_INPUT_AWARD_POINTS,
+            const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
+        ):
+            points = user_input.get(
+                const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
+            )
+            try:
+                if float(points) <= 0:
+                    errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
+                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM  # Simpler key, provide context in translation
+                    )
+            except (TypeError, ValueError):
+                errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
+                    const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM
+                )
+        if award_mode in (
+            const.CFOF_BADGES_INPUT_AWARD_REWARD,
+            const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
+        ):
+            reward = user_input.get(
+                const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
+            )
+            if not reward or reward == const.CONF_EMPTY:
+                errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
+                    const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION  # Simpler key
+                )
+
+        if is_cumulative:
+            multiplier = user_input.get(const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER)
+            try:
+                if float(multiplier) <= 0:
+                    errors[const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER] = (
+                        "invalid_multiplier"
+                    )
+            except (TypeError, ValueError):
+                errors[const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER] = "invalid_multiplier"
+        else:
+            # If not cumulative, set multiplier to None
+            user_input[const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER] = const.CONF_NONE
+
+    # --- Reset Component Validation ---
+    if include_reset_schedule:
+        recurring_frequency = user_input.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY,
+            const.DEFAULT_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY,
+        )
+
+        if recurring_frequency != const.CONF_CUSTOM:
+            user_input[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE] = (
+                const.CONF_NONE
+            )
+            user_input[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE] = (
+                const.CONF_NONE
+            )
+
+        start_date = user_input.get(const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE)
+        end_date = user_input.get(const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE)
+
+        if recurring_frequency == const.CONF_CUSTOM:
+            if not start_date:
+                errors[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE] = (
+                    const.TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE_START_DATE_REQUIRED
+                )
+            if not end_date:
+                errors[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE] = (
+                    const.TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE_END_DATE_REQUIRED
+                )
+            if start_date and end_date and end_date < start_date:
+                errors[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE] = (
+                    "end_date_before_start_date"
+                )
+
+        if is_cumulative:
+            grace_period_days = user_input.get(
+                const.CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS
+            )
+            if grace_period_days is None or grace_period_days < 0:
+                errors[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS] = (
+                    "invalid_grace_period_days"
+                )
+        else:
+            # If not cumulative, set grace period to Zero
+            user_input[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS] = (
+                const.DEFAULT_ZERO
+            )
+
+    return errors
+
+
+# --- Consolidated Schema Function ---
+
+
+def build_badge_common_schema(
+    default: Optional[Dict[str, Any]] = None,
+    kids_dict: Optional[Dict[str, Any]] = None,
+    chores_dict: Optional[Dict[str, Any]] = None,
+    rewards_dict: Optional[Dict[str, Any]] = None,
+    challenges_dict: Optional[Dict[str, Any]] = None,  # Add challenges
+    achievements_dict: Optional[Dict[str, Any]] = None,  # Add achievements
+    badge_type: str = const.BADGE_TYPE_CUMULATIVE,
+) -> Dict[vol.Marker, Any]:
+    """
+    Build a Voluptuous schema for badge configuration, including common fields
+    and selected components.
+
+    Args:
+        default: Dictionary containing default values for the fields.
+        kids: Dictionary of available kids for the assigned_to selector.
+        chores: Dictionary of available chores for the tracked selector.
+        rewards: Dictionary of available rewards for the awards selector.
+        badge_type: The type of the badge (e.g., cumulative, daily, periodic). Default is cumulative.
+
+    Special Notes:
+        The `default` parameter in this helper is populated dynamically based on the context.
+        or editing, it receives either `badge_data` (on the first load) or `user_input` (after an error).
+        This allows the schema to pre-fill fields with existing data while preserving user changes
+        when the form is regenerated after validation errors.
+        Reason for this is because user_input field names do not always match the data keys in the badge data.
+
+    Returns:
+        A dictionary representing the Voluptuous schema.
+    """
+    default = default or {}
+    kids_dict = kids_dict or {}
+    chores_dict = chores_dict or {}
+    rewards_dict = rewards_dict or {}
+    challenges_dict = challenges_dict or {}
+    achievements_dict = achievements_dict or {}
+    # Initialize schema fields
+    schema_fields = {}
+
+    # --- Set include_ flags based on badge type ---
+    include_target = badge_type in const.INCLUDE_TARGET_BADGE_TYPES
+    include_special_occasion = badge_type in const.INCLUDE_SPECIAL_OCCASION_BADGE_TYPES
+    include_achievement_linked = (
+        badge_type in const.INCLUDE_ACHIEVEMENT_LINKED_BADGE_TYPES
+    )
+    include_challenge_linked = badge_type in const.INCLUDE_CHALLENGE_LINKED_BADGE_TYPES
+    include_tracked_chores = badge_type in const.INCLUDE_TRACKED_CHORES_BADGE_TYPES
+    include_assigned_to = badge_type in const.INCLUDE_ASSIGNED_TO_BADGE_TYPES
+    include_awards = badge_type in const.INCLUDE_AWARDS_BADGE_TYPES
+    include_reset_schedule = badge_type in const.INCLUDE_RESET_SCHEDULE_BADGE_TYPES
+    include_legacy_cumulative = badge_type in const.INCLUDE_LEGACY_CUMULATIVE_BADGE_TYPE
+
+    is_cumulative = badge_type == const.BADGE_TYPE_CUMULATIVE
+    is_periodic = badge_type == const.BADGE_TYPE_PERIODIC
+    is_daily = badge_type == const.BADGE_TYPE_DAILY
+    is_special_occasion = badge_type == const.BADGE_TYPE_SPECIAL_OCCASION
+
+    const.LOGGER.debug(
+        "DEBUG: Build Badge Common Schema - Badge Data Passed to Schema: %s", default
+    )
+
+    # --- Start Common Schema ---
+    # See Special Notes above for explanation of default usage rational
+    schema_fields.update(
+        {
+            vol.Required(
+                const.CFOF_BADGES_INPUT_NAME,
+                default=default.get(
+                    const.CFOF_BADGES_INPUT_NAME,
+                    default.get(const.DATA_BADGE_NAME, const.CONF_EMPTY),
+                ),
+            ): str,
+            vol.Optional(
+                const.CFOF_BADGES_INPUT_DESCRIPTION,
+                default=default.get(
+                    const.CFOF_BADGES_INPUT_DESCRIPTION,
+                    default.get(const.DATA_BADGE_DESCRIPTION, const.CONF_EMPTY),
+                ),
+            ): str,
+            # CLS - Tried to make this work with tranlation_key, but it doesn't seem to support it
+            vol.Optional(
+                const.CFOF_BADGES_INPUT_LABELS,
+                default=default.get(
+                    const.CFOF_BADGES_INPUT_LABELS,
+                    default.get(const.DATA_BADGE_LABELS, []),
+                ),
+            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
+            vol.Optional(
+                const.CFOF_BADGES_INPUT_ICON,
+                default=default.get(
+                    const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
+                ),
+            ): selector.IconSelector(),
+        }
+    )
+    # --- End Common Schema ---
+
+    # --- Target Component Schema ---
+    if include_target:
+        # Filter target_type_options based on whether tracked chores are included
+        target_type_options = [
+            option
+            for option in const.TARGET_TYPE_OPTIONS or []
+            if include_tracked_chores
+            or option["value"] != const.BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED
+        ]
+
+        default_target_type = default.get(
+            const.CFOF_BADGES_INPUT_TARGET_TYPE,
+            default.get(const.DATA_BADGE_TARGET, {}).get(
+                const.DATA_BADGE_TARGET_TYPE, const.DEFAULT_BADGE_TARGET_TYPE
+            ),
+        )
+        default_threshold = default.get(
+            const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE,
+            default.get(const.DATA_BADGE_TARGET, {}).get(
+                const.DATA_BADGE_TARGET_THRESHOLD_VALUE,
+                const.DEFAULT_BADGE_TARGET_THRESHOLD_VALUE,
+            ),
+        )
+
+        # Handle special occasion badges
+        if is_special_occasion:
+            # Force target_type to "chore count" and threshold to 1 chore completed
+            default[const.CFOF_BADGES_INPUT_TARGET_TYPE] = (
+                const.BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT
+            )
+            default[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = 1
+        elif is_cumulative:
+            # Force target_type to "points" for cumulative badges
+            default[const.CFOF_BADGES_INPUT_TARGET_TYPE] = (
+                const.BADGE_TARGET_THRESHOLD_TYPE_POINTS
+            )
+        else:
+            # Include the target_type field for non-cumulative badges
+            schema_fields.update(
+                {
+                    vol.Required(
+                        const.CFOF_BADGES_INPUT_TARGET_TYPE,
+                        default=default_target_type,
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=target_type_options,
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                            translation_key=const.TRANS_KEY_CFOF_BADGE_TARGET_TYPE,
+                        )
+                    ),
+                }
+            )
+
+        # Always include the threshold field unless it's a special occasion
+        if not is_special_occasion:
+            schema_fields.update(
+                {
+                    vol.Required(
+                        const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE,
+                        default=int(
+                            default_threshold
+                        ),  # Ensure the default is an integer
+                    ): vol.All(
+                        selector.NumberSelector(
+                            selector.NumberSelectorConfig(
+                                mode=selector.NumberSelectorMode.BOX,
+                                min=0,
+                                step=1,
+                            )
+                        ),
+                        vol.Coerce(int),  # Coerce the input to an integer
+                        vol.Range(min=0),  # Ensure non-negative values
+                    ),
+                }
+            )
+
+        # Add maintenance rules only if cumulative
+        if is_cumulative:
+            schema_fields.update(
+                {
+                    vol.Optional(
+                        const.CFOF_BADGES_INPUT_MAINTENANCE_RULES,
+                        default=int(
+                            default.get(
+                                const.CFOF_BADGES_INPUT_MAINTENANCE_RULES,
+                                default.get(const.DATA_BADGE_TARGET, {}).get(
+                                    const.DATA_BADGE_MAINTENANCE_RULES,
+                                    const.DEFAULT_BADGE_MAINTENANCE_THRESHOLD,
+                                ),
+                            )
+                        ),  # Ensure the default is an integer
+                    ): vol.All(
+                        selector.NumberSelector(
+                            selector.NumberSelectorConfig(
+                                mode=selector.NumberSelectorMode.BOX,
+                                min=0,
+                                step=1,
+                            )
+                        ),
+                        vol.Coerce(int),  # Coerce the input to an integer
+                        vol.Range(min=0),  # Ensure non-negative values
+                    ),
+                }
+            )
+
+    # --- Special Occasion Component Schema ---
+    if include_special_occasion:
+        occasion_type_options = const.OCCASION_TYPE_OPTIONS or []
+        default_occasion_type = default.get(
+            const.CFOF_BADGES_INPUT_OCCASION_TYPE,
+            default.get(const.DATA_BADGE_SPECIAL_OCCASION_TYPE, {}).get(
+                const.DATA_BADGE_OCCASION_TYPE, const.CONF_EMPTY
+            ),
+        )
+        schema_fields.update(
+            {
+                vol.Required(
+                    const.CFOF_BADGES_INPUT_OCCASION_TYPE,
+                    default=default_occasion_type,
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=occasion_type_options,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key=const.TRANS_KEY_CFOF_BADGE_OCCASION_TYPE,
+                    )
+                )
+            }
+        )
+
+    # --- Achievement-Linked Component Schema ---
+    if include_achievement_linked:
+        achievement_options = [
+            {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
+        ] + [
+            {
+                "value": achievement_id,
+                "label": achievement.get(
+                    const.DATA_ACHIEVEMENT_NAME, const.CONF_NONE_TEXT
+                ),
+            }
+            for achievement_id, achievement in achievements_dict.items()
+        ]
+        default_achievement = default.get(
+            const.CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT,
+            default.get(const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY),
+        )
+        schema_fields.update(
+            {
+                vol.Required(
+                    const.CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT,
+                    default=default_achievement,
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=achievement_options,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key=const.TRANS_KEY_CFOF_BADGE_ASSOCIATED_ACHIEVEMENT,
+                    )
+                )
+            }
+        )
+
+    # --- Challenge-Linked Component Schema ---
+    if include_challenge_linked:
+        challenge_options = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}] + [
+            {
+                "value": challenge_id,
+                "label": challenge.get(const.DATA_CHALLENGE_NAME, const.CONF_NONE_TEXT),
+            }
+            for challenge_id, challenge in challenges_dict.items()
+        ]
+        default_challenge = default.get(
+            const.CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE,
+            default.get(const.DATA_BADGE_ASSOCIATED_CHALLENGE, const.CONF_EMPTY),
+        )
+        schema_fields.update(
+            {
+                vol.Required(
+                    const.CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE,
+                    default=default_challenge,
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=challenge_options,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key=const.TRANS_KEY_CFOF_BADGE_ASSOCIATED_CHALLENGE,
+                    )
+                )
+            }
+        )
+
+    # --- Tracked Chores Component Schema ---
+    if include_tracked_chores:  # Use renamed flag
+        options = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}]
+        options += [
+            {
+                "value": chore_id,
+                "label": chore.get(const.DATA_CHORE_NAME, const.CONF_NONE_TEXT),
+            }
+            for chore_id, chore in chores_dict.items()
+        ]
+        default_selected = default.get(
+            const.CFOF_BADGES_INPUT_SELECTED_CHORES,
+            default.get(const.DATA_BADGE_TRACKED_CHORES, {}).get(
+                const.DATA_BADGE_TRACKED_CHORES_SELECTED_CHORES, []
+            ),
+        )
+        schema_fields.update(
+            {
+                vol.Optional(
+                    const.CFOF_BADGES_INPUT_SELECTED_CHORES,
+                    default=default_selected
+                    if isinstance(default_selected, list)
+                    else [],
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=options,
+                        multiple=True,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key=const.TRANS_KEY_CFOF_BADGE_SELECTED_CHORES,
+                    )
+                )
+            }
+        )
+
+    # --- Assigned To Component Schema ---
+    if include_assigned_to:
+        options = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}]
+        options += [
+            {
+                "value": kid_id,
+                "label": kid.get(const.DATA_KID_NAME, const.CONF_NONE_TEXT),
+            }
+            for kid_id, kid in kids_dict.items()
+        ]
+        default_assigned = default.get(
+            const.CFOF_BADGES_INPUT_ASSIGNED_TO,
+            default.get(const.DATA_BADGE_ASSIGNED_TO, []),
+        )
+        schema_fields.update(
+            {
+                vol.Optional(
+                    const.CFOF_BADGES_INPUT_ASSIGNED_TO,
+                    default=default_assigned
+                    if isinstance(default_assigned, list)
+                    else [],
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=options,
+                        multiple=True,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key=const.TRANS_KEY_CFOF_BADGE_ASSIGNED_TO,
+                    )
+                )
+            }
+        )
+
+    # --- Awards Component Schema ---
+    if include_awards:
+        # Logic from build_badge_awards_schema
+        rewards_options = const.REWARD_OPTION_NONE[:]
+
+        if rewards_dict:
+            rewards_options += [
+                {
+                    const.CONF_VALUE: reward_id,
+                    const.CONF_LABEL: reward.get(
+                        const.DATA_REWARD_NAME, const.CONF_NONE_TEXT
+                    ),
+                }
+                for reward_id, reward in rewards_dict.items()
+            ]
+        # Use SelectSelector for mode too
+        award_mode_options = const.AWARD_MODE_OPTIONS or []
+        schema_fields.update(
+            {
+                vol.Required(
+                    const.CFOF_BADGES_INPUT_AWARD_MODE,
+                    default=default.get(
+                        const.CFOF_BADGES_INPUT_AWARD_MODE,
+                        default.get(const.DATA_BADGE_AWARDS, {}).get(
+                            const.DATA_BADGE_AWARDS_AWARD_MODE,
+                            const.DEFAULT_BADGE_AWARD_MODE,
+                        ),
+                    ),
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=award_mode_options,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key=const.TRANS_KEY_CFOF_BADGE_AWARD_MODE,  # Add translation key
+                    )
+                ),
+                # Points field is technically optional depending on mode, but schema can keep it simple
+                # Validation layer handles the logic of whether value is needed/used
+                vol.Optional(
+                    const.CFOF_BADGES_INPUT_AWARD_POINTS,
+                    # Ensure default is treated as float if present
+                    default=float(
+                        default.get(
+                            const.CFOF_BADGES_INPUT_AWARD_POINTS,
+                            default.get(const.DATA_BADGE_AWARDS, {}).get(
+                                const.DATA_BADGE_AWARDS_AWARD_POINTS,
+                                const.DEFAULT_BADGE_AWARD_POINTS,
+                            ),
+                        )
+                    ),
+                ): vol.All(
+                    selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            mode=selector.NumberSelectorMode.BOX,
+                            min=0.0,  # Allow zero as the minimum value
+                            step=0.1,
+                        )
+                    ),
+                    vol.Coerce(float),  # Coerce the input to a float
+                    vol.Range(
+                        min=0.0
+                    ),  # Ensure the value is greater than or equal to zero
+                ),
+                vol.Optional(
+                    const.CFOF_BADGES_INPUT_AWARD_REWARD,
+                    default=default.get(
+                        const.CFOF_BADGES_INPUT_AWARD_REWARD,
+                        default.get(const.DATA_BADGE_AWARDS, {}).get(
+                            const.DATA_BADGE_AWARDS_AWARD_REWARD, const.CONF_EMPTY
+                        ),
+                    ),
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=rewards_options,
+                        translation_key=const.TRANS_KEY_CFOF_BADGE_AWARD_REWARD,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
+                ),
+            }
+        )
+        # Points multiplier is only relevant for cumulative badges
+        if is_cumulative:
+            schema_fields.update(
+                {
+                    vol.Required(
+                        const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER,
+                        default=default.get(
+                            const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER,
+                            default.get(const.DATA_BADGE_AWARDS, {}).get(
+                                const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
+                                const.DEFAULT_POINTS_MULTIPLIER,
+                            ),
+                        ),
+                    ): selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            mode=selector.NumberSelectorMode.BOX,
+                            step=0.1,
+                            min=0.1,
+                        )
+                    ),
+                }
+            )
+
+    # --- Reset Component Schema ---
+    if include_reset_schedule:
+        # Define defaults at the top for easier adjustments
+        default_recurring_frequency = default.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY,
+            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+                const.DATA_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY,
+                const.DEFAULT_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY,
+            ),
+        )
+        default_custom_interval = default.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL,
+            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+                const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL,
+                const.DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL,
+            ),
+        )
+        default_custom_interval_unit = default.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
+            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+                const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
+                const.DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
+            ),
+        )
+        default_start_date = default.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE,
+            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+                const.DATA_BADGE_RESET_SCHEDULE_START_DATE,
+                const.DEFAULT_BADGE_RESET_SCHEDULE_START_DATE,
+            ),
+        )
+        default_end_date = default.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE,
+            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+                const.DATA_BADGE_RESET_SCHEDULE_END_DATE,
+                const.DEFAULT_BADGE_RESET_SCHEDULE_END_DATE,
+            ),
+        )
+        default_grace_period_days = default.get(
+            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
+            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+                const.DATA_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
+                const.DEFAULT_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
+            ),
+        )
+
+        # For BADGE_TYPE_DAILY, set frequency to daily and skip showing reset fields
+        if is_daily:
+            default[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY] = (
+                const.FREQUENCY_DAILY
+            )
+        else:
+            # Build the schema fields for other badge types
+            schema_fields.update(
+                {
+                    # Recurring Frequency
+                    vol.Required(
+                        const.CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY,
+                        default=default_recurring_frequency,
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=const.BADGE_RESET_SCHEDULE_OPTIONS,
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                            translation_key=const.TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY,
+                        )
+                    ),
+                    # Custom Interval
+                    vol.Optional(
+                        const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL,
+                        default=default_custom_interval,  # Default can be None or an integer
+                    ): vol.Any(
+                        None,
+                        vol.All(
+                            selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    mode=selector.NumberSelectorMode.BOX,
+                                    min=0,  # Ensure values are greater than or equal to 0
+                                    step=1,
+                                )
+                            ),
+                            vol.Coerce(int),  # Coerce the input to an integer
+                            vol.Range(
+                                min=0
+                            ),  # Ensure the value is greater than or equal to 0
+                        ),
+                    ),
+                    # Custom Interval Unit
+                    vol.Optional(
+                        const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
+                        default=default_custom_interval_unit,
+                    ): vol.Any(
+                        None,
+                        selector.SelectSelector(
+                            selector.SelectSelectorConfig(
+                                options=const.CUSTOM_INTERVAL_UNIT_OPTIONS,
+                                mode=selector.SelectSelectorMode.DROPDOWN,
+                                translation_key=const.TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
+                            )
+                        ),
+                    ),
+                }
+            )
+
+            # Conditionally add Start Date for periodic badges
+            if is_periodic:
+                schema_fields.update(
+                    {
+                        vol.Optional(
+                            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE,
+                            default=default_start_date,
+                        ): vol.Any(None, selector.DateSelector()),
+                    }
+                )
+
+            # End Date
+            schema_fields.update(
+                {
+                    vol.Optional(
+                        const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE,
+                        default=default_end_date,
+                    ): vol.Any(None, selector.DateSelector()),
+                }
+            )
+
+            # Nested Grace Period Days under is_cumulative flag
+            if is_cumulative:
+                schema_fields.update(
+                    {
+                        vol.Optional(
+                            const.CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
+                            default=int(default_grace_period_days),
+                        ): vol.All(
+                            selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    mode=selector.NumberSelectorMode.BOX,
+                                    min=0,
+                                    step=1,
+                                )
+                            ),
+                            vol.Coerce(int),  # Coerce to integer
+                            vol.Range(min=0),  # Ensure non-negative values
+                        ),
+                    }
+                )
+
+    const.LOGGER.debug("DEBUG: Build Badge Common Schema - Returning Schema Fields")
+    return schema_fields
 
 
 # ----------------------------------------------------------------------------------
