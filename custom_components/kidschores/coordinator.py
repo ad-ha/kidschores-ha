@@ -3896,7 +3896,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.DATA_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS, const.DEFAULT_ZERO
             )
         )
-        reset_enabled = frequency != const.FREQUENCY_NONE
+        reset_enabled = frequency is not None and frequency != const.FREQUENCY_NONE
 
         # DEBUG: Log the key parameters derived from today's date and the highest earned badge.
         const.LOGGER.debug(
