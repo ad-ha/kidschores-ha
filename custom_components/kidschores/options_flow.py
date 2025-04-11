@@ -7,6 +7,8 @@ Ensures consistency and reloads the integration upon changes.
 
 import datetime
 import uuid
+from typing import Any, Dict, Optional
+
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers import selector
@@ -177,7 +179,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_select_entity(self, user_input=None):
-        """Select an entity (kid, chore, etc.) to edit or delete based on internal_id."""
+        """Select an entity (kid, chore, badge, etc.) to edit or delete based on internal_id."""
         if self._action not in [
             const.OPTIONS_FLOW_ACTIONS_EDIT,
             const.OPTIONS_FLOW_ACTIONS_DELETE,
@@ -211,11 +213,60 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             # Store internal_id in context for later use
             self.context[const.OPTIONS_FLOW_INPUT_INTERNAL_ID] = internal_id
 
-            # Route to the corresponding edit/delete step
-            return await getattr(
-                self,
-                f"{const.OPTIONS_FLOW_ASYNC_STEP_PREFIX}{self._action}_{self._entity_type}",
-            )()
+            # Route based on action
+            if self._action == const.OPTIONS_FLOW_ACTIONS_EDIT:
+                # Intercept for badges to route to the correct edit function
+                if self._entity_type == const.OPTIONS_FLOW_DIC_BADGE:
+                    badge_data = entity_dict[internal_id]
+                    badge_type = badge_data.get(const.DATA_BADGE_TYPE)
+
+                    # Route to the correct edit function based on badge type
+                    if badge_type == const.BADGE_TYPE_CUMULATIVE:
+                        return await self.async_step_edit_badge_cumulative(
+                            default_data=badge_data
+                        )
+                    elif badge_type == const.BADGE_TYPE_DAILY:
+                        return await self.async_step_edit_badge_daily(
+                            default_data=badge_data
+                        )
+                    elif badge_type == const.BADGE_TYPE_PERIODIC:
+                        return await self.async_step_edit_badge_periodic(
+                            default_data=badge_data
+                        )
+                    elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
+                        return await self.async_step_edit_badge_achievement(
+                            default_data=badge_data
+                        )
+                    elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
+                        return await self.async_step_edit_badge_challenge(
+                            default_data=badge_data
+                        )
+                    elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
+                        return await self.async_step_edit_badge_special(
+                            default_data=badge_data
+                        )
+                    else:
+                        const.LOGGER.error(
+                            "ERROR: Unknown badge type '%s' for badge ID '%s'",
+                            badge_type,
+                            internal_id,
+                        )
+                        return self.async_abort(
+                            reason=const.TRANS_KEY_CFOF_INVALID_BADGE_TYPE
+                        )
+                else:
+                    # For other entity types, route to their specific edit step
+                    return await getattr(
+                        self,
+                        f"async_step_edit_{self._entity_type}",
+                    )()
+
+            elif self._action == const.OPTIONS_FLOW_ACTIONS_DELETE:
+                # Route to the delete step for the selected entity type
+                return await getattr(
+                    self,
+                    f"async_step_delete_{self._entity_type}",
+                )()
 
         if not entity_names:
             return self.async_abort(
@@ -554,6 +605,8 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             badge_type = user_input[const.CFOF_BADGES_INPUT_TYPE]
             self.context[const.CFOF_BADGES_INPUT_TYPE] = badge_type
+
+            # Redirect to the appropriate step based on badge type
             if badge_type == const.BADGE_TYPE_CUMULATIVE:
                 return await self.async_step_add_badge_cumulative()
             elif badge_type == const.BADGE_TYPE_DAILY:
@@ -593,887 +646,168 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE, data_schema=schema
         )
 
-    # ----- Add Cumulative Badge (Points-only) -----
-    async def async_step_add_badge_cumulative(self, user_input=None):
-        """Add a new cumulative badge."""
-
-        self._entry_options = dict(self.config_entry.options)
-        errors = {}
-        badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
-
-        if user_input is not None:
-            award_mode = user_input.get(
-                const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-            )
-            # Clean the non‑applicable field:
-            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-            elif award_mode == const.CONF_BADGE_AWARD_NONE:
-                # When "none" is chosen, ensure both extra points and reward are cleared.
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            # (If award mode is points + reward leave both fields)
-
-            # Validate award/reward values.
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                points = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
-                )
-                if float(points) <= 0:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
-                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "points"
-                        )
-                    )
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_REWARD,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                reward = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                )
-                if not reward or reward == const.CONF_EMPTY:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
-                        const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "reward"
-                        )
-                    )
-
-            periodic_reset = user_input.get(
-                const.CFOF_BADGES_INPUT_RESET_PERIODICALLY, False
-            )
-            if periodic_reset:
-                # If periodic reset is enabled, the reset type must not be None or CONF_NONE.
-                reset_type = user_input.get(const.CFOF_BADGES_INPUT_RESET_TYPE)
-                if reset_type in (None, const.CONF_NONE):
-                    errors[const.CFOF_BADGES_INPUT_RESET_TYPE] = (
-                        const.TRANS_KEY_CFOF_ERROR_BADGE_RESET_TYPE_REQUIRED
-                    )
-                # Additionally, if the reset type begins with custom then custom reset date must be provided.
-                elif reset_type.startswith(const.CONF_CUSTOM):
-                    custom_reset_date = user_input.get(
-                        const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE
-                    )
-                    if custom_reset_date in (None, const.CONF_NONE):
-                        errors[const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE] = (
-                            const.TRANS_KEY_CFOF_ERROR_BADGE_CUSTOM_RESET_DATE_REQUIRED
-                        )
-            else:
-                # Clean non‑applicable fields when periodic reset is not enabled.
-                user_input[const.CFOF_BADGES_INPUT_RESET_TYPE] = const.CONF_NONE
-                user_input[const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE] = const.CONF_NONE
-                user_input[const.CFOF_BADGES_INPUT_RESET_GRACE_PERIOD] = (
-                    const.DEFAULT_ZERO
-                )
-                user_input[const.CFOF_BADGES_INPUT_MAINTENANCE_RULES] = (
-                    const.DEFAULT_ZERO
-                )
-
-            badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
-            internal_id = user_input.get(
-                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
-            )
-
-            # Validate badge is not duplicate
-            if any(
-                badge.get(const.DATA_BADGE_NAME) == badge_name
-                for badge in badges_dict.values()
-            ):
-                errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
-                )
-
-            if not errors:
-                # Cumulative badges now use only points.
-                badges_dict[internal_id] = {
-                    const.DATA_BADGE_NAME: badge_name,
-                    const.DATA_BADGE_DESCRIPTION: user_input.get(
-                        const.CFOF_BADGES_INPUT_DESCRIPTION, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_LABELS: user_input.get(
-                        const.CFOF_BADGES_INPUT_LABELS, []
-                    ),
-                    const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
-                    ),
-                    const.DATA_BADGE_THRESHOLD_VALUE: user_input[
-                        const.CFOF_BADGES_INPUT_THRESHOLD_VALUE
-                    ],
-                    const.DATA_BADGE_AWARD_MODE: award_mode,
-                    const.DATA_BADGE_AWARD_POINTS: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                        const.DEFAULT_BADGE_AWARD_POINTS,
-                    ),
-                    const.DATA_BADGE_AWARD_REWARD: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_POINTS_MULTIPLIER: user_input[
-                        const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER
-                    ],
-                    # Periodic reset settings for maintenance (if enabled)
-                    const.DATA_BADGE_RESET_PERIODICALLY: user_input.get(
-                        const.CFOF_BADGES_INPUT_RESET_PERIODICALLY, False
-                    ),
-                    const.DATA_BADGE_RESET_TYPE: user_input.get(
-                        const.CFOF_BADGES_INPUT_RESET_TYPE, const.CONF_YEAR_END
-                    ),
-                    const.DATA_BADGE_CUSTOM_RESET_DATE: user_input.get(
-                        const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE
-                    ),
-                    const.DATA_BADGE_RESET_GRACE_PERIOD: user_input.get(
-                        const.CFOF_BADGES_INPUT_RESET_GRACE_PERIOD,
-                        const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
-                    ),
-                    const.DATA_BADGE_MAINTENANCE_RULES: user_input.get(
-                        const.CFOF_BADGES_INPUT_MAINTENANCE_RULES, const.DEFAULT_ZERO
-                    ),
-                    const.DATA_BADGE_TYPE: const.BADGE_TYPE_CUMULATIVE,
-                    const.DATA_BADGE_INTERNAL_ID: internal_id,
-                }
-                self._entry_options[const.CONF_BADGES] = badges_dict
-                const.LOGGER.debug(
-                    "DEBUG: Added Cumulative Badge '%s' with ID: %s",
-                    badge_name,
-                    internal_id,
-                )
-                await self._update_and_reload()
-                return await self.async_step_init()
-
-        rewards_options = [
-            {
-                "value": reward_id,
-                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-            }
-            for reward_id, reward in self._entry_options.get(
-                const.CONF_REWARDS, {}
-            ).items()
-        ]
-
-        schema = fh.build_badge_cumulative_schema(
-            default=user_input, rewards_list=rewards_options
-        )
-        return self.async_show_form(
-            step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE_CUMULATIVE,
-            data_schema=schema,
-            errors=errors,
-        )
-
-    # ----- Add Daily Badge -----
-    async def async_step_add_badge_daily(self, user_input=None):
-        """Add a new daily badge."""
-        self._entry_options = dict(self.config_entry.options)
-        errors = {}
-        badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
-
-        if user_input is not None:
-            award_mode = user_input.get(
-                const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-            )
-            # Clean the non‑applicable field:
-            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-            elif award_mode == const.CONF_BADGE_AWARD_NONE:
-                # When "none" is chosen, ensure both extra points and reward are cleared.
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            # (If award mode is points + reward leave both fields)
-
-            # Validate award/reward values.
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                points = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
-                )
-                if float(points) <= 0:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
-                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "points"
-                        )
-                    )
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_REWARD,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                reward = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                )
-                if not reward or reward == const.CONF_EMPTY:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
-                        const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "reward"
-                        )
-                    )
-
-            badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
-            internal_id = user_input.get(
-                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
-            )
-            if any(
-                badge.get(const.DATA_BADGE_NAME) == badge_name
-                for badge in badges_dict.values()
-            ):
-                errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
-                )
-
-            if not errors:
-                badges_dict[internal_id] = {
-                    const.DATA_BADGE_NAME: badge_name,
-                    const.DATA_BADGE_DESCRIPTION: user_input.get(
-                        const.CFOF_BADGES_INPUT_DESCRIPTION, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_LABELS: user_input.get(
-                        const.CFOF_BADGES_INPUT_LABELS, []
-                    ),
-                    const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
-                    ),
-                    const.DATA_BADGE_DAILY_THRESHOLD_TYPE: user_input.get(
-                        const.CFOF_BADGES_INPUT_DAILY_THRESHOLD_TYPE,
-                        const.DEFAULT_BADGE_THRESHOLD_TYPE,
-                    ),
-                    const.DATA_BADGE_DAILY_THRESHOLD: user_input[
-                        const.CFOF_BADGES_INPUT_DAILY_THRESHOLD
-                    ],
-                    const.DATA_BADGE_AWARD_MODE: award_mode,
-                    const.DATA_BADGE_AWARD_POINTS: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                        const.DEFAULT_BADGE_AWARD_POINTS,
-                    ),
-                    const.DATA_BADGE_AWARD_REWARD: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_TYPE: const.BADGE_TYPE_DAILY,
-                    const.DATA_BADGE_INTERNAL_ID: internal_id,
-                }
-                self._entry_options[const.CONF_BADGES] = badges_dict
-                const.LOGGER.debug(
-                    "DEBUG: Added Daily Badge '%s' with ID: %s", badge_name, internal_id
-                )
-                await self._update_and_reload()
-                return await self.async_step_init()
-
-        rewards_options = [
-            {
-                "value": reward_id,
-                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-            }
-            for reward_id, reward in self._entry_options.get(
-                const.CONF_REWARDS, {}
-            ).items()
-        ]
-
-        schema = fh.build_badge_daily_schema(
-            default=user_input, rewards_list=rewards_options
-        )
-        return self.async_show_form(
-            step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE_DAILY,
-            data_schema=schema,
-            errors=errors,
-        )
-
-    # ----- Add Periodic Badge -----
-    async def async_step_add_badge_periodic(self, user_input=None):
-        """Add a new periodic badge."""
-        self._entry_options = dict(self.config_entry.options)
-        errors = {}
-        badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
-
-        if user_input is not None:
-            award_mode = user_input.get(
-                const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-            )
-            # Clean the non‑applicable field:
-            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-            elif award_mode == const.CONF_BADGE_AWARD_NONE:
-                # When "none" is chosen, ensure both extra points and reward are cleared.
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            # (If award mode is points + reward leave both fields)
-
-            # Validate award/reward values.
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                points = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
-                )
-                if float(points) <= 0:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
-                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "points"
-                        )
-                    )
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_REWARD,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                reward = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                )
-                if not reward or reward == const.CONF_EMPTY:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
-                        const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "reward"
-                        )
-                    )
-
-            # Update and validate reset schedule; if not custom, clear dates and set recurrency to True.
-            reset_schedule = user_input.get(
-                const.CFOF_BADGES_INPUT_RESET_SCHEDULE, const.CONF_WEEKLY
-            )
-            user_input[const.DATA_BADGE_RESET_SCHEDULE] = reset_schedule
-            if reset_schedule == const.CONF_CUSTOM:
-                # For custom schedules: start and end dates must be provided.
-                start_date = user_input.get(
-                    const.CFOF_BADGES_INPUT_START_DATE, const.CONF_NONE
-                )
-                end_date = user_input.get(
-                    const.CFOF_BADGES_INPUT_END_DATE, const.CONF_NONE
-                )
-                if start_date in (None, const.CONF_NONE, ""):
-                    errors[const.CFOF_BADGES_INPUT_START_DATE] = (
-                        const.TRANS_KEY_CFOF_ERROR_BADGE_START_DATE_REQUIRED
-                    )
-                if end_date in (None, const.CONF_NONE, ""):
-                    errors[const.CFOF_BADGES_INPUT_END_DATE] = (
-                        const.TRANS_KEY_CFOF_ERROR_BADGE_END_DATE_REQUIRED
-                    )
-                user_input[const.DATA_BADGE_START_DATE] = start_date
-                user_input[const.DATA_BADGE_END_DATE] = end_date
-            else:
-                # For non-custom schedules: clear dates and set recurrency to True
-                user_input[const.DATA_BADGE_PERIODIC_RECURRENT] = True
-                user_input[const.DATA_BADGE_START_DATE] = const.CONF_NONE
-                user_input[const.DATA_BADGE_END_DATE] = const.CONF_NONE
-
-            badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
-            internal_id = user_input.get(
-                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
-            )
-            if any(
-                badge.get(const.DATA_BADGE_NAME) == badge_name
-                for badge in badges_dict.values()
-            ):
-                errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
-                )
-
-            if not errors:
-                badges_dict[internal_id] = {
-                    const.DATA_BADGE_NAME: badge_name,
-                    const.DATA_BADGE_DESCRIPTION: user_input.get(
-                        const.CFOF_BADGES_INPUT_DESCRIPTION, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_LABELS: user_input.get(
-                        const.CFOF_BADGES_INPUT_LABELS, []
-                    ),
-                    const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
-                    ),
-                    const.DATA_BADGE_RESET_SCHEDULE: user_input.get(
-                        const.CFOF_BADGES_INPUT_RESET_SCHEDULE, const.CONF_WEEKLY
-                    ),
-                    const.DATA_BADGE_START_DATE: user_input.get(
-                        const.CFOF_BADGES_INPUT_START_DATE, None
-                    ),
-                    const.DATA_BADGE_END_DATE: user_input.get(
-                        const.CFOF_BADGES_INPUT_END_DATE, None
-                    ),
-                    const.DATA_BADGE_PERIODIC_RECURRENT: user_input.get(
-                        const.CFOF_BADGES_INPUT_PERIODIC_RECURRENT, False
-                    ),
-                    const.DATA_BADGE_THRESHOLD_TYPE: user_input.get(
-                        const.CFOF_BADGES_INPUT_THRESHOLD_TYPE,
-                        const.DEFAULT_BADGE_THRESHOLD_TYPE,
-                    ),
-                    const.DATA_BADGE_REQUIRED_CHORES: user_input.get(
-                        const.CFOF_BADGES_INPUT_REQUIRED_CHORES, []
-                    ),
-                    const.DATA_BADGE_THRESHOLD_VALUE: user_input[
-                        const.CFOF_BADGES_INPUT_THRESHOLD_VALUE
-                    ],
-                    const.DATA_BADGE_AWARD_MODE: award_mode,
-                    const.DATA_BADGE_AWARD_POINTS: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                        const.DEFAULT_BADGE_AWARD_POINTS,
-                    ),
-                    const.DATA_BADGE_AWARD_REWARD: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_TYPE: const.BADGE_TYPE_PERIODIC,
-                    const.DATA_BADGE_INTERNAL_ID: internal_id,
-                }
-                self._entry_options[const.CONF_BADGES] = badges_dict
-                const.LOGGER.debug(
-                    "DEBUG: Added Periodic Badge '%s' with ID: %s",
-                    badge_name,
-                    internal_id,
-                )
-                await self._update_and_reload()
-                return await self.async_step_init()
-
-        rewards_options = [
-            {
-                "value": reward_id,
-                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-            }
-            for reward_id, reward in self._entry_options.get(
-                const.CONF_REWARDS, {}
-            ).items()
-        ]
-        chores_options = [
-            {
-                "value": chore_id,
-                "label": chore.get(const.DATA_CHORE_NAME, const.CONF_NONE_TEXT),
-            }
-            for chore_id, chore in self._entry_options.get(
-                const.CONF_CHORES, {}
-            ).items()
-        ]
-        schema = fh.build_badge_periodic_schema(
-            default=user_input, rewards_list=rewards_options, chores_list=chores_options
-        )
-
-        return self.async_show_form(
-            step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE_PERIODIC,
-            data_schema=schema,
-            errors=errors,
-        )
-
     # ----- Add Achievement-Linked Badge -----
     async def async_step_add_badge_achievement(self, user_input=None):
-        """Add a new achievement-linked badge."""
-        self._entry_options = dict(self.config_entry.options)
-        errors = {}
-        badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
-
-        if user_input is not None:
-            award_mode = user_input.get(
-                const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-            )
-            # Clean the non‑applicable field:
-            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-            elif award_mode == const.CONF_BADGE_AWARD_NONE:
-                # When "none" is chosen, ensure both extra points and reward are cleared.
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            # (If award mode is points + reward leave both fields)
-
-            # Validate award/reward values.
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                points = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
-                )
-                if float(points) <= 0:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
-                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "points"
-                        )
-                    )
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_REWARD,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                reward = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                )
-                if not reward or reward == const.CONF_EMPTY:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
-                        const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "reward"
-                        )
-                    )
-
-            badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
-            internal_id = user_input.get(
-                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
-            )
-            if any(
-                badge.get(const.DATA_BADGE_NAME) == badge_name
-                for badge in badges_dict.values()
-            ):
-                errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
-                )
-
-            if not errors:
-                badges_dict[internal_id] = {
-                    const.DATA_BADGE_NAME: badge_name,
-                    const.DATA_BADGE_DESCRIPTION: user_input.get(
-                        const.CFOF_BADGES_INPUT_DESCRIPTION, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_LABELS: user_input.get(
-                        const.CFOF_BADGES_INPUT_LABELS, []
-                    ),
-                    const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
-                    ),
-                    const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT: user_input.get(
-                        const.CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_AWARD_MODE: award_mode,
-                    const.DATA_BADGE_AWARD_POINTS: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                        const.DEFAULT_BADGE_AWARD_POINTS,
-                    ),
-                    const.DATA_BADGE_AWARD_REWARD: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_TYPE: const.BADGE_TYPE_ACHIEVEMENT_LINKED,
-                    const.DATA_BADGE_INTERNAL_ID: internal_id,
-                }
-                self._entry_options[const.CONF_BADGES] = badges_dict
-                const.LOGGER.debug(
-                    "DEBUG: Added Achievement-Linked Badge '%s' with ID: %s",
-                    badge_name,
-                    internal_id,
-                )
-                await self._update_and_reload()
-                return await self.async_step_init()
-
-        achievements_options = [
-            {
-                "value": achievement_id,
-                "label": ach.get(const.DATA_ACHIEVEMENT_NAME, const.CONF_NONE_TEXT),
-            }
-            for achievement_id, ach in self._entry_options.get(
-                const.CONF_ACHIEVEMENTS, {}
-            ).items()
-        ]
-        rewards_options = [
-            {
-                "value": reward_id,
-                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-            }
-            for reward_id, reward in self._entry_options.get(
-                const.CONF_REWARDS, {}
-            ).items()
-        ]
-        schema = fh.build_badge_achievement_schema(
-            default=user_input,
-            achievements_list=achievements_options,
-            rewards_list=rewards_options,
-        )
-
-        return self.async_show_form(
-            step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE_ACHIEVEMENT,
-            data_schema=schema,
-            errors=errors,
+        """Handle adding an achievement-linked badge."""
+        # Redirect to the common function with the appropriate badge type
+        # Allows customization of the UI text for achievement-linked badges
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_ACHIEVEMENT_LINKED,
+            is_edit=False,
         )
 
     # ----- Add Challenge-Linked Badge -----
     async def async_step_add_badge_challenge(self, user_input=None):
-        """Add a new challenge-linked badge."""
-        self._entry_options = dict(self.config_entry.options)
-        errors = {}
-        badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
-
-        if user_input is not None:
-            award_mode = user_input.get(
-                const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-            )
-            # Clean the non‑applicable field:
-            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-            elif award_mode == const.CONF_BADGE_AWARD_NONE:
-                # When "none" is chosen, ensure both extra points and reward are cleared.
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            # (If award mode is points + reward leave both fields)
-
-            # Validate award/reward values.
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                points = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
-                )
-                if float(points) <= 0:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
-                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "points"
-                        )
-                    )
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_REWARD,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                reward = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                )
-                if not reward or reward == const.CONF_EMPTY:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
-                        const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "reward"
-                        )
-                    )
-
-            badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
-            internal_id = user_input.get(
-                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
-            )
-            if any(
-                badge.get(const.DATA_BADGE_NAME) == badge_name
-                for badge in badges_dict.values()
-            ):
-                errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
-                )
-
-            if not errors:
-                badges_dict[internal_id] = {
-                    const.DATA_BADGE_NAME: badge_name,
-                    const.DATA_BADGE_DESCRIPTION: user_input.get(
-                        const.CFOF_BADGES_INPUT_DESCRIPTION, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_LABELS: user_input.get(
-                        const.CFOF_BADGES_INPUT_LABELS, []
-                    ),
-                    const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
-                    ),
-                    const.DATA_BADGE_ASSOCIATED_CHALLENGE: user_input.get(
-                        const.CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_AWARD_MODE: award_mode,
-                    const.DATA_BADGE_AWARD_POINTS: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                        const.DEFAULT_BADGE_AWARD_POINTS,
-                    ),
-                    const.DATA_BADGE_AWARD_REWARD: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_TYPE: const.BADGE_TYPE_CHALLENGE_LINKED,
-                    const.DATA_BADGE_INTERNAL_ID: internal_id,
-                }
-                self._entry_options[const.CONF_BADGES] = badges_dict
-                const.LOGGER.debug(
-                    "DEBUG: Added Challenge-Linked Badge '%s' with ID: %s",
-                    badge_name,
-                    internal_id,
-                )
-                await self._update_and_reload()
-                return await self.async_step_init()
-
-        challenges_options = [
-            {
-                "value": challenge_id,
-                "label": chall.get(const.DATA_CHALLENGE_NAME, const.CONF_NONE_TEXT),
-            }
-            for challenge_id, chall in self._entry_options.get(
-                const.CONF_CHALLENGES, {}
-            ).items()
-        ]
-        rewards_options = [
-            {
-                "value": reward_id,
-                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-            }
-            for reward_id, reward in self._entry_options.get(
-                const.CONF_REWARDS, {}
-            ).items()
-        ]
-        schema = fh.build_badge_challenge_schema(
-            default=user_input,
-            challenges_list=challenges_options,
-            rewards_list=rewards_options,
+        """Handle adding a challenge-linked badge."""
+        # Redirect to the common function with the appropriate badge type
+        # Allows customization of the UI text for challenge-linked badges
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_CHALLENGE_LINKED,
+            is_edit=False,
         )
 
-        return self.async_show_form(
-            step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE_CHALLENGE,
-            data_schema=schema,
-            errors=errors,
+    # ----- Add Cumulative Badge (Points-only) -----
+    async def async_step_add_badge_cumulative(self, user_input=None):
+        """Handle adding a cumulative badge."""
+        # Redirect to the common function with the appropriate badge type
+        # Allows customization of the UI text for cumulative badges
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_CUMULATIVE,
+            is_edit=False,
+        )
+
+    # ----- Add Daily Badge -----
+    async def async_step_add_badge_daily(self, user_input=None):
+        """Handle adding a daily badge."""
+        # Redirect to the common function with the appropriate badge type
+        # Allows customization of the UI text for daily badges
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_DAILY,
+            is_edit=False,
+        )
+
+    # ----- Add Periodic Badge -----
+    async def async_step_add_badge_periodic(self, user_input=None):
+        """Handle adding a periodic badge."""
+        # Redirect to the common function with the appropriate badge type
+        # Allows customization of the UI text for periodic badges
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_PERIODIC,
+            is_edit=False,
         )
 
     # ----- Add Special Occasion Badge -----
     async def async_step_add_badge_special(self, user_input=None):
-        """Add a new special occasion badge."""
+        """Handle adding a special occasion badge."""
+        # Redirect to the common function with the appropriate badge type
+        # Allows customization of the UI text for special occasion badges
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_SPECIAL_OCCASION,
+            is_edit=False,
+        )
+
+    # ----- Add Badge Centralized Function for All Types -----
+    async def async_add_edit_badge_common(
+        self,
+        user_input: Optional[Dict[str, Any]] = None,
+        badge_type: str = const.BADGE_TYPE_CUMULATIVE,
+        default_data: Optional[Dict[str, Any]] = None,
+        is_edit: bool = False,
+    ):
+        """Handle adding or editing a badge."""
         self._entry_options = dict(self.config_entry.options)
-        errors = {}
         badges_dict = self._entry_options.setdefault(const.CONF_BADGES, {})
+        chores_dict = self._entry_options.setdefault(const.CONF_CHORES, {})
+        kids_dict = self._entry_options.setdefault(const.CONF_KIDS, {})
+        rewards_dict = self._entry_options.setdefault(const.CONF_REWARDS, {})
+        achievements_dict = self._entry_options.setdefault(const.CONF_ACHIEVEMENTS, {})
+        challenges_dict = self._entry_options.setdefault(const.CONF_CHALLENGES, {})
+
+        errors: Dict[str, str] = {}
+
+        # Determine internal_id
+        if is_edit:
+            internal_id = self.context.get(const.CFOF_GLOBAL_INPUT_INTERNAL_ID)
+            if not internal_id or internal_id not in badges_dict:
+                const.LOGGER.error("ERROR: Invalid Internal ID for editing badge.")
+                return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_BADGE)
+        else:
+            internal_id = self.context.get(const.CFOF_GLOBAL_INPUT_INTERNAL_ID)
+            if not internal_id:
+                internal_id = str(uuid.uuid4())
+                self.context[const.CFOF_GLOBAL_INPUT_INTERNAL_ID] = internal_id
+
+        # Use default_data for editing or initialize an empty dictionary for adding
+        badge_data = default_data or {}
+
         if user_input is not None:
-            award_mode = user_input.get(
-                const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+            # --- Validate Inputs ---
+            errors = fh.validate_badge_common_inputs(
+                user_input=user_input,
+                internal_id=internal_id,
+                existing_badges=badges_dict,
+                badge_type=badge_type,
             )
-            # Clean the non‑applicable field:
-            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-            elif award_mode == const.CONF_BADGE_AWARD_NONE:
-                # When "none" is chosen, ensure both extra points and reward are cleared.
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            # (If award mode is points + reward leave both fields)
-
-            # Validate award/reward values.
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                points = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
-                )
-                if float(points) <= 0:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
-                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "points"
-                        )
-                    )
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_REWARD,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                reward = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                )
-                if not reward or reward == const.CONF_EMPTY:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
-                        const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "reward"
-                        )
-                    )
-
-            assigned_kids = user_input.get(
-                const.CFOF_BADGES_INPUT_ASSIGNED_KIDS, const.CONF_EMPTY
-            )
-            if not assigned_kids or (
-                isinstance(assigned_kids, list) and len(assigned_kids) == 0
-            ):
-                errors[const.CFOF_BADGES_INPUT_ASSIGNED_KIDS] = (
-                    const.TRANS_KEY_CFOF_ERROR_ASSIGNED_KIDS
-                )
-
-            badge_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
-            internal_id = user_input.get(
-                const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
-            )
-            if any(
-                badge.get(const.DATA_BADGE_NAME) == badge_name
-                for badge in badges_dict.values()
-            ):
-                errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
-                )
 
             if not errors:
-                badges_dict[internal_id] = {
-                    const.DATA_BADGE_NAME: badge_name,
-                    const.DATA_BADGE_DESCRIPTION: user_input.get(
-                        const.CFOF_BADGES_INPUT_DESCRIPTION, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_LABELS: user_input.get(
-                        const.CFOF_BADGES_INPUT_LABELS, []
-                    ),
-                    const.DATA_BADGE_ICON: user_input.get(
-                        const.CFOF_BADGES_INPUT_ICON, const.DEFAULT_BADGE_ICON
-                    ),
-                    const.DATA_BADGE_ASSIGNED_KIDS: user_input[
-                        const.CFOF_BADGES_INPUT_ASSIGNED_KIDS
-                    ],
-                    const.DATA_BADGE_OCCASION_TYPE: user_input.get(
-                        const.CFOF_BADGES_INPUT_OCCASION_TYPE, const.CONF_HOLIDAY
-                    ),
-                    const.DATA_BADGE_OCCASION_DATE: user_input.get(
-                        const.CFOF_BADGES_INPUT_OCCASION_DATE, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_AWARD_MODE: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_MODE,
-                        const.DEFAULT_BADGE_AWARD_MODE,
-                    ),
-                    const.DATA_BADGE_AWARD_POINTS: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                        const.DEFAULT_BADGE_AWARD_POINTS,
-                    ),
-                    const.DATA_BADGE_AWARD_REWARD: user_input.get(
-                        const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                    ),
-                    const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY: user_input.get(
-                        const.CFOF_BADGES_INPUT_SPECIAL_OCCASION_RECURRENCY, False
-                    ),
-                    const.DATA_BADGE_TYPE: const.BADGE_TYPE_SPECIAL_OCCASION,
-                    const.DATA_BADGE_INTERNAL_ID: internal_id,
-                }
-                self._entry_options[const.CONF_BADGES] = badges_dict
-                const.LOGGER.debug(
-                    "DEBUG: Added Special Occasion Badge '%s' with ID: %s",
-                    badge_name,
-                    internal_id,
+                # --- Build Data ---
+                updated_badge_data = fh.build_badge_common_data(
+                    user_input=user_input,
+                    internal_id=internal_id,
+                    badge_type=badge_type,
                 )
+                updated_badge_data[const.DATA_BADGE_TYPE] = badge_type
+
+                # --- Save Data ---
+                badges_dict[internal_id] = updated_badge_data
+                self._entry_options[const.CONF_BADGES] = badges_dict
+
+                const.LOGGER.debug(
+                    "%s Badge '%s' with ID: %s. Data: %s",
+                    "Updated" if is_edit else "Added",
+                    updated_badge_data[const.DATA_BADGE_NAME],
+                    internal_id,
+                    updated_badge_data,
+                )
+
                 await self._update_and_reload()
                 return await self.async_step_init()
 
-        kids_dict = {
-            kid_data[const.DATA_KID_NAME]: kid_id
-            for kid_id, kid_data in self._entry_options.get(const.CONF_KIDS, {}).items()
-        }
-
-        rewards_options = [
-            {
-                "value": reward_id,
-                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-            }
-            for reward_id, reward in self._entry_options.get(
-                const.CONF_REWARDS, {}
-            ).items()
-        ]
-
-        schema = fh.build_badge_special_occasions_schema(
-            default=user_input,
-            rewards_list=rewards_options,
+        # --- Build Schema ---
+        badge_schema_data = user_input if user_input else default_data or {}
+        schema_fields = fh.build_badge_common_schema(
+            default=badge_schema_data,
             kids_dict=kids_dict,
+            chores_dict=chores_dict,
+            rewards_dict=rewards_dict,
+            achievements_dict=achievements_dict,
+            challenges_dict=challenges_dict,
+            badge_type=badge_type,
         )
+        data_schema = vol.Schema(schema_fields)
+
+        # Determine step name dynamically
+        step_name = (
+            const.OPTIONS_FLOW_EDIT_STEP.get(badge_type)
+            if is_edit
+            else const.OPTIONS_FLOW_ADD_STEP.get(badge_type)
+        )
+        if not step_name:
+            const.LOGGER.error("ERROR: Invalid badge type '%s'.", badge_type)
+            return self.async_abort(reason="invalid_badge_type")
+
         return self.async_show_form(
-            step_id=const.OPTIONS_FLOW_STEP_ADD_BADGE_SPECIAL,
-            data_schema=schema,
+            step_id=step_name,
+            data_schema=data_schema,
             errors=errors,
+            description_placeholders=None,
+            last_step=False,
         )
 
     async def async_step_add_reward(self, user_input=None):
@@ -2199,408 +1533,68 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             errors=errors,
         )
 
-    async def async_step_edit_badge(self, user_input=None):
-        """Edit an existing badge."""
-        self._entry_options = dict(self.config_entry.options)
-        badges_dict = self._entry_options.get(const.CONF_BADGES, {})
-        internal_id = self.context.get(const.DATA_INTERNAL_ID)
+    # ----- Edit Achievement-Linked Badge -----
+    async def async_step_edit_badge_achievement(
+        self, user_input=None, default_data=None
+    ):
+        """Handle editing an achievement-linked badge."""
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_ACHIEVEMENT_LINKED,
+            default_data=default_data,
+            is_edit=True,
+        )
 
-        if not internal_id or internal_id not in badges_dict:
-            const.LOGGER.error(
-                "ERROR: Edit Badge - Invalid Internal ID '%s'", internal_id
-            )
-            return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_BADGE)
+    # ----- Edit Challenge-Linked Badge -----
+    async def async_step_edit_badge_challenge(self, user_input=None, default_data=None):
+        """Handle editing a challenge-linked badge."""
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_CHALLENGE_LINKED,
+            default_data=default_data,
+            is_edit=True,
+        )
 
-        badge_data = badges_dict[internal_id]
-        badge_type = badge_data.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
+    # ----- Edit Cumulative Badge -----
+    async def async_step_edit_badge_cumulative(
+        self, user_input=None, default_data=None
+    ):
+        """Handle editing a cumulative badge."""
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_CUMULATIVE,
+            default_data=default_data,
+            is_edit=True,
+        )
 
-        errors = {}
+    # ----- Edit Daily Badge -----
+    async def async_step_edit_badge_daily(self, user_input=None, default_data=None):
+        """Handle editing a daily badge."""
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_DAILY,
+            default_data=default_data,
+            is_edit=True,
+        )
 
-        if user_input is not None:
-            award_mode = user_input.get(
-                const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-            )
-            # Clean the non‑applicable field:
-            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-            elif award_mode == const.CONF_BADGE_AWARD_NONE:
-                # When "none" is chosen, ensure both extra points and reward are cleared.
-                user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-                user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-            # (If award mode is points + reward leave both fields)
+    # ----- Edit Periodic Badge -----
+    async def async_step_edit_badge_periodic(self, user_input=None, default_data=None):
+        """Handle editing a periodic badge."""
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_PERIODIC,
+            default_data=default_data,
+            is_edit=True,
+        )
 
-            # Validate award/reward values.
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                points = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
-                )
-                if float(points) <= 0:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
-                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "points"
-                        )
-                    )
-            if award_mode in (
-                const.CFOF_BADGES_INPUT_AWARD_REWARD,
-                const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-            ):
-                reward = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-                )
-                if not reward or reward == const.CONF_EMPTY:
-                    errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
-                        const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION.format(
-                            "points+reward"
-                            if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD
-                            else "reward"
-                        )
-                    )
-
-            new_name = user_input[const.CFOF_BADGES_INPUT_NAME].strip()
-            if any(
-                data.get(const.DATA_BADGE_NAME) == new_name and eid != internal_id
-                for eid, data in badges_dict.items()
-            ):
-                errors[const.CFOP_ERROR_BADGE_NAME] = (
-                    const.TRANS_KEY_CFOF_DUPLICATE_BADGE
-                )
-            else:
-                badge_data[const.DATA_BADGE_NAME] = new_name
-                badge_data[const.DATA_BADGE_DESCRIPTION] = user_input.get(
-                    const.CFOF_BADGES_INPUT_DESCRIPTION,
-                    badge_data.get(const.DATA_BADGE_DESCRIPTION, const.CONF_EMPTY),
-                )
-                badge_data[const.DATA_BADGE_LABELS] = user_input.get(
-                    const.CFOF_BADGES_INPUT_LABELS,
-                    badge_data.get(const.DATA_BADGE_LABELS, []),
-                )
-                badge_data[const.DATA_BADGE_ICON] = user_input.get(
-                    const.CFOF_BADGES_INPUT_ICON,
-                    badge_data.get(const.DATA_BADGE_ICON, const.CONF_EMPTY),
-                )
-                badge_data[const.DATA_BADGE_AWARD_MODE] = award_mode
-                badge_data[const.DATA_BADGE_AWARD_POINTS] = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_POINTS,
-                    badge_data.get(const.DATA_BADGE_AWARD_POINTS),
-                )
-                badge_data[const.DATA_BADGE_AWARD_REWARD] = user_input.get(
-                    const.CFOF_BADGES_INPUT_AWARD_REWARD,
-                    badge_data.get(const.DATA_BADGE_AWARD_REWARD),
-                )
-                badge_data[const.DATA_BADGE_ASSIGNED_KIDS] = user_input.get(
-                    const.CFOF_BADGES_INPUT_ASSIGNED_KIDS,
-                    badge_data.get(const.DATA_BADGE_ASSIGNED_KIDS),
-                )
-
-                # Update type-specific fields:
-                if badge_type == const.BADGE_TYPE_CUMULATIVE:
-                    periodic_reset = user_input.get(
-                        const.CFOF_BADGES_INPUT_RESET_PERIODICALLY, False
-                    )
-                    if periodic_reset:
-                        # If periodic reset is enabled, the reset type must not be None or CONF_NONE.
-                        reset_type = user_input.get(const.CFOF_BADGES_INPUT_RESET_TYPE)
-                        if reset_type in (None, const.CONF_NONE):
-                            errors[const.CFOF_BADGES_INPUT_RESET_TYPE] = (
-                                const.TRANS_KEY_CFOF_ERROR_BADGE_RESET_TYPE_REQUIRED
-                            )
-                        # Additionally, if the reset type is custom then custom reset date must be provided.
-                        elif reset_type.startswith(const.CONF_CUSTOM):
-                            custom_reset_date = user_input.get(
-                                const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE
-                            )
-                            if custom_reset_date in (None, const.CONF_NONE):
-                                errors[const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE] = (
-                                    const.TRANS_KEY_CFOF_ERROR_BADGE_CUSTOM_RESET_DATE_REQUIRED
-                                )
-                    else:
-                        # Clean non‑applicable fields when periodic reset is not enabled.
-                        user_input[const.CFOF_BADGES_INPUT_RESET_TYPE] = const.CONF_NONE
-                        user_input[const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE] = (
-                            const.CONF_NONE
-                        )
-                        user_input[const.CFOF_BADGES_INPUT_RESET_GRACE_PERIOD] = (
-                            const.DEFAULT_ZERO
-                        )
-                        user_input[const.CFOF_BADGES_INPUT_MAINTENANCE_RULES] = (
-                            const.DEFAULT_ZERO
-                        )
-
-                    badge_data[const.DATA_BADGE_THRESHOLD_VALUE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_THRESHOLD_VALUE,
-                        badge_data.get(const.DATA_BADGE_THRESHOLD_VALUE),
-                    )
-                    badge_data[const.DATA_BADGE_POINTS_MULTIPLIER] = user_input.get(
-                        const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER,
-                        badge_data.get(const.DATA_BADGE_POINTS_MULTIPLIER),
-                    )
-                    badge_data[const.DATA_BADGE_RESET_PERIODICALLY] = user_input.get(
-                        const.CFOF_BADGES_INPUT_RESET_PERIODICALLY,
-                        badge_data.get(const.DATA_BADGE_RESET_PERIODICALLY, False),
-                    )
-                    badge_data[const.DATA_BADGE_RESET_TYPE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_RESET_TYPE,
-                        badge_data.get(
-                            const.DATA_BADGE_RESET_TYPE, const.CONF_YEAR_END
-                        ),
-                    )
-                    badge_data[const.DATA_BADGE_CUSTOM_RESET_DATE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_CUSTOM_RESET_DATE,
-                        badge_data.get(const.DATA_BADGE_CUSTOM_RESET_DATE),
-                    )
-                    badge_data[const.DATA_BADGE_RESET_GRACE_PERIOD] = user_input.get(
-                        const.CFOF_BADGES_INPUT_RESET_GRACE_PERIOD,
-                        badge_data.get(
-                            const.DATA_BADGE_RESET_GRACE_PERIOD,
-                            const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
-                        ),
-                    )
-                    badge_data[const.DATA_BADGE_MAINTENANCE_RULES] = user_input.get(
-                        const.CFOF_BADGES_INPUT_MAINTENANCE_RULES,
-                        badge_data.get(
-                            const.DATA_BADGE_MAINTENANCE_RULES, const.DEFAULT_ZERO
-                        ),
-                    )
-
-                elif badge_type == const.BADGE_TYPE_DAILY:
-                    badge_data[const.DATA_BADGE_DAILY_THRESHOLD_TYPE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_DAILY_THRESHOLD_TYPE,
-                        badge_data.get(
-                            const.DATA_BADGE_DAILY_THRESHOLD_TYPE,
-                            const.DEFAULT_BADGE_THRESHOLD_TYPE,
-                        ),
-                    )
-                    badge_data[const.DATA_BADGE_DAILY_THRESHOLD] = user_input.get(
-                        const.CFOF_BADGES_INPUT_DAILY_THRESHOLD,
-                        badge_data.get(const.DATA_BADGE_DAILY_THRESHOLD),
-                    )
-                    badge_data[const.DATA_BADGE_REWARD] = user_input.get(
-                        const.CFOF_BADGES_INPUT_REWARD,
-                        badge_data.get(const.DATA_BADGE_REWARD),
-                    )
-
-                elif badge_type == const.BADGE_TYPE_PERIODIC:
-                    # Update and validate reset schedule; if not custom, clear dates and set recurrency to True.
-                    reset_schedule = user_input.get(
-                        const.CFOF_BADGES_INPUT_RESET_SCHEDULE, const.CONF_WEEKLY
-                    )
-                    user_input[const.DATA_BADGE_RESET_SCHEDULE] = reset_schedule
-                    if reset_schedule == const.CONF_CUSTOM:
-                        # For custom schedules: start and end dates must be provided.
-                        start_date = user_input.get(
-                            const.CFOF_BADGES_INPUT_START_DATE, const.CONF_NONE
-                        )
-                        end_date = user_input.get(
-                            const.CFOF_BADGES_INPUT_END_DATE, const.CONF_NONE
-                        )
-                        if start_date in (None, const.CONF_NONE, ""):
-                            errors[const.CFOF_BADGES_INPUT_START_DATE] = (
-                                const.TRANS_KEY_CFOF_ERROR_BADGE_START_DATE_REQUIRED
-                            )
-                        if end_date in (None, const.CONF_NONE, ""):
-                            errors[const.CFOF_BADGES_INPUT_END_DATE] = (
-                                const.TRANS_KEY_CFOF_ERROR_BADGE_END_DATE_REQUIRED
-                            )
-                        user_input[const.DATA_BADGE_START_DATE] = start_date
-                        user_input[const.DATA_BADGE_END_DATE] = end_date
-                    else:
-                        # For non-custom schedules: clear dates and set recurrency to True
-                        user_input[const.DATA_BADGE_PERIODIC_RECURRENT] = True
-                        user_input[const.DATA_BADGE_START_DATE] = const.CONF_NONE
-                        user_input[const.DATA_BADGE_END_DATE] = const.CONF_NONE
-
-                    badge_data[const.DATA_BADGE_RESET_SCHEDULE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_RESET_SCHEDULE,
-                        badge_data.get(
-                            const.DATA_BADGE_RESET_SCHEDULE, const.CONF_WEEKLY
-                        ),
-                    )
-                    badge_data[const.DATA_BADGE_START_DATE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_START_DATE,
-                        badge_data.get(const.DATA_BADGE_START_DATE),
-                    )
-                    badge_data[const.DATA_BADGE_END_DATE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_END_DATE,
-                        badge_data.get(const.DATA_BADGE_END_DATE),
-                    )
-                    badge_data[const.DATA_BADGE_PERIODIC_RECURRENT] = user_input.get(
-                        const.CFOF_BADGES_INPUT_PERIODIC_RECURRENT,
-                        badge_data.get(const.DATA_BADGE_PERIODIC_RECURRENT, False),
-                    )
-                    badge_data[const.DATA_BADGE_THRESHOLD_TYPE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_THRESHOLD_TYPE,
-                        badge_data.get(
-                            const.DATA_BADGE_THRESHOLD_TYPE,
-                            const.DEFAULT_BADGE_THRESHOLD_TYPE,
-                        ),
-                    )
-                    badge_data[const.DATA_BADGE_REQUIRED_CHORES] = user_input.get(
-                        const.CFOF_BADGES_INPUT_REQUIRED_CHORES,
-                        badge_data.get(const.DATA_BADGE_REQUIRED_CHORES, []),
-                    )
-                    badge_data[const.DATA_BADGE_THRESHOLD_VALUE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_THRESHOLD_VALUE,
-                        badge_data.get(const.DATA_BADGE_THRESHOLD_VALUE),
-                    )
-
-                elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
-                    badge_data[const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT] = (
-                        user_input.get(
-                            const.CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT,
-                            badge_data.get(
-                                const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT,
-                                const.CONF_EMPTY,
-                            ),
-                        )
-                    )
-
-                elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
-                    badge_data[const.DATA_BADGE_ASSOCIATED_CHALLENGE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE,
-                        badge_data.get(
-                            const.DATA_BADGE_ASSOCIATED_CHALLENGE, const.CONF_EMPTY
-                        ),
-                    )
-
-                elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
-                    assigned_kids = user_input.get(
-                        const.CFOF_BADGES_INPUT_ASSIGNED_KIDS, const.CONF_EMPTY
-                    )
-                    if not assigned_kids or (
-                        isinstance(assigned_kids, list) and len(assigned_kids) == 0
-                    ):
-                        errors[const.CFOF_BADGES_INPUT_ASSIGNED_KIDS] = (
-                            const.TRANS_KEY_CFOF_ERROR_ASSIGNED_KIDS
-                        )
-                    badge_data[const.DATA_BADGE_OCCASION_TYPE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_OCCASION_TYPE,
-                        badge_data.get(
-                            const.DATA_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY
-                        ),
-                    )
-                    badge_data[const.DATA_BADGE_OCCASION_DATE] = user_input.get(
-                        const.CFOF_BADGES_INPUT_OCCASION_DATE,
-                        badge_data.get(
-                            const.DATA_BADGE_OCCASION_DATE, const.CONF_EMPTY
-                        ),
-                    )
-                    badge_data[const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY] = (
-                        user_input.get(
-                            const.CFOF_BADGES_INPUT_SPECIAL_OCCASION_RECURRENCY,
-                            badge_data.get(
-                                const.DATA_BADGE_SPECIAL_OCCASION_RECURRENCY, False
-                            ),
-                        )
-                    )
-                    badge_data[const.DATA_BADGE_TRIGGER_INFO] = user_input.get(
-                        const.CFOF_BADGES_INPUT_TRIGGER_INFO,
-                        badge_data.get(const.DATA_BADGE_TRIGGER_INFO, const.CONF_EMPTY),
-                    )
-
-                if not errors:
-                    badges_dict[internal_id] = badge_data
-                    self._entry_options[const.CONF_BADGES] = badges_dict
-
-                    const.LOGGER.debug(
-                        "DEBUG: Edited Badge '%s' with ID: %s",
-                        badge_data[const.DATA_BADGE_NAME],
-                        internal_id,
-                    )
-
-                    await self._update_and_reload()
-                    return await self.async_step_init()
-
-        kids_dict = {
-            kid_data[const.DATA_KID_NAME]: kid_id
-            for kid_id, kid_data in self._entry_options.get(const.CONF_KIDS, {}).items()
-        }
-
-        rewards_options = [
-            {
-                "value": reward_id,
-                "label": reward.get(const.DATA_REWARD_NAME, const.CONF_NONE_TEXT),
-            }
-            for reward_id, reward in self._entry_options.get(
-                const.CONF_REWARDS, {}
-            ).items()
-        ]
-
-        # Build the schema based on badge_type:
-        if badge_type == const.BADGE_TYPE_CUMULATIVE:
-            schema = fh.build_badge_cumulative_schema(
-                default=badge_data, rewards_list=rewards_options
-            )
-        elif badge_type == const.BADGE_TYPE_DAILY:
-            schema = fh.build_badge_daily_schema(
-                default=badge_data, rewards_list=rewards_options
-            )
-        elif badge_type == const.BADGE_TYPE_PERIODIC:
-            chores_options = [
-                {
-                    "value": chore_id,
-                    "label": chore.get(const.DATA_CHORE_NAME, const.CONF_NONE_TEXT),
-                }
-                for chore_id, chore in self._entry_options.get(
-                    const.CONF_CHORES, {}
-                ).items()
-            ]
-            schema = fh.build_badge_periodic_schema(
-                default=badge_data,
-                rewards_list=rewards_options,
-                chores_list=chores_options,
-            )
-        elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
-            achievements_options = [
-                {
-                    "value": achievement_id,
-                    "label": ach.get(const.DATA_ACHIEVEMENT_NAME, const.CONF_NONE_TEXT),
-                }
-                for achievement_id, ach in self._entry_options.get(
-                    const.CONF_ACHIEVEMENTS, {}
-                ).items()
-            ]
-            schema = fh.build_badge_achievement_schema(
-                default=badge_data,
-                achievements_list=achievements_options,
-                rewards_list=rewards_options,
-            )
-        elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
-            challenges_options = [
-                {
-                    "value": challenge_id,
-                    "label": chall.get(const.DATA_CHALLENGE_NAME, const.CONF_NONE_TEXT),
-                }
-                for challenge_id, chall in self._entry_options.get(
-                    const.CONF_CHALLENGES, {}
-                ).items()
-            ]
-            schema = fh.build_badge_challenge_schema(
-                default=badge_data,
-                challenges_list=challenges_options,
-                rewards_list=rewards_options,
-            )
-        elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
-            schema = fh.build_badge_special_occasions_schema(
-                default=badge_data,
-                rewards_list=rewards_options,
-                kids_dict=kids_dict,
-            )
-        else:
-            schema = fh.build_badge_cumulative_schema(
-                default=badge_data, rewards_list=rewards_options
-            )
-
-        return self.async_show_form(
-            step_id=const.OPTIONS_FLOW_STEP_EDIT_BADGE,
-            data_schema=schema,
-            errors=errors,
+    # ----- Edit Special Occasion Badge -----
+    async def async_step_edit_badge_special(self, user_input=None, default_data=None):
+        """Handle editing a special occasion badge."""
+        return await self.async_add_edit_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_SPECIAL_OCCASION,
+            default_data=default_data,
+            is_edit=True,
         )
 
     async def async_step_edit_reward(self, user_input=None):

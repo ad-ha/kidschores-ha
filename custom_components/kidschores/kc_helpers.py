@@ -2,10 +2,14 @@
 """KidsChores helper functions and shared logic."""
 
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
 
-from homeassistant.core import HomeAssistant
+from calendar import monthrange
+from datetime import date, datetime, time, timedelta, tzinfo
+from typing import TYPE_CHECKING, Iterable, Optional, Union
+
+import homeassistant.util.dt as dt_util
 from homeassistant.auth.models import User
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.label_registry import async_get
 
 from . import const
@@ -234,3 +238,549 @@ def get_friendly_label(hass, label_name: str) -> str:
     entries = registry.async_list_labels()
     label_entry = registry.async_get_label(label_name)
     return label_entry.name if label_entry else label_name
+
+
+# ────────────────────────────────────────────────────────────────
+# 🕒 Date & Time Helpers (Local, UTC, Parsing, Formatting, Add Interval)
+# These functions provide reusable, timezone-safe utilities for:
+# - Getting current date/time in local or ISO formats
+# - Parsing date or datetime strings safely
+# - Converting naive/local times to UTC
+# - Adding intervals to dates/datetimes (e.g., days, weeks, months, years)
+# - Supporting badge and chore scheduling logic
+# ────────────────────────────────────────────────────────────────
+
+
+def get_today_local_date() -> date:
+    """
+    Return today's date in local timezone as a `datetime.date`.
+
+    Example:
+        datetime.date(2025, 4, 7)
+    """
+    return dt_util.as_local(dt_util.utcnow()).date()
+
+
+def get_today_local_iso() -> str:
+    """
+    Return today's date in local timezone as ISO string (YYYY-MM-DD).
+
+    Example:
+        "2025-04-07"
+    """
+    return get_today_local_date().isoformat()
+
+
+def get_now_local_time() -> datetime:
+    """
+    Return the current datetime in local timezone (timezone-aware).
+
+    Example:
+        datetime.datetime(2025, 4, 7, 14, 30, tzinfo=...)
+    """
+    return dt_util.as_local(dt_util.utcnow())
+
+
+def get_now_local_iso() -> str:
+    """
+    Return the current local datetime as an ISO 8601 string.
+
+    Example:
+        "2025-04-07T14:30:00-05:00"
+    """
+    return get_now_local_time().isoformat()
+
+
+def parse_datetime_to_utc(dt_str: str) -> Optional[datetime]:
+    """
+    Parse a datetime string, apply timezone if naive, and convert to UTC.
+
+    Returns:
+        UTC-aware datetime object, or None if parsing fails.
+
+    Example:
+        "2025-04-07T14:30:00" → datetime.datetime(2025, 4, 7, 19, 30, tzinfo=UTC)
+    """
+    if not isinstance(dt_str, str):
+        return None
+
+    try:
+        dt_obj = dt_util.parse_datetime(dt_str)
+        if dt_obj is None:
+            dt_obj = datetime.fromisoformat(dt_str)
+
+        if dt_obj.tzinfo is None:
+            local_tz = const.DEFAULT_TIME_ZONE
+            dt_obj = dt_obj.replace(tzinfo=local_tz)
+
+        return dt_util.as_utc(dt_obj)
+    except Exception:
+        return None
+
+
+def parse_date_safe(date_str: str) -> Optional[date]:
+    """
+    Safely parse a date string into a `datetime.date`.
+
+    Accepts a variety of common formats, including:
+    - "2025-04-07"
+    - "04/07/2025"
+    - "April 7, 2025"
+
+    Returns:
+        `datetime.date` or None if parsing fails.
+    """
+    try:
+        return dt_util.parse_date(date_str)
+    except Exception:
+        return None
+
+
+def add_interval_to_datetime(
+    base_date: Union[str, date, datetime],
+    interval_unit: str,
+    delta: int,
+    end_of_period: Optional[str] = None,
+    return_type: Optional[str] = const.HELPER_RETURN_DATETIME,
+) -> Union[str, date, datetime]:
+    """
+    Adds a time interval to a date or datetime and returns the result in the desired format.
+
+    Parameters:
+    - base_date: ISO string, datetime.date, or datetime.datetime.
+    - interval_unit: One of the defined const.CONF_* constants:
+        - const.CONF_MINUTES, const.CONF_HOURS, const.CONF_DAYS, const.CONF_WEEKS,
+          const.CONF_MONTHS, const.CONF_QUARTERS, const.CONF_YEARS.
+    - delta: Number of time units to add.
+    - end_of_period: Optional string to adjust the result to the end of the period.
+                     Valid values are:
+                        const.PERIOD_DAY_END (sets time to 23:59:00),
+                        const.PERIOD_WEEK_END (advances to upcoming Sunday at 23:59:00),
+                        const.PERIOD_MONTH_END (last day of the month at 23:59:00),
+                        const.PERIOD_QUARTER_END (last day of quarter at 23:59:00),
+                        const.PERIOD_YEAR_END (December 31 at 23:59:00).
+    - return_type: Optional; one of the const.HELPER_RETURN_* constants:
+        - const.HELPER_RETURN_ISO_DATE: returns "YYYY-MM-DD"
+        - const.HELPER_RETURN_ISO_DATETIME: returns "YYYY-MM-DDTHH:MM:SS"
+        - const.HELPER_RETURN_DATE: returns datetime.date
+        - const.HELPER_RETURN_DATETIME: returns datetime.datetime.
+      Default is const.HELPER_RETURN_DATETIME.
+
+    Notes:
+    - Preserves timezone awareness if present in input.
+    - If input is naive (no tzinfo), output will also be naive.
+    """
+
+    # Handle the case where start_date is None
+    if not base_date:
+        const.LOGGER.error(
+            "ERROR: Get Add Interval to DateTime - base_date is None. Cannot calculate next scheduled datetime."
+        )
+        return None
+
+    # Convert base_date to a datetime object.
+    if isinstance(base_date, str):
+        base_date = datetime.fromisoformat(base_date)
+    elif isinstance(base_date, date) and not isinstance(base_date, datetime):
+        base_date = datetime.combine(base_date, datetime.min.time())
+
+    # Calculate the basic interval addition.
+    if interval_unit == const.CONF_MINUTES:
+        result = base_date + timedelta(minutes=delta)
+    elif interval_unit == const.CONF_HOURS:
+        result = base_date + timedelta(hours=delta)
+    elif interval_unit == const.CONF_DAYS:
+        result = base_date + timedelta(days=delta)
+    elif interval_unit == const.CONF_WEEKS:
+        result = base_date + timedelta(weeks=delta)
+    elif interval_unit in {const.CONF_MONTHS, const.CONF_QUARTERS}:
+        multiplier = 1 if interval_unit == const.CONF_MONTHS else 3
+        total_months = base_date.month - 1 + (delta * multiplier)
+        year = base_date.year + total_months // 12
+        month = total_months % 12 + 1
+        day = min(base_date.day, monthrange(year, month)[1])
+        result = base_date.replace(year=year, month=month, day=day)
+    elif interval_unit == const.CONF_YEARS:
+        year = base_date.year + delta
+        day = min(base_date.day, monthrange(year, base_date.month)[1])
+        result = base_date.replace(year=year, day=day)
+    else:
+        raise ValueError(f"Unsupported interval unit: {interval_unit}")
+
+    # Adjust result to the end of the period, if specified.
+    if end_of_period:
+        if end_of_period == const.PERIOD_DAY_END:
+            result = result.replace(hour=23, minute=59, second=0, microsecond=0)
+        elif end_of_period == const.PERIOD_WEEK_END:
+            # Assuming week ends on Sunday (weekday() returns 0 for Monday; Sunday is 6).
+            days_until_sunday = (6 - result.weekday()) % 7
+            result = (result + timedelta(days=days_until_sunday)).replace(
+                hour=23, minute=59, second=0, microsecond=0
+            )
+        elif end_of_period == const.PERIOD_MONTH_END:
+            last_day = monthrange(result.year, result.month)[1]
+            result = result.replace(
+                day=last_day, hour=23, minute=59, second=0, microsecond=0
+            )
+        elif end_of_period == const.PERIOD_QUARTER_END:
+            # Calculate the last month of the current quarter.
+            last_month_of_quarter = ((result.month - 1) // 3 + 1) * 3
+            last_day = monthrange(result.year, last_month_of_quarter)[1]
+            result = result.replace(
+                month=last_month_of_quarter,
+                day=last_day,
+                hour=23,
+                minute=59,
+                second=0,
+                microsecond=0,
+            )
+        elif end_of_period == const.PERIOD_YEAR_END:
+            result = result.replace(
+                month=12, day=31, hour=23, minute=59, second=0, microsecond=0
+            )
+        else:
+            raise ValueError(f"Unsupported end_of_period value: {end_of_period}")
+
+    # Return in the requested format.
+    if return_type == const.HELPER_RETURN_DATETIME:
+        return result
+    elif return_type == const.HELPER_RETURN_DATE:
+        return result.date()
+    elif return_type == const.HELPER_RETURN_ISO_DATETIME:
+        return result.isoformat()
+    elif return_type == const.HELPER_RETURN_ISO_DATE:
+        return result.date().isoformat()
+    return result  # Fallback returns a datetime object.
+
+
+def get_next_scheduled_datetime(
+    base_date: Union[str, date, datetime],
+    interval_type: str,
+    require_future: bool = True,
+    reference_datetime: Optional[Union[str, date, datetime]] = None,
+    return_type: Optional[str] = const.HELPER_RETURN_DATETIME,
+) -> Union[date, datetime, str]:
+    """
+    Calculates the next scheduled datetime based on an interval type from a given start date.
+
+    Supported interval types (using local timezone):
+      - Daily:         const.FREQUENCY_DAILY
+      - Weekly:        const.FREQUENCY_WEEKLY or const.FREQUENCY_CUSTOM_1_WEEK
+      - Biweekly:      const.FREQUENCY_BIWEEKLY
+      - Monthly:       const.FREQUENCY_MONTHLY or const.FREQUENCY_CUSTOM_1_MONTH
+      - Quarterly:     const.FREQUENCY_QUARTERLY
+      - Yearly:        const.FREQUENCY_YEARLY or const.FREQUENCY_CUSTOM_1_YEAR
+      - Period-end types:
+          - Day end:   const.PERIOD_DAY_END (sets time to 23:59:00)
+          - Week end:  const.PERIOD_WEEK_END (advances to upcoming Sunday at 23:59:00)
+          - Month end: const.PERIOD_MONTH_END (last day of the month at 23:59:00)
+          - Quarter end: const.PERIOD_QUARTER_END (last day of quarter at 23:59:00)
+          - Year end:  const.PERIOD_YEAR_END (December 31 at 23:59:00)
+
+    Behavior:
+      - Accepts a string, date, or datetime object for start_date.
+      - For period-end types, the helper sets the time to 23:59:00.
+      - For other types, the time portion from the input is preserved.
+      - If require_future is True, the schedule is advanced until the resulting datetime is strictly after the given reference_datetime.
+      - The reference_datetime (if provided) can be a string, date, or datetime; if omitted, the current local datetime is used.
+      - The return_type is optional and defaults to returning a datetime object.
+
+    Examples:
+      - get_next_scheduled_datetime("2025-04-07", const.FREQUENCY_MONTHLY)
+          → datetime.date(2025, 5, 7)
+      - get_next_scheduled_datetime("2025-04-07T09:00:00", const.FREQUENCY_WEEKLY, return_type=const.HELPER_RETURN_ISO_DATETIME)
+          → "2025-04-14T09:00:00"
+      - get_next_scheduled_datetime("2025-04-07", const.PERIOD_MONTH_END, return_type=const.HELPER_RETURN_ISO_DATETIME)
+          → "2025-04-30T23:59:00"
+      - get_next_scheduled_datetime("2024-06-01", const.FREQUENCY_CUSTOM_1_YEAR, require_future=True)
+          → datetime.date(2025, 6, 1)
+    """
+    const.LOGGER.debug(
+        "DEBUG: Get Next Schedule DateTime - Helper called with base_date=%s, interval_type=%s, require_future=%s, reference_datetime=%s, return_type=%s",
+        base_date,
+        interval_type,
+        require_future,
+        reference_datetime,
+        return_type,
+    )
+
+    # Handle the case where base_date is None
+    if not base_date:
+        const.LOGGER.error(
+            "ERROR: Get Next Schedule DateTime - base_date is None. Cannot calculate next scheduled datetime."
+        )
+        return None
+
+    # Get the local timezone.
+    local_tz = const.DEFAULT_TIME_ZONE
+
+    # Convert base_date to a timezone-aware datetime if required.
+    if isinstance(base_date, str):
+        dt_obj = parse_datetime_to_utc(base_date) or datetime.fromisoformat(base_date)
+        if dt_obj.tzinfo is None:
+            dt_obj = dt_obj.replace(tzinfo=local_tz)
+        base_date = dt_obj
+    elif isinstance(base_date, date) and not isinstance(base_date, datetime):
+        base_date = datetime.combine(base_date, datetime.min.time()).replace(
+            tzinfo=local_tz
+        )
+    else:
+        if base_date.tzinfo is None:
+            base_date = base_date.replace(tzinfo=local_tz)
+
+    # Internal function to calculate the next interval.
+    def calculate_next_interval(base_dt: datetime) -> datetime:
+        """
+        Calculate the next datetime based on the interval type using add_interval_to_datetime.
+        """
+        if interval_type in {const.FREQUENCY_DAILY}:
+            return add_interval_to_datetime(
+                base_dt,
+                const.CONF_DAYS,
+                1,
+                end_of_period=None,
+                return_type=const.HELPER_RETURN_DATETIME,
+            )
+        elif interval_type in {const.FREQUENCY_WEEKLY, const.FREQUENCY_CUSTOM_1_WEEK}:
+            return add_interval_to_datetime(
+                base_dt,
+                const.CONF_WEEKS,
+                1,
+                end_of_period=None,
+                return_type=const.HELPER_RETURN_DATETIME,
+            )
+        elif interval_type == const.FREQUENCY_BIWEEKLY:
+            return add_interval_to_datetime(
+                base_dt,
+                const.CONF_WEEKS,
+                2,
+                end_of_period=None,
+                return_type=const.HELPER_RETURN_DATETIME,
+            )
+        elif interval_type in {const.FREQUENCY_MONTHLY, const.FREQUENCY_CUSTOM_1_MONTH}:
+            return add_interval_to_datetime(
+                base_dt,
+                const.CONF_MONTHS,
+                1,
+                end_of_period=None,
+                return_type=const.HELPER_RETURN_DATETIME,
+            )
+        elif interval_type == const.FREQUENCY_QUARTERLY:
+            return add_interval_to_datetime(
+                base_dt,
+                const.CONF_QUARTERS,
+                1,
+                end_of_period=None,
+                return_type=const.HELPER_RETURN_DATETIME,
+            )
+        elif interval_type in {const.FREQUENCY_YEARLY, const.FREQUENCY_CUSTOM_1_YEAR}:
+            return add_interval_to_datetime(
+                base_dt,
+                const.CONF_YEARS,
+                1,
+                end_of_period=None,
+                return_type=const.HELPER_RETURN_DATETIME,
+            )
+        elif interval_type == const.PERIOD_DAY_END:
+            return add_interval_to_datetime(
+                base_dt,
+                const.CONF_DAYS,
+                0,
+                end_of_period=const.PERIOD_DAY_END,
+                return_type=const.HELPER_RETURN_DATETIME,
+            )
+        elif interval_type == const.PERIOD_WEEK_END:
+            return add_interval_to_datetime(
+                base_dt,
+                const.CONF_DAYS,
+                0,
+                end_of_period=const.PERIOD_WEEK_END,
+                return_type=const.HELPER_RETURN_DATETIME,
+            )
+        elif interval_type == const.PERIOD_MONTH_END:
+            return add_interval_to_datetime(
+                base_dt,
+                const.CONF_DAYS,
+                0,
+                end_of_period=const.PERIOD_MONTH_END,
+                return_type=const.HELPER_RETURN_DATETIME,
+            )
+        elif interval_type == const.PERIOD_QUARTER_END:
+            return add_interval_to_datetime(
+                base_dt,
+                const.CONF_DAYS,
+                0,
+                end_of_period=const.PERIOD_QUARTER_END,
+                return_type=const.HELPER_RETURN_DATETIME,
+            )
+        elif interval_type == const.PERIOD_YEAR_END:
+            return add_interval_to_datetime(
+                base_dt,
+                const.CONF_DAYS,
+                0,
+                end_of_period=const.PERIOD_YEAR_END,
+                return_type=const.HELPER_RETURN_DATETIME,
+            )
+        else:
+            raise ValueError(f"Unsupported interval type: {interval_type}")
+
+    # Calculate the initial next scheduled datetime.
+    result = calculate_next_interval(base_date)
+    const.LOGGER.debug(
+        "DEBUG: Get Next Schedule DateTime - After calculate_next_interval, result=%s",
+        result,
+    )
+
+    # Process the reference_datetime and ensure it is timezone-aware.
+    if reference_datetime is not None:
+        if isinstance(reference_datetime, str):
+            try:
+                reference_dt = datetime.fromisoformat(reference_datetime)
+                if reference_dt.tzinfo is None:
+                    reference_dt = reference_dt.replace(tzinfo=local_tz)
+            except Exception:
+                parsed_date = parse_date_safe(reference_datetime)
+                if parsed_date:
+                    reference_dt = datetime.combine(
+                        parsed_date, datetime.min.time()
+                    ).replace(tzinfo=local_tz)
+                else:
+                    reference_dt = get_now_local_time()
+        elif isinstance(reference_datetime, date) and not isinstance(
+            reference_datetime, datetime
+        ):
+            reference_dt = datetime.combine(
+                reference_datetime, datetime.min.time()
+            ).replace(tzinfo=local_tz)
+        elif isinstance(reference_datetime, datetime):
+            if reference_datetime.tzinfo is None:
+                reference_dt = reference_datetime.replace(tzinfo=local_tz)
+            else:
+                reference_dt = reference_datetime
+        else:
+            reference_dt = get_now_local_time()
+    else:
+        reference_dt = get_now_local_time()
+
+    # Convert a copy of result and reference_dt to UTC for future comparison.
+    # Prevents any inadvertent time changes to result
+    result_utc = dt_util.as_utc(result)
+    reference_dt_utc = dt_util.as_utc(reference_dt)
+
+    # If require_future is True, loop until result_utc is strictly after reference_dt_utc.
+    if require_future:
+        while result_utc <= reference_dt_utc:
+            base_date = result  # We keep result in local time.
+            result = calculate_next_interval(base_date)
+            result_utc = dt_util.as_utc(result)
+        const.LOGGER.debug(
+            "DEBUG: Get Next Schedule DateTime - After require_future loop, result=%s",
+            result,
+        )
+
+    # Prepare final result based on requested return_type.
+    if return_type == const.HELPER_RETURN_DATETIME:
+        final_result = result
+    elif return_type == const.HELPER_RETURN_DATE:
+        final_result = result.date()
+    elif return_type == const.HELPER_RETURN_ISO_DATETIME:
+        final_result = result.isoformat()
+    elif return_type == const.HELPER_RETURN_ISO_DATE:
+        final_result = result.date().isoformat()
+    else:
+        final_result = result
+
+    const.LOGGER.debug(
+        "DEBUG: Get Next Schedule DateTime - Final result: %s", final_result
+    )
+
+    return final_result
+
+
+from datetime import date, datetime, timedelta, tzinfo
+from typing import Iterable, Optional, Union
+
+
+def get_next_applicable_day(
+    dt: datetime,
+    applicable_days: Iterable[int],
+    local_tz: Optional[tzinfo] = None,
+    return_type: Optional[str] = const.HELPER_RETURN_DATETIME,
+) -> Union[datetime, date, str]:
+    """
+    Advances the provided datetime to the next day (or same day) where the day-of-week
+    (as returned by dt.weekday()) is included in the applicable_days iterable.
+
+    Parameters:
+        dt (datetime): A timezone-aware datetime.
+        applicable_days (Iterable[int]): An iterable of weekday numbers (0 = Monday, ... 6 = Sunday)
+            that are considered valid.
+        local_tz (Optional[tzinfo]): The local timezone to use for conversion. If not provided,
+            defaults to const.DEFAULT_TIME_ZONE.
+        return_type (Optional[str]): Specifies the return format. Options are:
+            - const.HELPER_RETURN_DATETIME: returns a datetime object (default).
+            - const.HELPER_RETURN_DATE: returns a date object.
+            - const.HELPER_RETURN_ISO_DATETIME: returns an ISO-formatted datetime string.
+            - const.HELPER_RETURN_ISO_DATE: returns an ISO-formatted date string.
+
+    Returns:
+        Union[datetime, date, str]: The adjusted datetime in the format specified by return_type.
+
+    Note:
+        This function is generic with respect to weekdays—it simply compares the numeric result
+        of dt.weekday() against the provided applicable_days. Any mapping from names to numbers
+        should be done before calling this helper.
+
+    Example:
+        Suppose you want the next applicable day to be Monday (0) or Wednesday (2):
+
+            >>> dt_input = datetime(2025, 4, 12, 15, 0, tzinfo=const.DEFAULT_TIME_ZONE)
+            >>> # 2025-04-12 is a Saturday (weekday() == 5), so the next applicable day is Monday (0)
+            >>> get_next_applicable_day(dt_input, applicable_days=[0, 2])
+            2025-04-14 15:00:00-04:00
+    """
+    local_tz = local_tz or const.DEFAULT_TIME_ZONE
+
+    const.LOGGER.debug(
+        "DEBUG: HELPER Get Next Applicable Day - called with dt=%s, applicable_days=%s, local_tz=%s, return_type=%s",
+        dt,
+        applicable_days,
+        local_tz,
+        return_type,
+    )
+
+    # Convert dt to local time.
+    local_dt = dt_util.as_local(dt)
+    if local_dt.tzinfo != local_tz:
+        local_dt = dt.astimezone(local_tz)
+
+    # Advance dt until its weekday (as an integer) is in applicable_days.
+    while local_dt.weekday() not in applicable_days:
+        # Guard against overflow: if dt is too near datetime.max, raise an error.
+        max_dt = datetime.max.replace(tzinfo=local_tz)
+        if dt >= (max_dt - timedelta(days=1)):
+            const.LOGGER.error(
+                "Overflow in get_next_applicable_day: dt is too close to datetime.max: %s",
+                dt,
+            )
+            raise OverflowError("Date value out of range in get_next_applicable_day.")
+        dt += timedelta(days=1)
+        local_dt = dt_util.as_local(dt)
+        if local_dt.tzinfo != local_tz:
+            local_dt = dt.astimezone(local_tz)
+
+    if return_type == const.HELPER_RETURN_DATETIME:
+        final_result = dt
+    elif return_type == const.HELPER_RETURN_DATE:
+        final_result = dt.date()
+    elif return_type == const.HELPER_RETURN_ISO_DATETIME:
+        final_result = dt.isoformat()
+    elif return_type == const.HELPER_RETURN_ISO_DATE:
+        final_result = dt.date().isoformat()
+    else:
+        final_result = dt
+
+    const.LOGGER.debug(
+        "DEBUG: HELPER Get Next Applicable Day - Final result: %s", final_result
+    )
+    return final_result

@@ -9,7 +9,15 @@ services, and options flow.
 
 import logging
 
+import homeassistant.util.dt as dt_util
 from homeassistant.const import Platform
+
+
+def set_default_timezone(hass):
+    """Set the default timezone based on the Home Assistant configuration."""
+    global DEFAULT_TIME_ZONE
+    DEFAULT_TIME_ZONE = dt_util.get_time_zone(hass.config.time_zone)
+
 
 # ------------------------------------------------------------------------------------------------
 # General / Integration Information
@@ -40,10 +48,16 @@ STORAGE_MANAGER = "storage_manager"
 STORAGE_KEY = "kidschores_data"
 STORAGE_VERSION = 1
 
+# Default timezone: initially None, to be set once hass is available.
+DEFAULT_TIME_ZONE = None
+
 # Migration Flags
 MIGRATION_PERFORMED = "migration_performed"
 MIGRATION_KEY_VERSION = "migration_key_version"
 MIGRATION_KEY_VERSION_NUMBER = 40
+
+# Migration Data
+MIGRATION_DATA_LEGACY_ORPHAN = "legacy_orphan"
 
 # Update Interval
 DEFAULT_UPDATE_INTERVAL = 5
@@ -139,7 +153,12 @@ OPTIONS_FLOW_STEP_ADD_PENALTY = "add_penalty"
 OPTIONS_FLOW_STEP_ADD_REWARD = "add_reward"
 
 OPTIONS_FLOW_STEP_EDIT_ACHIEVEMENT = "edit_achievement"
-OPTIONS_FLOW_STEP_EDIT_BADGE = "edit_badge"
+OPTIONS_FLOW_STEP_EDIT_BADGE_ACHIEVEMENT = "edit_badge_achievement"
+OPTIONS_FLOW_STEP_EDIT_BADGE_CHALLENGE = "edit_badge_challenge"
+OPTIONS_FLOW_STEP_EDIT_BADGE_CUMULATIVE = "edit_badge_cumulative"
+OPTIONS_FLOW_STEP_EDIT_BADGE_DAILY = "edit_badge_daily"
+OPTIONS_FLOW_STEP_EDIT_BADGE_PERIODIC = "edit_badge_periodic"
+OPTIONS_FLOW_STEP_EDIT_BADGE_SPECIAL = "edit_badge_special"
 OPTIONS_FLOW_STEP_EDIT_BONUS = "edit_bonus"
 OPTIONS_FLOW_STEP_EDIT_CHALLENGE = "edit_challenge"
 OPTIONS_FLOW_STEP_EDIT_CHORE = "edit_chore"
@@ -202,6 +221,7 @@ CFOF_CHORES_INPUT_SHARED_CHORE = "shared_chore"
 
 # BADGES
 CFOF_BADGES_INPUT_ASSIGNED_KIDS = "assigned_kids"
+CFOF_BADGES_INPUT_ASSIGNED_TO = "assigned_to"
 CFOF_BADGES_INPUT_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
 CFOF_BADGES_INPUT_ASSOCIATED_CHALLENGE = "associated_challenge"
 CFOF_BADGES_INPUT_AWARD_MODE = "award_mode"
@@ -222,14 +242,25 @@ CFOF_BADGES_INPUT_OCCASION_DATE = "occasion_date"
 CFOF_BADGES_INPUT_OCCASION_TYPE = "occasion_type"
 CFOF_BADGES_INPUT_PERIODIC_RECURRENT = "recurrent"
 CFOF_BADGES_INPUT_POINTS_MULTIPLIER = "points_multiplier"
-CFOF_BADGES_INPUT_RESET_PERIODICALLY = "reset_periodically"
-CFOF_BADGES_INPUT_SPECIAL_OCCASION_RECURRENCY = "recurrent"
-CFOF_BADGES_INPUT_REWARD = "reward"
 CFOF_BADGES_INPUT_RESET_GRACE_PERIOD = "reset_grace_period"
+CFOF_BADGES_INPUT_RESET_PERIODICALLY = "reset_periodically"
+CFOF_BADGES_INPUT_RESET_RECURRENT = "recurrent"
 CFOF_BADGES_INPUT_RESET_SCHEDULE = "reset_schedule"
+CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL = "custom_interval"
+CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
+CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE = "end_date"
+CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS = "grace_period_days"
+CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY = "recurring_frequency"
+CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE = "start_date"
+CFOF_BADGES_INPUT_REWARD = "reward"
+CFOF_BADGES_INPUT_SELECTED_CHORES = "selected_chores"
+CFOF_BADGES_INPUT_SPECIAL_OCCASION_RECURRENCY = "recurrent"
+CFOF_BADGES_INPUT_SPECIAL_OCCASION_TYPE = "occasion_type"
 CFOF_BADGES_INPUT_RESET_TYPE = "reset_type"
 CFOF_BADGES_INPUT_REQUIRED_CHORES = "required_chores"
 CFOF_BADGES_INPUT_START_DATE = "start_date"
+CFOF_BADGES_INPUT_TARGET_TYPE = "target_type"
+CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE = "threshhold_value"
 CFOF_BADGES_INPUT_THRESHOLD_TYPE = "threshold_type"
 CFOF_BADGES_INPUT_THRESHOLD_VALUE = "threshold_value"
 CFOF_BADGES_INPUT_TRIGGER_INFO = "trigger_info"
@@ -324,30 +355,44 @@ CONF_CALENDAR_SHOW_PERIOD = "calendar_show_period"
 CONF_COST = "cost"
 CONF_CUSTOM = "custom"
 CONF_CUSTOM_1_MONTH = "custom_1_month"
+CONF_CUSTOM_1_WEEK = "custom_1_week"
 CONF_CUSTOM_1_YEAR = "custom_1_year"
+CONF_DAILY = "daily"
+CONF_DAY = "day"
 CONF_DAYS = "days"
+CONF_DAY_END = "day_end"
 CONF_DESCRIPTION = "description"
 CONF_DOT = "."
 CONF_EMPTY = ""
 CONF_HOLIDAY = "holiday"
 CONF_HOUR = "hour"
+CONF_HOURS = "hours"
 CONF_ICON = "icon"
 CONF_INTERNAL_ID = "internal_id"
+CONF_LABEL = "label"
+CONF_MINUTES = "minutes"
 CONF_MONTHS = "months"
 CONF_MONTHLY = "monthly"
+CONF_MONTH_END = "month_end"
 CONF_NAME = "name"
 CONF_NONE = None
 CONF_NONE_TEXT = "None"
 CONF_POINTS = "points"
 CONF_QUARTER = "quarter"
+CONF_QUARTERLY = "quarterly"
+CONF_QUARTERS = "quarters"
+CONF_QUARTER_END = "quarter_end"
 CONF_SHARED_CHORE = "shared_chore"
 CONF_UNAVAILABLE = "unavailable"
 CONF_UNKNOWN = "Unknown"
 CONF_VALUE = "value"
 CONF_WEEKS = "weeks"
 CONF_WEEKLY = "weekly"
+CONF_WEEK_END = "week_end"
 CONF_YEAR_END = "year_end"
 CONF_YEARLY = "yearly"
+CONF_YEARS = "years"
+CONF_YEAR_END = "year_end"
 
 # Points configuration keys
 CONF_POINTS_ICON = "points_icon"
@@ -410,6 +455,7 @@ CONF_BADGE_REQUIRED_CHORES = "required_chores"
 CONF_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"
 CONF_BADGE_RESET_PERIODICALLY = "reset_periodically"
 CONF_BADGE_RESET_SCHEDULE = "reset_schedule"
+CONF_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY = "recurring_frequency"
 CONF_BADGE_RESET_TYPE = "reset_type"
 CONF_BADGE_SPECIAL_OCCASION_RECURRENCY = "recurrent"
 CONF_BADGE_START_DATE = "start_date"
@@ -620,51 +666,70 @@ DATA_CHORE_STATE = "state"
 DATA_CHORE_TIMESTAMP = "timestamp"
 
 # BADGES
-DATA_BADGE_ASSIGNED_KIDS = "assigned_kids"
+DATA_BADGE_ASSIGNED_TO = "assigned_to"
 DATA_BADGE_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
 DATA_BADGE_ASSOCIATED_CHALLENGE = "associated_challenge"
-DATA_BADGE_AWARD_MODE = "award_mode"
-DATA_BADGE_AWARD_POINTS = "award_points"
-DATA_BADGE_AWARD_POINTS_REWARD = "award_points_reward"
-DATA_BADGE_AWARD_REWARD = "award_reward"
-DATA_BADGE_CHORE_COUNT_TYPE = "chore_count_type"
-DATA_BADGE_CRITERIA_MODE = "criteria_mode"
-DATA_BADGE_CRITERIA_MODE_CHORES = "chores"
-DATA_BADGE_CRITERIA_MODE_POINTS = "points"
-DATA_BADGE_CUSTOM_RESET_DATE = "custom_reset_date"
-DATA_BADGE_DAILY_THRESHOLD = "daily_threshold"
-DATA_BADGE_DAILY_THRESHOLD_TYPE = "threshold_type"
+DATA_BADGE_AWARDS = "awards"
+DATA_BADGE_AWARDS_AWARD_MODE = "award_mode"
+DATA_BADGE_AWARDS_AWARD_POINTS = "award_points"
+DATA_BADGE_AWARDS_AWARD_POINTS_REWARD = "award_points_reward"
+DATA_BADGE_AWARDS_AWARD_REWARD = "award_reward"
+DATA_BADGE_AWARDS_POINT_MULTIPLIER = "points_multiplier"
 DATA_BADGE_DESCRIPTION = "description"
 DATA_BADGE_EARNED_BY = "earned_by"
-DATA_BADGE_END_DATE = "end_date"
 DATA_BADGE_ICON = "icon"
 DATA_BADGE_ID = "badge_id"
 DATA_BADGE_INTERNAL_ID = "internal_id"
 DATA_BADGE_LABELS = "badge_labels"
-DATA_BADGE_LAST_RESET = "last_reset"
 DATA_BADGE_MAINTENANCE_RULES = "maintenance_rules"
 DATA_BADGE_NAME = "name"
-DATA_BADGE_ONE_TIME_REWARD = "one_time_reward"
-DATA_BADGE_OCCASION_DATE = "occasion_date"
 DATA_BADGE_OCCASION_TYPE = "occasion_type"
-DATA_BADGE_PERIODIC_RECURRENT = "recurrent"
-DATA_BADGE_POINTS_MULTIPLIER = "points_multiplier"
-DATA_BADGE_REQUIRED_CHORES = "required_chores"
-DATA_BADGE_RESET_CRITERIA = "reset_criteria"
-DATA_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"
-DATA_BADGE_RESET_PERIODICALLY = "reset_periodically"
 DATA_BADGE_RESET_SCHEDULE = "reset_schedule"
-DATA_BADGE_RESET_TYPE = "reset_type"
-DATA_BADGE_REWARD = "reward"
+DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL = "custom_interval"
+DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
+DATA_BADGE_RESET_SCHEDULE_END_DATE = "end_date"
+DATA_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS = "grace_period_days"
+DATA_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS = "grace_period_days"
+DATA_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY = "recurring_frequency"
+DATA_BADGE_RESET_SCHEDULE_START_DATE = "start_date"
+DATA_BADGE_SPECIAL_OCCASION_TYPE = "occasion_type"
+DATA_BADGE_TARGET = "target"
+DATA_BADGE_TARGET_THRESHOLD_VALUE = "threshold_value"
+DATA_BADGE_TARGET_TYPE = "target_type"
+DATA_BADGE_TRACKED_CHORES = "tracked_chores"
+DATA_BADGE_TRACKED_CHORES_SELECTED_CHORES = "selected_chores"
+DATA_BADGE_TYPE = "badge_type"
+
+
+# BADGES - DEPRECATED Constants
+DATA_BADGE_REQUIRED_CHORES = "required_chores"  # NEEDS TO BE REMOVED AFTER FIX
+DATA_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"  # NEEDS TO BE REMOVED AFTER FIX
+DATA_BADGE_RESET_PERIODICALLY = "reset_periodically"  # NEEDS TO BE REMOVED AFTER FIX
+DATA_BADGE_RESET_TYPE = "reset_type"  # NEEDS TO BE REMOVED AFTER FIX
+DATA_BADGE_THRESHOLD_TYPE = "threshold_type"  # NEEDS TO BE REMOVED AFTER FIX
+DATA_BADGE_THRESHOLD_VALUE = "threshold_value"  # NEEDS TO BE REMOVED AFTER FIX
+# DATA_BADGE_ASSIGNED_KIDS = "assigned_kids"
+# DATA_BADGE_CHORE_COUNT_TYPE = "chore_count_type"
+# DATA_BADGE_CRITERIA_MODE = "criteria_mode"
+# DATA_BADGE_CRITERIA_MODE_CHORES = "chores"
+# DATA_BADGE_CRITERIA_MODE_POINTS = "points"
+# DATA_BADGE_CUSTOM_RESET_DATE = "custom_reset_date"
+DATA_BADGE_DAILY_THRESHOLD = "daily_threshold"
+# DATA_BADGE_DAILY_THRESHOLD_TYPE = "threshold_type"
+DATA_BADGE_END_DATE = "end_date"
+# DATA_BADGE_LAST_RESET = "last_reset"
+# DATA_BADGE_OCCASION_DATE = "occasion_date"
+# DATA_BADGE_ONE_TIME_REWARD = "one_time_reward"
+DATA_BADGE_PERIODIC_RECURRENT = "recurrent"
 DATA_BADGE_SPECIAL_OCCASION_DATE = "occasion_date"
 DATA_BADGE_SPECIAL_OCCASION_LAST_AWARDED = "last_awarded"
 DATA_BADGE_SPECIAL_OCCASION_RECURRENCY = "recurrent"
 DATA_BADGE_START_DATE = "start_date"
-DATA_BADGE_THRESHOLD_TYPE = "threshold_type"
-DATA_BADGE_THRESHOLD_VALUE = "threshold_value"
-DATA_BADGE_TYPE = "badge_type"
-DATA_BADGE_TYPE_TOTAL = "total"
-DATA_BADGE_TRIGGER_INFO = "trigger_info"
+# DATA_BADGE_RESET_CRITERIA = "reset_criteria"
+# DATA_BADGE_REWARD = "reward"
+# DATA_BADGE_TRIGGER_INFO = "trigger_info"
+# DATA_BADGE_TYPE_TOTAL = "total"
+
 
 # REWARDS
 DATA_REWARD_COST = "cost"
@@ -742,6 +807,31 @@ DATA_CHALLENGE_TYPE = "type"
 DATA_PENDING_CHORE_APPROVALS = "pending_chore_approvals"
 DATA_PENDING_REWARD_APPROVALS = "pending_reward_approvals"
 
+# ------------------------------------------------------------------------------------------------
+# Frequencies
+# ------------------------------------------------------------------------------------------------
+FREQUENCY_BIWEEKLY = "biweekly"
+FREQUENCY_CUSTOM = "custom"
+FREQUENCY_CUSTOM_1_MONTH = "custom_1_month"
+FREQUENCY_CUSTOM_1_QUARTER = "custom_1_quarter"
+FREQUENCY_CUSTOM_1_WEEK = "custom_1_week"
+FREQUENCY_CUSTOM_1_YEAR = "custom_1_year"
+FREQUENCY_DAILY = "daily"
+FREQUENCY_MONTHLY = "monthly"
+FREQUENCY_NONE = "none"
+FREQUENCY_QUARTERLY = "quarterly"
+FREQUENCY_WEEKLY = "weekly"
+FREQUENCY_YEARLY = "yearly"
+
+# ------------------------------------------------------------------------------------------------
+# Periods
+# ------------------------------------------------------------------------------------------------
+PERIOD_DAY_END = "day_end"
+PERIOD_MONTH_END = "month_end"
+PERIOD_QUARTER_END = "quarter_end"
+PERIOD_WEEK_END = "week_end"
+PERIOD_YEAR_END = "year_end"
+
 
 # ------------------------------------------------------------------------------------------------
 # Default Icons
@@ -784,9 +874,29 @@ DEFAULT_APPLICABLE_DAYS = []
 DEFAULT_BADGE_AWARD_MODE = "award_none"
 DEFAULT_BADGE_AWARD_POINTS = 5
 DEFAULT_BADGE_DAILY_THRESHOLD = 5
-DEFAULT_BADGE_MAINTENANCE_THRESHOLD = 0
+DEFAULT_BADGE_MAINTENANCE_THRESHOLD = 0  # Added
 DEFAULT_BADGE_RESET_GRACE_PERIOD = 0
 DEFAULT_BADGE_REWARD = 0
+DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT = CONF_NONE
+DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL = CONF_NONE
+DEFAULT_BADGE_RESET_SCHEDULE_END_DATE = CONF_NONE
+DEFAULT_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS = 0
+DEFAULT_BADGE_RESET_SCHEDULE_START_DATE = CONF_NONE
+DEFAULT_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY = FREQUENCY_NONE
+DEFAULT_BADGE_RESET_SCHEDULE = {
+    DATA_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY: DEFAULT_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY,
+    DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL: DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL,
+    DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT: DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
+    DATA_BADGE_RESET_SCHEDULE_START_DATE: DEFAULT_BADGE_RESET_SCHEDULE_START_DATE,
+    DATA_BADGE_RESET_SCHEDULE_END_DATE: DEFAULT_BADGE_RESET_SCHEDULE_END_DATE,
+    DATA_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS: DEFAULT_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
+}
+DEFAULT_BADGE_TARGET_TYPE = "points"
+DEFAULT_BADGE_TARGET_THRESHOLD_VALUE = 50
+DEFAULT_BADGE_TARGET = {
+    "type": DEFAULT_BADGE_TARGET_TYPE,
+    "value": DEFAULT_BADGE_TARGET_THRESHOLD_VALUE,
+}
 DEFAULT_BADGE_THRESHOLD_VALUE = 50
 DEFAULT_BADGE_THRESHOLD_TYPE = "points"
 DEFAULT_BONUS_POINTS = 1
@@ -811,7 +921,7 @@ DEFAULT_PENDING_REWARDS_UNIT = "Pending Rewards"
 DEFAULT_POINTS = 5
 DEFAULT_POINTS_ADJUST_VALUES = [+1, -1, +2, -2, +10, -10]
 DEFAULT_POINTS_LABEL = "Points"
-DEFAULT_POINTS_MULTIPLIER = 1
+DEFAULT_POINTS_MULTIPLIER = 1.0
 DEFAULT_REWARD_COST = 10
 DEFAULT_REMINDER_DELAY = 30
 DEFAULT_WEEKLY_RESET_DAY = 0
@@ -824,19 +934,11 @@ DEFAULT_ZERO = 0
 
 
 # ------------------------------------------------------------------------------------------------
-# Frequencies
-# ------------------------------------------------------------------------------------------------
-FREQUENCY_BIWEEKLY = "biweekly"
-FREQUENCY_CUSTOM = "custom"
-FREQUENCY_DAILY = "daily"
-FREQUENCY_MONTHLY = "monthly"
-FREQUENCY_NONE = "none"
-FREQUENCY_WEEKLY = "weekly"
-
-
-# ------------------------------------------------------------------------------------------------
 # Badge Threshold Types
 # ------------------------------------------------------------------------------------------------
+BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT = "chore_count"
+BADGE_TARGET_THRESHOLD_TYPE_POINTS = "points"
+BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED = "all_chores_required"
 BADGE_THRESHOLD_TYPE_CHORE_COUNT = "chore_count"
 BADGE_THRESHOLD_TYPE_POINTS = "points"
 
@@ -860,6 +962,10 @@ REWARD_STATE_APPROVED = "approved"
 REWARD_STATE_CLAIMED = "claimed"
 REWARD_STATE_NOT_CLAIMED = "not_claimed"
 
+# Badge States
+CUMULATIVE_BADGE_STATE_ACTIVE = "active"
+CUMULATIVE_BADGE_STATE_GRACE = "grace"
+CUMULATIVE_BADGE_STATE_DEMOTED = "demoted"
 
 # ------------------------------------------------------------------------------------------------
 # Actions
@@ -1065,6 +1171,13 @@ CALENDAR_KC_PREFIX = "calendar.kc_"
 # Calendar Unique ID Mid & Suffixes
 CALENDAR_KC_UID_SUFFIX_CALENDAR = "_calendar"
 
+# ------------------------------------------------------------------------------------------------
+# Helper Return Types
+# ------------------------------------------------------------------------------------------------
+HELPER_RETURN_ISO_DATE = "iso_date"
+HELPER_RETURN_ISO_DATETIME = "iso_datetime"
+HELPER_RETURN_DATE = "date"
+HELPER_RETURN_DATETIME = "datetime"
 
 # ------------------------------------------------------------------------------------------------
 # Services
@@ -1201,7 +1314,21 @@ TRANS_KEY_LABEL_REWARD = "Reward"
 TRANS_KEY_NO_DUE_DATE = "No due date set"
 
 # ConfigFlow & OptionsFlow Translation Keys
-TRANS_KEY_ERROR_SINGLE_INSTANCE = "single_instance_allowed"
+TRANS_KEY_CFOF_BADGE_ASSIGNED_TO = "assigned_to"
+TRANS_KEY_CFOF_BADGE_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
+TRANS_KEY_CFOF_BADGE_AWARD_MODE = "award_mode"  # Added
+TRANS_KEY_CFOF_BADGE_AWARD_REWARD = "award_reward"  # Added
+TRANS_KEY_CFOF_BADGE_ASSOCIATED_CHALLENGE = "associated_challenge"
+TRANS_KEY_CFOF_BADGE_LABELS = "badge_labels"
+TRANS_KEY_CFOF_BADGE_OCCASION_TYPE = "occasion_type"
+TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE_END_DATE_REQUIRED = "end_date_required"
+TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE = "reset_schedule"
+TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY = "recurring_frequency"
+TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE_START_DATE_REQUIRED = "start_date_required"
+TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT = "custom_interval_unit"
+TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL = "custom_interval"
+TRANS_KEY_CFOF_BADGE_SELECTED_CHORES = "selected_chores"
+TRANS_KEY_CFOF_BADGE_TARGET_TYPE = "target_type"
 TRANS_KEY_CFOF_BADGE_TYPE = "badge_type"
 TRANS_KEY_CFOF_CHORE_MUST_BE_SELECTED = "a_chore_must_be_selected"
 TRANS_KEY_CFOF_DUE_DATE_IN_PAST = "due_date_in_past"
@@ -1217,9 +1344,13 @@ TRANS_KEY_CFOF_DUPLICATE_REWARD = "duplicate_reward"
 TRANS_KEY_CFOF_END_DATE_IN_PAST = "end_date_in_past"
 TRANS_KEY_CFOF_END_DATE_NOT_AFTER_START_DATE = "end_date_not_after_start_date"
 TRANS_KEY_CFOF_ERROR_ASSIGNED_KIDS = "At least one kid must be assigned."
+TRANS_KEY_ERROR_SINGLE_INSTANCE = "single_instance_allowed"
 TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM = (
     "Award points must be greater than 0 when award mode is {}."
 )
+TRANS_KEY_CFOF_ERROR_BADGE_ACHIEVEMENT_REQUIRED = "Associated achievement is required."
+TRANS_KEY_CFOF_ERROR_BADGE_CHALLENGE_REQUIRED = "Associated challenge is required."
+TRANS_KEY_CFOF_ERROR_BADGE_OCCASION_TYPE_REQUIRED = "Occasion type is required."
 TRANS_KEY_CFOF_ERROR_BADGE_CUSTOM_RESET_DATE_REQUIRED = (
     "Custom reset date is required when reset type is custom."
 )
@@ -1235,6 +1366,8 @@ TRANS_KEY_CFOF_ERROR_BADGE_START_DATE_REQUIRED = (
 TRANS_KEY_CFOF_ERROR_REWARD_SELECTION = (
     "An award reward must be selected when award mode is {}."
 )
+TRANS_KEY_CFOF_ERROR_POINTS_MULTIPLIER_REQUIRED = "Points multiplier >0 is required."
+TRANS_KEY_CFOF_ERROR_THRESHOLD_REQUIRED = "Threshold value >0 is required."
 TRANS_KEY_CFOF_INVALID_ACHIEVEMENT = "invalid_achievement"
 TRANS_KEY_CFOF_INVALID_ACHIEVEMENT_COUNT = "invalid_achievement_count"
 TRANS_KEY_CFOF_INVALID_ACHIEVEMENT_NAME = "invalid_achievement_name"
@@ -1242,6 +1375,10 @@ TRANS_KEY_CFOF_INVALID_ACTION = "invalid_action"
 TRANS_KEY_CFOF_INVALID_BADGE = "invalid_badge"
 TRANS_KEY_CFOF_INVALID_BADGE_COUNT = "invalid_badge_count"
 TRANS_KEY_CFOF_INVALID_BADGE_NAME = "invalid_badge_name"
+TRANS_KEY_CFOF_INVALID_BADGE_TARGET_THRESHOLD_VALUE = (
+    "invalid_badge_target_threshold_value"
+)
+TRANS_KEY_CFOF_INVALID_BADGE_TYPE = "invalid_badge_type"
 TRANS_KEY_CFOF_INVALID_BONUS = "invalid_bonus"
 TRANS_KEY_CFOF_INVALID_BONUS_COUNT = "invalid_bonus_count"
 TRANS_KEY_CFOF_INVALID_BONUS_NAME = "invalid_bonus_name"
@@ -1440,6 +1577,36 @@ WEEKDAY_OPTIONS = {
 # Chore Custom Interval Reset Periods
 CUSTOM_INTERVAL_UNIT_OPTIONS = [CONF_EMPTY, CONF_DAYS, CONF_WEEKS, CONF_MONTHS]
 
+# Badge Type to Options Flow Add Step Name Mapping
+OPTIONS_FLOW_ADD_STEP = {
+    BADGE_TYPE_ACHIEVEMENT_LINKED: OPTIONS_FLOW_STEP_ADD_BADGE_ACHIEVEMENT,
+    BADGE_TYPE_CHALLENGE_LINKED: OPTIONS_FLOW_STEP_ADD_BADGE_CHALLENGE,
+    BADGE_TYPE_CUMULATIVE: OPTIONS_FLOW_STEP_ADD_BADGE_CUMULATIVE,
+    BADGE_TYPE_DAILY: OPTIONS_FLOW_STEP_ADD_BADGE_DAILY,
+    BADGE_TYPE_PERIODIC: OPTIONS_FLOW_STEP_ADD_BADGE_PERIODIC,
+    BADGE_TYPE_SPECIAL_OCCASION: OPTIONS_FLOW_STEP_ADD_BADGE_SPECIAL,
+}
+
+# Badge Type to Options Flow Edit Step Name Mapping
+OPTIONS_FLOW_EDIT_STEP = {
+    BADGE_TYPE_ACHIEVEMENT_LINKED: OPTIONS_FLOW_STEP_EDIT_BADGE_ACHIEVEMENT,
+    BADGE_TYPE_CHALLENGE_LINKED: OPTIONS_FLOW_STEP_EDIT_BADGE_CHALLENGE,
+    BADGE_TYPE_CUMULATIVE: OPTIONS_FLOW_STEP_EDIT_BADGE_CUMULATIVE,
+    BADGE_TYPE_DAILY: OPTIONS_FLOW_STEP_EDIT_BADGE_DAILY,
+    BADGE_TYPE_PERIODIC: OPTIONS_FLOW_STEP_EDIT_BADGE_PERIODIC,
+    BADGE_TYPE_SPECIAL_OCCASION: OPTIONS_FLOW_STEP_EDIT_BADGE_SPECIAL,
+}
+
+# Badge Type to Config Flow Step Name Mapping
+CONFIG_FLOW_STEP = {
+    BADGE_TYPE_ACHIEVEMENT_LINKED: CONFIG_FLOW_STEP_ACHIEVEMENTS,
+    BADGE_TYPE_CHALLENGE_LINKED: CONFIG_FLOW_STEP_CHALLENGES,
+    BADGE_TYPE_CUMULATIVE: CONFIG_FLOW_STEP_BADGES,
+    BADGE_TYPE_DAILY: CONFIG_FLOW_STEP_BADGES,
+    BADGE_TYPE_PERIODIC: CONFIG_FLOW_STEP_BADGES,
+    BADGE_TYPE_SPECIAL_OCCASION: CONFIG_FLOW_STEP_BADGES,
+}
+
 # Badge Award Mode
 AWARD_MODE_OPTIONS = [
     CONF_BADGE_AWARD_NONE,
@@ -1453,11 +1620,18 @@ THRESHOLD_TYPE_OPTIONS = [BADGE_THRESHOLD_TYPE_POINTS, BADGE_THRESHOLD_TYPE_CHOR
 
 # Badge Cumulative Reset Period
 BADGE_CUMULATIVE_RESET_TYPE_OPTIONS = [
-    {"value": CONF_YEAR_END, "label": "Year-End"},
-    {"value": CONF_QUARTER, "label": "Quarterly"},
-    {"value": CONF_MONTHLY, "label": "Monthly"},
-    {"value": CONF_CUSTOM_1_YEAR, "label": "Custom 1-Year"},
-    {"value": CONF_CUSTOM_1_MONTH, "label": "Custom 1-Month"},
+    {"value": FREQUENCY_WEEKLY, "label": "Weekly"},
+    {"value": FREQUENCY_BIWEEKLY, "label": "Biweekly"},
+    {"value": FREQUENCY_MONTHLY, "label": "Monthly"},
+    {"value": FREQUENCY_QUARTERLY, "label": "Quarterly"},
+    {"value": FREQUENCY_YEARLY, "label": "Yearly"},
+    {"value": PERIOD_WEEK_END, "label": "Week-End"},
+    {"value": PERIOD_MONTH_END, "label": "Month-End"},
+    {"value": PERIOD_QUARTER_END, "label": "Quarter-End"},
+    {"value": PERIOD_YEAR_END, "label": "Year-End"},
+    {"value": FREQUENCY_CUSTOM_1_WEEK, "label": "Custom 1-Week"},
+    {"value": FREQUENCY_CUSTOM_1_MONTH, "label": "Custom 1-Month"},
+    {"value": FREQUENCY_CUSTOM_1_YEAR, "label": "Custom 1-Year"},
 ]
 
 # Badge Reset Period
@@ -1465,13 +1639,88 @@ BADGE_PERIOD_OPTIONS = [CONF_WEEKLY, CONF_BIWEEKLY, CONF_MONTHLY, CONF_CUSTOM]
 
 # Badge Periodic Reset Schedule
 BADGE_RESET_SCHEDULE_OPTIONS = [
-    {"value": CONF_WEEKLY, "label": "Weekly (reset Monday at midnight)"},
-    {"value": CONF_MONTHLY, "label": "Monthly (reset on 1st of month at midnight)"},
+    {"value": FREQUENCY_NONE, "label": "None"},
+    {"value": FREQUENCY_DAILY, "label": "Daily"},
+    {"value": FREQUENCY_WEEKLY, "label": "Weekly"},
+    {"value": FREQUENCY_BIWEEKLY, "label": "Biweekly"},
+    {"value": FREQUENCY_MONTHLY, "label": "Monthly"},
+    {"value": FREQUENCY_QUARTERLY, "label": "Quarterly"},
+    {"value": FREQUENCY_YEARLY, "label": "Yearly"},
+    {"value": PERIOD_WEEK_END, "label": "Week-End"},
+    {"value": PERIOD_MONTH_END, "label": "Month-End"},
+    {"value": PERIOD_QUARTER_END, "label": "Quarter-End"},
+    {"value": PERIOD_YEAR_END, "label": "Year-End"},
     {"value": CONF_CUSTOM, "label": "Custom (define period below)"},
 ]
 
 # Badge Special Occasion Types
 OCCASION_TYPE_OPTIONS = [CONF_BIRTHDAY, CONF_HOLIDAY, CONF_CUSTOM]
+
+TARGET_TYPE_OPTIONS = [
+    {CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT, CONF_LABEL: "Chore Count"},
+    {CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_POINTS, CONF_LABEL: "Points"},
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED,
+        CONF_LABEL: "All Chores Required",
+    },
+]
+
+# Badge types for include_target component
+INCLUDE_TARGET_BADGE_TYPES = [
+    BADGE_TYPE_CUMULATIVE,
+    BADGE_TYPE_PERIODIC,
+    BADGE_TYPE_DAILY,
+    BADGE_TYPE_SPECIAL_OCCASION,
+]
+
+# Badge types for include_special_occasion component
+INCLUDE_SPECIAL_OCCASION_BADGE_TYPES = [
+    BADGE_TYPE_SPECIAL_OCCASION,
+]
+
+# Badge types for include_achievement_linked component
+INCLUDE_ACHIEVEMENT_LINKED_BADGE_TYPES = [
+    BADGE_TYPE_ACHIEVEMENT_LINKED,
+]
+
+# Badge types for include_challenge_linked component
+INCLUDE_CHALLENGE_LINKED_BADGE_TYPES = [
+    BADGE_TYPE_CHALLENGE_LINKED,
+]
+
+# Badge types for include_tracked_chores component
+INCLUDE_TRACKED_CHORES_BADGE_TYPES = [
+    BADGE_TYPE_PERIODIC,
+]
+
+# Badge types for include_assigned_to component
+INCLUDE_ASSIGNED_TO_BADGE_TYPES = [
+    BADGE_TYPE_DAILY,
+    BADGE_TYPE_PERIODIC,
+    BADGE_TYPE_SPECIAL_OCCASION,
+]
+
+# Badge types for include_awards component
+INCLUDE_AWARDS_BADGE_TYPES = [
+    BADGE_TYPE_CUMULATIVE,
+    BADGE_TYPE_PERIODIC,
+    BADGE_TYPE_DAILY,
+    BADGE_TYPE_SPECIAL_OCCASION,
+    BADGE_TYPE_ACHIEVEMENT_LINKED,
+    BADGE_TYPE_CHALLENGE_LINKED,
+]
+
+# Badge types for include_reset_schedule component
+INCLUDE_RESET_SCHEDULE_BADGE_TYPES = [
+    BADGE_TYPE_CUMULATIVE,
+    BADGE_TYPE_PERIODIC,
+    BADGE_TYPE_SPECIAL_OCCASION,
+    BADGE_TYPE_DAILY,
+]
+
+# Badge type for include_legacy_cumulative component
+INCLUDE_LEGACY_CUMULATIVE_BADGE_TYPE = []
+
 
 # Achievement Type Options
 ACHIEVEMENT_TYPE_OPTIONS = [
@@ -1487,4 +1736,12 @@ CHALLENGE_TYPE_OPTIONS = [
         "value": CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
         "label": "Total Chores within Period",
     },
+]
+
+# Reward Options
+REWARD_OPTION_NONE = [
+    {
+        "value": CONF_EMPTY,
+        "label": LABEL_NONE,
+    }
 ]

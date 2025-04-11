@@ -29,10 +29,10 @@ Available Sensors:
 23. BonusAppliesSensor
 """
 
+from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PERCENTAGE, UnitOfTime
 from homeassistant.core import HomeAssistant
-from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
@@ -654,6 +654,11 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         including the points needed to reach the next cumulative badge.
         """
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        # This grabs the list of earned badge names using the constant for "badge_name"
+        earned_badge_list = [
+            badge_name.get(const.DATA_KID_BADGE_EARNED_NAME)
+            for badge_name in kid_info.get(const.DATA_KID_BADGES_EARNED, {}).values()
+        ]
         cumulative_badge_progress_info = kid_info.get(
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {}
         )
@@ -679,7 +684,8 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         )
         current_badge_info = self.coordinator.badges_data.get(current_badge_id, {})
         current_badge_multiplier = current_badge_info.get(
-            const.DATA_BADGE_POINTS_MULTIPLIER, const.DEFAULT_KID_POINTS_MULTIPLIER
+            const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
+            const.DEFAULT_KID_POINTS_MULTIPLIER,
         )
 
         stored_labels = current_badge_info.get(const.DATA_BADGE_LABELS, [])
@@ -690,7 +696,7 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
 
         return {
             const.ATTR_KID_NAME: self._kid_name,
-            const.ATTR_ALL_EARNED_BADGES: kid_info.get(const.DATA_KID_BADGES, []),
+            const.ATTR_ALL_EARNED_BADGES: earned_badge_list,
             const.ATTR_HIGHEST_BADGE_THRESHOLD_VALUE: highest_badge_threshold_value,
             const.ATTR_CURRENT_BADGE_ID: current_badge_id,
             const.ATTR_CURRENT_BADGE_NAME: current_badge_name,
@@ -745,7 +751,7 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
         badge_info = self.coordinator.badges_data.get(self._badge_id, {})
 
         award_mode = badge_info.get(
-            const.DATA_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+            const.DATA_BADGE_AWARDS_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
         )
 
         threshold_type = badge_info.get(
@@ -753,7 +759,8 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
         )
 
         points_multiplier = badge_info.get(
-            const.DATA_BADGE_POINTS_MULTIPLIER, const.DEFAULT_KID_POINTS_MULTIPLIER
+            const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
+            const.DEFAULT_KID_POINTS_MULTIPLIER,
         )
         description = badge_info.get(const.DATA_BADGE_DESCRIPTION, const.CONF_EMPTY)
 
@@ -764,9 +771,11 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
-        award_points = badge_info.get(const.DATA_BADGE_AWARD_POINTS, const.DEFAULT_ZERO)
+        award_points = badge_info.get(
+            const.DATA_BADGE_AWARDS_AWARD_POINTS, const.DEFAULT_ZERO
+        )
         award_reward_id = badge_info.get(
-            const.DATA_BADGE_AWARD_REWARD, const.CONF_EMPTY
+            const.DATA_BADGE_AWARDS_AWARD_REWARD, const.CONF_EMPTY
         )
         if award_reward_id and award_reward_id != const.CONF_EMPTY:
             reward_info = self.coordinator.rewards_data.get(award_reward_id)
