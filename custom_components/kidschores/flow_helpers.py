@@ -950,7 +950,6 @@ def build_badge_common_data(
     include_assigned_to = badge_type in const.INCLUDE_ASSIGNED_TO_BADGE_TYPES
     include_awards = badge_type in const.INCLUDE_AWARDS_BADGE_TYPES
     include_reset_schedule = badge_type in const.INCLUDE_RESET_SCHEDULE_BADGE_TYPES
-    include_legacy_cumulative = badge_type in const.INCLUDE_LEGACY_CUMULATIVE_BADGE_TYPE
 
     # --- Start Common Data ---
     badge_data = {
@@ -1173,9 +1172,9 @@ def validate_badge_common_inputs(  # Renamed
     include_assigned_to = badge_type in const.INCLUDE_ASSIGNED_TO_BADGE_TYPES
     include_awards = badge_type in const.INCLUDE_AWARDS_BADGE_TYPES
     include_reset_schedule = badge_type in const.INCLUDE_RESET_SCHEDULE_BADGE_TYPES
-    include_legacy_cumulative = badge_type in const.INCLUDE_LEGACY_CUMULATIVE_BADGE_TYPE
 
     is_cumulative = badge_type == const.BADGE_TYPE_CUMULATIVE
+    is_periodic = badge_type == const.BADGE_TYPE_PERIODIC
 
     # --- Start Common Validation ---
     badge_name = user_input.get(const.CFOF_BADGES_INPUT_NAME, "").strip()
@@ -1370,19 +1369,24 @@ def validate_badge_common_inputs(  # Renamed
             const.DEFAULT_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY,
         )
 
+        # Clear custom interval fields if not custom
         if recurring_frequency != const.CONF_CUSTOM:
-            user_input[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE] = (
-                const.CONF_NONE
-            )
-            user_input[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE] = (
-                const.CONF_NONE
+            # Note that END_DATE is not cleared here, because it can be used with the frequencies as a reference date
+            user_input.update(
+                {
+                    const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE: const.CONF_NONE,
+                    const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL: const.CONF_NONE,
+                    const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT: const.CONF_NONE,
+                }
             )
 
         start_date = user_input.get(const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE)
         end_date = user_input.get(const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE)
 
         if recurring_frequency == const.CONF_CUSTOM:
-            if not start_date:
+            # Validate start and end dates for periodic badges
+            # If no custom interval and custom interval unit, then it will just do a one time reset
+            if is_periodic and not start_date:
                 errors[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE] = (
                     const.TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE_START_DATE_REQUIRED
                 )
@@ -1390,11 +1394,12 @@ def validate_badge_common_inputs(  # Renamed
                 errors[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE] = (
                     const.TRANS_KEY_CFOF_BADGE_RESET_SCHEDULE_END_DATE_REQUIRED
                 )
-            if start_date and end_date and end_date < start_date:
+            elif start_date and end_date < start_date:
                 errors[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE] = (
                     "end_date_before_start_date"
                 )
 
+        # Validate grace period for cumulative badges
         if is_cumulative:
             grace_period_days = user_input.get(
                 const.CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS
@@ -1404,7 +1409,7 @@ def validate_badge_common_inputs(  # Renamed
                     "invalid_grace_period_days"
                 )
         else:
-            # If not cumulative, set grace period to Zero
+            # Set grace period to zero for non-cumulative badges
             user_input[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS] = (
                 const.DEFAULT_ZERO
             )
@@ -1465,7 +1470,6 @@ def build_badge_common_schema(
     include_assigned_to = badge_type in const.INCLUDE_ASSIGNED_TO_BADGE_TYPES
     include_awards = badge_type in const.INCLUDE_AWARDS_BADGE_TYPES
     include_reset_schedule = badge_type in const.INCLUDE_RESET_SCHEDULE_BADGE_TYPES
-    include_legacy_cumulative = badge_type in const.INCLUDE_LEGACY_CUMULATIVE_BADGE_TYPE
 
     is_cumulative = badge_type == const.BADGE_TYPE_CUMULATIVE
     is_periodic = badge_type == const.BADGE_TYPE_PERIODIC

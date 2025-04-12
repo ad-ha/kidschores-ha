@@ -706,8 +706,8 @@ DATA_BADGE_REQUIRED_CHORES = "required_chores"  # NEEDS TO BE REMOVED AFTER FIX
 DATA_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"  # NEEDS TO BE REMOVED AFTER FIX
 DATA_BADGE_RESET_PERIODICALLY = "reset_periodically"  # NEEDS TO BE REMOVED AFTER FIX
 DATA_BADGE_RESET_TYPE = "reset_type"  # NEEDS TO BE REMOVED AFTER FIX
-DATA_BADGE_THRESHOLD_TYPE = "threshold_type"  # NEEDS TO BE REMOVED AFTER FIX
-DATA_BADGE_THRESHOLD_VALUE = "threshold_value"  # NEEDS TO BE REMOVED AFTER FIX
+DATA_BADGE_THRESHOLD_TYPE = "threshold_type"  # CAN BE REMOVED AFTER MIGRATION TO 4.0
+DATA_BADGE_THRESHOLD_VALUE = "threshold_value"  # CAN BE REMOVED AFTER MIGRATION TO 4.0
 # DATA_BADGE_ASSIGNED_KIDS = "assigned_kids"
 # DATA_BADGE_CHORE_COUNT_TYPE = "chore_count_type"
 # DATA_BADGE_CRITERIA_MODE = "criteria_mode"
@@ -1174,10 +1174,12 @@ CALENDAR_KC_UID_SUFFIX_CALENDAR = "_calendar"
 # ------------------------------------------------------------------------------------------------
 # Helper Return Types
 # ------------------------------------------------------------------------------------------------
-HELPER_RETURN_ISO_DATE = "iso_date"
-HELPER_RETURN_ISO_DATETIME = "iso_datetime"
 HELPER_RETURN_DATE = "date"
 HELPER_RETURN_DATETIME = "datetime"
+HELPER_RETURN_DATETIME_LOCAL = "datetime_local"
+HELPER_RETURN_DATETIME_UTC = "datetime_utc"
+HELPER_RETURN_ISO_DATE = "iso_date"
+HELPER_RETURN_ISO_DATETIME = "iso_datetime"
 
 # ------------------------------------------------------------------------------------------------
 # Services
@@ -1717,10 +1719,6 @@ INCLUDE_RESET_SCHEDULE_BADGE_TYPES = [
     BADGE_TYPE_SPECIAL_OCCASION,
     BADGE_TYPE_DAILY,
 ]
-
-# Badge type for include_legacy_cumulative component
-INCLUDE_LEGACY_CUMULATIVE_BADGE_TYPE = []
-
 
 # Achievement Type Options
 ACHIEVEMENT_TYPE_OPTIONS = [
