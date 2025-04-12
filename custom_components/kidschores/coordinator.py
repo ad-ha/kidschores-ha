@@ -148,13 +148,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         compute the new threshold as the legacy count multiplied by the average default points across all chores.
         Also, set reset fields to empty and disable periodic resets.
         """
-        badges = self._data.get(const.DATA_BADGES, {})
-        chores = self._data.get(const.DATA_CHORES, {})
+        badges_dict = self._data.get(const.DATA_BADGES, {})
+        chores_dict = self._data.get(const.DATA_CHORES, {})
 
         # Calculate the average default points over all chores.
         total_points = 0.0
         count = 0
-        for chore_info in chores.values():
+        for chore_info in chores_dict.values():
             try:
                 default_points = float(
                     chore_info.get(
@@ -170,45 +170,91 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         average_points = (total_points / count) if count > 0 else const.DEFAULT_POINTS
 
         # Process each badge.
-        for badge_info in badges.values():
-            # Check if the badge uses the legacy "chore_count" threshold type.
-            if badge_info.get(
-                const.DATA_BADGE_THRESHOLD_TYPE
-            ) == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT and badge_info.get(
-                const.DATA_BADGE_TYPE
-            ) in (None, const.CONF_EMPTY, const.CONF_UNAVAILABLE):
-                old_threshold = badge_info.get(
-                    const.DATA_BADGE_THRESHOLD_VALUE,
-                    const.DEFAULT_BADGE_THRESHOLD_VALUE,
-                )
-                try:
-                    # Multiply the legacy count by the average default points.
-                    new_threshold = float(old_threshold) * average_points
-                except Exception:
-                    new_threshold = old_threshold
+        for badge_id, badge_info in badges_dict.items():
+            if badge_info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE:
+                # If the badge is already moved to cumulative, skip it.
+                continue
 
-                # Update the badge data to be a cumulative points badge.
+            # Check if the badge uses the legacy "chore_count" threshold type if so estimate points and assign.
+            if (
+                badge_info.get(const.DATA_BADGE_THRESHOLD_TYPE)
+                == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT
+            ):
+                if (
+                    badge_info.get(const.DATA_BADGE_THRESHOLD_TYPE)
+                    == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT
+                ):
+                    old_threshold = badge_info.get(
+                        const.DATA_BADGE_THRESHOLD_VALUE,
+                        const.DEFAULT_BADGE_THRESHOLD_VALUE,
+                    )
+                    try:
+                        # Multiply the legacy count by the average default points.
+                        new_threshold = float(old_threshold) * average_points
+                    except Exception:
+                        new_threshold = old_threshold
+
+                    # Update the badge data to be a cumulative points badge.
+                    badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = new_threshold
+                    badge_info[const.DATA_BADGE_THRESHOLD_TYPE] = const.CONF_POINTS
+
+                    const.LOGGER.info(
+                        "INFO: Legacy Chore Count Badge '%s' migrated: Old threshold %s -> New threshold %s (average_points=%.2f)",
+                        badge_info.get(const.DATA_BADGE_NAME),
+                        old_threshold,
+                        new_threshold,
+                        average_points,
+                    )
+
+            # Migrate to new data schema and remove legacy fields
+
+            # Set badge type to cumulative if not already set
+            if const.DATA_BADGE_TYPE not in badge_info:
                 badge_info[const.DATA_BADGE_TYPE] = const.BADGE_TYPE_CUMULATIVE
-                badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = new_threshold
-                badge_info[const.DATA_BADGE_THRESHOLD_TYPE] = const.CONF_POINTS
 
-                # Set reset-related fields to empty and disable periodic resets.
-                badge_info[const.DATA_BADGE_RESET_PERIODICALLY] = False
-                badge_info[const.DATA_BADGE_RESET_TYPE] = const.CONF_NONE
-                badge_info[const.DATA_BADGE_RESET_GRACE_PERIOD] = (
-                    const.DEFAULT_BADGE_RESET_GRACE_PERIOD
-                )
-                badge_info[const.DATA_BADGE_MAINTENANCE_RULES] = (
-                    const.DEFAULT_BADGE_MAINTENANCE_THRESHOLD
+            # Initialize the new nested structures if they don't exist
+            if const.DATA_BADGE_TARGET not in badge_info:
+                badge_info[const.DATA_BADGE_TARGET] = {}
+
+            if const.DATA_BADGE_AWARDS not in badge_info:
+                badge_info[const.DATA_BADGE_AWARDS] = {}
+
+            # Migrate threshold_type to target.target_type
+            if const.DATA_BADGE_THRESHOLD_TYPE in badge_info:
+                badge_info[const.DATA_BADGE_TARGET][const.DATA_BADGE_TARGET_TYPE] = (
+                    badge_info.get(const.DATA_BADGE_THRESHOLD_TYPE)
                 )
 
-                const.LOGGER.info(
-                    "INFO: Legacy Chore Count Badge '%s' migrated: Old threshold %s -> New threshold %s (average_points=%.2f)",
-                    badge_info.get(const.DATA_BADGE_NAME),
-                    old_threshold,
-                    new_threshold,
-                    average_points,
-                )
+            # Migrate threshold_value to target.threshold_value
+            if const.DATA_BADGE_THRESHOLD_VALUE in badge_info:
+                badge_info[const.DATA_BADGE_TARGET][
+                    const.DATA_BADGE_TARGET_THRESHOLD_VALUE
+                ] = badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE)
+
+            # Migrate points_multiplier to awards.points_multiplier
+            if const.DATA_BADGE_AWARDS_POINT_MULTIPLIER in badge_info:
+                badge_info[const.DATA_BADGE_AWARDS][
+                    const.DATA_BADGE_AWARDS_POINT_MULTIPLIER
+                ] = float(badge_info.get(const.DATA_BADGE_AWARDS_POINT_MULTIPLIER, 1.0))
+
+            # Clean up any legacy fields that might exist outside the new nested structure
+            legacy_fields = [
+                "threshold_type",
+                "threshold_value",
+                "chore_count_type",
+                "points_multiplier",
+            ]
+
+            for field in legacy_fields:
+                if field in self._data[const.DATA_BADGES][badge_id]:
+                    temp = "#####################********* DISABLED DELETE WHILE DEVELOPING *********#####################"
+                    # del self._data[const.DATA_BADGES][badge_id][field]
+
+        self._persist()
+        self.async_set_updated_data(self._data)
+        const.LOGGER.info(
+            "INFO: Badge Migration - Completed migration of legacy badges to new structure"
+        )
 
     def _migrate_kid_legacy_badges_to_badges_earned(self):
         """One-time migration from legacy 'badges' list to structured 'badges_earned' dict for each kid."""
@@ -3973,42 +4019,62 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT
         )
         # Use reference_dt if available; otherwise, default to today's date
-        reference_dt = reset_schedule.get(
+        base_date_iso = reset_schedule.get(
             const.DATA_BADGE_RESET_SCHEDULE_END_DATE, today_local_iso
         )
 
         # Fallback to today's date if reference_dt is None
-        if not reference_dt:
-            reference_dt = today_local_iso
+        if not base_date_iso:
+            base_date_iso = today_local_iso
+
+        # If the base date is in the future, use it as the reference date so the next schedule is in the future of that date.
+        # As an example if on June 5th I create a badge and give it an end date of July 7th and chooose frequency of Period End,
+        # then the expectation would be a next scheduled date of Sept 30th, not June 30th.
+        reference_datetime_iso = (
+            base_date_iso if base_date_iso > today_local_iso else today_local_iso
+        )
 
         # Initialize the variables for the next maintenance end date and grace end date
         next_end = None
         next_grace = None
 
+        # First-Time Assignment:
+        # If the badge is reset-enabled but no maintenance end date is set (i.e., first-time award),
+        # then calculate and set the maintenance and grace dates.
+        is_first_time = reset_enabled and not cumulative_badge_progress.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE
+        )
+
         # Check if the maintenance period or grace period has ended
-        if award_success or demotion_required:
+        if award_success or demotion_required or is_first_time:
             if frequency == const.CONF_CUSTOM:
-                # If custom interval and unit are valid, calculate next_end
+                # If custom interval and unit are valid, calculate next_end make sure it is in the future and past the reference
                 if custom_interval and custom_interval_unit:
                     next_end = kh.add_interval_to_datetime(
-                        reference_dt,
-                        custom_interval_unit,
-                        custom_interval,
+                        base_date=base_date_iso,
+                        interval_unit=custom_interval_unit,  # Fix: change from custom_interval_unit to interval_unit
+                        delta=custom_interval,  # Fix: change from custom_interval to delta
+                        require_future=True,
+                        reference_datetime=reference_datetime_iso,
                         return_type=const.HELPER_RETURN_ISO_DATE,
                     )
                 else:
                     # Fallback to existing logic if custom interval/unit are invalid
                     next_end = kh.get_next_scheduled_datetime(
-                        reference_dt,
+                        base_date_iso,
                         interval_type=frequency,
+                        require_future=True,
+                        reference_datetime=reference_datetime_iso,
                         return_type=const.HELPER_RETURN_ISO_DATE,
                     )
             else:
                 # Default behavior for non-custom frequencies
-                reference_dt = today_local_iso
+                base_date_iso = today_local_iso
                 next_end = kh.get_next_scheduled_datetime(
-                    reference_dt,
+                    base_date_iso,
                     interval_type=frequency,
+                    require_future=True,
+                    reference_datetime=reference_datetime_iso,
                     return_type=const.HELPER_RETURN_ISO_DATE,
                 )
 
@@ -4070,23 +4136,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             self._update_kid_multiplier(kid_id)
 
-        # First-Time Assignment:
-        # If the badge is reset-enabled but no maintenance end date is set (i.e., first-time award),
-        # then calculate and set the maintenance and grace dates.
-        if reset_enabled and not cumulative_badge_progress.get(
-            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE
-        ):
-            next_end = kh.get_next_scheduled_datetime(
-                reference_dt,
-                interval_type=frequency,
-                return_type=const.HELPER_RETURN_ISO_DATE,
-            )
-            next_grace = kh.add_interval_to_datetime(
-                next_end,
-                const.CONF_DAYS,
-                grace_days,
-                return_type=const.HELPER_RETURN_ISO_DATE,
-            )
+        # If is first_time, then set the end dates
+        if is_first_time:
             cumulative_badge_progress.update(
                 {
                     const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE: next_end,

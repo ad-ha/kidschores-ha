@@ -1174,10 +1174,12 @@ CALENDAR_KC_UID_SUFFIX_CALENDAR = "_calendar"
 # ------------------------------------------------------------------------------------------------
 # Helper Return Types
 # ------------------------------------------------------------------------------------------------
-HELPER_RETURN_ISO_DATE = "iso_date"
-HELPER_RETURN_ISO_DATETIME = "iso_datetime"
 HELPER_RETURN_DATE = "date"
 HELPER_RETURN_DATETIME = "datetime"
+HELPER_RETURN_DATETIME_LOCAL = "datetime_local"
+HELPER_RETURN_DATETIME_UTC = "datetime_utc"
+HELPER_RETURN_ISO_DATE = "iso_date"
+HELPER_RETURN_ISO_DATETIME = "iso_datetime"
 
 # ------------------------------------------------------------------------------------------------
 # Services
@@ -1717,10 +1719,6 @@ INCLUDE_RESET_SCHEDULE_BADGE_TYPES = [
     BADGE_TYPE_SPECIAL_OCCASION,
     BADGE_TYPE_DAILY,
 ]
-
-# Badge type for include_legacy_cumulative component
-INCLUDE_LEGACY_CUMULATIVE_BADGE_TYPE = []
-
 
 # Achievement Type Options
 ACHIEVEMENT_TYPE_OPTIONS = [
