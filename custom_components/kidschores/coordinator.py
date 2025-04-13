@@ -147,6 +147,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         For badges whose threshold_type is set to the legacy value (e.g. BADGE_THRESHOLD_TYPE_CHORE_COUNT),
         compute the new threshold as the legacy count multiplied by the average default points across all chores.
         Also, set reset fields to empty and disable periodic resets.
+        For any other badge without a badge
         """
         badges_dict = self._data.get(const.DATA_BADGES, {})
         chores_dict = self._data.get(const.DATA_CHORES, {})
@@ -239,10 +240,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
             # Clean up any legacy fields that might exist outside the new nested structure
             legacy_fields = [
-                "threshold_type",
-                "threshold_value",
-                "chore_count_type",
-                "points_multiplier",
+                const.DATA_BADGE_THRESHOLD_TYPE,
+                const.DATA_BADGE_THRESHOLD_VALUE,
+                const.DATA_BADGE_CHORE_COUNT_TYPE,
+                const.DATA_BADGE_POINTS_MULTIPLIER,
             ]
 
             for field in legacy_fields:
@@ -3797,7 +3798,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if highest_earned
             else None,
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_HIGHEST_EARNED_THRESHOLD: float(
-                highest_earned.get(const.DATA_BADGE_THRESHOLD_VALUE, 0)
+                highest_earned.get(const.DATA_BADGE_TARGET, {}).get(
+                    const.DATA_BADGE_TARGET_THRESHOLD_VALUE, 0
+                )
             )
             if highest_earned
             else None,
@@ -3813,7 +3816,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if current_badge_info
             else None,
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_THRESHOLD: float(
-                current_badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, 0)
+                current_badge_info.get(const.DATA_BADGE_TARGET, {}).get(
+                    const.DATA_BADGE_TARGET_THRESHOLD_VALUE, 0
+                )
             )
             if current_badge_info
             else None,
@@ -3829,14 +3834,20 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if next_higher
             else None,
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_THRESHOLD: float(
-                next_higher.get(const.DATA_BADGE_THRESHOLD_VALUE, 0)
+                next_higher.get(const.DATA_BADGE_TARGET, {}).get(
+                    const.DATA_BADGE_TARGET_THRESHOLD_VALUE, 0
+                )
             )
             if next_higher
             else None,
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_POINTS_NEEDED: (
                 max(
                     0.0,
-                    float(next_higher.get(const.DATA_BADGE_THRESHOLD_VALUE, 0))
+                    float(
+                        next_higher.get(const.DATA_BADGE_TARGET, {}).get(
+                            const.DATA_BADGE_TARGET_THRESHOLD_VALUE, 0
+                        )
+                    )
                     - total_points,
                 )
                 if next_higher
@@ -4234,14 +4245,20 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
             )
 
-            if total_points >= threshold:
-                highest_earned = badge_info
-                next_lower = previous_badge_info
-            else:
-                next_higher = badge_info
-                break
+            # Set the is_assigned_to flag: True if the list is empty or if kid_id is in the assigned list
+            is_assigned_to = not badge_info.get(
+                const.DATA_BADGE_ASSIGNED_TO, []
+            ) or kid_id in badge_info.get(const.DATA_BADGE_ASSIGNED_TO, [])
 
-            previous_badge_info = badge_info
+            if is_assigned_to:
+                if total_points >= threshold:
+                    highest_earned = badge_info
+                    next_lower = previous_badge_info
+                else:
+                    next_higher = badge_info
+                    break
+
+                previous_badge_info = badge_info
 
         return highest_earned, next_higher, next_lower, baseline, cycle_points
 
