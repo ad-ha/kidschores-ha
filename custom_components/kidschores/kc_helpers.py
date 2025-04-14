@@ -15,7 +15,7 @@ from homeassistant.helpers.label_registry import async_get
 from . import const
 
 if TYPE_CHECKING:
-    from .coordinator import KidsChoresDataCoordinator
+    from .coordinator import KidsChoresDataCoordinator  # Used for type checking only
 
 
 # -------- Get Coordinator --------

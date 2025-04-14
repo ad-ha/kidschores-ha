@@ -563,6 +563,28 @@ DATA_KID_COMPLETED_CHORES_MONTHLY = "completed_chores_monthly"
 DATA_KID_COMPLETED_CHORES_TOTAL = "completed_chores_total"
 DATA_KID_COMPLETED_CHORES_TODAY = "completed_chores_today"
 DATA_KID_COMPLETED_CHORES_WEEKLY = "completed_chores_weekly"
+
+# Kid Chore Data Structure Constants
+DATA_KID_CHORES = "chores"
+DATA_KID_CHORES_STATE = "state"
+DATA_KID_CHORES_NAME = "name"
+DATA_KID_CHORES_DUE_DATE = "due_date"
+DATA_KID_CHORES_LAST_COMPLETED = "last_completed"
+DATA_KID_CHORES_LAST_CLAIMED = "last_claimed"
+DATA_KID_CHORES_STREAK = "streak"
+DATA_KID_CHORES_STREAK_CURRENT = "current"
+DATA_KID_CHORES_STREAK_MAX = "max"
+DATA_KID_CHORES_STREAK_LAST_DATE = "last_date"
+DATA_KID_CHORES_TOTAL_COUNT = "total_count"
+DATA_KID_CHORES_TOTAL_POINTS = "total_points"
+DATA_KID_CHORES_PERIODS = "periods"
+DATA_KID_CHORES_PERIODS_DAILY = "daily"
+DATA_KID_CHORES_PERIODS_WEEKLY = "weekly"
+DATA_KID_CHORES_PERIODS_MONTHLY = "monthly"
+DATA_KID_CHORES_PERIOD_COUNT = "count"
+DATA_KID_CHORES_PERIOD_POINTS = "points"
+DATA_KID_CHORES_BADGE_REFS = "badge_refs"
+
 # --- Badge Progress Tracking ---
 DATA_KID_CUMULATIVE_BADGE_PROGRESS = "cumulative_badge_progress"
 

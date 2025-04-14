@@ -1175,6 +1175,7 @@ def validate_badge_common_inputs(  # Renamed
 
     is_cumulative = badge_type == const.BADGE_TYPE_CUMULATIVE
     is_periodic = badge_type == const.BADGE_TYPE_PERIODIC
+    is_daily = badge_type == const.BADGE_TYPE_DAILY
 
     # --- Start Common Validation ---
     badge_name = user_input.get(const.CFOF_BADGES_INPUT_NAME, "").strip()
@@ -1412,6 +1413,11 @@ def validate_badge_common_inputs(  # Renamed
             # Set grace period to zero for non-cumulative badges
             user_input[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS] = (
                 const.DEFAULT_ZERO
+            )
+
+        if is_daily:
+            user_input[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY] = (
+                const.CONF_DAILY
             )
 
     return errors
@@ -1876,55 +1882,55 @@ def build_badge_common_schema(
     # --- Reset Component Schema ---
     if include_reset_schedule:
         # Define defaults at the top for easier adjustments
+        # Get the reset_schedule once instead of repeated lookups
+        reset_schedule = default.get(const.DATA_BADGE_RESET_SCHEDULE, {})
+
+        # Get defaults from user_input first (if present), then from reset_schedule, then use defaults
         default_recurring_frequency = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY,
             ),
         )
         default_custom_interval = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL,
             ),
         )
         default_custom_interval_unit = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
             ),
         )
         default_start_date = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_START_DATE,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_START_DATE,
             ),
         )
         default_end_date = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_END_DATE,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_END_DATE,
             ),
         )
         default_grace_period_days = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
             ),
         )
 
-        # For BADGE_TYPE_DAILY, set frequency to daily and skip showing reset fields
-        if is_daily:
-            default[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY] = (
-                const.FREQUENCY_DAILY
-            )
-        else:
+        # For BADGE_TYPE_DAILY, hide reset schedule fields and force value in validation
+        if not is_daily:
             # Build the schema fields for other badge types
             schema_fields.update(
                 {
