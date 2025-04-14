@@ -445,17 +445,17 @@ def normalize_datetime_input(
     return format_datetime_with_return_type(result, return_type)
 
 
-def add_interval_to_datetime(
+def adjust_datetime_by_interval(
     base_date: Union[str, date, datetime],
     interval_unit: str,
     delta: int,
     end_of_period: Optional[str] = None,
-    require_future: bool = True,
+    require_future: bool = False,
     reference_datetime: Optional[Union[str, date, datetime]] = None,
     return_type: Optional[str] = const.HELPER_RETURN_DATETIME,
 ) -> Union[str, date, datetime]:
     """
-    Adds a time interval to a date or datetime and returns the result in the desired format.
+    Add or Subtract a time interval to a date or datetime and returns the result in the desired format.
 
     Parameters:
     - base_date: ISO string, datetime.date, or datetime.datetime.
@@ -787,7 +787,7 @@ def get_next_scheduled_datetime(
         Calculate the next datetime based on the interval type using add_interval_to_datetime.
         """
         if interval_type in {const.FREQUENCY_DAILY}:
-            return add_interval_to_datetime(
+            return adjust_datetime_by_interval(
                 base_dt,
                 const.CONF_DAYS,
                 1,
@@ -795,7 +795,7 @@ def get_next_scheduled_datetime(
                 return_type=const.HELPER_RETURN_DATETIME,
             )
         elif interval_type in {const.FREQUENCY_WEEKLY, const.FREQUENCY_CUSTOM_1_WEEK}:
-            return add_interval_to_datetime(
+            return adjust_datetime_by_interval(
                 base_dt,
                 const.CONF_WEEKS,
                 1,
@@ -803,7 +803,7 @@ def get_next_scheduled_datetime(
                 return_type=const.HELPER_RETURN_DATETIME,
             )
         elif interval_type == const.FREQUENCY_BIWEEKLY:
-            return add_interval_to_datetime(
+            return adjust_datetime_by_interval(
                 base_dt,
                 const.CONF_WEEKS,
                 2,
@@ -811,7 +811,7 @@ def get_next_scheduled_datetime(
                 return_type=const.HELPER_RETURN_DATETIME,
             )
         elif interval_type in {const.FREQUENCY_MONTHLY, const.FREQUENCY_CUSTOM_1_MONTH}:
-            return add_interval_to_datetime(
+            return adjust_datetime_by_interval(
                 base_dt,
                 const.CONF_MONTHS,
                 1,
@@ -819,7 +819,7 @@ def get_next_scheduled_datetime(
                 return_type=const.HELPER_RETURN_DATETIME,
             )
         elif interval_type == const.FREQUENCY_QUARTERLY:
-            return add_interval_to_datetime(
+            return adjust_datetime_by_interval(
                 base_dt,
                 const.CONF_QUARTERS,
                 1,
@@ -827,7 +827,7 @@ def get_next_scheduled_datetime(
                 return_type=const.HELPER_RETURN_DATETIME,
             )
         elif interval_type in {const.FREQUENCY_YEARLY, const.FREQUENCY_CUSTOM_1_YEAR}:
-            return add_interval_to_datetime(
+            return adjust_datetime_by_interval(
                 base_dt,
                 const.CONF_YEARS,
                 1,
@@ -835,7 +835,7 @@ def get_next_scheduled_datetime(
                 return_type=const.HELPER_RETURN_DATETIME,
             )
         elif interval_type == const.PERIOD_DAY_END:
-            return add_interval_to_datetime(
+            return adjust_datetime_by_interval(
                 base_dt,
                 const.CONF_DAYS,
                 0,
@@ -843,7 +843,7 @@ def get_next_scheduled_datetime(
                 return_type=const.HELPER_RETURN_DATETIME,
             )
         elif interval_type == const.PERIOD_WEEK_END:
-            return add_interval_to_datetime(
+            return adjust_datetime_by_interval(
                 base_dt,
                 const.CONF_DAYS,
                 0,
@@ -851,7 +851,7 @@ def get_next_scheduled_datetime(
                 return_type=const.HELPER_RETURN_DATETIME,
             )
         elif interval_type == const.PERIOD_MONTH_END:
-            return add_interval_to_datetime(
+            return adjust_datetime_by_interval(
                 base_dt,
                 const.CONF_DAYS,
                 0,
@@ -859,7 +859,7 @@ def get_next_scheduled_datetime(
                 return_type=const.HELPER_RETURN_DATETIME,
             )
         elif interval_type == const.PERIOD_QUARTER_END:
-            return add_interval_to_datetime(
+            return adjust_datetime_by_interval(
                 base_dt,
                 const.CONF_DAYS,
                 0,
@@ -867,7 +867,7 @@ def get_next_scheduled_datetime(
                 return_type=const.HELPER_RETURN_DATETIME,
             )
         elif interval_type == const.PERIOD_YEAR_END:
-            return add_interval_to_datetime(
+            return adjust_datetime_by_interval(
                 base_dt,
                 const.CONF_DAYS,
                 0,
@@ -926,7 +926,7 @@ def get_next_scheduled_datetime(
                         "DEBUG: Get Next Schedule DateTime - Detected loop! Result didn't change. Adding 1 hour to break the loop."
                     )
                 # Break the loop by adding 1 hour and recalculating
-                result = add_interval_to_datetime(
+                result = adjust_datetime_by_interval(
                     result,
                     const.CONF_HOURS,
                     1,

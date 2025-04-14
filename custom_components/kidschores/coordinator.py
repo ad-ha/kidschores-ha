@@ -2083,17 +2083,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         kid_info = self.kids_data.get(kid_id)
 
-        for badge_id, badge_info in self.badges_data.items():
-            if badge_info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_PERIODIC:
-                # If periodic badge defines required chores, update if this chore is required.
-                required_chores = badge_info.get(const.DATA_BADGE_REQUIRED_CHORES, [])
-                if required_chores and chore_id in required_chores:
-                    # Increment the progress counter specifically for this badge
-                    progress = kid_info.setdefault(
-                        const.DATA_KID_PERIODIC_BADGE_PROGRESS, {}
-                    )
-                    progress[badge_id] = progress.get(badge_id, 0) + 1
-
         allow_multiple = chore_info.get(
             const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY, False
         )
@@ -2118,22 +2107,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._process_chore_state(
             kid_id, chore_id, const.CHORE_STATE_APPROVED, points_awarded=awarded_points
         )
-
-        # increment completed chores counters
-        kid_info[const.DATA_KID_COMPLETED_CHORES_TODAY] += 1
-        kid_info[const.DATA_KID_COMPLETED_CHORES_WEEKLY] += 1
-        kid_info[const.DATA_KID_COMPLETED_CHORES_MONTHLY] += 1
-        kid_info[const.DATA_KID_COMPLETED_CHORES_TOTAL] += 1
-
-        # Track today’s approvals for chores that allow multiple claims.
-        if chore_info.get(const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY, False):
-            kid_info.setdefault(const.DATA_KID_TODAY_CHORE_APPROVALS, {})
-            kid_info[const.DATA_KID_TODAY_CHORE_APPROVALS][chore_id] = (
-                kid_info[const.DATA_KID_TODAY_CHORE_APPROVALS].get(
-                    chore_id, const.DEFAULT_ZERO
-                )
-                + 1
-            )
 
         # Manage Achievements
         today_local = kh.get_today_local_date()
@@ -2344,7 +2317,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         due_date = chore_info.get(const.DATA_CHORE_DUE_DATE)
 
         # Update the kid's chore history
-        self._update_kid_chore_data(
+        self._update_chore_data_for_kid(
             kid_id=kid_id,
             chore_id=chore_id,
             points_awarded=actual_points,
@@ -2418,11 +2391,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     kid_info.get(const.DATA_KID_POINTS, const.DEFAULT_ZERO)
                 )
                 self.update_kid_points(kid_id, current_points + points_awarded)
-
-            today_local = kh.get_today_local_date()
-
-            self._update_chore_streak_for_kid_legacy(kid_id, chore_id, today_local)
-            self._update_overall_chore_streak_legacy(kid_id, today_local)
 
             self._data[const.DATA_PENDING_CHORE_APPROVALS] = [
                 ap
@@ -2522,7 +2490,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 chore_info[const.DATA_CHORE_STATE],
             )
 
-    def _update_kid_chore_data(
+    def _update_chore_data_for_kid(
         self,
         kid_id: str,
         chore_id: str,
@@ -2548,14 +2516,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         chore_name = chore_info.get(const.DATA_CHORE_NAME, chore_id)
 
         # Initialize chores structure if needed
-        chores_data = kid_info.setdefault(const.DATA_KID_CHORES, {})
+        kid_chores_data = kid_info.setdefault(const.DATA_KID_CHORES, {})
 
         # Initialize this chore's data if it doesn't exist yet
-        chore_data = chores_data.setdefault(
+        kid_chore_data = kid_chores_data.setdefault(
             chore_id,
             {
                 const.DATA_KID_CHORES_NAME: chore_name,
                 const.DATA_KID_CHORES_STATE: const.CHORE_STATE_PENDING,
+                const.DATA_KID_CHORES_LAST_CLAIMED: None,
+                const.DATA_KID_CHORES_LAST_COMPLETED: None,
+                const.DATA_KID_CHORES_LAST_DISAPPROVED: None,
+                const.DATA_KID_CHORES_LAST_OVERDUE: None,
                 const.DATA_KID_CHORES_STREAK: {
                     const.DATA_KID_CHORES_STREAK_CURRENT: 0,
                     const.DATA_KID_CHORES_STREAK_MAX: 0,
@@ -2572,43 +2544,54 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             },
         )
 
-        # Get timestamps
+        # Get timestamps using helper functions
         now_utc = dt_util.utcnow()
         now_iso = now_utc.isoformat()
-        today = now_utc.date()
-        today_iso = today.isoformat()
-        week_iso = today.strftime("%Y-W%V")  # ISO week format
-        month_iso = today.strftime("%Y-%m")  # Year-month format
+
+        # Use local time for date-based keys
+        now_local = kh.get_now_local_time()
+        today_local = kh.get_today_local_date()
+        today_local_iso = today_local.isoformat()
+        week_local_iso = now_local.strftime("%Y-W%V")  # ISO week format
+        month_local_iso = now_local.strftime("%Y-%m")  # Year-month format
+
+        # Before state update, track current state for comparison
+        previous_state = kid_chore_data.get(const.DATA_KID_CHORES_STATE)
 
         # Update current state if provided
         if state is not None:
-            chore_data[const.DATA_KID_CHORES_STATE] = state
+            kid_chore_data[const.DATA_KID_CHORES_STATE] = state
 
             # Update claim/completion timestamps based on state
             if state == const.CHORE_STATE_CLAIMED:
-                chore_data[const.DATA_KID_CHORES_LAST_CLAIMED] = now_iso
+                kid_chore_data[const.DATA_KID_CHORES_LAST_CLAIMED] = now_iso
             elif state == const.CHORE_STATE_APPROVED:
-                chore_data[const.DATA_KID_CHORES_LAST_COMPLETED] = now_iso
+                kid_chore_data[const.DATA_KID_CHORES_LAST_COMPLETED] = now_iso
 
-                # Update streak data
+                # Update streak data - use local date for streaks
                 self._update_chore_streak_for_kid(
-                    chore_data[const.DATA_KID_CHORES_STREAK], today_iso
+                    kid_chore_data[const.DATA_KID_CHORES_STREAK], today_local_iso
                 )
 
-                self._update_chore_streak_for_kid_legacy(kid_id, chore_id, today_iso)
+                # The following function is legacy and should be removed in the future.
+                # It is now handled in the _update_kid_chore_data function.
+                self._update_chore_streak_for_kid_legacy(kid_id, chore_id, today_local)
+
+                # Number of days in a row with at least one chore completed
+                self._update_overall_chore_streak_for_kid(kid_id, today_local)
 
                 # If this is an approval, update period stats
-                chore_data[const.DATA_KID_CHORES_TOTAL_COUNT] += 1
-                chore_data[const.DATA_KID_CHORES_TOTAL_POINTS] += points_awarded
+                kid_chore_data[const.DATA_KID_CHORES_TOTAL_COUNT] += 1
+                kid_chore_data[const.DATA_KID_CHORES_TOTAL_POINTS] += points_awarded
 
-                # Daily stats
-                periods_data = chore_data[const.DATA_KID_CHORES_PERIODS]
+                # Daily stats - use local date for the key
+                periods_data = kid_chore_data[const.DATA_KID_CHORES_PERIODS]
 
                 # Update daily stats
                 daily_stats = periods_data[
                     const.DATA_KID_CHORES_PERIODS_DAILY
                 ].setdefault(
-                    today_iso,
+                    today_local_iso,
                     {
                         const.DATA_KID_CHORES_PERIOD_COUNT: 0,
                         const.DATA_KID_CHORES_PERIOD_POINTS: 0.0,
@@ -2617,11 +2600,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 daily_stats[const.DATA_KID_CHORES_PERIOD_COUNT] += 1
                 daily_stats[const.DATA_KID_CHORES_PERIOD_POINTS] += points_awarded
 
-                # Weekly stats
+                # Weekly stats - use local week for the key
                 weekly_stats = periods_data[
                     const.DATA_KID_CHORES_PERIODS_WEEKLY
                 ].setdefault(
-                    week_iso,
+                    week_local_iso,
                     {
                         const.DATA_KID_CHORES_PERIOD_COUNT: 0,
                         const.DATA_KID_CHORES_PERIOD_POINTS: 0.0,
@@ -2630,11 +2613,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 weekly_stats[const.DATA_KID_CHORES_PERIOD_COUNT] += 1
                 weekly_stats[const.DATA_KID_CHORES_PERIOD_POINTS] += points_awarded
 
-                # Monthly stats
+                # Monthly stats - use local month for the key
                 monthly_stats = periods_data[
                     const.DATA_KID_CHORES_PERIODS_MONTHLY
                 ].setdefault(
-                    month_iso,
+                    month_local_iso,
                     {
                         const.DATA_KID_CHORES_PERIOD_COUNT: 0,
                         const.DATA_KID_CHORES_PERIOD_POINTS: 0.0,
@@ -2644,31 +2627,69 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 monthly_stats[const.DATA_KID_CHORES_PERIOD_POINTS] += points_awarded
 
                 # Clean up old period data
-                self._cleanup_chore_period_data(
-                    chore_data[const.DATA_KID_CHORES_PERIODS]
+                self._cleanup_chore_period_data_for_kid(
+                    kid_chore_data[const.DATA_KID_CHORES_PERIODS]
                 )
+
+                # increment completed chores counters
+                kid_info[const.DATA_KID_COMPLETED_CHORES_TODAY] += 1
+                kid_info[const.DATA_KID_COMPLETED_CHORES_WEEKLY] += 1
+                kid_info[const.DATA_KID_COMPLETED_CHORES_MONTHLY] += 1
+                kid_info[const.DATA_KID_COMPLETED_CHORES_TOTAL] += 1
+
+                # Track today’s approvals for chores that allow multiple claims.
+                if chore_info.get(
+                    const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY, False
+                ):
+                    kid_info.setdefault(const.DATA_KID_TODAY_CHORE_APPROVALS, {})
+                    kid_info[const.DATA_KID_TODAY_CHORE_APPROVALS][chore_id] = (
+                        kid_info[const.DATA_KID_TODAY_CHORE_APPROVALS].get(
+                            chore_id, const.DEFAULT_ZERO
+                        )
+                        + 1
+                    )
+
+            # Track when the chore is marked as overdue
+            elif state == const.CHORE_STATE_OVERDUE:
+                kid_chore_data[const.DATA_KID_CHORES_LAST_OVERDUE] = now_iso
+
+            # Track when the chore is disapproved - ONLY if it was previously claimed
+            elif (
+                state == const.CHORE_STATE_PENDING
+                and previous_state == const.CHORE_STATE_CLAIMED
+            ):
+                kid_chore_data[const.DATA_KID_CHORES_LAST_DISAPPROVED] = now_iso
 
         # Update due date if provided
         if due_date is not None:
-            chore_data[const.DATA_KID_CHORES_DUE_DATE] = due_date
+            kid_chore_data[const.DATA_KID_CHORES_DUE_DATE] = due_date
 
-    def _update_chore_streak_for_kid(self, streak_data: dict, today_iso: str):
+    def _update_chore_streak_for_kid(self, streak_data: dict, today_local_iso: str):
         """Update streak data for a chore.
 
         Args:
             streak_data: The streak data dictionary to update
-            today_iso: Today's date in ISO format
+            today_local_iso: Today's date in ISO format
         """
-        last_date = streak_data.get(const.DATA_KID_CHORES_STREAK_LAST_DATE)
+        last_date_iso = streak_data.get(const.DATA_KID_CHORES_STREAK_LAST_DATE)
 
         # If already marked for today, do nothing
-        if last_date == today_iso:
+        if last_date_iso == today_local_iso:
             return
 
-        yesterday = (date.fromisoformat(today_iso) - timedelta(days=1)).isoformat()
+        # Use the helper function with a negative interval to get yesterday
+        yesterday_iso = kh.adjust_datetime_by_interval(
+            today_local_iso,
+            interval_unit=const.CONF_DAYS,
+            delta=-1,
+            require_future=False,
+            return_type=const.HELPER_RETURN_ISO_DATE,
+        )
 
         # If yesterday was the last completion, increment streak
-        if last_date == yesterday:
+        # Note that streaks are only configured to work for daily chores, a lot
+        # more logic would be required to handle custom/weekly/monthly chores.
+        if last_date_iso == yesterday_iso:
             streak_data[const.DATA_KID_CHORES_STREAK_CURRENT] += 1
         else:
             # Otherwise reset streak to 1
@@ -2683,9 +2704,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             ]
 
         # Update last date
-        streak_data[const.DATA_KID_CHORES_STREAK_LAST_DATE] = today_iso
+        streak_data[const.DATA_KID_CHORES_STREAK_LAST_DATE] = today_local_iso
 
-    def _cleanup_chore_period_data(self, periods_data: dict):
+    def _cleanup_chore_period_data_for_kid(self, periods_data: dict):
         """Remove old period data to keep storage manageable.
 
         Args:
@@ -2696,39 +2717,64 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             - 5 weeks of weekly data
             - 3 months of monthly data
         """
-        now = dt_util.utcnow().date()
+        # Use helper to get the local date instead of UTC date
+        today_local = kh.get_today_local_date()
 
-        # Keep daily data for 7 days
-        cutoff_daily = (now - timedelta(days=7)).isoformat()
+        # Keep daily data for 7 days - use helper for consistent date handling
+        cutoff_daily = kh.adjust_datetime_by_interval(
+            today_local.isoformat(),
+            interval_unit=const.CONF_DAYS,
+            delta=-7,
+            require_future=False,
+            return_type=const.HELPER_RETURN_ISO_DATE,
+        )
+
         daily_data = periods_data.get(const.DATA_KID_CHORES_PERIODS_DAILY, {})
         for day in list(daily_data.keys()):
             if day < cutoff_daily:
                 del daily_data[day]
 
-        # Keep weekly data for 5 weeks
-        # ISO week format is YYYY-WNN
-        five_weeks_ago = now - timedelta(weeks=5)
-        cutoff_weekly = f"{five_weeks_ago.year}-W{five_weeks_ago.isocalendar()[1]:02d}"
+        # Keep weekly data for 5 weeks - use helper for consistent handling
+        cutoff_date = kh.adjust_datetime_by_interval(
+            today_local.isoformat(),
+            interval_unit=const.CONF_WEEKS,
+            delta=-5,
+            require_future=False,
+            return_type=const.HELPER_RETURN_DATETIME,
+        )
+        # Format as ISO week YYYY-WNN
+        cutoff_weekly = cutoff_date.strftime("%Y-W%V")
+
         weekly_data = periods_data.get(const.DATA_KID_CHORES_PERIODS_WEEKLY, {})
         for week in list(weekly_data.keys()):
             if week < cutoff_weekly:
                 del weekly_data[week]
 
-        # Keep monthly data for 3 months
-        three_months_ago = now.replace(
-            month=((now.month - 3) % 12) or 12, year=now.year - ((now.month - 3) // 12)
+        # Keep monthly data for 3 months - use helper for consistency
+        cutoff_date = kh.adjust_datetime_by_interval(
+            today_local.isoformat(),
+            interval_unit=const.CONF_MONTHS,
+            delta=-3,
+            require_future=False,
+            return_type=const.HELPER_RETURN_DATETIME,
         )
-        cutoff_monthly = f"{three_months_ago.year}-{three_months_ago.month:02d}"
+        # Format as YYYY-MM
+        cutoff_monthly = cutoff_date.strftime("%Y-%m")
+
         monthly_data = periods_data.get(const.DATA_KID_CHORES_PERIODS_MONTHLY, {})
         for month in list(monthly_data.keys()):
             if month < cutoff_monthly:
                 del monthly_data[month]
 
-    def _update_kid_badge_references(self):
+    def _update_kid_badge_references(self, include_cumulative_badges: bool = False):
         """Update badge reference lists in kid chore data.
 
         This maintains a list of which badges reference each chore,
         useful for quick lookups when evaluating badges.
+
+        Args:
+            include_cumulative_badges: Whether to include cumulative badges in the references.
+                                    Default is False which excludes them since they are currently points only
         """
         # Clear existing badge references
         for kid_id, kid_info in self.kids_data.items():
@@ -2740,6 +2786,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Add badge references to relevant chores
         for badge_id, badge_info in self.badges_data.items():
+            # Skip cumulative badges if not explicitly included
+            if (
+                not include_cumulative_badges
+                and badge_info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
+            ):
+                continue
+
             # For each kid this badge is assigned to
             assigned_to = badge_info.get(const.DATA_BADGE_ASSIGNED_TO, [])
             for kid_id in (
@@ -4129,7 +4182,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if frequency == const.CONF_CUSTOM:
                 # If custom interval and unit are valid, calculate next_end make sure it is in the future and past the reference
                 if custom_interval and custom_interval_unit:
-                    next_end = kh.add_interval_to_datetime(
+                    next_end = kh.adjust_datetime_by_interval(
                         base_date=base_date_iso,
                         interval_unit=custom_interval_unit,  # Fix: change from custom_interval_unit to interval_unit
                         delta=custom_interval,  # Fix: change from custom_interval to delta
@@ -4158,10 +4211,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
 
             # Compute the grace period end date by adding the grace period (in days) to the maintenance end date
-            next_grace = kh.add_interval_to_datetime(
+            next_grace = kh.adjust_datetime_by_interval(
                 next_end,
                 const.CONF_DAYS,
                 grace_days,
+                require_future=True,
                 return_type=const.HELPER_RETURN_ISO_DATE,
             )
 
@@ -4809,7 +4863,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         kid_info[const.DATA_KID_CHORE_STREAKS][chore_id] = streak
 
-    def _update_overall_chore_streak_legacy(self, kid_id: str, completion_date: date):
+    def _update_overall_chore_streak_for_kid(self, kid_id: str, completion_date: date):
         """Update the overall streak for a kid (days in a row with at least one approved chore)."""
 
         kid_info = self.kids_data.get(kid_id)
@@ -5276,10 +5330,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # Advance the due date based on frequency.
         if freq == const.FREQUENCY_CUSTOM:
             # For custom frequencies, use add_interval_to_datetime directly.
-            next_due_utc = kh.add_interval_to_datetime(
+            next_due_utc = kh.adjust_datetime_by_interval(
                 base_date=original_due_utc,
                 interval_unit=custom_unit,
                 delta=custom_interval,
+                require_future=True,
                 return_type=const.HELPER_RETURN_DATETIME,
             )
             const.LOGGER.debug(
