@@ -469,7 +469,7 @@ BADGE_TYPE_CHALLENGE_LINKED = "challenge_linked"
 BADGE_TYPE_CUMULATIVE = "cumulative"
 BADGE_TYPE_DAILY = "daily"
 BADGE_TYPE_PERIODIC = "periodic"
-BADGE_TYPE_SPECIAL_OCCASION = "special_occasions"
+BADGE_TYPE_SPECIAL_OCCASION = "special_occasion"
 
 # Reward configuration keys
 CONF_REWARD_COST = "reward_cost"
@@ -554,6 +554,50 @@ DATA_KID_BADGE_EARNED_LAST_AWARDED = "last_awarded_date"
 DATA_KID_BADGE_EARNED_AWARD_COUNT = "award_count"
 DATA_KID_BADGES = "badges"
 DATA_KID_BADGES_EARNED = "badges_earned"
+
+# Badge Progress Data Structure
+DATA_KID_BADGE_PROGRESS = "badge_progress"
+
+# Common Badge Progress Fields
+DATA_KID_BADGE_PROGRESS_APPROVED_COUNT = "approved_count"
+DATA_KID_BADGE_PROGRESS_CHORES_COMPLETED = "chores_completed"
+DATA_KID_BADGE_PROGRESS_CHORES_CYCLE_COUNT = "chores_cycle_count"
+DATA_KID_BADGE_PROGRESS_CHORES_TODAY = "chores_today"
+DATA_KID_BADGE_PROGRESS_CRITERIA_MET = "criteria_met"
+DATA_KID_BADGE_PROGRESS_CYCLE_COUNT = "cycle_count"
+DATA_KID_BADGE_PROGRESS_DAYS_COMPLETED = "days_completed"
+DATA_KID_BADGE_PROGRESS_DAYS_CYCLE_COUNT = "days_cycle_count"
+DATA_KID_BADGE_PROGRESS_END_DATE = "end_date"
+DATA_KID_BADGE_PROGRESS_LAST_AWARDED = "last_awarded"
+DATA_KID_BADGE_PROGRESS_LAST_UPDATE_DAY = "last_update_day"
+DATA_KID_BADGE_PROGRESS_NAME = "name"
+DATA_KID_BADGE_PROGRESS_OVERALL_PROGRESS = "overall_progress"
+DATA_KID_BADGE_PROGRESS_POINTS_CYCLE_COUNT = "points_cycle_count"
+DATA_KID_BADGE_PROGRESS_POINTS_TODAY = "points_today"
+DATA_KID_BADGE_PROGRESS_RECURRING_FREQUENCY = "recurring_frequency"
+DATA_KID_BADGE_PROGRESS_START_DATE = "start_date"
+DATA_KID_BADGE_PROGRESS_STATUS = "status"
+DATA_KID_BADGE_PROGRESS_TARGET_THRESHOLD_VALUE = "threshold_value"
+DATA_KID_BADGE_PROGRESS_TARGET_TYPE = "target_type"
+DATA_KID_BADGE_PROGRESS_TODAY_COMPLETED = "today_completed"
+DATA_KID_BADGE_PROGRESS_TOTAL_COUNT = "total_count"
+DATA_KID_BADGE_PROGRESS_TRACKED_CHORES = "tracked_chores"
+DATA_KID_BADGE_PROGRESS_TYPE = "badge_type"
+
+# For Points Target Type
+DATA_KID_BADGE_PROGRESS_POINTS_CYCLE_COUNT = "points_cycle_count"
+
+# For Chore Count Target Type
+DATA_KID_BADGE_PROGRESS_CHORES_CYCLE_COUNT = "chores_cycle_count"
+
+# For All Required Chores Target Type
+DATA_KID_BADGE_PROGRESS_DAYS_CYCLE_COUNT = "days_cycle_count"
+
+# Shared fields for tracking across target types
+DATA_KID_BADGE_PROGRESS_TRACKED_CHORES = "tracked_chores"
+DATA_KID_BADGE_PROGRESS_CHORES_COMPLETED = "chores_completed"
+DATA_KID_BADGE_PROGRESS_DAYS_COMPLETED = "days_completed"
+
 DATA_KID_BONUS_APPLIES = "bonus_applies"
 DATA_KID_CHORE_APPROVALS = "chore_approvals"
 DATA_KID_CHORE_CLAIMS = "chore_claims"
@@ -563,6 +607,7 @@ DATA_KID_COMPLETED_CHORES_MONTHLY = "completed_chores_monthly"
 DATA_KID_COMPLETED_CHORES_TOTAL = "completed_chores_total"
 DATA_KID_COMPLETED_CHORES_TODAY = "completed_chores_today"
 DATA_KID_COMPLETED_CHORES_WEEKLY = "completed_chores_weekly"
+DATA_KID_COMPLETED_CHORES_YEARLY = "completed_chores_yearly"
 
 # Kid Chore Data Structure Constants
 DATA_KID_CHORES = "chores"
@@ -583,6 +628,7 @@ DATA_KID_CHORES_PERIODS = "periods"
 DATA_KID_CHORES_PERIODS_DAILY = "daily"
 DATA_KID_CHORES_PERIODS_WEEKLY = "weekly"
 DATA_KID_CHORES_PERIODS_MONTHLY = "monthly"
+DATA_KID_CHORES_PERIODS_YEARLY = "yearly"
 DATA_KID_CHORES_PERIOD_COUNT = "count"
 DATA_KID_CHORES_PERIOD_POINTS = "points"
 DATA_KID_CHORES_BADGE_REFS = "badge_refs"
@@ -647,6 +693,7 @@ DATA_KID_POINTS = "points"
 DATA_KID_POINTS_EARNED_MONTHLY = "points_earned_monthly"
 DATA_KID_POINTS_EARNED_TODAY = "points_earned_today"
 DATA_KID_POINTS_EARNED_WEEKLY = "points_earned_weekly"
+DATA_KID_POINTS_EARNED_YEARLY = "points_earned_yearly"
 DATA_KID_POINTS_MULTIPLIER = "points_multiplier"
 DATA_KID_PRE_RESET_BADGE = "pre_reset_badge"
 DATA_KID_REDEEMED_REWARDS = "redeemed_rewards"
@@ -963,9 +1010,33 @@ DEFAULT_ZERO = 0
 # ------------------------------------------------------------------------------------------------
 # Badge Threshold Types
 # ------------------------------------------------------------------------------------------------
-BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT = "chore_count"
+# Badge Target Types for all supported badge logic
+
 BADGE_TARGET_THRESHOLD_TYPE_POINTS = "points"
-BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED = "all_chores_required"
+BADGE_TARGET_THRESHOLD_TYPE_POINTS_CHORES = "points_chores"
+BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT = "chore_count"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_CHORES = "days_all_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_CHORES = "days_80pct_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_CHORES_NO_OVERDUE = "days_all_chores_no_overdue"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_DUE_CHORES = "days_all_due_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_DUE_CHORES = "days_80pct_due_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_DUE_CHORES_NO_OVERDUE = (
+    "days_all_due_chores_no_overdue"
+)
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_3_CHORES = "days_min_3_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_5_CHORES = "days_min_5_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_7_CHORES = "days_min_7_chores"
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES = "streak_all_chores"
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_CHORES = "streak_80pct_chores"
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES_NO_OVERDUE = (
+    "streak_all_chores_no_overdue"
+)
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_DUE_CHORES = "streak_80pct_due_chores"
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_DUE_CHORES_NO_OVERDUE = (
+    "streak_all_due_chores_no_overdue"
+)
+
+# Legacy
 BADGE_THRESHOLD_TYPE_CHORE_COUNT = "chore_count"
 BADGE_THRESHOLD_TYPE_POINTS = "points"
 
@@ -990,6 +1061,9 @@ REWARD_STATE_CLAIMED = "claimed"
 REWARD_STATE_NOT_CLAIMED = "not_claimed"
 
 # Badge States
+BADGE_STATE_IN_PROGRESS = "in_progress"
+BADGE_STATE_EARNED = "earned"
+BADGE_STATE_ACTIVE_CYCLE = "active_cycle"
 CUMULATIVE_BADGE_STATE_ACTIVE = "active"
 CUMULATIVE_BADGE_STATE_GRACE = "grace"
 CUMULATIVE_BADGE_STATE_DEMOTED = "demoted"
@@ -1644,7 +1718,7 @@ AWARD_MODE_OPTIONS = [
     CONF_BADGE_AWARD_POINTS_REWARD,
 ]
 
-# Badge Threshold Type
+# DEPRECATED - Badge Threshold Type
 THRESHOLD_TYPE_OPTIONS = [BADGE_THRESHOLD_TYPE_POINTS, BADGE_THRESHOLD_TYPE_CHORE_COUNT]
 
 # Badge Cumulative Reset Period
@@ -1663,8 +1737,6 @@ BADGE_CUMULATIVE_RESET_TYPE_OPTIONS = [
     {"value": FREQUENCY_CUSTOM_1_YEAR, "label": "Custom 1-Year"},
 ]
 
-# Badge Reset Period
-BADGE_PERIOD_OPTIONS = [CONF_WEEKLY, CONF_BIWEEKLY, CONF_MONTHLY, CONF_CUSTOM]
 
 # Badge Periodic Reset Schedule
 BADGE_RESET_SCHEDULE_OPTIONS = [
@@ -1682,17 +1754,84 @@ BADGE_RESET_SCHEDULE_OPTIONS = [
     {"value": CONF_CUSTOM, "label": "Custom (define period below)"},
 ]
 
+# Badge target handler constants for handler mapping keys
+BADGE_HANDLER_PARAM_PERCENT_REQUIRED = "percent_required"
+BADGE_HANDLER_PARAM_ONLY_DUE_TODAY = "only_due_today"
+BADGE_HANDLER_PARAM_REQUIRE_NO_OVERDUE = "require_no_overdue"
+BADGE_HANDLER_PARAM_MIN_COUNT = "min_count"
+BADGE_HANDLER_PARAM_FROM_CHORES_ONLY = "from_chores_only"
+
 # Badge Special Occasion Types
 OCCASION_TYPE_OPTIONS = [CONF_BIRTHDAY, CONF_HOLIDAY, CONF_CUSTOM]
 
 TARGET_TYPE_OPTIONS = [
-    {CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT, CONF_LABEL: "Chore Count"},
-    {CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_POINTS, CONF_LABEL: "Points"},
+    {CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_POINTS, CONF_LABEL: "Points Earned"},
     {
-        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED,
-        CONF_LABEL: "All Chores Required",
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_POINTS_CHORES,
+        CONF_LABEL: "Points Earned (From Chores)",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT,
+        CONF_LABEL: "Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_CHORES,
+        CONF_LABEL: "Days All Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_CHORES,
+        CONF_LABEL: "Days 80% of Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Days All Chores Completed (No Overdue)",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_DUE_CHORES,
+        CONF_LABEL: "Days All Due Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_DUE_CHORES,
+        CONF_LABEL: "Days 80% of Due Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_DUE_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Days All Due Chores Completed (No Overdue)",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_3_CHORES,
+        CONF_LABEL: "Days Minimum 3 Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_5_CHORES,
+        CONF_LABEL: "Days Minimum 5 Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_7_CHORES,
+        CONF_LABEL: "Days Minimum 7 Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES,
+        CONF_LABEL: "Streak: All Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_CHORES,
+        CONF_LABEL: "Streak: 80% of Selected Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Streak: All Chores Completed (No Overdue)",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_DUE_CHORES,
+        CONF_LABEL: "Streak: 80% of Due Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_DUE_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Streak: All Due Chores Completed (No Overdue)",
     },
 ]
+
 
 # Badge types for include_target component
 INCLUDE_TARGET_BADGE_TYPES = [
@@ -1718,9 +1857,7 @@ INCLUDE_CHALLENGE_LINKED_BADGE_TYPES = [
 ]
 
 # Badge types for include_tracked_chores component
-INCLUDE_TRACKED_CHORES_BADGE_TYPES = [
-    BADGE_TYPE_PERIODIC,
-]
+INCLUDE_TRACKED_CHORES_BADGE_TYPES = [BADGE_TYPE_PERIODIC, BADGE_TYPE_DAILY]
 
 # Badge types for include_assigned_to component
 INCLUDE_ASSIGNED_TO_BADGE_TYPES = [

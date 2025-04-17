@@ -651,10 +651,10 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         """Provide additional details about the highest cumulative badge,
-        including the points needed to reach the next cumulative badge.
+        including the points needed to reach the next cumulative badge,
+        reset schedule, maintenance rules, description, and awards if present.
         """
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        # This grabs the list of earned badge names using the constant for "badge_name"
         earned_badge_list = [
             badge_name.get(const.DATA_KID_BADGE_EARNED_NAME)
             for badge_name in kid_info.get(const.DATA_KID_BADGES_EARNED, {}).values()
@@ -683,16 +683,32 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
             const.DEFAULT_ZERO,
         )
         current_badge_info = self.coordinator.badges_data.get(current_badge_id, {})
-        current_badge_multiplier = current_badge_info.get(
-            const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
-            const.DEFAULT_KID_POINTS_MULTIPLIER,
-        )
 
         stored_labels = current_badge_info.get(const.DATA_BADGE_LABELS, [])
-        friendly_labels = []
         friendly_labels = [
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
+
+        extra_attrs = {}
+        # Add description if present
+        description = current_badge_info.get(const.DATA_BADGE_DESCRIPTION, "")
+        if description:
+            extra_attrs[const.DATA_BADGE_DESCRIPTION] = description
+
+        # Add reset_schedule fields if recurring_frequency is present
+        reset_schedule = current_badge_info.get(const.DATA_BADGE_RESET_SCHEDULE, {})
+        if reset_schedule:
+            extra_attrs[const.DATA_BADGE_RESET_SCHEDULE] = reset_schedule
+
+        # Add Target fields if present
+        target_info = current_badge_info.get(const.DATA_BADGE_TARGET, {})
+        if target_info:
+            extra_attrs[const.DATA_BADGE_TARGET] = target_info
+
+        # Add awards if present
+        awards_info = current_badge_info.get(const.DATA_BADGE_AWARDS, {})
+        if awards_info:
+            extra_attrs[const.DATA_BADGE_AWARDS] = awards_info
 
         return {
             const.ATTR_KID_NAME: self._kid_name,
@@ -701,9 +717,9 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
             const.ATTR_CURRENT_BADGE_ID: current_badge_id,
             const.ATTR_CURRENT_BADGE_NAME: current_badge_name,
             const.ATTR_BADGE_STATUS: badge_status,
-            const.ATTR_POINTS_MULTIPLIER: current_badge_multiplier,
             const.ATTR_POINTS_TO_NEXT_BADGE: points_to_next_badge,
             const.ATTR_LABELS: friendly_labels,
+            **extra_attrs,
         }
 
 

@@ -241,6 +241,176 @@ def get_friendly_label(hass, label_name: str) -> str:
 
 
 # ────────────────────────────────────────────────────────────────
+# 🧮 KidsChores Progress & Completion Helpers
+# These helpers provide reusable logic for evaluating daily chore progress,
+# points, streaks, and completion criteria for a kid. They are used by
+# badges, achievements, challenges, and other features that need to
+# calculate or check progress for a set of chores.
+# - get_today_chore_and_point_progress: Returns today's points, count, and streaks.
+# - get_today_chore_completion_progress: Returns if completion criteria are met, and actual counts.
+# ────────────────────────────────────────────────────────────────
+
+
+def get_today_chore_and_point_progress(
+    self,
+    kid_info: dict,
+    tracked_chores: list,
+) -> tuple[int, int, int, int, dict, dict, dict]:
+    """
+    Calculate today's points from all sources, points from chores, total chore completions,
+    and longest streak for the given kid and tracked chores.
+    If tracked_chores is empty, use all chores for the kid.
+
+    Returns:
+        (
+            total_points_all_sources: int,
+            total_points_chores: int,
+            total_chore_count: int,
+            longest_chore_streak: int,
+            points_per_chore: {chore_id: points_today, ...},
+            count_per_chore: {chore_id: count_today, ...},
+            streak_per_chore: {chore_id: streak_length, ...}
+        )
+    """
+    today_iso = get_today_local_iso()
+    if not tracked_chores:
+        tracked_chores = list(kid_info.get(const.DATA_KID_CHORES, {}).keys())
+
+    total_points_chores = 0
+    total_chore_count = 0
+    longest_chore_streak = 0
+    points_per_chore = {}
+    count_per_chore = {}
+    streak_per_chore = {}
+
+    for chore_id in tracked_chores:
+        kid_chore_data = kid_info.get(const.DATA_KID_CHORES, {}).get(chore_id, {})
+        periods_data = kid_chore_data.get(const.DATA_KID_CHORES_PERIODS, {})
+        daily_stats = periods_data.get(const.DATA_KID_CHORES_PERIODS_DAILY, {})
+
+        # Points today (from this chore)
+        points_today = daily_stats.get(today_iso, {}).get(
+            const.DATA_KID_CHORES_PERIOD_POINTS, 0
+        )
+        if points_today > 0:
+            points_per_chore[chore_id] = points_today
+            total_points_chores += points_today
+
+        # Chore count today
+        count_today = daily_stats.get(today_iso, {}).get(
+            const.DATA_KID_CHORES_PERIOD_COUNT, 0
+        )
+        if count_today > 0:
+            count_per_chore[chore_id] = count_today
+            total_chore_count += count_today
+
+        # Streak
+        streak_data = kid_chore_data.get(const.DATA_KID_CHORES_STREAK, {})
+        current_streak = streak_data.get(const.DATA_KID_CHORES_STREAK_CURRENT, 0)
+        streak_per_chore[chore_id] = current_streak
+        if current_streak > longest_chore_streak:
+            longest_chore_streak = current_streak
+
+    # Points from all sources (if tracked in kid_info)
+    total_points_all_sources = kid_info.get(
+        const.DATA_KID_POINTS_EARNED_TODAY, total_points_chores
+    )
+
+    return (
+        total_points_all_sources,
+        total_points_chores,
+        total_chore_count,
+        longest_chore_streak,
+        points_per_chore,
+        count_per_chore,
+        streak_per_chore,
+    )
+
+
+def get_today_chore_completion_progress(
+    self,
+    kid_info: dict,
+    tracked_chores: list,
+    *,
+    count_required: int = None,
+    percent_required: float = 1.0,
+    require_no_overdue: bool = False,
+    only_due_today: bool = False,
+) -> tuple[bool, int, int]:
+    """
+    Check if a required number or percentage of tracked chores have been completed (approved) today for the given kid.
+    If tracked_chores is empty, use all chores for the kid.
+
+    Args:
+        kid_info: The kid's info dictionary.
+        tracked_chores: List of chore IDs to check. If empty, all kid's chores are used.
+        count_required: Minimum number of chores that must be completed today (overrides percent_required if set).
+        percent_required: Float between 0 and 1.0 (e.g., 0.8 for 80%). Default is 1.0 (all required).
+        require_no_overdue: If True, only return True if none of the tracked chores went overdue today.
+        only_due_today: If True, only consider chores with a due date of today.
+
+    Returns:
+        (criteria_met: bool, approved_count: int, total_count: int)
+
+    Example:
+        criteria_met, approved_count, total_count = self._get_today_chore_completion_progress(
+            kid_info, tracked_chores, count_required=3, percent_required=0.8, require_no_overdue=True, only_due_today=True
+        )
+    """
+    today_local = get_now_local_time()
+    today_iso = today_local.date().isoformat()
+    approved_chores = set(kid_info.get(const.DATA_KID_APPROVED_CHORES, []))
+    overdue_chores = set(kid_info.get(const.DATA_KID_OVERDUE_CHORES, []))
+    chores_data = kid_info.get(const.DATA_KID_CHORES, {})
+
+    # Use all kid's chores if tracked_chores is empty
+    if not tracked_chores:
+        tracked_chores = list(chores_data.keys())
+
+    # Filter chores if only_due_today is set
+    if only_due_today:
+        chores_due_today = []
+        for chore_id in tracked_chores:
+            chore_data = chores_data.get(chore_id, {})
+            due_date_iso = chore_data.get(const.DATA_KID_CHORES_DUE_DATE)
+            if due_date_iso and due_date_iso[:10] == today_iso:
+                chores_due_today.append(chore_id)
+        chores_to_check = chores_due_today
+    else:
+        chores_to_check = tracked_chores
+
+    total_count = len(chores_to_check)
+    if total_count == 0:
+        return False, 0, 0
+
+    # Count approved chores
+    approved_count = sum(
+        1 for chore_id in chores_to_check if chore_id in approved_chores
+    )
+
+    # Check count_required first (overrides percent_required if set)
+    if count_required is not None:
+        if approved_count < count_required:
+            return False, approved_count, total_count
+    else:
+        percent_complete = approved_count / total_count
+        if percent_complete < percent_required:
+            return False, approved_count, total_count
+
+    # Check for overdue if required
+    if require_no_overdue:
+        for chore_id in chores_to_check:
+            chore_data = chores_data.get(chore_id, {})
+            last_overdue_iso = chore_data.get(const.DATA_KID_CHORES_LAST_OVERDUE)
+            if last_overdue_iso and last_overdue_iso[:10] == today_iso:
+                return False, approved_count, total_count
+            if chore_id in overdue_chores:
+                return False, approved_count, total_count
+
+    return True, approved_count, total_count
+
+
+# ────────────────────────────────────────────────────────────────
 # 🕒 Date & Time Helpers (Local, UTC, Parsing, Formatting, Add Interval)
 # These functions provide reusable, timezone-safe utilities for:
 # - Getting current date/time in local or ISO formats

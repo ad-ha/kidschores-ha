@@ -852,7 +852,7 @@
         "periodic": "Periodisch",
         "achievement_linked": "Verbunden mit Errungenschaft",
         "challenge_linked": "Verbunden mit Herausforderung",
-        "special_occasions": "Besonderer Anlass"
+        "special_occasion": "Besonderer Anlass"
       }
     },
     "award_mode": {
