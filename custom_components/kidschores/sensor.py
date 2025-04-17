@@ -656,7 +656,7 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         """
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
         earned_badge_list = [
-            badge_name.get(const.DATA_KID_BADGE_EARNED_NAME)
+            badge_name.get(const.DATA_KID_BADGES_EARNED_NAME)
             for badge_name in kid_info.get(const.DATA_KID_BADGES_EARNED, {}).values()
         ]
         cumulative_badge_progress_info = kid_info.get(
@@ -737,8 +737,6 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
         badge_id: str,
         badge_name: str,
     ):
-        """Initialize the sensor."""
-
         super().__init__(coordinator)
         self._entry = entry
         self._badge_id = badge_id
@@ -752,185 +750,71 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{badge_name}{const.SENSOR_KC_EID_SUFFIX_BADGE_SENSOR}"
 
     @property
-    def native_value(self) -> float:
-        """The sensor state is the threshold_value for the badge."""
+    def native_value(self) -> int:
+        """State: number of kids who have earned this badge."""
         badge_info = self.coordinator.badges_data.get(self._badge_id, {})
-        badge_type = badge_info.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
-        if badge_type == const.BADGE_TYPE_DAILY:
-            return badge_info.get(const.DATA_BADGE_DAILY_THRESHOLD, const.DEFAULT_ZERO)
-        else:
-            return badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_ZERO)
+        kids_earned_ids = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
+        return len(kids_earned_ids)
 
     @property
     def extra_state_attributes(self):
-        """Provide additional badge data, including which kids currently have it."""
+        """Full badge info, including per-kid earned stats and periods."""
         badge_info = self.coordinator.badges_data.get(self._badge_id, {})
+        attributes = {}
 
-        award_mode = badge_info.get(
-            const.DATA_BADGE_AWARDS_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
+        # Basic badge info
+        attributes[const.ATTR_FRIENDLY_NAME] = badge_info.get(const.DATA_BADGE_NAME)
+        attributes[const.ATTR_DESCRIPTION] = badge_info.get(
+            const.DATA_BADGE_DESCRIPTION, const.CONF_EMPTY
         )
-
-        threshold_type = badge_info.get(
-            const.DATA_BADGE_THRESHOLD_TYPE, const.BADGE_THRESHOLD_TYPE_POINTS
+        attributes[const.ATTR_BADGE_TYPE] = badge_info.get(
+            const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE
         )
-
-        points_multiplier = badge_info.get(
-            const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
-            const.DEFAULT_KID_POINTS_MULTIPLIER,
-        )
-        description = badge_info.get(const.DATA_BADGE_DESCRIPTION, const.CONF_EMPTY)
-
-        kids_earned_ids = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
-
-        stored_labels = badge_info.get(const.DATA_BADGE_LABELS, [])
-        friendly_labels = [
-            kh.get_friendly_label(self.hass, label) for label in stored_labels
+        attributes[const.ATTR_LABELS] = [
+            kh.get_friendly_label(self.hass, label)
+            for label in badge_info.get(const.DATA_BADGE_LABELS, [])
         ]
-
-        award_points = badge_info.get(
-            const.DATA_BADGE_AWARDS_AWARD_POINTS, const.DEFAULT_ZERO
-        )
-        award_reward_id = badge_info.get(
-            const.DATA_BADGE_AWARDS_AWARD_REWARD, const.CONF_EMPTY
-        )
-        if award_reward_id and award_reward_id != const.CONF_EMPTY:
-            reward_info = self.coordinator.rewards_data.get(award_reward_id)
-            award_reward = (
-                reward_info.get(const.DATA_REWARD_NAME, award_reward_id)
-                if reward_info
-                else award_reward_id
-            )
-        else:
-            award_reward = const.CONF_EMPTY
-
-        # Convert each kid_id to kid_name
-        kids_earned_names = []
+        # Per-kid earned stats
+        kids_earned_ids = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
+        kids_earned = []
         for kid_id in kids_earned_ids:
             kid_info = self.coordinator.kids_data.get(kid_id)
-            if kid_info is not None:
-                kids_earned_names.append(
-                    kid_info.get(
-                        const.DATA_KID_NAME,
-                        f"{const.TRANS_KEY_LABEL_KID} {kid_id}",
-                    )
-                )
-            else:
-                kids_earned_names.append(
-                    f"{const.TRANS_KEY_LABEL_KID} {kid_id} (not found)"
-                )
+            if not kid_info:
+                continue
+            kids_earned.append(kid_info.get(const.DATA_KID_NAME, kid_id))
 
-        # Convert required chore_id to chore_name
-        req_chore_ids = badge_info.get(const.DATA_BADGE_REQUIRED_CHORES, [])
-        req_chore_names = [
+        attributes[const.ATTR_KIDS_EARNED] = kids_earned
+
+        attributes[const.ATTR_TARGET] = badge_info.get(const.DATA_BADGE_TARGET, None)
+        attributes[const.ATTR_ASSOCIATED_ACHIEVEMENT] = badge_info.get(
+            const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT, None
+        )
+        attributes[const.ATTR_ASSOCIATED_CHALLENGE] = badge_info.get(
+            const.DATA_BADGE_ASSOCIATED_CHALLENGE, None
+        )
+        occasion_type = badge_info.get(const.DATA_BADGE_OCCASION_TYPE, None)
+        if occasion_type:
+            attributes[const.ATTR_OCCASION_TYPE] = occasion_type
+        attributes[const.ATTR_REQUIRED_CHORES] = [
             self.coordinator.chores_data.get(chore_id, {}).get(
                 const.DATA_CHORE_NAME, chore_id
             )
-            for chore_id in req_chore_ids
+            for chore_id in badge_info.get(const.DATA_BADGE_REQUIRED_CHORES, [])
         ]
 
-        badge_type = badge_info.get(const.DATA_BADGE_TYPE, const.BADGE_TYPE_CUMULATIVE)
+        # Awards info
+        attributes[const.ATTR_BADGE_AWARDS] = badge_info.get(
+            const.DATA_BADGE_AWARDS, {}
+        )
 
-        attributes = {
-            const.ATTR_DESCRIPTION: description,
-            const.ATTR_KIDS_EARNED: kids_earned_names,
-            const.ATTR_LABELS: friendly_labels,
-            const.ATTR_BADGE_TYPE: badge_type,
-            const.ATTR_BADGE_AWARD_MODE: award_mode,
-        }
-
-        if award_mode in (
-            const.CONF_BADGE_AWARD_POINTS,
-            const.CONF_BADGE_AWARD_POINTS_REWARD,
-        ):
-            attributes[const.ATTR_AWARD_POINTS] = award_points
-        if award_mode in (
-            const.CONF_BADGE_AWARD_REWARD,
-            const.CONF_BADGE_AWARD_POINTS_REWARD,
-        ):
-            attributes[const.ATTR_AWARD_REWARD] = award_reward
-
-        if badge_type == const.BADGE_TYPE_CUMULATIVE:
-            attributes[const.ATTR_POINTS_MULTIPLIER] = points_multiplier
-            attributes[const.ATTR_THRESHOLD_VALUE] = badge_info.get(
-                const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_BADGE_THRESHOLD_VALUE
-            )
-        elif badge_type == const.BADGE_TYPE_DAILY:
-            attributes[const.ATTR_THRESHOLD_TYPE] = threshold_type
-            attributes[const.ATTR_DAILY_THRESHOLD] = badge_info.get(
-                const.DATA_BADGE_DAILY_THRESHOLD
-            )
-        elif badge_type == const.BADGE_TYPE_PERIODIC:
-            attributes[const.ATTR_RESET_SCHEDULE] = badge_info.get(
-                const.DATA_BADGE_RESET_SCHEDULE, const.CONF_WEEKLY
-            )
-            attributes[const.ATTR_START_DATE] = badge_info.get(
-                const.DATA_BADGE_START_DATE, const.CONF_EMPTY
-            )
-            attributes[const.ATTR_END_DATE] = badge_info.get(
-                const.DATA_BADGE_END_DATE, const.CONF_EMPTY
-            )
-            attributes[const.ATTR_PERIODIC_RECURRENT] = badge_info.get(
-                const.DATA_BADGE_PERIODIC_RECURRENT, False
-            )
-            attributes[const.ATTR_THRESHOLD_TYPE] = threshold_type
-            attributes[const.ATTR_THRESHOLD_VALUE] = badge_info.get(
-                const.DATA_BADGE_THRESHOLD_VALUE, const.DEFAULT_BADGE_THRESHOLD_VALUE
-            )
-            attributes[const.ATTR_REQUIRED_CHORES] = req_chore_names
-        elif badge_type == const.BADGE_TYPE_ACHIEVEMENT_LINKED:
-            associated_achievement_id = badge_info.get(
-                const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY
-            )
-            if (
-                associated_achievement_id
-                and associated_achievement_id != const.CONF_EMPTY
-            ):
-                achievement_info = self.coordinator.achievements_data.get(
-                    associated_achievement_id
-                )
-                associated_achievement = (
-                    achievement_info.get(
-                        const.DATA_ACHIEVEMENT_NAME, associated_achievement_id
-                    )
-                    if achievement_info
-                    else associated_achievement_id
-                )
-            else:
-                associated_achievement = const.CONF_EMPTY
-            attributes[const.ATTR_ASSOCIATED_ACHIEVEMENT] = associated_achievement
-
-        elif badge_type == const.BADGE_TYPE_CHALLENGE_LINKED:
-            associated_challenge_id = badge_info.get(
-                const.DATA_BADGE_ASSOCIATED_CHALLENGE, const.CONF_EMPTY
-            )
-            if associated_challenge_id and associated_challenge_id != const.CONF_EMPTY:
-                challenge_info = self.coordinator.challenges_data.get(
-                    associated_challenge_id
-                )
-                associated_challenge = (
-                    challenge_info.get(
-                        const.DATA_CHALLENGE_NAME, associated_challenge_id
-                    )
-                    if challenge_info
-                    else associated_challenge_id
-                )
-            else:
-                associated_challenge = const.CONF_EMPTY
-            attributes[const.ATTR_ASSOCIATED_CHALLENGE] = associated_challenge
-
-        elif badge_type == const.BADGE_TYPE_SPECIAL_OCCASION:
-            attributes[const.ATTR_OCCASION_TYPE] = badge_info.get(
-                const.DATA_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY
-            )
-            attributes[const.ATTR_OCCASION_DATE] = badge_info.get(
-                const.DATA_BADGE_SPECIAL_OCCASION_DATE, const.CONF_EMPTY
-            )
+        attributes[const.ATTR_RESET_SCHEDULE] = badge_info.get(
+            const.DATA_BADGE_RESET_SCHEDULE, None
+        )
 
         return attributes
 
     @property
     def icon(self) -> str:
-        """Return the badge's custom icon if set, else default."""
         badge_info = self.coordinator.badges_data.get(self._badge_id, {})
         return badge_info.get(const.DATA_BADGE_ICON, const.DEFAULT_BADGE_ICON)
 

@@ -342,9 +342,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     continue
 
                 badges_earned[badge_id] = {
-                    const.DATA_KID_BADGE_EARNED_NAME: badge_name,
-                    const.DATA_KID_BADGE_EARNED_LAST_AWARDED: today_local_iso,
-                    const.DATA_KID_BADGE_EARNED_AWARD_COUNT: 1,
+                    const.DATA_KID_BADGES_EARNED_NAME: badge_name,
+                    const.DATA_KID_BADGES_EARNED_LAST_AWARDED: today_local_iso,
+                    const.DATA_KID_BADGES_EARNED_AWARD_COUNT: 1,
                 }
 
                 const.LOGGER.info(
@@ -3761,7 +3761,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._check_badges_for_kid(kid_id)
 
     def _update_badges_earned_for_kid(self, kid_id: str, badge_id: str) -> None:
-        """Update the kid's badges-earned tracking for the given badge."""
+        """Update the kid's badges-earned tracking for the given badge, including period stats."""
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             const.LOGGER.error(
@@ -3777,35 +3777,135 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             return
 
         today_local_iso = kh.get_today_local_iso()
-        # Initialize badges-earned as a dict if not already present.
+        now = kh.get_now_local_time()
+        week = now.strftime("%Y-W%V")
+        month = now.strftime("%Y-%m")
+        year = now.strftime("%Y")
+
         badges_earned = kid_info.setdefault(const.DATA_KID_BADGES_EARNED, {})
 
-        if badge_id in badges_earned:
-            tracking_entry = badges_earned[badge_id]
-            tracking_entry[const.DATA_KID_BADGE_EARNED_NAME] = badge_info.get(
-                const.DATA_BADGE_NAME
-            )
-            tracking_entry[const.DATA_KID_BADGE_EARNED_LAST_AWARDED] = today_local_iso
-            tracking_entry[const.DATA_KID_BADGE_EARNED_AWARD_COUNT] = (
-                tracking_entry.get(const.DATA_KID_BADGE_EARNED_AWARD_COUNT, 0) + 1
-            )
-            const.LOGGER.info(
-                "INFO: Update Kid Badges Earned - Updated tracking for badge '%s' for kid '%s'.",
-                badge_info.get(const.DATA_BADGE_NAME, badge_id),
-                kid_info.get(const.DATA_KID_NAME, kid_id),
-            )
-        else:
-            new_entry = {
-                const.DATA_KID_BADGE_EARNED_NAME: badge_info.get(const.DATA_BADGE_NAME),
-                const.DATA_KID_BADGE_EARNED_LAST_AWARDED: today_local_iso,
-                const.DATA_KID_BADGE_EARNED_AWARD_COUNT: 1,
+        # Use new constants for periods
+        PERIODS_KEY = const.DATA_KID_BADGES_EARNED_PERIODS
+        PERIOD_DAILY = const.DATA_KID_BADGES_EARNED_PERIODS_DAILY
+        PERIOD_WEEKLY = const.DATA_KID_BADGES_EARNED_PERIODS_WEEKLY
+        PERIOD_MONTHLY = const.DATA_KID_BADGES_EARNED_PERIODS_MONTHLY
+        PERIOD_YEARLY = const.DATA_KID_BADGES_EARNED_PERIODS_YEARLY
+
+        if badge_id not in badges_earned:
+            badges_earned[badge_id] = {
+                const.DATA_KID_BADGES_EARNED_NAME: badge_info.get(
+                    const.DATA_BADGE_NAME
+                ),
+                const.DATA_KID_BADGES_EARNED_LAST_AWARDED: today_local_iso,
+                const.DATA_KID_BADGES_EARNED_AWARD_COUNT: 1,
+                PERIODS_KEY: {
+                    PERIOD_DAILY: {today_local_iso: 1},
+                    PERIOD_WEEKLY: {week: 1},
+                    PERIOD_MONTHLY: {month: 1},
+                    PERIOD_YEARLY: {year: 1},
+                },
             }
-            badges_earned[badge_id] = new_entry
             const.LOGGER.info(
                 "INFO: Update Kid Badges Earned - Created new tracking for badge '%s' for kid '%s'.",
                 badge_info.get(const.DATA_BADGE_NAME, badge_id),
                 kid_info.get(const.DATA_KID_NAME, kid_id),
             )
+        else:
+            tracking_entry = badges_earned[badge_id]
+            tracking_entry[const.DATA_KID_BADGES_EARNED_NAME] = badge_info.get(
+                const.DATA_BADGE_NAME
+            )
+            tracking_entry[const.DATA_KID_BADGES_EARNED_LAST_AWARDED] = today_local_iso
+            tracking_entry[const.DATA_KID_BADGES_EARNED_AWARD_COUNT] = (
+                tracking_entry.get(const.DATA_KID_BADGES_EARNED_AWARD_COUNT, 0) + 1
+            )
+            # Ensure periods and sub-dicts exist
+            periods = tracking_entry.setdefault(PERIODS_KEY, {})
+            periods.setdefault(PERIOD_DAILY, {})
+            periods.setdefault(PERIOD_WEEKLY, {})
+            periods.setdefault(PERIOD_MONTHLY, {})
+            periods.setdefault(PERIOD_YEARLY, {})
+            periods[PERIOD_DAILY][today_local_iso] = (
+                periods[PERIOD_DAILY].get(today_local_iso, 0) + 1
+            )
+            periods[PERIOD_WEEKLY][week] = periods[PERIOD_WEEKLY].get(week, 0) + 1
+            periods[PERIOD_MONTHLY][month] = periods[PERIOD_MONTHLY].get(month, 0) + 1
+            periods[PERIOD_YEARLY][year] = periods[PERIOD_YEARLY].get(year, 0) + 1
+
+            const.LOGGER.info(
+                "INFO: Update Kid Badges Earned - Updated tracking for badge '%s' for kid '%s'.",
+                badge_info.get(const.DATA_BADGE_NAME, badge_id),
+                kid_info.get(const.DATA_KID_NAME, kid_id),
+            )
+            # Cleanup old period data
+            self._cleanup_badge_period_data_for_kid(periods)
+
+        self._persist()
+        self.async_set_updated_data(self._data)
+
+    def _cleanup_badge_period_data_for_kid(self, periods_data: dict):
+        """Remove old period data for badges to keep storage manageable.
+
+        Retains:
+            - 7 days of daily data
+            - 5 weeks of weekly data
+            - 3 months of monthly data
+            - 3 years of yearly data
+        """
+        today_local = kh.get_today_local_date()
+
+        # Daily: keep 7 days
+        cutoff_daily = kh.adjust_datetime_by_interval(
+            today_local.isoformat(),
+            interval_unit=const.CONF_DAYS,
+            delta=-7,
+            require_future=False,
+            return_type=const.HELPER_RETURN_ISO_DATE,
+        )
+        daily_data = periods_data.get(const.DATA_KID_BADGES_EARNED_PERIODS_DAILY, {})
+        for day in list(daily_data.keys()):
+            if day < cutoff_daily:
+                del daily_data[day]
+
+        # Weekly: keep 5 weeks
+        cutoff_date = kh.adjust_datetime_by_interval(
+            today_local.isoformat(),
+            interval_unit=const.CONF_WEEKS,
+            delta=-5,
+            require_future=False,
+            return_type=const.HELPER_RETURN_DATETIME,
+        )
+        cutoff_weekly = cutoff_date.strftime("%Y-W%V")
+        weekly_data = periods_data.get(const.DATA_KID_BADGES_EARNED_PERIODS_WEEKLY, {})
+        for week in list(weekly_data.keys()):
+            if week < cutoff_weekly:
+                del weekly_data[week]
+
+        # Monthly: keep 3 months
+        cutoff_date = kh.adjust_datetime_by_interval(
+            today_local.isoformat(),
+            interval_unit=const.CONF_MONTHS,
+            delta=-3,
+            require_future=False,
+            return_type=const.HELPER_RETURN_DATETIME,
+        )
+        cutoff_monthly = cutoff_date.strftime("%Y-%m")
+        monthly_data = periods_data.get(
+            const.DATA_KID_BADGES_EARNED_PERIODS_MONTHLY, {}
+        )
+        for month in list(monthly_data.keys()):
+            if month < cutoff_monthly:
+                del monthly_data[month]
+
+        # Yearly: keep 3 years
+        cutoff_yearly = str(int(today_local.strftime("%Y")) - 3)
+        yearly_data = periods_data.get(const.DATA_KID_BADGES_EARNED_PERIODS_YEARLY, {})
+        for year in list(yearly_data.keys()):
+            if year < cutoff_yearly:
+                del yearly_data[year]
+
+        self._persist()
+        self.async_set_updated_data(self._data)
 
     def _update_kid_multiplier(self, kid_id: str):
         """Update the kid's points multiplier based on the current (effective) cumulative badge only."""
@@ -3888,7 +3988,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         to_remove = [
                             badge_id
                             for badge_id, entry in badges_earned.items()
-                            if entry.get(const.DATA_KID_BADGE_EARNED_NAME) == badge_name
+                            if entry.get(const.DATA_KID_BADGES_EARNED_NAME)
+                            == badge_name
                         ]
                         for badge_id in to_remove:
                             del badges_earned[badge_id]
@@ -3899,7 +4000,8 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         to_remove = [
                             badge_id
                             for badge_id, entry in badges_earned.items()
-                            if entry.get(const.DATA_KID_BADGE_EARNED_NAME) == badge_name
+                            if entry.get(const.DATA_KID_BADGES_EARNED_NAME)
+                            == badge_name
                         ]
                         for badge_id in to_remove:
                             del badges_earned[badge_id]
@@ -5165,11 +5267,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             return None, None, None, 0.0, 0.0
 
         progress = kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {})
-        baseline = float(
-            progress.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_BASELINE, 0)
+        baseline = round(
+            float(progress.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_BASELINE, 0)), 1
         )
-        cycle_points = float(
-            progress.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS, 0)
+        cycle_points = round(
+            float(
+                progress.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS, 0)
+            ),
+            1,
         )
         total_points = baseline + cycle_points
 
