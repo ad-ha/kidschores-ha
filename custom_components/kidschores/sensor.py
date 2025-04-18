@@ -553,7 +553,8 @@ class CompletedChoresDailySensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         """Return the number of chores completed today."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        return kid_info.get(const.DATA_KID_COMPLETED_CHORES_TOTAL, const.DEFAULT_ZERO)
+        stats = kid_info.get(const.DATA_KID_CHORE_STATS, {})
+        return stats.get(const.DATA_KID_CHORE_STATS_COMPLETED_TODAY, const.DEFAULT_ZERO)
 
 
 # ------------------------------------------------------------------------------------------
@@ -581,7 +582,8 @@ class CompletedChoresWeeklySensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         """Return the number of chores completed this week."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        return kid_info.get(const.DATA_KID_COMPLETED_CHORES_WEEKLY, const.DEFAULT_ZERO)
+        stats = kid_info.get(const.DATA_KID_CHORE_STATS, {})
+        return stats.get(const.DATA_KID_CHORE_STATS_COMPLETED_WEEK, const.DEFAULT_ZERO)
 
 
 # ------------------------------------------------------------------------------------------
@@ -609,7 +611,8 @@ class CompletedChoresMonthlySensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         """Return the number of chores completed this month."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        return kid_info.get(const.DATA_KID_COMPLETED_CHORES_MONTHLY, const.DEFAULT_ZERO)
+        stats = kid_info.get(const.DATA_KID_CHORE_STATS, {})
+        return stats.get(const.DATA_KID_CHORE_STATS_COMPLETED_MONTH, const.DEFAULT_ZERO)
 
 
 # ------------------------------------------------------------------------------------------
