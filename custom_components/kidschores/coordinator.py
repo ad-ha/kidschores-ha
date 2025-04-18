@@ -519,7 +519,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             self._normalize_kid_lists(kid)
 
         # Initialize badge references in kid chore tracking
-        self._update_kid_badge_references()
+        self._update_chore_badge_references_for_kid()
 
         self._persist()
         await super().async_config_entry_first_refresh()
@@ -2789,9 +2789,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         )
 
         # --- Update kid_chore_stats after all per-chore updates ---
-        self._recalculate_kid_chore_stats(kid_id)
+        self._recalculate_chore_stats_for_kid(kid_id)
 
-    def _recalculate_kid_chore_stats(self, kid_id: str):
+    def _recalculate_chore_stats_for_kid(self, kid_id: str):
         """Aggregate and update all kid_chore_stats for a given kid.
 
         This function always resets all stat keys to zero/default and then
@@ -3112,60 +3112,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         self._persist()
         self.async_set_updated_data(self._data)
-
-    def _update_kid_badge_references(self, include_cumulative_badges: bool = False):
-        """Update badge reference lists in kid chore data.
-
-        This maintains a list of which badges reference each chore,
-        useful for quick lookups when evaluating badges.
-
-        Args:
-            include_cumulative_badges: Whether to include cumulative badges in the references.
-                                    Default is False which excludes them since they are currently points only
-        """
-        # Clear existing badge references
-        for kid_id, kid_info in self.kids_data.items():
-            if const.DATA_KID_CHORE_DATA not in kid_info:
-                continue
-
-            for chore_data in kid_info[const.DATA_KID_CHORE_DATA].values():
-                chore_data[const.DATA_KID_CHORE_DATA_BADGE_REFS] = []
-
-        # Add badge references to relevant chores
-        for badge_id, badge_info in self.badges_data.items():
-            # Skip cumulative badges if not explicitly included
-            if (
-                not include_cumulative_badges
-                and badge_info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
-            ):
-                continue
-
-            # For each kid this badge is assigned to
-            assigned_to = badge_info.get(const.DATA_BADGE_ASSIGNED_TO, [])
-            for kid_id in (
-                assigned_to or self.kids_data.keys()
-            ):  # If empty, apply to all kids
-                kid_info = self.kids_data.get(kid_id)
-                if not kid_info or const.DATA_KID_CHORE_DATA not in kid_info:
-                    continue
-
-                # Use the helper function to get the correct in-scope chores for this badge and kid
-                in_scope_chores_list = self._get_badge_in_scope_chores_list(
-                    badge_info, kid_id
-                )
-
-                # Add badge reference to each tracked chore
-                for chore_id in in_scope_chores_list:
-                    if chore_id in kid_info[const.DATA_KID_CHORE_DATA]:
-                        if (
-                            badge_id
-                            not in kid_info[const.DATA_KID_CHORE_DATA][chore_id][
-                                const.DATA_KID_CHORE_DATA_BADGE_REFS
-                            ]
-                        ):
-                            kid_info[const.DATA_KID_CHORE_DATA][chore_id][
-                                const.DATA_KID_CHORE_DATA_BADGE_REFS
-                            ].append(badge_id)
 
     # -------------------------------------------------------------------------------------
     # Kids: Update Points
@@ -3718,7 +3664,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     self._award_badge(kid_id, badge_id)
 
         # Update badge references to reflect current badge tracking settings
-        self._update_kid_badge_references()
+        self._update_chore_badge_references_for_kid()
 
         self._persist()
         self.async_set_updated_data(self._data)
@@ -4037,7 +3983,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         if badge_type == const.BADGE_TYPE_CUMULATIVE:
             # Update the kid's multiplier based on all earned cumulative badges.
-            self._update_kid_multiplier(kid_id)
+            self._update_point_multiplier_for_kid(kid_id)
 
         # For all badge types that include the awards component, check if the badge is eligible for extra points or one-time reward.
         if badge_type in const.INCLUDE_AWARDS_BADGE_TYPES:
@@ -4157,6 +4103,30 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # like end date are set when required.
         self._check_badges_for_kid(kid_id)
 
+    def _update_point_multiplier_for_kid(self, kid_id: str):
+        """Update the kid's points multiplier based on the current (effective) cumulative badge only."""
+
+        kid_info = self.kids_data.get(kid_id)
+        if not kid_info:
+            return
+
+        progress = kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {})
+        current_badge_id = progress.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_ID
+        )
+
+        if current_badge_id:
+            current_badge_info = self.badges_data.get(current_badge_id, {})
+            badge_awards = current_badge_info.get(const.DATA_BADGE_AWARDS, {})
+            multiplier = badge_awards.get(
+                const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
+                const.DEFAULT_KID_POINTS_MULTIPLIER,
+            )
+        else:
+            multiplier = const.DEFAULT_KID_POINTS_MULTIPLIER
+
+        kid_info[const.DATA_KID_POINTS_MULTIPLIER] = multiplier
+
     def _update_badges_earned_for_kid(self, kid_id: str, badge_id: str) -> None:
         """Update the kid's badges-earned tracking for the given badge, including period stats."""
         kid_info = self.kids_data.get(kid_id)
@@ -4240,6 +4210,62 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._persist()
         self.async_set_updated_data(self._data)
 
+    def _update_chore_badge_references_for_kid(
+        self, include_cumulative_badges: bool = False
+    ):
+        """Update badge reference lists in kid chore data.
+
+        This maintains a list of which badges reference each chore,
+        useful for quick lookups when evaluating badges.
+
+        Args:
+            include_cumulative_badges: Whether to include cumulative badges in the references.
+                                    Default is False which excludes them since they are currently points only
+        """
+        # Clear existing badge references
+        for kid_id, kid_info in self.kids_data.items():
+            if const.DATA_KID_CHORE_DATA not in kid_info:
+                continue
+
+            for chore_data in kid_info[const.DATA_KID_CHORE_DATA].values():
+                chore_data[const.DATA_KID_CHORE_DATA_BADGE_REFS] = []
+
+        # Add badge references to relevant chores
+        for badge_id, badge_info in self.badges_data.items():
+            # Skip cumulative badges if not explicitly included
+            if (
+                not include_cumulative_badges
+                and badge_info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE
+            ):
+                continue
+
+            # For each kid this badge is assigned to
+            assigned_to = badge_info.get(const.DATA_BADGE_ASSIGNED_TO, [])
+            for kid_id in (
+                assigned_to or self.kids_data.keys()
+            ):  # If empty, apply to all kids
+                kid_info = self.kids_data.get(kid_id)
+                if not kid_info or const.DATA_KID_CHORE_DATA not in kid_info:
+                    continue
+
+                # Use the helper function to get the correct in-scope chores for this badge and kid
+                in_scope_chores_list = self._get_badge_in_scope_chores_list(
+                    badge_info, kid_id
+                )
+
+                # Add badge reference to each tracked chore
+                for chore_id in in_scope_chores_list:
+                    if chore_id in kid_info[const.DATA_KID_CHORE_DATA]:
+                        if (
+                            badge_id
+                            not in kid_info[const.DATA_KID_CHORE_DATA][chore_id][
+                                const.DATA_KID_CHORE_DATA_BADGE_REFS
+                            ]
+                        ):
+                            kid_info[const.DATA_KID_CHORE_DATA][chore_id][
+                                const.DATA_KID_CHORE_DATA_BADGE_REFS
+                            ].append(badge_id)
+
     def _cleanup_badge_period_data_for_kid(self, periods_data: dict):
         """Remove old period data for badges to keep storage manageable.
 
@@ -4303,30 +4329,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         self._persist()
         self.async_set_updated_data(self._data)
-
-    def _update_kid_multiplier(self, kid_id: str):
-        """Update the kid's points multiplier based on the current (effective) cumulative badge only."""
-
-        kid_info = self.kids_data.get(kid_id)
-        if not kid_info:
-            return
-
-        progress = kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {})
-        current_badge_id = progress.get(
-            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_ID
-        )
-
-        if current_badge_id:
-            current_badge_info = self.badges_data.get(current_badge_id, {})
-            badge_awards = current_badge_info.get(const.DATA_BADGE_AWARDS, {})
-            multiplier = badge_awards.get(
-                const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
-                const.DEFAULT_KID_POINTS_MULTIPLIER,
-            )
-        else:
-            multiplier = const.DEFAULT_KID_POINTS_MULTIPLIER
-
-        kid_info[const.DATA_KID_POINTS_MULTIPLIER] = multiplier
 
     # -------------------------------------------------------------------------------------
     # Badges: Remove Awarded Badges
@@ -5601,7 +5603,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE: next_grace,
                 }
             )
-            self._update_kid_multiplier(kid_id)
+            self._update_point_multiplier_for_kid(kid_id)
 
         # If is first_time, then set the end dates
         if is_first_time:
