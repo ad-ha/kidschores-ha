@@ -2835,6 +2835,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_ALL_TIME: kid_info.get(
                 const.DATA_KID_CHORE_STATS, {}
             ).get(const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_ALL_TIME, 0),
+            const.DATA_KID_CHORE_STATS_DISAPPROVED_TODAY: 0,
             const.DATA_KID_CHORE_STATS_DISAPPROVED_WEEK: 0,
             const.DATA_KID_CHORE_STATS_DISAPPROVED_MONTH: 0,
             const.DATA_KID_CHORE_STATS_DISAPPROVED_YEAR: 0,
@@ -2898,6 +2899,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             stats[const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_TODAY] += today_stats.get(
                 const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT, 0
+            )
+            stats[const.DATA_KID_CHORE_STATS_DISAPPROVED_TODAY] += today_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT, 0
             )
 
             # Weekly
