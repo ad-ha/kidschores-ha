@@ -509,7 +509,23 @@ class CompletedChoresTotalSensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         """Return the total number of chores completed by the kid."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        return kid_info.get(const.DATA_KID_COMPLETED_CHORES_TOTAL, const.DEFAULT_ZERO)
+        stats = kid_info.get(const.DATA_KID_CHORE_STATS, {})
+        return stats.get(
+            const.DATA_KID_CHORE_STATS_COMPLETED_ALL_TIME, const.DEFAULT_ZERO
+        )
+
+    @property
+    def extra_state_attributes(self):
+        """Return all available chore stats as attributes."""
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        stats = kid_info.get(const.DATA_KID_CHORE_STATS, {})
+        attributes = {
+            const.ATTR_KID_NAME: self._kid_name,
+        }
+        # Add all stats as attributes, prefixed for clarity
+        for key, value in stats.items():
+            attributes[f"chore_stat_{key}"] = value
+        return attributes
 
 
 # ------------------------------------------------------------------------------------------

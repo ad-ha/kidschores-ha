@@ -616,28 +616,87 @@ DATA_KID_COMPLETED_CHORES_WEEKLY = "completed_chores_weekly"
 DATA_KID_COMPLETED_CHORES_YEARLY = "completed_chores_yearly"
 
 # Kid Chore Data Structure Constants
-DATA_KID_CHORES = "chores"
-DATA_KID_CHORES_STATE = "state"
-DATA_KID_CHORES_NAME = "name"
-DATA_KID_CHORES_DUE_DATE = "due_date"
-DATA_KID_CHORES_LAST_COMPLETED = "last_completed"
-DATA_KID_CHORES_LAST_CLAIMED = "last_claimed"
-DATA_KID_CHORES_LAST_DISAPPROVED = "last_disapproved"
-DATA_KID_CHORES_LAST_OVERDUE = "last_overdue"
-DATA_KID_CHORES_STREAK = "streak"
-DATA_KID_CHORES_STREAK_CURRENT = "current"
-DATA_KID_CHORES_STREAK_MAX = "max"
-DATA_KID_CHORES_STREAK_LAST_DATE = "last_date"
-DATA_KID_CHORES_TOTAL_COUNT = "total_count"
-DATA_KID_CHORES_TOTAL_POINTS = "total_points"
-DATA_KID_CHORES_PERIODS = "periods"
-DATA_KID_CHORES_PERIODS_DAILY = "daily"
-DATA_KID_CHORES_PERIODS_WEEKLY = "weekly"
-DATA_KID_CHORES_PERIODS_MONTHLY = "monthly"
-DATA_KID_CHORES_PERIODS_YEARLY = "yearly"
-DATA_KID_CHORES_PERIOD_COUNT = "count"
-DATA_KID_CHORES_PERIOD_POINTS = "points"
-DATA_KID_CHORES_BADGE_REFS = "badge_refs"
+DATA_KID_CHORE_DATA = "chore_data"
+DATA_KID_CHORE_DATA_STATE = "state"
+DATA_KID_CHORE_DATA_NAME = "name"
+DATA_KID_CHORE_DATA_DUE_DATE = "due_date"
+DATA_KID_CHORE_DATA_LAST_COMPLETED = "last_completed"
+DATA_KID_CHORE_DATA_LAST_CLAIMED = "last_claimed"
+DATA_KID_CHORE_DATA_LAST_DISAPPROVED = "last_disapproved"
+DATA_KID_CHORE_DATA_LAST_OVERDUE = "last_overdue"
+DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME = "last_longest_streak_all_time"
+DATA_KID_CHORE_DATA_TOTAL_COUNT = "total_count"
+DATA_KID_CHORE_DATA_TOTAL_POINTS = "total_points"
+DATA_KID_CHORE_DATA_PERIODS = "periods"
+DATA_KID_CHORE_DATA_PERIODS_DAILY = "daily"
+DATA_KID_CHORE_DATA_PERIODS_WEEKLY = "weekly"
+DATA_KID_CHORE_DATA_PERIODS_MONTHLY = "monthly"
+DATA_KID_CHORE_DATA_PERIODS_YEARLY = "yearly"
+DATA_KID_CHORE_DATA_PERIOD_COUNT = "count"
+DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT = "disapproved_count"
+DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK = "longest_streak"
+DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT = "overdue_count"
+DATA_KID_CHORE_DATA_PERIOD_POINTS = "points"
+DATA_KID_CHORE_DATA_BADGE_REFS = "badge_refs"
+
+# Chore Stats Keys
+DATA_KID_CHORE_STATS = "chore_stats"
+
+# --- Completion Counts ---
+DATA_KID_CHORE_STATS_COMPLETED_TODAY = "completed_today"
+DATA_KID_CHORE_STATS_COMPLETED_WEEK = "completed_week"
+DATA_KID_CHORE_STATS_COMPLETED_MONTH = "completed_month"
+DATA_KID_CHORE_STATS_COMPLETED_YEAR = "completed_year"
+DATA_KID_CHORE_STATS_COMPLETED_ALL_TIME = "completed_all_time"
+
+# --- Most Completed Chore ---
+DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE = "most_completed_chore"
+DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_WEEK = "most_completed_chore_week"
+DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_MONTH = "most_completed_chore_month"
+DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_YEAR = "most_completed_chore_year"
+
+# --- Last Completion Date ---
+DATA_KID_CHORE_STATS_COMPLETED_LAST_DATE = "completed_last_date"
+
+# --- Total Points from Chores ---
+DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_TODAY = "total_points_from_chores_today"
+DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_WEEK = "total_points_from_chores_week"
+DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_MONTH = "total_points_from_chores_month"
+DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_YEAR = "total_points_from_chores_year"
+DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_ALL_TIME = (
+    "total_points_from_chores_all_time"
+)
+
+# --- Overdue Counts ---
+DATA_KID_CHORE_STATS_OVERDUE_COUNT_TODAY = "overdue_count_today"
+DATA_KID_CHORE_STATS_OVERDUE_COUNT_WEEK = "overdue_count_week"
+DATA_KID_CHORE_STATS_OVERDUE_COUNT_MONTH = "overdue_count_month"
+DATA_KID_CHORE_STATS_OVERDUE_COUNT_YEAR = "overdue_count_year"
+DATA_KID_CHORE_STATS_OVERDUE_COUNT_ALL_TIME = "overdue_count_all_time"
+
+# --- Claimed but Not Approved ---
+DATA_KID_CHORE_STATS_DISAPPROVED_TODAY = "disapproved_today"
+DATA_KID_CHORE_STATS_DISAPPROVED_WEEK = "disapproved_week"
+DATA_KID_CHORE_STATS_DISAPPROVED_MONTH = "disapproved_month"
+DATA_KID_CHORE_STATS_DISAPPROVED_YEAR = "disapproved_year"
+DATA_KID_CHORE_STATS_DISAPPROVED_ALL_TIME = "disapproved_all_time"
+
+# --- Chores Current Stats ---
+DATA_KID_CHORE_STATS_CURRENT_DUE_TODAY = "current_due_today"
+DATA_KID_CHORE_STATS_CURRENT_OVERDUE = "current_overdue"
+DATA_KID_CHORE_STATS_CURRENT_CLAIMED = "current_claimed"
+DATA_KID_CHORE_STATS_CURRENT_APPROVED = "current_approved"
+
+# --- Longest Streaks ---
+DATA_KID_CHORE_STATS_LONGEST_STREAK_WEEK = "longest_streak_week"
+DATA_KID_CHORE_STATS_LONGEST_STREAK_MONTH = "longest_streak_month"
+DATA_KID_CHORE_STATS_LONGEST_STREAK_YEAR = "longest_streak_year"
+DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME = "longest_streak_all_time"
+
+# --- Average Chores Per Day ---
+DATA_KID_CHORE_STATS_AVG_PER_DAY_MONTH = "avg_per_day_month"
+DATA_KID_CHORE_STATS_AVG_PER_DAY_WEEK = "avg_per_day_week"
+
 
 # --- Badge Progress Tracking ---
 DATA_KID_CUMULATIVE_BADGE_PROGRESS = "cumulative_badge_progress"

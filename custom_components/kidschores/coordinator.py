@@ -142,7 +142,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         const.LOGGER.info("INFO: Chore data migration complete.")
 
     def _migrate_kid_chore_streaks(self, kid_id: str, chore_id: str):
-        """Migrate legacy streak data to the new kid chores structure."""
+        """Migrate legacy streak data to the new kid chores structure (period-based)."""
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             return
@@ -155,39 +155,98 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             legacy_streak = kid_info[const.DATA_KID_CHORE_STREAKS][chore_id]
 
             # Ensure new structure exists
-            if const.DATA_KID_CHORES not in kid_info:
-                kid_info[const.DATA_KID_CHORES] = {}
+            if const.DATA_KID_CHORE_DATA not in kid_info:
+                kid_info[const.DATA_KID_CHORE_DATA] = {}
 
-            if chore_id not in kid_info[const.DATA_KID_CHORES]:
+            if chore_id not in kid_info[const.DATA_KID_CHORE_DATA]:
                 chore_info = self.chores_data.get(chore_id, {})
                 chore_name = chore_info.get(const.DATA_CHORE_NAME, chore_id)
-                kid_info[const.DATA_KID_CHORES][chore_id] = {
-                    const.DATA_KID_CHORES_NAME: chore_name,
-                    const.DATA_KID_CHORES_STATE: const.CHORE_STATE_PENDING,
-                    const.DATA_KID_CHORES_STREAK: {},
-                    const.DATA_KID_CHORES_TOTAL_COUNT: 0,
-                    const.DATA_KID_CHORES_TOTAL_POINTS: 0.0,
-                    const.DATA_KID_CHORES_PERIODS: {
-                        const.DATA_KID_CHORES_PERIODS_DAILY: {},
-                        const.DATA_KID_CHORES_PERIODS_WEEKLY: {},
-                        const.DATA_KID_CHORES_PERIODS_MONTHLY: {},
+                kid_info[const.DATA_KID_CHORE_DATA][chore_id] = {
+                    const.DATA_KID_CHORE_DATA_NAME: chore_name,
+                    const.DATA_KID_CHORE_DATA_STATE: const.CHORE_STATE_PENDING,
+                    const.DATA_KID_CHORE_DATA_LAST_CLAIMED: None,
+                    const.DATA_KID_CHORE_DATA_LAST_COMPLETED: None,
+                    const.DATA_KID_CHORE_DATA_LAST_DISAPPROVED: None,
+                    const.DATA_KID_CHORE_DATA_LAST_OVERDUE: None,
+                    const.DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME: None,
+                    const.DATA_KID_CHORE_DATA_TOTAL_COUNT: 0,
+                    const.DATA_KID_CHORE_DATA_TOTAL_POINTS: 0.0,
+                    const.DATA_KID_CHORE_DATA_PERIODS: {
+                        const.DATA_KID_CHORE_DATA_PERIODS_DAILY: {},
+                        const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY: {},
+                        const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY: {},
+                        const.DATA_KID_CHORE_DATA_PERIODS_YEARLY: {},
                     },
-                    const.DATA_KID_CHORES_BADGE_REFS: [],
+                    const.DATA_KID_CHORE_DATA_BADGE_REFS: [],
                 }
 
-            # Copy streak data to new structure
-            new_streak = kid_info[const.DATA_KID_CHORES][chore_id][
-                const.DATA_KID_CHORES_STREAK
-            ]
-            new_streak[const.DATA_KID_CHORES_STREAK_CURRENT] = legacy_streak.get(
-                const.DATA_KID_CURRENT_STREAK, 0
-            )
-            new_streak[const.DATA_KID_CHORES_STREAK_MAX] = legacy_streak.get(
-                const.DATA_KID_MAX_STREAK, 0
-            )
-            new_streak[const.DATA_KID_CHORES_STREAK_LAST_DATE] = legacy_streak.get(
-                const.DATA_KID_LAST_STREAK_DATE
-            )
+            # Migrate streak data into the new period-based structure
+            kid_chore_data = kid_info[const.DATA_KID_CHORE_DATA][chore_id]
+            periods = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
+
+            # Use legacy streak last date as the daily period key if available
+            last_date = legacy_streak.get(const.DATA_KID_LAST_STREAK_DATE)
+            if last_date:
+                # Daily
+                daily_stats = periods[
+                    const.DATA_KID_CHORE_DATA_PERIODS_DAILY
+                ].setdefault(
+                    last_date,
+                    {
+                        const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
+                        const.DATA_KID_CHORE_DATA_PERIOD_POINTS: 0.0,
+                        const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT: 0,
+                        const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT: 0,
+                        const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK: 0,
+                    },
+                )
+                daily_stats[const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK] = (
+                    legacy_streak.get(const.DATA_KID_CURRENT_STREAK, 0)
+                )
+
+            # Optionally, set max streak for all periods (for migration, set to legacy max)
+            for period_key, period_dict in [
+                (const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY, "%Y-W%V"),
+                (const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY, "%Y-%m"),
+                (const.DATA_KID_CHORE_DATA_PERIODS_YEARLY, "%Y"),
+            ]:
+                # If last_date is available, use it to generate the period key
+                if last_date:
+                    try:
+                        from datetime import datetime
+
+                        dt = datetime.fromisoformat(last_date)
+                        period_id = dt.strftime(period_dict)
+                    except Exception:
+                        period_id = None
+                else:
+                    period_id = None
+
+                if period_id:
+                    stats = periods[period_key].setdefault(
+                        period_id,
+                        {
+                            const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
+                            const.DATA_KID_CHORE_DATA_PERIOD_POINTS: 0.0,
+                            const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT: 0,
+                            const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT: 0,
+                            const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK: 0,
+                        },
+                    )
+                    stats[const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK] = (
+                        legacy_streak.get(const.DATA_KID_MAX_STREAK, 0)
+                    )
+
+            # Also update all-time longest streak if legacy max is higher
+            stats = kid_info.setdefault(const.DATA_KID_CHORE_STATS, {})
+            legacy_max = legacy_streak.get(const.DATA_KID_MAX_STREAK, 0)
+            if legacy_max > stats.get(
+                const.DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME, 0
+            ):
+                stats[const.DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME] = legacy_max
+                kid_chore_data[
+                    const.DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME
+                ] = last_date
 
             # Remove legacy data after migration
             # del kid_info[const.DATA_KID_CHORE_STREAKS][chore_id]
@@ -195,7 +254,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             #     del kid_info[const.DATA_KID_CHORE_STREAKS]
 
     def _migrate_badges(self):
-        """Migrate legacy 'chore_count' badges into cumulative badges.
+        """Migrate legacy badges into cumulative badges.
 
         For badges whose threshold_type is set to the legacy value (e.g. BADGE_THRESHOLD_TYPE_CHORE_COUNT),
         compute the new threshold as the legacy count multiplied by the average default points across all chores.
@@ -2440,35 +2499,40 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         chore_info = self.chores_data.get(chore_id, {})
         chore_name = chore_info.get(const.DATA_CHORE_NAME, chore_id)
 
-        # Initialize chores structure if needed
-        kid_chores_data = kid_info.setdefault(const.DATA_KID_CHORES, {})
+        # Initialize chore data structure if needed
+        kid_chores_data = kid_info.setdefault(const.DATA_KID_CHORE_DATA, {})
 
         # Initialize this chore's data if it doesn't exist yet
         kid_chore_data = kid_chores_data.setdefault(
             chore_id,
             {
-                const.DATA_KID_CHORES_NAME: chore_name,
-                const.DATA_KID_CHORES_STATE: const.CHORE_STATE_PENDING,
-                const.DATA_KID_CHORES_LAST_CLAIMED: None,
-                const.DATA_KID_CHORES_LAST_COMPLETED: None,
-                const.DATA_KID_CHORES_LAST_DISAPPROVED: None,
-                const.DATA_KID_CHORES_LAST_OVERDUE: None,
-                const.DATA_KID_CHORES_STREAK: {
-                    const.DATA_KID_CHORES_STREAK_CURRENT: 0,
-                    const.DATA_KID_CHORES_STREAK_MAX: 0,
-                    const.DATA_KID_CHORES_STREAK_LAST_DATE: None,
+                const.DATA_KID_CHORE_DATA_NAME: chore_name,
+                const.DATA_KID_CHORE_DATA_STATE: const.CHORE_STATE_PENDING,
+                const.DATA_KID_CHORE_DATA_LAST_CLAIMED: None,
+                const.DATA_KID_CHORE_DATA_LAST_COMPLETED: None,
+                const.DATA_KID_CHORE_DATA_LAST_DISAPPROVED: None,
+                const.DATA_KID_CHORE_DATA_LAST_OVERDUE: None,
+                const.DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME: None,
+                const.DATA_KID_CHORE_DATA_TOTAL_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_TOTAL_POINTS: 0.0,
+                const.DATA_KID_CHORE_DATA_PERIODS: {
+                    const.DATA_KID_CHORE_DATA_PERIODS_DAILY: {},
+                    const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY: {},
+                    const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY: {},
+                    const.DATA_KID_CHORE_DATA_PERIODS_YEARLY: {},
                 },
-                const.DATA_KID_CHORES_TOTAL_COUNT: 0,
-                const.DATA_KID_CHORES_TOTAL_POINTS: 0.0,
-                const.DATA_KID_CHORES_PERIODS: {
-                    const.DATA_KID_CHORES_PERIODS_DAILY: {},
-                    const.DATA_KID_CHORES_PERIODS_WEEKLY: {},
-                    const.DATA_KID_CHORES_PERIODS_MONTHLY: {},
-                    const.DATA_KID_CHORES_PERIODS_YEARLY: {},
-                },
-                const.DATA_KID_CHORES_BADGE_REFS: [],
+                const.DATA_KID_CHORE_DATA_BADGE_REFS: [],
             },
         )
+
+        # --- Use a consistent default dict for all period stats ---
+        period_default = {
+            const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
+            const.DATA_KID_CHORE_DATA_PERIOD_POINTS: 0.0,
+            const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT: 0,
+            const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT: 0,
+            const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK: 0,
+        }
 
         # Get timestamps using helper functions
         now_utc = dt_util.utcnow()
@@ -2478,176 +2542,502 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         now_local = kh.get_now_local_time()
         today_local = kh.get_today_local_date()
         today_local_iso = today_local.isoformat()
-        week_local_iso = now_local.strftime("%Y-W%V")  # ISO week format
-        month_local_iso = now_local.strftime("%Y-%m")  # Year-month format
-        year_local_iso = now_local.strftime("%Y")  # Year format
+        week_local_iso = now_local.strftime("%Y-W%V")
+        month_local_iso = now_local.strftime("%Y-%m")
+        year_local_iso = now_local.strftime("%Y")
 
-        # Before state update, track current state for comparison
-        previous_state = kid_chore_data.get(const.DATA_KID_CHORES_STATE)
-
-        # Round Points Awarded
+        # Track previous state for disapproval logic
+        previous_state = kid_chore_data.get(const.DATA_KID_CHORE_DATA_STATE)
         points_awarded = round(points_awarded, 1) if points_awarded is not None else 0.0
 
-        # Update current state if provided
+        # --- All-time stats update helpers ---
+        stats = kid_info.setdefault(const.DATA_KID_CHORE_STATS, {})
+
+        def inc_stat(key, amount):
+            stats[key] = stats.get(key, 0) + amount
+
         if state is not None:
-            kid_chore_data[const.DATA_KID_CHORES_STATE] = state
+            kid_chore_data[const.DATA_KID_CHORE_DATA_STATE] = state
 
-            # Update claim/completion timestamps based on state
+            # --- Handle CLAIMED state ---
             if state == const.CHORE_STATE_CLAIMED:
-                kid_chore_data[const.DATA_KID_CHORES_LAST_CLAIMED] = now_iso
+                kid_chore_data[const.DATA_KID_CHORE_DATA_LAST_CLAIMED] = now_iso
+
+            # --- Handle APPROVED state ---
             elif state == const.CHORE_STATE_APPROVED:
-                kid_chore_data[const.DATA_KID_CHORES_LAST_COMPLETED] = now_iso
-
-                # Update streak data - use local date for streaks
-                self._update_chore_streak_for_kid(
-                    kid_chore_data[const.DATA_KID_CHORES_STREAK], today_local_iso
-                )
-
-                # The following function is legacy and should be removed in the future.
-                # Only leaving in place for compatibility
-                self._update_chore_streak_for_kid_legacy(kid_id, chore_id, today_local)
-
-                # Number of days in a row with at least one chore completed
-                self._update_overall_chore_streak_for_kid(kid_id, today_local)
-
-                # If this is an approval, update period stats
-                kid_chore_data[const.DATA_KID_CHORES_TOTAL_COUNT] += 1
-                kid_chore_data[const.DATA_KID_CHORES_TOTAL_POINTS] += points_awarded
-
-                # Daily stats - use local date for the key
-                periods_data = kid_chore_data[const.DATA_KID_CHORES_PERIODS]
-
-                # Update daily stats
-                daily_stats = periods_data[
-                    const.DATA_KID_CHORES_PERIODS_DAILY
-                ].setdefault(
-                    today_local_iso,
-                    {
-                        const.DATA_KID_CHORES_PERIOD_COUNT: 0,
-                        const.DATA_KID_CHORES_PERIOD_POINTS: 0.0,
-                    },
-                )
-                daily_stats[const.DATA_KID_CHORES_PERIOD_COUNT] += 1
-                daily_stats[const.DATA_KID_CHORES_PERIOD_POINTS] += points_awarded
-
-                # Weekly stats - use local week for the key
-                weekly_stats = periods_data[
-                    const.DATA_KID_CHORES_PERIODS_WEEKLY
-                ].setdefault(
-                    week_local_iso,
-                    {
-                        const.DATA_KID_CHORES_PERIOD_COUNT: 0,
-                        const.DATA_KID_CHORES_PERIOD_POINTS: 0.0,
-                    },
-                )
-                weekly_stats[const.DATA_KID_CHORES_PERIOD_COUNT] += 1
-                weekly_stats[const.DATA_KID_CHORES_PERIOD_POINTS] += points_awarded
-
-                # Monthly stats - use local month for the key
-                monthly_stats = periods_data[
-                    const.DATA_KID_CHORES_PERIODS_MONTHLY
-                ].setdefault(
-                    month_local_iso,
-                    {
-                        const.DATA_KID_CHORES_PERIOD_COUNT: 0,
-                        const.DATA_KID_CHORES_PERIOD_POINTS: 0.0,
-                    },
-                )
-                monthly_stats[const.DATA_KID_CHORES_PERIOD_COUNT] += 1
-                monthly_stats[const.DATA_KID_CHORES_PERIOD_POINTS] += points_awarded
-
-                # Yearly stats - use local year for the key
-                yearly_stats = periods_data[
-                    const.DATA_KID_CHORES_PERIODS_YEARLY
-                ].setdefault(
-                    year_local_iso,
-                    {
-                        const.DATA_KID_CHORES_PERIOD_COUNT: 0,
-                        const.DATA_KID_CHORES_PERIOD_POINTS: 0.0,
-                    },
-                )
-                yearly_stats[const.DATA_KID_CHORES_PERIOD_COUNT] += 1
-                yearly_stats[const.DATA_KID_CHORES_PERIOD_POINTS] += points_awarded
-
-                # Clean up old period data
-                self._cleanup_chore_period_data_for_kid(
-                    kid_chore_data[const.DATA_KID_CHORES_PERIODS]
-                )
-
-                # increment completed chores counters
+                # LEGACY: Deprecate in the future
                 kid_info[const.DATA_KID_COMPLETED_CHORES_TODAY] += 1
                 kid_info[const.DATA_KID_COMPLETED_CHORES_WEEKLY] += 1
                 kid_info[const.DATA_KID_COMPLETED_CHORES_MONTHLY] += 1
                 kid_info[const.DATA_KID_COMPLETED_CHORES_TOTAL] += 1
 
-                # Track today’s approvals for chores that allow multiple claims.
-                if chore_info.get(
-                    const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY, False
+                # Update the last completed date
+                kid_chore_data[const.DATA_KID_CHORE_DATA_LAST_COMPLETED] = now_iso
+
+                # Increment total count and points for this chore
+                kid_chore_data[const.DATA_KID_CHORE_DATA_TOTAL_COUNT] += 1
+                kid_chore_data[const.DATA_KID_CHORE_DATA_TOTAL_POINTS] += points_awarded
+
+                # --- Update all-time stats (incrementally) ---
+                inc_stat(const.DATA_KID_CHORE_STATS_COMPLETED_ALL_TIME, 1)
+                inc_stat(
+                    const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_ALL_TIME,
+                    points_awarded,
+                )
+
+                # --- Update period stats for approval ---
+                periods_data = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
+
+                # Daily
+                daily_stats = periods_data[
+                    const.DATA_KID_CHORE_DATA_PERIODS_DAILY
+                ].setdefault(today_local_iso, period_default.copy())
+                for key, val in period_default.items():
+                    daily_stats.setdefault(key, val)
+                daily_stats[const.DATA_KID_CHORE_DATA_PERIOD_COUNT] += 1
+                daily_stats[const.DATA_KID_CHORE_DATA_PERIOD_POINTS] += points_awarded
+
+                # Calculate today's streak based on yesterday's daily period data
+                yesterday_local_iso = kh.adjust_datetime_by_interval(
+                    today_local_iso,
+                    interval_unit=const.CONF_DAYS,
+                    delta=-1,
+                    require_future=False,
+                    return_type=const.HELPER_RETURN_ISO_DATE,
+                )
+                yesterday_stats = periods_data[
+                    const.DATA_KID_CHORE_DATA_PERIODS_DAILY
+                ].get(yesterday_local_iso, {})
+                yesterday_streak = yesterday_stats.get(
+                    const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK, 0
+                )
+                today_streak = yesterday_streak + 1 if yesterday_streak > 0 else 1
+
+                # Store today's streak as the daily longest streak
+                daily_stats[const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK] = (
+                    today_streak
+                )
+
+                # Weekly
+                weekly_stats = periods_data[
+                    const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY
+                ].setdefault(week_local_iso, period_default.copy())
+                for key, val in period_default.items():
+                    weekly_stats.setdefault(key, val)
+                weekly_stats[const.DATA_KID_CHORE_DATA_PERIOD_COUNT] += 1
+                weekly_stats[const.DATA_KID_CHORE_DATA_PERIOD_POINTS] += points_awarded
+
+                if today_streak > weekly_stats.get(
+                    const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK, 0
                 ):
-                    kid_info.setdefault(const.DATA_KID_TODAY_CHORE_APPROVALS, {})
-                    kid_info[const.DATA_KID_TODAY_CHORE_APPROVALS][chore_id] = (
-                        kid_info[const.DATA_KID_TODAY_CHORE_APPROVALS].get(
-                            chore_id, const.DEFAULT_ZERO
-                        )
-                        + 1
+                    weekly_stats[const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK] = (
+                        today_streak
                     )
 
-            # Track when the chore is marked as overdue
-            elif state == const.CHORE_STATE_OVERDUE:
-                kid_chore_data[const.DATA_KID_CHORES_LAST_OVERDUE] = now_iso
+                # Monthly
+                monthly_stats = periods_data[
+                    const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY
+                ].setdefault(month_local_iso, period_default.copy())
+                for key, val in period_default.items():
+                    monthly_stats.setdefault(key, val)
+                monthly_stats[const.DATA_KID_CHORE_DATA_PERIOD_COUNT] += 1
+                monthly_stats[const.DATA_KID_CHORE_DATA_PERIOD_POINTS] += points_awarded
 
-            # Track when the chore is disapproved - ONLY if it was previously claimed
+                if today_streak > monthly_stats.get(
+                    const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK, 0
+                ):
+                    monthly_stats[const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK] = (
+                        today_streak
+                    )
+
+                # Yearly
+                yearly_stats = periods_data[
+                    const.DATA_KID_CHORE_DATA_PERIODS_YEARLY
+                ].setdefault(year_local_iso, period_default.copy())
+                for key, val in period_default.items():
+                    yearly_stats.setdefault(key, val)
+                yearly_stats[const.DATA_KID_CHORE_DATA_PERIOD_COUNT] += 1
+                yearly_stats[const.DATA_KID_CHORE_DATA_PERIOD_POINTS] += points_awarded
+
+                if today_streak > yearly_stats.get(
+                    const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK, 0
+                ):
+                    yearly_stats[const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK] = (
+                        today_streak
+                    )
+
+                # --- All-time longest streak update ---
+                longest_streak_all_time = stats.get(
+                    const.DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME, 0
+                )
+                if today_streak > longest_streak_all_time:
+                    stats[const.DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME] = (
+                        today_streak
+                    )
+                    kid_chore_data[
+                        const.DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME
+                    ] = today_local_iso
+
+            # --- Handle OVERDUE state ---
+            elif state == const.CHORE_STATE_OVERDUE:
+                kid_chore_data[const.DATA_KID_CHORE_DATA_LAST_OVERDUE] = now_iso
+                periods_data = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
+
+                daily_stats = periods_data[
+                    const.DATA_KID_CHORE_DATA_PERIODS_DAILY
+                ].setdefault(today_local_iso, period_default.copy())
+                for key, val in period_default.items():
+                    daily_stats.setdefault(key, val)
+                first_overdue_today = (
+                    daily_stats.get(const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT, 0)
+                    < 1
+                )
+                if first_overdue_today:
+                    daily_stats[const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT] = 1
+
+                    # Only increment higher periods if this is the first overdue for today
+                    weekly_stats = periods_data[
+                        const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY
+                    ].setdefault(week_local_iso, period_default.copy())
+                    weekly_stats.setdefault(
+                        const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT, 0
+                    )
+                    weekly_stats[const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT] += 1
+
+                    monthly_stats = periods_data[
+                        const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY
+                    ].setdefault(month_local_iso, period_default.copy())
+                    monthly_stats.setdefault(
+                        const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT, 0
+                    )
+                    monthly_stats[const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT] += 1
+
+                    yearly_stats = periods_data[
+                        const.DATA_KID_CHORE_DATA_PERIODS_YEARLY
+                    ].setdefault(year_local_iso, period_default.copy())
+                    yearly_stats.setdefault(
+                        const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT, 0
+                    )
+                    yearly_stats[const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT] += 1
+
+                    # --- All-time overdue count update ---
+                    inc_stat(const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_ALL_TIME, 1)
+
+            # --- Handle DISAPPROVED (claimed -> pending) state ---
             elif (
                 state == const.CHORE_STATE_PENDING
                 and previous_state == const.CHORE_STATE_CLAIMED
             ):
-                kid_chore_data[const.DATA_KID_CHORES_LAST_DISAPPROVED] = now_iso
+                kid_chore_data[const.DATA_KID_CHORE_DATA_LAST_DISAPPROVED] = now_iso
+                periods_data = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
+
+                daily_stats = periods_data[
+                    const.DATA_KID_CHORE_DATA_PERIODS_DAILY
+                ].setdefault(today_local_iso, period_default.copy())
+                for key, val in period_default.items():
+                    daily_stats.setdefault(key, val)
+                first_disapproved_today = (
+                    daily_stats.get(
+                        const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT, 0
+                    )
+                    < 1
+                )
+                if first_disapproved_today:
+                    daily_stats[const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT] = 1
+
+                    # Only increment higher periods if this is the first disapproval for today
+                    weekly_stats = periods_data[
+                        const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY
+                    ].setdefault(week_local_iso, period_default.copy())
+                    weekly_stats.setdefault(
+                        const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT, 0
+                    )
+                    weekly_stats[
+                        const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT
+                    ] += 1
+
+                    monthly_stats = periods_data[
+                        const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY
+                    ].setdefault(month_local_iso, period_default.copy())
+                    monthly_stats.setdefault(
+                        const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT, 0
+                    )
+                    monthly_stats[
+                        const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT
+                    ] += 1
+
+                    yearly_stats = periods_data[
+                        const.DATA_KID_CHORE_DATA_PERIODS_YEARLY
+                    ].setdefault(year_local_iso, period_default.copy())
+                    yearly_stats.setdefault(
+                        const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT, 0
+                    )
+                    yearly_stats[
+                        const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT
+                    ] += 1
+
+                    # --- All-time disapproved count update ---
+                    inc_stat(const.DATA_KID_CHORE_STATS_DISAPPROVED_ALL_TIME, 1)
 
         # Update due date if provided
         if due_date is not None:
-            kid_chore_data[const.DATA_KID_CHORES_DUE_DATE] = due_date
+            kid_chore_data[const.DATA_KID_CHORE_DATA_DUE_DATE] = due_date
 
-    def _update_chore_streak_for_kid(self, streak_data: dict, today_local_iso: str):
-        """Update streak data for a chore.
-
-        Args:
-            streak_data: The streak data dictionary to update
-            today_local_iso: Today's date in ISO format
-        """
-        last_date_iso = streak_data.get(const.DATA_KID_CHORES_STREAK_LAST_DATE)
-
-        # If already marked for today, do nothing
-        if last_date_iso == today_local_iso:
-            return
-
-        # Use the helper function with a negative interval to get yesterday
-        yesterday_iso = kh.adjust_datetime_by_interval(
-            today_local_iso,
-            interval_unit=const.CONF_DAYS,
-            delta=-1,
-            require_future=False,
-            return_type=const.HELPER_RETURN_ISO_DATE,
+        # Clean up old period data to keep storage manageable
+        self._cleanup_chore_period_data_for_kid(
+            kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
         )
 
-        # If yesterday was the last completion, increment streak
-        # Note that streaks are only configured to work for daily chores, a lot
-        # more logic would be required to handle custom/weekly/monthly chores.
-        if last_date_iso == yesterday_iso:
-            streak_data[const.DATA_KID_CHORES_STREAK_CURRENT] += 1
-        else:
-            # Otherwise reset streak to 1
-            streak_data[const.DATA_KID_CHORES_STREAK_CURRENT] = 1
+        # --- Update kid_chore_stats after all per-chore updates ---
+        self._recalculate_kid_chore_stats(kid_id)
 
-        # Update max streak if current is higher
-        if streak_data[const.DATA_KID_CHORES_STREAK_CURRENT] > streak_data.get(
-            const.DATA_KID_CHORES_STREAK_MAX, 0
-        ):
-            streak_data[const.DATA_KID_CHORES_STREAK_MAX] = streak_data[
-                const.DATA_KID_CHORES_STREAK_CURRENT
-            ]
+    def _recalculate_kid_chore_stats(self, kid_id: str):
+        """Aggregate and update all kid_chore_stats for a given kid.
 
-        # Update last date
-        streak_data[const.DATA_KID_CHORES_STREAK_LAST_DATE] = today_local_iso
+        This function always resets all stat keys to zero/default and then
+        aggregates from the current state of all chore data. This ensures
+        stats are never double-counted, even if this function is called
+        multiple times per state change.
+
+        Note: All-time stats (completed_all_time, total_points_all_time, longest_streak_all_time)
+        must be stored incrementally and not reset here, since old period data may be pruned.
+        """
+        kid_info = self.kids_data.get(kid_id)
+        if not kid_info:
+            return
+
+        # --- Reset all stat keys (prevents double counting) Exception for All-time stats which are always kept and updated as necessary---
+        stats = {
+            const.DATA_KID_CHORE_STATS_COMPLETED_TODAY: 0,
+            const.DATA_KID_CHORE_STATS_COMPLETED_WEEK: 0,
+            const.DATA_KID_CHORE_STATS_COMPLETED_MONTH: 0,
+            const.DATA_KID_CHORE_STATS_COMPLETED_YEAR: 0,
+            # All-time stats are loaded from persistent storage, not recalculated
+            const.DATA_KID_CHORE_STATS_COMPLETED_ALL_TIME: kid_info.get(
+                const.DATA_KID_CHORE_STATS, {}
+            ).get(const.DATA_KID_CHORE_STATS_COMPLETED_ALL_TIME, 0),
+            const.DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE: None,
+            const.DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_WEEK: None,
+            const.DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_MONTH: None,
+            const.DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_YEAR: None,
+            const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_TODAY: 0.0,
+            const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_WEEK: 0.0,
+            const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_MONTH: 0.0,
+            const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_YEAR: 0.0,
+            # All-time stats are loaded from persistent storage, not recalculated
+            const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_ALL_TIME: kid_info.get(
+                const.DATA_KID_CHORE_STATS, {}
+            ).get(const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_ALL_TIME, 0.0),
+            const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_TODAY: 0,
+            const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_WEEK: 0,
+            const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_MONTH: 0,
+            const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_YEAR: 0,
+            const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_ALL_TIME: kid_info.get(
+                const.DATA_KID_CHORE_STATS, {}
+            ).get(const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_ALL_TIME, 0),
+            const.DATA_KID_CHORE_STATS_DISAPPROVED_WEEK: 0,
+            const.DATA_KID_CHORE_STATS_DISAPPROVED_MONTH: 0,
+            const.DATA_KID_CHORE_STATS_DISAPPROVED_YEAR: 0,
+            # All-time stats are loaded from persistent storage, not recalculated
+            const.DATA_KID_CHORE_STATS_DISAPPROVED_ALL_TIME: kid_info.get(
+                const.DATA_KID_CHORE_STATS, {}
+            ).get(const.DATA_KID_CHORE_STATS_DISAPPROVED_ALL_TIME, 0),
+            const.DATA_KID_CHORE_STATS_LONGEST_STREAK_WEEK: 0,
+            const.DATA_KID_CHORE_STATS_LONGEST_STREAK_MONTH: 0,
+            const.DATA_KID_CHORE_STATS_LONGEST_STREAK_YEAR: 0,
+            const.DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME: kid_info.get(
+                const.DATA_KID_CHORE_STATS, {}
+            ).get(const.DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME, 0),
+            const.DATA_KID_CHORE_STATS_AVG_PER_DAY_MONTH: 0.0,
+            const.DATA_KID_CHORE_STATS_AVG_PER_DAY_WEEK: 0.0,
+            const.DATA_KID_CHORE_STATS_CURRENT_DUE_TODAY: 0,
+            const.DATA_KID_CHORE_STATS_CURRENT_OVERDUE: 0,
+            const.DATA_KID_CHORE_STATS_CURRENT_CLAIMED: 0,
+            const.DATA_KID_CHORE_STATS_CURRENT_APPROVED: 0,
+        }
+
+        # Get current period keys
+        now_local = kh.get_now_local_time()
+        today_local_iso = kh.get_today_local_date().isoformat()
+        week_local_iso = now_local.strftime("%Y-W%V")
+        month_local_iso = now_local.strftime("%Y-%m")
+        year_local_iso = now_local.strftime("%Y")
+
+        # For most completed chore
+        most_completed = {}
+        most_completed_week = {}
+        most_completed_month = {}
+        most_completed_year = {}
+
+        # For last completion date
+        last_completed = None
+
+        # For longest streaks
+        max_streak_week = 0
+        max_streak_month = 0
+        max_streak_year = 0
+
+        # --- Aggregate stats from all chores (no double counting) ---
+        for chore_id, chore_data in kid_info.get(const.DATA_KID_CHORE_DATA, {}).items():
+            # All-time stats are incremented at event time, not recalculated here
+
+            # Most completed chore (all time)
+            total_count = chore_data.get(const.DATA_KID_CHORE_DATA_TOTAL_COUNT, 0)
+            most_completed[chore_id] = total_count
+
+            # Period stats
+            periods = chore_data.get(const.DATA_KID_CHORE_DATA_PERIODS, {})
+            # Daily
+            daily = periods.get(const.DATA_KID_CHORE_DATA_PERIODS_DAILY, {})
+            today_stats = daily.get(today_local_iso, {})
+            stats[const.DATA_KID_CHORE_STATS_COMPLETED_TODAY] += today_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_COUNT, 0
+            )
+            stats[const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_TODAY] += (
+                today_stats.get(const.DATA_KID_CHORE_DATA_PERIOD_POINTS, 0.0)
+            )
+            stats[const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_TODAY] += today_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT, 0
+            )
+
+            # Weekly
+            weekly = periods.get(const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY, {})
+            week_stats = weekly.get(week_local_iso, {})
+            stats[const.DATA_KID_CHORE_STATS_COMPLETED_WEEK] += week_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_COUNT, 0
+            )
+            stats[const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_WEEK] += (
+                week_stats.get(const.DATA_KID_CHORE_DATA_PERIOD_POINTS, 0.0)
+            )
+            stats[const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_WEEK] += week_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT, 0
+            )
+            stats[const.DATA_KID_CHORE_STATS_DISAPPROVED_WEEK] += week_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT, 0
+            )
+            most_completed_week[chore_id] = week_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_COUNT, 0
+            )
+            max_streak_week = max(
+                max_streak_week,
+                week_stats.get(const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK, 0),
+            )
+
+            # Monthly
+            monthly = periods.get(const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY, {})
+            month_stats = monthly.get(month_local_iso, {})
+            stats[const.DATA_KID_CHORE_STATS_COMPLETED_MONTH] += month_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_COUNT, 0
+            )
+            stats[const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_MONTH] += (
+                month_stats.get(const.DATA_KID_CHORE_DATA_PERIOD_POINTS, 0.0)
+            )
+            stats[const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_MONTH] += month_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT, 0
+            )
+            stats[const.DATA_KID_CHORE_STATS_DISAPPROVED_MONTH] += month_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT, 0
+            )
+            most_completed_month[chore_id] = month_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_COUNT, 0
+            )
+            max_streak_month = max(
+                max_streak_month,
+                month_stats.get(const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK, 0),
+            )
+
+            # Yearly
+            yearly = periods.get(const.DATA_KID_CHORE_DATA_PERIODS_YEARLY, {})
+            year_stats = yearly.get(year_local_iso, {})
+            stats[const.DATA_KID_CHORE_STATS_COMPLETED_YEAR] += year_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_COUNT, 0
+            )
+            stats[const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_YEAR] += (
+                year_stats.get(const.DATA_KID_CHORE_DATA_PERIOD_POINTS, 0.0)
+            )
+            stats[const.DATA_KID_CHORE_STATS_OVERDUE_COUNT_YEAR] += year_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT, 0
+            )
+            stats[const.DATA_KID_CHORE_STATS_DISAPPROVED_YEAR] += year_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT, 0
+            )
+            most_completed_year[chore_id] = year_stats.get(
+                const.DATA_KID_CHORE_DATA_PERIOD_COUNT, 0
+            )
+            max_streak_year = max(
+                max_streak_year,
+                year_stats.get(const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK, 0),
+            )
+
+            # --- Current status counts ---
+            state = chore_data.get(const.DATA_KID_CHORE_DATA_STATE)
+            due_datetime_iso = chore_data.get(
+                const.DATA_KID_CHORE_DATA_DUE_DATE
+            ) or self.chores_data.get(chore_id, {}).get(const.DATA_CHORE_DUE_DATE)
+            due_date_local = kh.normalize_datetime_input(
+                due_datetime_iso, return_type=const.HELPER_RETURN_DATETIME_LOCAL
+            )
+            if due_date_local:
+                try:
+                    today_local = kh.get_today_local_date()
+                    if due_date_local and due_date_local.date() == today_local:
+                        stats[const.DATA_KID_CHORE_STATS_CURRENT_DUE_TODAY] += 1
+                except Exception:
+                    pass
+            if state == const.CHORE_STATE_OVERDUE:
+                stats[const.DATA_KID_CHORE_STATS_CURRENT_OVERDUE] += 1
+            elif state == const.CHORE_STATE_CLAIMED:
+                stats[const.DATA_KID_CHORE_STATS_CURRENT_CLAIMED] += 1
+            elif state in (
+                const.CHORE_STATE_APPROVED,
+                const.CHORE_STATE_APPROVED_IN_PART,
+            ):
+                stats[const.DATA_KID_CHORE_STATS_CURRENT_APPROVED] += 1
+
+        # --- Derived stats (no double counting, just pick max or calculate) ---
+        if most_completed:
+            stats[const.DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE] = max(
+                most_completed, key=most_completed.get
+            )
+        if most_completed_week:
+            stats[const.DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_WEEK] = max(
+                most_completed_week, key=most_completed_week.get
+            )
+        if most_completed_month:
+            stats[const.DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_MONTH] = max(
+                most_completed_month, key=most_completed_month.get
+            )
+        if most_completed_year:
+            stats[const.DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_YEAR] = max(
+                most_completed_year, key=most_completed_year.get
+            )
+
+        stats[const.DATA_KID_CHORE_STATS_LONGEST_STREAK_WEEK] = max_streak_week
+        stats[const.DATA_KID_CHORE_STATS_LONGEST_STREAK_MONTH] = max_streak_month
+        stats[const.DATA_KID_CHORE_STATS_LONGEST_STREAK_YEAR] = max_streak_year
+
+        # Averages (no double counting, just divide)
+        stats[const.DATA_KID_CHORE_STATS_AVG_PER_DAY_WEEK] = round(
+            (
+                stats[const.DATA_KID_CHORE_STATS_COMPLETED_WEEK] / 7.0
+                if stats[const.DATA_KID_CHORE_STATS_COMPLETED_WEEK]
+                else 0.0
+            ),
+            2,
+        )
+        now = kh.get_now_local_time()
+        days_in_month = monthrange(now.year, now.month)[1]
+        stats[const.DATA_KID_CHORE_STATS_AVG_PER_DAY_MONTH] = round(
+            (
+                stats[const.DATA_KID_CHORE_STATS_COMPLETED_MONTH] / days_in_month
+                if stats[const.DATA_KID_CHORE_STATS_COMPLETED_MONTH]
+                else 0.0
+            ),
+            2,
+        )
+
+        # --- Save back to kid_info ---
+        kid_info[const.DATA_KID_CHORE_STATS] = stats
 
     def _cleanup_chore_period_data_for_kid(self, periods_data: dict):
         """Remove old period data to keep storage manageable.
@@ -2672,7 +3062,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             return_type=const.HELPER_RETURN_ISO_DATE,
         )
 
-        daily_data = periods_data.get(const.DATA_KID_CHORES_PERIODS_DAILY, {})
+        daily_data = periods_data.get(const.DATA_KID_CHORE_DATA_PERIODS_DAILY, {})
         for day in list(daily_data.keys()):
             if day < cutoff_daily:
                 del daily_data[day]
@@ -2688,7 +3078,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # Format as ISO week YYYY-WNN
         cutoff_weekly = cutoff_date.strftime("%Y-W%V")
 
-        weekly_data = periods_data.get(const.DATA_KID_CHORES_PERIODS_WEEKLY, {})
+        weekly_data = periods_data.get(const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY, {})
         for week in list(weekly_data.keys()):
             if week < cutoff_weekly:
                 del weekly_data[week]
@@ -2704,17 +3094,20 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # Format as YYYY-MM
         cutoff_monthly = cutoff_date.strftime("%Y-%m")
 
-        monthly_data = periods_data.get(const.DATA_KID_CHORES_PERIODS_MONTHLY, {})
+        monthly_data = periods_data.get(const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY, {})
         for month in list(monthly_data.keys()):
             if month < cutoff_monthly:
                 del monthly_data[month]
 
         # Keep yearly data for 3 years (or as desired)
         cutoff_yearly = str(int(today_local.strftime("%Y")) - 3)
-        yearly_data = periods_data.get(const.DATA_KID_CHORES_PERIODS_YEARLY, {})
+        yearly_data = periods_data.get(const.DATA_KID_CHORE_DATA_PERIODS_YEARLY, {})
         for year in list(yearly_data.keys()):
             if year < cutoff_yearly:
                 del yearly_data[year]
+
+        self._persist()
+        self.async_set_updated_data(self._data)
 
     def _update_kid_badge_references(self, include_cumulative_badges: bool = False):
         """Update badge reference lists in kid chore data.
@@ -2728,11 +3121,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         """
         # Clear existing badge references
         for kid_id, kid_info in self.kids_data.items():
-            if const.DATA_KID_CHORES not in kid_info:
+            if const.DATA_KID_CHORE_DATA not in kid_info:
                 continue
 
-            for chore_data in kid_info[const.DATA_KID_CHORES].values():
-                chore_data[const.DATA_KID_CHORES_BADGE_REFS] = []
+            for chore_data in kid_info[const.DATA_KID_CHORE_DATA].values():
+                chore_data[const.DATA_KID_CHORE_DATA_BADGE_REFS] = []
 
         # Add badge references to relevant chores
         for badge_id, badge_info in self.badges_data.items():
@@ -2749,7 +3142,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 assigned_to or self.kids_data.keys()
             ):  # If empty, apply to all kids
                 kid_info = self.kids_data.get(kid_id)
-                if not kid_info or const.DATA_KID_CHORES not in kid_info:
+                if not kid_info or const.DATA_KID_CHORE_DATA not in kid_info:
                     continue
 
                 # Use the helper function to get the correct in-scope chores for this badge and kid
@@ -2759,15 +3152,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
                 # Add badge reference to each tracked chore
                 for chore_id in in_scope_chores_list:
-                    if chore_id in kid_info[const.DATA_KID_CHORES]:
+                    if chore_id in kid_info[const.DATA_KID_CHORE_DATA]:
                         if (
                             badge_id
-                            not in kid_info[const.DATA_KID_CHORES][chore_id][
-                                const.DATA_KID_CHORES_BADGE_REFS
+                            not in kid_info[const.DATA_KID_CHORE_DATA][chore_id][
+                                const.DATA_KID_CHORE_DATA_BADGE_REFS
                             ]
                         ):
-                            kid_info[const.DATA_KID_CHORES][chore_id][
-                                const.DATA_KID_CHORES_BADGE_REFS
+                            kid_info[const.DATA_KID_CHORE_DATA][chore_id][
+                                const.DATA_KID_CHORE_DATA_BADGE_REFS
                             ].append(badge_id)
 
     # -------------------------------------------------------------------------------------
@@ -5751,87 +6144,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             progress[const.DATA_KID_CURRENT_STREAK] = 1
 
         progress[const.DATA_KID_LAST_STREAK_DATE] = today.isoformat()
-
-    def _update_chore_streak_for_kid_legacy(
-        self, kid_id: str, chore_id: str, completion_date: date
-    ):
-        """Update (or initialize) the streak for a specific chore for a kid, and update the max streak achieved so far."""
-
-        kid_info = self.kids_data.get(kid_id)
-        if not kid_info:
-            return
-
-        # Ensure a streak dictionary exists
-        if const.DATA_KID_CHORE_STREAKS not in kid_info:
-            kid_info[const.DATA_KID_CHORE_STREAKS] = {}
-
-        # Initialize the streak record if not already present
-        streak = kid_info[const.DATA_KID_CHORE_STREAKS].get(
-            chore_id,
-            {
-                const.DATA_KID_CURRENT_STREAK: const.DEFAULT_ZERO,
-                const.DATA_KID_MAX_STREAK: const.DEFAULT_ZERO,
-                const.DATA_KID_LAST_STREAK_DATE: None,
-            },
-        )
-        last_date = None
-        if streak.get(const.DATA_KID_LAST_STREAK_DATE):
-            try:
-                last_date = date.fromisoformat(streak[const.DATA_KID_LAST_STREAK_DATE])
-            except Exception:
-                last_date = None
-
-        # If the chore was already recorded today, do nothing
-        if last_date == completion_date:
-            return
-
-        # If the last completion was exactly yesterday, increase the streak
-        elif last_date == completion_date - timedelta(days=1):
-            streak[const.DATA_KID_CURRENT_STREAK] += 1
-
-        # Reset to 1 if not done yesterday
-        else:
-            streak[const.DATA_KID_CURRENT_STREAK] = 1
-
-        streak[const.DATA_KID_LAST_STREAK_DATE] = completion_date.isoformat()
-
-        # Update the maximum streak if the current streak is higher.
-        if streak[const.DATA_KID_CURRENT_STREAK] > streak.get(
-            const.DATA_KID_MAX_STREAK, const.DEFAULT_ZERO
-        ):
-            streak[const.DATA_KID_MAX_STREAK] = streak[const.DATA_KID_CURRENT_STREAK]
-
-        kid_info[const.DATA_KID_CHORE_STREAKS][chore_id] = streak
-
-    def _update_overall_chore_streak_for_kid(self, kid_id: str, completion_date: date):
-        """Update the overall streak for a kid (days in a row with at least one approved chore)."""
-
-        kid_info = self.kids_data.get(kid_id)
-        if not kid_info:
-            return
-        last_date = None
-        if kid_info.get(const.DATA_KID_LAST_CHORE_DATE):
-            try:
-                last_date = date.fromisoformat(kid_info[const.DATA_KID_LAST_CHORE_DATE])
-            except Exception:
-                last_date = None
-
-        # If the chore was already recorded today, do nothing
-        if last_date == completion_date:
-            return
-
-        # If the last completion was exactly yesterday, increase the streak
-        elif last_date == completion_date - timedelta(days=1):
-            kid_info[const.DATA_KID_OVERALL_CHORE_STREAK] = (
-                kid_info.get(const.DATA_KID_OVERALL_CHORE_STREAK, const.DEFAULT_ZERO)
-                + 1
-            )
-
-        # Reset to 1 if not done yesterday
-        else:
-            kid_info[const.DATA_KID_OVERALL_CHORE_STREAK] = 1
-
-        kid_info[const.DATA_KID_LAST_CHORE_DATE] = completion_date.isoformat()
 
     # -------------------------------------------------------------------------------------
     # Recurring / Reset / Overdue

@@ -274,7 +274,7 @@ def get_today_chore_and_point_progress(
     """
     today_iso = get_today_local_iso()
     if not tracked_chores:
-        tracked_chores = list(kid_info.get(const.DATA_KID_CHORES, {}).keys())
+        tracked_chores = list(kid_info.get(const.DATA_KID_CHORE_DATA, {}).keys())
 
     total_points_chores = 0
     total_chore_count = 0
@@ -284,13 +284,13 @@ def get_today_chore_and_point_progress(
     streak_per_chore = {}
 
     for chore_id in tracked_chores:
-        kid_chore_data = kid_info.get(const.DATA_KID_CHORES, {}).get(chore_id, {})
-        periods_data = kid_chore_data.get(const.DATA_KID_CHORES_PERIODS, {})
-        daily_stats = periods_data.get(const.DATA_KID_CHORES_PERIODS_DAILY, {})
+        kid_chore_data = kid_info.get(const.DATA_KID_CHORE_DATA, {}).get(chore_id, {})
+        periods_data = kid_chore_data.get(const.DATA_KID_CHORE_DATA_PERIODS, {})
+        daily_stats = periods_data.get(const.DATA_KID_CHORE_DATA_PERIODS_DAILY, {})
 
         # Points today (from this chore)
         points_today = daily_stats.get(today_iso, {}).get(
-            const.DATA_KID_CHORES_PERIOD_POINTS, 0
+            const.DATA_KID_CHORE_DATA_PERIOD_POINTS, 0
         )
         if points_today > 0:
             points_per_chore[chore_id] = points_today
@@ -298,18 +298,19 @@ def get_today_chore_and_point_progress(
 
         # Chore count today
         count_today = daily_stats.get(today_iso, {}).get(
-            const.DATA_KID_CHORES_PERIOD_COUNT, 0
+            const.DATA_KID_CHORE_DATA_PERIOD_COUNT, 0
         )
         if count_today > 0:
             count_per_chore[chore_id] = count_today
             total_chore_count += count_today
 
-        # Streak
-        streak_data = kid_chore_data.get(const.DATA_KID_CHORES_STREAK, {})
-        current_streak = streak_data.get(const.DATA_KID_CHORES_STREAK_CURRENT, 0)
-        streak_per_chore[chore_id] = current_streak
-        if current_streak > longest_chore_streak:
-            longest_chore_streak = current_streak
+        # Streak: now stored in daily period data
+        streak_today = daily_stats.get(today_iso, {}).get(
+            const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK, 0
+        )
+        streak_per_chore[chore_id] = streak_today
+        if streak_today > longest_chore_streak:
+            longest_chore_streak = streak_today
 
     # Points from all sources (if tracked in kid_info)
     total_points_all_sources = kid_info.get(
@@ -361,7 +362,7 @@ def get_today_chore_completion_progress(
     today_iso = today_local.date().isoformat()
     approved_chores = set(kid_info.get(const.DATA_KID_APPROVED_CHORES, []))
     overdue_chores = set(kid_info.get(const.DATA_KID_OVERDUE_CHORES, []))
-    chores_data = kid_info.get(const.DATA_KID_CHORES, {})
+    chores_data = kid_info.get(const.DATA_KID_CHORE_DATA, {})
 
     # Use all kid's chores if tracked_chores is empty
     if not tracked_chores:
@@ -372,7 +373,7 @@ def get_today_chore_completion_progress(
         chores_due_today = []
         for chore_id in tracked_chores:
             chore_data = chores_data.get(chore_id, {})
-            due_date_iso = chore_data.get(const.DATA_KID_CHORES_DUE_DATE)
+            due_date_iso = chore_data.get(const.DATA_KID_CHORE_DATA_DUE_DATE)
             if due_date_iso and due_date_iso[:10] == today_iso:
                 chores_due_today.append(chore_id)
         chores_to_check = chores_due_today
@@ -401,7 +402,7 @@ def get_today_chore_completion_progress(
     if require_no_overdue:
         for chore_id in chores_to_check:
             chore_data = chores_data.get(chore_id, {})
-            last_overdue_iso = chore_data.get(const.DATA_KID_CHORES_LAST_OVERDUE)
+            last_overdue_iso = chore_data.get(const.DATA_KID_CHORE_DATA_LAST_OVERDUE)
             if last_overdue_iso and last_overdue_iso[:10] == today_iso:
                 return False, approved_count, total_count
             if chore_id in overdue_chores:
