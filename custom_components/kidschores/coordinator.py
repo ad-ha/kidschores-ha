@@ -3437,7 +3437,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 self._handle_badge_target_chore_count,
                 {},
             ),
-            const.BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_CHORES: (
+            const.BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_CHORES: (
                 self._handle_badge_target_daily_completion,
                 {const.BADGE_HANDLER_PARAM_PERCENT_REQUIRED: 1.0},
             ),
@@ -3445,14 +3445,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 self._handle_badge_target_daily_completion,
                 {const.BADGE_HANDLER_PARAM_PERCENT_REQUIRED: 0.8},
             ),
-            const.BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_CHORES_NO_OVERDUE: (
+            const.BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_CHORES_NO_OVERDUE: (
                 self._handle_badge_target_daily_completion,
                 {
                     const.BADGE_HANDLER_PARAM_PERCENT_REQUIRED: 1.0,
                     const.BADGE_HANDLER_PARAM_REQUIRE_NO_OVERDUE: True,
                 },
             ),
-            const.BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_DUE_CHORES: (
+            const.BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_DUE_CHORES: (
                 self._handle_badge_target_daily_completion,
                 {
                     const.BADGE_HANDLER_PARAM_PERCENT_REQUIRED: 1.0,
@@ -3466,7 +3466,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     const.BADGE_HANDLER_PARAM_ONLY_DUE_TODAY: True,
                 },
             ),
-            const.BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_DUE_CHORES_NO_OVERDUE: (
+            const.BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_DUE_CHORES_NO_OVERDUE: (
                 self._handle_badge_target_daily_completion,
                 {
                     const.BADGE_HANDLER_PARAM_PERCENT_REQUIRED: 1.0,
@@ -3486,7 +3486,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 self._handle_badge_target_daily_completion,
                 {const.BADGE_HANDLER_PARAM_MIN_COUNT: 7},
             ),
-            const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES: (
+            const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES: (
                 self._handle_badge_target_streak,
                 {const.BADGE_HANDLER_PARAM_PERCENT_REQUIRED: 1.0},
             ),
@@ -3494,7 +3494,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 self._handle_badge_target_streak,
                 {const.BADGE_HANDLER_PARAM_PERCENT_REQUIRED: 0.8},
             ),
-            const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES_NO_OVERDUE: (
+            const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES_NO_OVERDUE: (
                 self._handle_badge_target_streak,
                 {
                     const.BADGE_HANDLER_PARAM_PERCENT_REQUIRED: 1.0,
@@ -3508,7 +3508,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     const.BADGE_HANDLER_PARAM_ONLY_DUE_TODAY: True,
                 },
             ),
-            const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_DUE_CHORES_NO_OVERDUE: (
+            const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_DUE_CHORES_NO_OVERDUE: (
                 self._handle_badge_target_streak,
                 {
                     const.BADGE_HANDLER_PARAM_PERCENT_REQUIRED: 1.0,

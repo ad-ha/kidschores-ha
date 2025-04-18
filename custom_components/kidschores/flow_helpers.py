@@ -910,11 +910,11 @@ def build_badge_common_schema(
         # For daily badges, filter out all streak targets
         if badge_type == const.BADGE_TYPE_DAILY:
             streak_types = {
-                const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES,
+                const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES,
                 const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_CHORES,
-                const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES_NO_OVERDUE,
+                const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES_NO_OVERDUE,
                 const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_DUE_CHORES,
-                const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_DUE_CHORES_NO_OVERDUE,
+                const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_DUE_CHORES_NO_OVERDUE,
             }
             target_type_options = [
                 option

@@ -1080,24 +1080,26 @@ DEFAULT_ZERO = 0
 BADGE_TARGET_THRESHOLD_TYPE_POINTS = "points"
 BADGE_TARGET_THRESHOLD_TYPE_POINTS_CHORES = "points_chores"
 BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT = "chore_count"
-BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_CHORES = "days_all_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_CHORES = "days_all_chores"
 BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_CHORES = "days_80pct_chores"
-BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_CHORES_NO_OVERDUE = "days_all_chores_no_overdue"
-BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_DUE_CHORES = "days_all_due_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_CHORES_NO_OVERDUE = (
+    "days_all_chores_no_overdue"
+)
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_DUE_CHORES = "days_all_due_chores"
 BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_DUE_CHORES = "days_80pct_due_chores"
-BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_DUE_CHORES_NO_OVERDUE = (
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_DUE_CHORES_NO_OVERDUE = (
     "days_all_due_chores_no_overdue"
 )
 BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_3_CHORES = "days_min_3_chores"
 BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_5_CHORES = "days_min_5_chores"
 BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_7_CHORES = "days_min_7_chores"
-BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES = "streak_all_chores"
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES = "streak_all_chores"
 BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_CHORES = "streak_80pct_chores"
-BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES_NO_OVERDUE = (
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES_NO_OVERDUE = (
     "streak_all_chores_no_overdue"
 )
 BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_DUE_CHORES = "streak_80pct_due_chores"
-BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_DUE_CHORES_NO_OVERDUE = (
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_DUE_CHORES_NO_OVERDUE = (
     "streak_all_due_chores_no_overdue"
 )
 
@@ -1843,28 +1845,28 @@ TARGET_TYPE_OPTIONS = [
         CONF_LABEL: "Chores Completed",
     },
     {
-        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_CHORES,
-        CONF_LABEL: "Days All Chores Completed",
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_CHORES,
+        CONF_LABEL: "Days Selected Chores Completed",
     },
     {
         CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_CHORES,
-        CONF_LABEL: "Days 80% of Chores Completed",
+        CONF_LABEL: "Days 80% of Selected Chores Completed",
     },
     {
-        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_CHORES_NO_OVERDUE,
-        CONF_LABEL: "Days All Chores Completed (No Overdue)",
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Days Selected Chores Completed (No Overdue)",
     },
     {
-        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_DUE_CHORES,
-        CONF_LABEL: "Days All Due Chores Completed",
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_DUE_CHORES,
+        CONF_LABEL: "Days Selected Due Chores Completed",
     },
     {
         CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_DUE_CHORES,
-        CONF_LABEL: "Days 80% of Due Chores Completed",
+        CONF_LABEL: "Days 80% of Selected Due Chores Completed",
     },
     {
-        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_ALL_DUE_CHORES_NO_OVERDUE,
-        CONF_LABEL: "Days All Due Chores Completed (No Overdue)",
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_DUE_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Days Selected Due Chores Completed (No Overdue)",
     },
     {
         CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_3_CHORES,
@@ -1879,24 +1881,24 @@ TARGET_TYPE_OPTIONS = [
         CONF_LABEL: "Days Minimum 7 Chores Completed",
     },
     {
-        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES,
-        CONF_LABEL: "Streak: All Chores Completed",
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES,
+        CONF_LABEL: "Streak: Selected Chores Completed",
     },
     {
         CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_CHORES,
         CONF_LABEL: "Streak: 80% of Selected Chores Completed",
     },
     {
-        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_CHORES_NO_OVERDUE,
-        CONF_LABEL: "Streak: All Chores Completed (No Overdue)",
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Streak: Selected Chores Completed (No Overdue)",
     },
     {
         CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_DUE_CHORES,
-        CONF_LABEL: "Streak: 80% of Due Chores Completed",
+        CONF_LABEL: "Streak: 80% of Selected Due Chores Completed",
     },
     {
-        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_ALL_DUE_CHORES_NO_OVERDUE,
-        CONF_LABEL: "Streak: All Due Chores Completed (No Overdue)",
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_DUE_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Streak: Selected Due Chores Completed (No Overdue)",
     },
 ]
 
