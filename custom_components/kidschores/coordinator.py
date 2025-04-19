@@ -2846,8 +2846,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Clean up old period data to keep storage manageable
         kh.cleanup_period_data(
-            periods_data,
-            {
+            self,
+            periods_data=periods_data,
+            period_keys={
                 "daily": const.DATA_KID_CHORE_DATA_PERIODS_DAILY,
                 "weekly": const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY,
                 "monthly": const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY,
@@ -3203,7 +3204,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             point_stats[const.DATA_KID_POINT_STATS_HIGHEST_BALANCE] = new
 
         # 6) Record into new point_data history (use same date logic as chore_data)
-        period_data = kid_info.setdefault(const.DATA_KID_POINT_DATA, {}).setdefault(
+        periods_data = kid_info.setdefault(const.DATA_KID_POINT_DATA, {}).setdefault(
             const.DATA_KID_POINT_DATA_PERIODS, {}
         )
 
@@ -3224,7 +3225,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             (const.DATA_KID_POINT_DATA_PERIODS_MONTHLY, month_local_iso),
             (const.DATA_KID_POINT_DATA_PERIODS_YEARLY, year_local_iso),
         ]:
-            bucket = period_data.setdefault(period_key, {})
+            bucket = periods_data.setdefault(period_key, {})
             entry = bucket.setdefault(period_id, {})
             # Safely initialize fields if missing
             if const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL not in entry:
@@ -3243,8 +3244,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # 7) Re‑evaluate everything and persist
         self._recalculate_point_stats_for_kid(kid_id)
         kh.cleanup_period_data(
-            period_data,
-            {
+            self,
+            periods_data=periods_data,
+            period_keys={
                 "daily": const.DATA_KID_POINT_DATA_PERIODS_DAILY,
                 "weekly": const.DATA_KID_POINT_DATA_PERIODS_WEEKLY,
                 "monthly": const.DATA_KID_POINT_DATA_PERIODS_MONTHLY,
