@@ -1220,3 +1220,76 @@ def get_next_applicable_day(
             "DEBUG: HELPER Get Next Applicable Day - Final result: %s", final_result
         )
         return final_result
+
+
+def cleanup_period_data(self, periods_data: dict, period_keys: dict):
+    """
+    Remove old period data to keep storage manageable for any period-based data (chore, point, etc).
+
+    Args:
+        periods_data: Dictionary containing period data (e.g., for a chore or points)
+        period_keys: Dict mapping logical period names to their constant keys, e.g.:
+            {
+                "daily": const.DATA_KID_CHORE_DATA_PERIODS_DAILY,
+                "weekly": const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY,
+                "monthly": const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY,
+                "yearly": const.DATA_KID_CHORE_DATA_PERIODS_YEARLY,
+            }
+    Retains:
+        - 7 days of daily data
+        - 5 weeks of weekly data
+        - 3 months of monthly data
+        - 3 years of yearly data
+    """
+    today_local = get_today_local_date()
+
+    # Daily: keep 7 days
+    cutoff_daily = adjust_datetime_by_interval(
+        today_local.isoformat(),
+        interval_unit=const.CONF_DAYS,
+        delta=-7,
+        require_future=False,
+        return_type=const.HELPER_RETURN_ISO_DATE,
+    )
+    daily_data = periods_data.get(period_keys["daily"], {})
+    for day in list(daily_data.keys()):
+        if day < cutoff_daily:
+            del daily_data[day]
+
+    # Weekly: keep 5 weeks
+    cutoff_date = adjust_datetime_by_interval(
+        today_local.isoformat(),
+        interval_unit=const.CONF_WEEKS,
+        delta=-5,
+        require_future=False,
+        return_type=const.HELPER_RETURN_DATETIME,
+    )
+    cutoff_weekly = cutoff_date.strftime("%Y-W%V")
+    weekly_data = periods_data.get(period_keys["weekly"], {})
+    for week in list(weekly_data.keys()):
+        if week < cutoff_weekly:
+            del weekly_data[week]
+
+    # Monthly: keep 3 months
+    cutoff_date = adjust_datetime_by_interval(
+        today_local.isoformat(),
+        interval_unit=const.CONF_MONTHS,
+        delta=-3,
+        require_future=False,
+        return_type=const.HELPER_RETURN_DATETIME,
+    )
+    cutoff_monthly = cutoff_date.strftime("%Y-%m")
+    monthly_data = periods_data.get(period_keys["monthly"], {})
+    for month in list(monthly_data.keys()):
+        if month < cutoff_monthly:
+            del monthly_data[month]
+
+    # Yearly: keep 3 years
+    cutoff_yearly = str(int(today_local.strftime("%Y")) - 3)
+    yearly_data = periods_data.get(period_keys["yearly"], {})
+    for year in list(yearly_data.keys()):
+        if year < cutoff_yearly:
+            del yearly_data[year]
+
+    self._persist()
+    self.async_set_updated_data(self._data)

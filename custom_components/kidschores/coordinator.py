@@ -420,6 +420,70 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self._persist()
         self.async_set_updated_data(self._data)
 
+    def _migrate_legacy_point_stats(self):
+        """Migrate legacy rolling point stats into the new point_data period structure for each kid."""
+        for kid_id, kid_info in self.kids_data.items():
+            # Legacy values
+            legacy_today = kid_info.get(const.DATA_KID_POINTS_EARNED_TODAY, 0.0)
+            legacy_week = kid_info.get(const.DATA_KID_POINTS_EARNED_WEEKLY, 0.0)
+            legacy_month = kid_info.get(const.DATA_KID_POINTS_EARNED_MONTHLY, 0.0)
+            legacy_max = kid_info.get(const.DATA_KID_MAX_POINTS_EVER, 0.0)
+
+            # Get or create point_data periods
+            point_data = kid_info.setdefault(const.DATA_KID_POINT_DATA, {})
+            periods = point_data.setdefault(const.DATA_KID_POINT_DATA_PERIODS, {})
+
+            # Get period keys
+            today_local_iso = kh.get_today_local_date().isoformat()
+            now_local = kh.get_now_local_time()
+            week_local_iso = now_local.strftime("%Y-W%V")
+            month_local_iso = now_local.strftime("%Y-%m")
+
+            # Helper to migrate if legacy > 0 and period is missing or zero
+            def migrate_period(period_key, period_id, legacy_value):
+                if legacy_value > 0:
+                    bucket = periods.setdefault(period_key, {})
+                    entry = bucket.setdefault(
+                        period_id,
+                        {
+                            const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL: 0.0,
+                            const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE: {},
+                        },
+                    )
+                    if entry[const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL] == 0.0:
+                        entry[const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL] = (
+                            legacy_value
+                        )
+                        # Optionally, you can set a generic source if you want
+                        entry[const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE][
+                            "migrated"
+                        ] = legacy_value
+
+            migrate_period(
+                const.DATA_KID_POINT_DATA_PERIODS_DAILY, today_local_iso, legacy_today
+            )
+            migrate_period(
+                const.DATA_KID_POINT_DATA_PERIODS_WEEKLY, week_local_iso, legacy_week
+            )
+            migrate_period(
+                const.DATA_KID_POINT_DATA_PERIODS_MONTHLY, month_local_iso, legacy_month
+            )
+
+            # Migrate legacy max points ever to point_stats highest balance if needed
+            point_stats = kid_info.setdefault(const.DATA_KID_POINT_STATS, {})
+            if legacy_max > 0 and legacy_max > point_stats.get(
+                const.DATA_KID_POINT_STATS_HIGHEST_BALANCE, 0.0
+            ):
+                point_stats[const.DATA_KID_POINT_STATS_HIGHEST_BALANCE] = legacy_max
+
+            # Optionally, remove legacy fields after migration
+            # kid_info.pop(const.DATA_KID_POINTS_EARNED_TODAY, None)
+            # kid_info.pop(const.DATA_KID_POINTS_EARNED_WEEKLY, None)
+            # kid_info.pop(const.DATA_KID_POINTS_EARNED_MONTHLY, None)
+            # kid_info.pop(const.DATA_KID_MAX_POINTS_EVER, None)
+
+        const.LOGGER.info("INFO: Legacy point stats migration complete.")
+
     # -------------------------------------------------------------------------------------
     # Normalize Lists
     # -------------------------------------------------------------------------------------
@@ -474,6 +538,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
                 #  Migrate Badge Data for Legacy Badges
                 self._migrate_badges()
+
+                # Migrate legacy badges to badges_earned
+                self._migrate_kid_legacy_badges_to_badges_earned()
+
+                # Migrate legacy point stats to new structure
+                self._migrate_legacy_point_stats()
 
                 # Flag migrations as done
                 self._data[const.MIGRATION_PERFORMED] = True
@@ -2775,8 +2845,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             kid_chore_data[const.DATA_KID_CHORE_DATA_DUE_DATE] = due_date
 
         # Clean up old period data to keep storage manageable
-        self._cleanup_chore_period_data_for_kid(
-            kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
+        kh.cleanup_period_data(
+            periods_data,
+            {
+                "daily": const.DATA_KID_CHORE_DATA_PERIODS_DAILY,
+                "weekly": const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY,
+                "monthly": const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY,
+                "yearly": const.DATA_KID_CHORE_DATA_PERIODS_YEARLY,
+            },
         )
 
         # --- Update kid_chore_stats after all per-chore updates ---
@@ -3034,76 +3110,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         # --- Save back to kid_info ---
         kid_info[const.DATA_KID_CHORE_STATS] = stats
 
-    def _cleanup_chore_period_data_for_kid(self, periods_data: dict):
-        """Remove old period data to keep storage manageable.
-
-        Args:
-            periods_data: Dictionary containing period data for a chore
-
-        Retains:
-            - 7 days of daily data
-            - 5 weeks of weekly data
-            - 3 months of monthly data
-        """
-        # Use helper to get the local date instead of UTC date
-        today_local = kh.get_today_local_date()
-
-        # Keep daily data for 7 days - use helper for consistent date handling
-        cutoff_daily = kh.adjust_datetime_by_interval(
-            today_local.isoformat(),
-            interval_unit=const.CONF_DAYS,
-            delta=-7,
-            require_future=False,
-            return_type=const.HELPER_RETURN_ISO_DATE,
-        )
-
-        daily_data = periods_data.get(const.DATA_KID_CHORE_DATA_PERIODS_DAILY, {})
-        for day in list(daily_data.keys()):
-            if day < cutoff_daily:
-                del daily_data[day]
-
-        # Keep weekly data for 5 weeks - use helper for consistent handling
-        cutoff_date = kh.adjust_datetime_by_interval(
-            today_local.isoformat(),
-            interval_unit=const.CONF_WEEKS,
-            delta=-5,
-            require_future=False,
-            return_type=const.HELPER_RETURN_DATETIME,
-        )
-        # Format as ISO week YYYY-WNN
-        cutoff_weekly = cutoff_date.strftime("%Y-W%V")
-
-        weekly_data = periods_data.get(const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY, {})
-        for week in list(weekly_data.keys()):
-            if week < cutoff_weekly:
-                del weekly_data[week]
-
-        # Keep monthly data for 3 months - use helper for consistency
-        cutoff_date = kh.adjust_datetime_by_interval(
-            today_local.isoformat(),
-            interval_unit=const.CONF_MONTHS,
-            delta=-3,
-            require_future=False,
-            return_type=const.HELPER_RETURN_DATETIME,
-        )
-        # Format as YYYY-MM
-        cutoff_monthly = cutoff_date.strftime("%Y-%m")
-
-        monthly_data = periods_data.get(const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY, {})
-        for month in list(monthly_data.keys()):
-            if month < cutoff_monthly:
-                del monthly_data[month]
-
-        # Keep yearly data for 3 years (or as desired)
-        cutoff_yearly = str(int(today_local.strftime("%Y")) - 3)
-        yearly_data = periods_data.get(const.DATA_KID_CHORE_DATA_PERIODS_YEARLY, {})
-        for year in list(yearly_data.keys()):
-            if year < cutoff_yearly:
-                del yearly_data[year]
-
-        self._persist()
-        self.async_set_updated_data(self._data)
-
     # -------------------------------------------------------------------------------------
     # Kids: Update Points
     # -------------------------------------------------------------------------------------
@@ -3197,7 +3203,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             point_stats[const.DATA_KID_POINT_STATS_HIGHEST_BALANCE] = new
 
         # 6) Record into new point_data history (use same date logic as chore_data)
-        pts = kid_info.setdefault(const.DATA_KID_POINT_DATA, {}).setdefault(
+        period_data = kid_info.setdefault(const.DATA_KID_POINT_DATA, {}).setdefault(
             const.DATA_KID_POINT_DATA_PERIODS, {}
         )
 
@@ -3218,7 +3224,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             (const.DATA_KID_POINT_DATA_PERIODS_MONTHLY, month_local_iso),
             (const.DATA_KID_POINT_DATA_PERIODS_YEARLY, year_local_iso),
         ]:
-            bucket = pts.setdefault(period_key, {})
+            bucket = period_data.setdefault(period_key, {})
             entry = bucket.setdefault(period_id, {})
             # Safely initialize fields if missing
             if const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL not in entry:
@@ -3236,6 +3242,15 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # 7) Re‑evaluate everything and persist
         self._recalculate_point_stats_for_kid(kid_id)
+        kh.cleanup_period_data(
+            period_data,
+            {
+                "daily": const.DATA_KID_POINT_DATA_PERIODS_DAILY,
+                "weekly": const.DATA_KID_POINT_DATA_PERIODS_WEEKLY,
+                "monthly": const.DATA_KID_POINT_DATA_PERIODS_MONTHLY,
+                "yearly": const.DATA_KID_POINT_DATA_PERIODS_YEARLY,
+            },
+        )
         self._check_badges_for_kid(kid_id)
         self._check_achievements_for_kid(kid_id)
         self._check_challenges_for_kid(kid_id)
