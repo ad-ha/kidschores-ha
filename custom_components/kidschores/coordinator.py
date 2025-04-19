@@ -2078,18 +2078,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         default_points = chore_info.get(
             const.DATA_CHORE_DEFAULT_POINTS, const.DEFAULT_POINTS
         )
-        multiplier = kid_info.get(
-            const.DATA_KID_POINTS_MULTIPLIER, const.DEFAULT_KID_POINTS_MULTIPLIER
-        )
-        awarded_points = round(
-            points_awarded * multiplier
-            if points_awarded is not None
-            else default_points * multiplier,
-            1,
-        )
 
+        # Note - multiplier will be added in the _update_kid_points method called from _process_chore_state
         self._process_chore_state(
-            kid_id, chore_id, const.CHORE_STATE_APPROVED, points_awarded=awarded_points
+            kid_id, chore_id, const.CHORE_STATE_APPROVED, points_awarded=default_points
         )
 
         # Manage Achievements
@@ -2194,7 +2186,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 self._notify_kid(
                     kid_id,
                     title="KidsChores: Chore Approved",
-                    message=f"Your chore '{chore_info[const.DATA_CHORE_NAME]}' was approved. You earned {awarded_points} points.",
+                    message=f"Your chore '{chore_info[const.DATA_CHORE_NAME]}' was approved. You earned {default_points} points plus multiplier.",
                     extra_data=extra_data,
                 )
             )
@@ -2371,10 +2363,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             chore_info[const.DATA_CHORE_LAST_COMPLETED] = dt_util.utcnow().isoformat()
 
             if points_awarded is not None:
-                current_points = float(
-                    kid_info.get(const.DATA_KID_POINTS, const.DEFAULT_ZERO)
+                self.update_kid_points(
+                    kid_id, delta=points_awarded, source=const.POINTS_SOURCE_CHORES
                 )
-                self.update_kid_points(kid_id, current_points + points_awarded)
 
             self._data[const.DATA_PENDING_CHORE_APPROVALS] = [
                 ap
@@ -3117,71 +3108,134 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
     # Kids: Update Points
     # -------------------------------------------------------------------------------------
 
-    def update_kid_points(self, kid_id: str, new_points: float):
-        """Set a kid's points to 'new_points', updating daily/weekly/monthly counters."""
-
-        import math
-
+    def update_kid_points(
+        self, kid_id: str, delta: float, *, source: str = const.POINTS_SOURCE_OTHER
+    ):
+        """
+        Adjust a kid's points by delta (±), track by-source, update legacy stats,
+        record into new point_data history, then recheck badges/achievements/challenges.
+        Also updates all-time and highest balance stats using constants.
+        If the source is chores, applies the kid's multiplier.
+        """
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             const.LOGGER.warning(
-                "WARNING: Kid Points Update - Kid ID '%s' not found", kid_id
+                "WARNING: Update Kid Points - Kid ID '%s' not found", kid_id
             )
             return
 
-        # Handle None or invalid values for new_points and old_points
+        # 1) Sanitize delta
         try:
-            new_points = float(new_points)
+            delta_value = round(float(delta), 1)
         except (ValueError, TypeError):
             const.LOGGER.warning(
-                "WARNING: Kid Points Update - Invalid new_points value '%s' for Kid ID '%s'. Skipping update.",
-                new_points,
+                "WARNING: Update Kid Points - Invalid delta '%s' for Kid ID '%s'.",
+                delta,
                 kid_id,
             )
             return
-
-        try:
-            old_points = float(kid_info.get(const.DATA_KID_POINTS, 0.0))
-        except (ValueError, TypeError):
-            const.LOGGER.warning(
-                "WARNING: Kid Points Update - Invalid old_points value for Kid ID '%s'. Defaulting to 0.0.",
-                kid_id,
-            )
-            old_points = 0.0
-
-        # Round to 1 decimal place
-        new_points = round(new_points, 1) if new_points is not None else 0.0
-        old_points = round(old_points, 1) if old_points is not None else 0.0
-
-        delta = new_points - old_points
-        if delta == const.DEFAULT_ZERO:
+        if delta_value == 0:
             const.LOGGER.debug(
-                "DEBUG: Kid Points - No change for Kid ID '%s'. Skipping updates",
-                kid_id,
+                "DEBUG: Update Kid Points - No change (delta=0) for Kid ID '%s'", kid_id
             )
             return
 
-        kid_info[const.DATA_KID_POINTS] = new_points
-        kid_info[const.DATA_KID_POINTS_EARNED_TODAY] += delta
-        kid_info[const.DATA_KID_POINTS_EARNED_WEEKLY] += delta
-        kid_info[const.DATA_KID_POINTS_EARNED_MONTHLY] += delta
+        # If source is chores, apply multiplier
+        if source == const.POINTS_SOURCE_CHORES:
+            multiplier = kid_info.get(const.DATA_KID_POINTS_MULTIPLIER, 1.0)
+            delta_value = round(delta_value * float(multiplier), 1)
 
-        # Update cumulative earned points if delta is positive (do not decrease on spending)
-        progress = kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {})
-        if delta > 0:
-            progress.setdefault(
-                const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS,
-                const.DEFAULT_ZERO,
+        # 2) Compute new balance
+        try:
+            old = round(float(kid_info.get(const.DATA_KID_POINTS, 0.0)), 1)
+        except (ValueError, TypeError):
+            const.LOGGER.warning(
+                "WARNING: Update Kid Points - Invalid old_points for Kid ID '%s'. Defaulting to 0.0.",
+                kid_id,
             )
-            progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS] += delta
+            old = 0.0
+        new = old + delta_value
+        kid_info[const.DATA_KID_POINTS] = new
 
-        # Update Max Points Ever
-        if new_points > kid_info.get(
-            const.DATA_KID_MAX_POINTS_EVER, const.DEFAULT_ZERO
-        ):
-            kid_info[const.DATA_KID_MAX_POINTS_EVER] = new_points
+        # 3) Update legacy rolling stats
+        kid_info.setdefault(const.DATA_KID_POINTS_EARNED_TODAY, 0.0)
+        kid_info.setdefault(const.DATA_KID_POINTS_EARNED_WEEKLY, 0.0)
+        kid_info.setdefault(const.DATA_KID_POINTS_EARNED_MONTHLY, 0.0)
+        kid_info[const.DATA_KID_POINTS_EARNED_TODAY] += delta_value
+        kid_info[const.DATA_KID_POINTS_EARNED_WEEKLY] += delta_value
+        kid_info[const.DATA_KID_POINTS_EARNED_MONTHLY] += delta_value
 
-        # Check Badges
+        # 4) Legacy cumulative badge logic
+        progress = kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {})
+        if delta_value > 0:
+            progress.setdefault(
+                const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS, 0.0
+            )
+            progress[const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS] += (
+                delta_value
+            )
+
+        # 5) All-time and highest balance stats (handled incrementally)
+        point_stats = kid_info.setdefault(const.DATA_KID_POINT_STATS, {})
+        point_stats.setdefault(const.DATA_KID_POINT_STATS_EARNED_ALL_TIME, 0.0)
+        point_stats.setdefault(const.DATA_KID_POINT_STATS_SPENT_ALL_TIME, 0.0)
+        point_stats.setdefault(const.DATA_KID_POINT_STATS_NET_ALL_TIME, 0.0)
+        point_stats.setdefault(const.DATA_KID_POINT_STATS_BY_SOURCE_ALL_TIME, {})
+        point_stats.setdefault(const.DATA_KID_POINT_STATS_HIGHEST_BALANCE, 0.0)
+
+        if delta_value > 0:
+            point_stats[const.DATA_KID_POINT_STATS_EARNED_ALL_TIME] += delta_value
+        elif delta_value < 0:
+            point_stats[const.DATA_KID_POINT_STATS_SPENT_ALL_TIME] += delta_value
+        point_stats[const.DATA_KID_POINT_STATS_NET_ALL_TIME] += delta_value
+
+        by_source_all_time = point_stats[const.DATA_KID_POINT_STATS_BY_SOURCE_ALL_TIME]
+        by_source_all_time.setdefault(source, 0.0)
+        by_source_all_time[source] += delta_value
+
+        if new > point_stats[const.DATA_KID_POINT_STATS_HIGHEST_BALANCE]:
+            point_stats[const.DATA_KID_POINT_STATS_HIGHEST_BALANCE] = new
+
+        # 6) Record into new point_data history (use same date logic as chore_data)
+        pts = kid_info.setdefault(const.DATA_KID_POINT_DATA, {}).setdefault(
+            const.DATA_KID_POINT_DATA_PERIODS, {}
+        )
+
+        now_local = kh.get_now_local_time()
+        today_local_iso = kh.get_today_local_date().isoformat()
+        week_local_iso = now_local.strftime("%Y-W%V")
+        month_local_iso = now_local.strftime("%Y-%m")
+        year_local_iso = now_local.strftime("%Y")
+
+        period_default = {
+            const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL: 0.0,
+            const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE: {},
+        }
+
+        for period_key, period_id in [
+            (const.DATA_KID_POINT_DATA_PERIODS_DAILY, today_local_iso),
+            (const.DATA_KID_POINT_DATA_PERIODS_WEEKLY, week_local_iso),
+            (const.DATA_KID_POINT_DATA_PERIODS_MONTHLY, month_local_iso),
+            (const.DATA_KID_POINT_DATA_PERIODS_YEARLY, year_local_iso),
+        ]:
+            bucket = pts.setdefault(period_key, {})
+            entry = bucket.setdefault(period_id, {})
+            # Safely initialize fields if missing
+            if const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL not in entry:
+                entry[const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL] = 0.0
+            if (
+                const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE not in entry
+                or not isinstance(
+                    entry[const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE], dict
+                )
+            ):
+                entry[const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE] = {}
+            entry[const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL] += delta_value
+            entry[const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE].setdefault(source, 0.0)
+            entry[const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE][source] += delta_value
+
+        # 7) Re‑evaluate everything and persist
+        self._recalculate_point_stats_for_kid(kid_id)
         self._check_badges_for_kid(kid_id)
         self._check_achievements_for_kid(kid_id)
         self._check_challenges_for_kid(kid_id)
@@ -3190,12 +3244,152 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         self.async_set_updated_data(self._data)
 
         const.LOGGER.debug(
-            "DEBUG: Kid Points Update - Kid ID '%s' Points changed from %.2f to %.2f (variation %.2f)",
+            "DEBUG: Update Kid Points - Kid ID '%s': delta=%.2f, old=%.2f, new=%.2f, source=%s",
             kid_id,
-            old_points,
-            new_points,
-            delta,
+            delta_value,
+            old,
+            new,
+            source,
         )
+
+    def _recalculate_point_stats_for_kid(self, kid_id: str):
+        """Aggregate and update all kid_point_stats for a given kid.
+
+        This function always resets all stat keys to zero/default and then
+        aggregates from the current state of all point data. This ensures
+        stats are never double-counted, even if this function is called
+        multiple times per state change.
+
+        Note: All-time stats (earned_all_time, spent_all_time, net_all_time, by_source_all_time, highest_balance)
+        must be stored incrementally and not reset here, since old period data may be pruned.
+        """
+        kid_info = self.kids_data.get(kid_id)
+        if not kid_info:
+            return
+
+        point_stats = kid_info.get(const.DATA_KID_POINT_STATS, {})
+
+        stats = {
+            # Per-period stats
+            const.DATA_KID_POINT_STATS_EARNED_TODAY: 0.0,
+            const.DATA_KID_POINT_STATS_EARNED_WEEK: 0.0,
+            const.DATA_KID_POINT_STATS_EARNED_MONTH: 0.0,
+            const.DATA_KID_POINT_STATS_EARNED_YEAR: 0.0,
+            # All-time stats (handled incrementally in update_kid_points, not recalculated here)
+            const.DATA_KID_POINT_STATS_EARNED_ALL_TIME: kid_info.get(
+                const.DATA_KID_POINT_STATS_EARNED_ALL_TIME, 0.0
+            ),
+            # By-source breakdowns
+            const.DATA_KID_POINT_STATS_BY_SOURCE_TODAY: {},
+            const.DATA_KID_POINT_STATS_BY_SOURCE_WEEK: {},
+            const.DATA_KID_POINT_STATS_BY_SOURCE_MONTH: {},
+            const.DATA_KID_POINT_STATS_BY_SOURCE_YEAR: {},
+            # All-time by-source (handled incrementally)
+            const.DATA_KID_POINT_STATS_BY_SOURCE_ALL_TIME: point_stats.get(
+                const.DATA_KID_POINT_STATS_BY_SOURCE_ALL_TIME, {}
+            ).copy(),
+            # Spent (negative deltas)
+            const.DATA_KID_POINT_STATS_SPENT_TODAY: 0.0,
+            const.DATA_KID_POINT_STATS_SPENT_WEEK: 0.0,
+            const.DATA_KID_POINT_STATS_SPENT_MONTH: 0.0,
+            const.DATA_KID_POINT_STATS_SPENT_YEAR: 0.0,
+            # All-time spent (handled incrementally)
+            const.DATA_KID_POINT_STATS_SPENT_ALL_TIME: kid_info.get(
+                const.DATA_KID_POINT_STATS_SPENT_ALL_TIME, 0.0
+            ),
+            # Net (earned - spent)
+            const.DATA_KID_POINT_STATS_NET_TODAY: 0.0,
+            const.DATA_KID_POINT_STATS_NET_WEEK: 0.0,
+            const.DATA_KID_POINT_STATS_NET_MONTH: 0.0,
+            const.DATA_KID_POINT_STATS_NET_YEAR: 0.0,
+            # All-time net (handled incrementally)
+            const.DATA_KID_POINT_STATS_NET_ALL_TIME: kid_info.get(
+                const.DATA_KID_POINT_STATS_NET_ALL_TIME, 0.0
+            ),
+            # Highest balance ever (handled incrementally)
+            const.DATA_KID_POINT_STATS_HIGHEST_BALANCE: kid_info.get(
+                const.DATA_KID_POINT_STATS_HIGHEST_BALANCE, 0.0
+            ),
+            # Averages (calculated below)
+            const.DATA_KID_POINT_STATS_AVG_PER_DAY_WEEK: 0.0,
+            const.DATA_KID_POINT_STATS_AVG_PER_DAY_MONTH: 0.0,
+            # Streaks and avg per chore are optional, not implemented here
+            # const.DATA_KID_POINT_STATS_EARNING_STREAK_CURRENT: 0,
+            # const.DATA_KID_POINT_STATS_EARNING_STREAK_LONGEST: 0,
+            # const.DATA_KID_POINT_STATS_AVG_PER_CHORE: 0.0,
+        }
+
+        pts_periods = kid_info.get(const.DATA_KID_POINT_DATA, {}).get(
+            const.DATA_KID_POINT_DATA_PERIODS, {}
+        )
+
+        now_local = kh.get_now_local_time()
+        today_local_iso = kh.get_today_local_date().isoformat()
+        week_local_iso = now_local.strftime("%Y-W%V")
+        month_local_iso = now_local.strftime("%Y-%m")
+        year_local_iso = now_local.strftime("%Y")
+
+        def get_period(period_key, period_id):
+            period = pts_periods.get(period_key, {})
+            entry = period.get(period_id, {})
+            by_source = entry.get(const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE, {})
+            earned = sum(v for v in by_source.values() if v > 0)
+            spent = sum(v for v in by_source.values() if v < 0)
+            net = entry.get(const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL, 0.0)
+            return earned, spent, net, by_source.copy()
+
+        # Daily
+        earned, spent, net, by_source = get_period(
+            const.DATA_KID_POINT_DATA_PERIODS_DAILY, today_local_iso
+        )
+        stats[const.DATA_KID_POINT_STATS_EARNED_TODAY] = earned
+        stats[const.DATA_KID_POINT_STATS_SPENT_TODAY] = spent
+        stats[const.DATA_KID_POINT_STATS_NET_TODAY] = net
+        stats[const.DATA_KID_POINT_STATS_BY_SOURCE_TODAY] = by_source
+
+        # Weekly
+        earned, spent, net, by_source = get_period(
+            const.DATA_KID_POINT_DATA_PERIODS_WEEKLY, week_local_iso
+        )
+        stats[const.DATA_KID_POINT_STATS_EARNED_WEEK] = earned
+        stats[const.DATA_KID_POINT_STATS_SPENT_WEEK] = spent
+        stats[const.DATA_KID_POINT_STATS_NET_WEEK] = net
+        stats[const.DATA_KID_POINT_STATS_BY_SOURCE_WEEK] = by_source
+
+        # Monthly
+        earned, spent, net, by_source = get_period(
+            const.DATA_KID_POINT_DATA_PERIODS_MONTHLY, month_local_iso
+        )
+        stats[const.DATA_KID_POINT_STATS_EARNED_MONTH] = earned
+        stats[const.DATA_KID_POINT_STATS_SPENT_MONTH] = spent
+        stats[const.DATA_KID_POINT_STATS_NET_MONTH] = net
+        stats[const.DATA_KID_POINT_STATS_BY_SOURCE_MONTH] = by_source
+
+        # Yearly
+        earned, spent, net, by_source = get_period(
+            const.DATA_KID_POINT_DATA_PERIODS_YEARLY, year_local_iso
+        )
+        stats[const.DATA_KID_POINT_STATS_EARNED_YEAR] = earned
+        stats[const.DATA_KID_POINT_STATS_SPENT_YEAR] = spent
+        stats[const.DATA_KID_POINT_STATS_NET_YEAR] = net
+        stats[const.DATA_KID_POINT_STATS_BY_SOURCE_YEAR] = by_source
+
+        # --- Averages ---
+        stats[const.DATA_KID_POINT_STATS_AVG_PER_DAY_WEEK] = (
+            round(stats[const.DATA_KID_POINT_STATS_EARNED_WEEK] / 7.0, 2)
+            if stats[const.DATA_KID_POINT_STATS_EARNED_WEEK]
+            else 0.0
+        )
+        now = kh.get_now_local_time()
+        days_in_month = monthrange(now.year, now.month)[1]
+        stats[const.DATA_KID_POINT_STATS_AVG_PER_DAY_MONTH] = (
+            round(stats[const.DATA_KID_POINT_STATS_EARNED_MONTH] / days_in_month, 2)
+            if stats[const.DATA_KID_POINT_STATS_EARNED_MONTH]
+            else 0.0
+        )
+
+        # --- Save back to kid_info ---
+        kid_info[const.DATA_KID_POINT_STATS] = stats
 
     # -------------------------------------------------------------------------------------
     # Rewards: Redeem, Approve, Disapprove
@@ -3300,8 +3494,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
 
             # Deduct points for one claim.
-            new_points = float(kid_info[const.DATA_KID_POINTS]) - cost
-            self.update_kid_points(kid_id, new_points)
+            if cost is not None:
+                self.update_kid_points(
+                    kid_id, delta=-cost, source=const.POINTS_SOURCE_REWARDS
+                )
 
             # Remove one occurrence from the kid's pending rewards list and add to redeemed.
             kid_info[const.DATA_KID_PENDING_REWARDS].remove(reward_id)
@@ -4021,18 +4217,16 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
             # Process extra points if applicable
             if extra_points:
-                current_points = float(
-                    kid_info.get(const.DATA_KID_POINTS, const.DEFAULT_ZERO)
-                )
-                new_points = current_points + extra_points
                 const.LOGGER.info(
-                    "INFO: Award Badge - Adding extra points: %s (current: %s, new: %s) for kid '%s'.",
+                    "INFO: Award Badge - Awarding extra points: %s for kid '%s'.",
                     extra_points,
-                    current_points,
-                    new_points,
                     kid_name,
                 )
-                self.update_kid_points(kid_id, new_points)
+                self.update_kid_points(
+                    kid_id,
+                    delta=extra_points,
+                    source=const.POINTS_SOURCE_BADGES,
+                )
 
             # Process one-time reward if applicable
             if one_time_reward:
@@ -5738,8 +5932,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
         penalty_pts = penalty_info.get(const.DATA_PENALTY_POINTS, const.DEFAULT_ZERO)
-        new_points = float(kid_info[const.DATA_KID_POINTS]) + penalty_pts
-        self.update_kid_points(kid_id, new_points)
+        self.update_kid_points(
+            kid_id, delta=penalty_pts, source=const.POINTS_SOURCE_PENALTIES
+        )
 
         # increment penalty_applies
         if penalty_id in kid_info[const.DATA_KID_PENALTY_APPLIES]:
@@ -5776,8 +5971,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
 
         bonus_pts = bonus_info.get(const.DATA_BONUS_POINTS, const.DEFAULT_ZERO)
-        new_points = float(kid_info[const.DATA_KID_POINTS]) + bonus_pts
-        self.update_kid_points(kid_id, new_points)
+        self.update_kid_points(
+            kid_id, delta=bonus_pts, source=const.POINTS_SOURCE_BONUSES
+        )
 
         # increment bonus_applies
         if bonus_id in kid_info[const.DATA_KID_BONUS_APPLIES]:
@@ -5946,8 +6142,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         )
         kid_info = self.kids_data.get(kid_id)
         if kid_info is not None:
-            new_points = float(kid_info[const.DATA_KID_POINTS]) + extra_points
-            self.update_kid_points(kid_id, new_points)
+            self.update_kid_points(
+                kid_id, delta=extra_points, source=const.POINTS_SOURCE_ACHIEVEMENTS
+            )
 
         # Notify kid and parents
         extra_data = {
@@ -6093,8 +6290,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         )
         kid_info = self.kids_data.get(kid_id)
         if kid_info is not None:
-            new_points = float(kid_info[const.DATA_KID_POINTS]) + extra_points
-            self.update_kid_points(kid_id, new_points)
+            self.update_kid_points(
+                kid_id, delta=extra_points, source=const.POINTS_SOURCE_CHALLENGES
+            )
 
         # Notify kid and parents
         extra_data = {const.DATA_KID_ID: kid_id, const.DATA_CHALLENGE_ID: challenge_id}

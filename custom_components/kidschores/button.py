@@ -14,9 +14,9 @@ Features:
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.exceptions import HomeAssistantError
 
 from . import const
 from . import kc_helpers as kh
@@ -1003,19 +1003,15 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
                     )
                 )
 
-            current_points = self.coordinator.kids_data[self._kid_id][
-                const.DATA_KID_POINTS
-            ]
-            new_points = current_points + self._delta
             self.coordinator.update_kid_points(
                 kid_id=self._kid_id,
-                new_points=new_points,
+                delta=self._delta,
+                source=const.POINTS_SOURCE_MANUAL,
             )
             const.LOGGER.info(
-                "INFO: Adjusted points for Kid '%s' by %d. New points total: %d",
+                "INFO: Adjusted points for Kid '%s' by %d.",
                 self._kid_name,
                 self._delta,
-                new_points,
             )
             await self.coordinator.async_request_refresh()
 

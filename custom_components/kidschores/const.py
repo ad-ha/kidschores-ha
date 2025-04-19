@@ -767,6 +767,101 @@ DATA_KID_REWARD_CLAIMS = "reward_claims"
 DATA_KID_TODAY_CHORE_APPROVALS = "today_chore_approvals"
 DATA_KID_USE_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
 
+# ——————————————————————————————————————————————
+# Kid Point History Data Structure
+# ——————————————————————————————————————————————
+
+# Top‑level key for storing period‑by‑period point history
+DATA_KID_POINT_DATA = "point_data"
+
+# Sub‑section containing all period buckets
+DATA_KID_POINT_DATA_PERIODS = "periods"
+
+# Individual period buckets
+DATA_KID_POINT_DATA_PERIODS_DAILY = "daily"
+DATA_KID_POINT_DATA_PERIODS_WEEKLY = "weekly"
+DATA_KID_POINT_DATA_PERIODS_MONTHLY = "monthly"
+DATA_KID_POINT_DATA_PERIODS_YEARLY = "yearly"
+
+# Within each period entry:
+#   – points_total: net delta for that period
+#   – by_source: breakdown of delta by source type
+DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL = "points_total"
+DATA_KID_POINT_DATA_PERIOD_BY_SOURCE = "by_source"
+
+# Point Sources
+# --- Point Source Types (all plural) ---
+POINTS_SOURCE_CHORES = "chores"
+POINTS_SOURCE_BONUSES = "bonuses"
+POINTS_SOURCE_PENALTIES = "penalties"
+POINTS_SOURCE_BADGES = "badges"
+POINTS_SOURCE_ACHIEVEMENTS = "achievements"
+POINTS_SOURCE_CHALLENGES = "challenges"
+POINTS_SOURCE_REWARDS = "rewards"
+POINTS_SOURCE_MANUAL = "manual"
+POINTS_SOURCE_OTHER = "other"
+
+# Example list of valid sources for UI/enumeration:
+POINTS_SOURCE_OPTIONS = [
+    {CONF_VALUE: POINTS_SOURCE_CHORES, CONF_LABEL: "Chores"},
+    {CONF_VALUE: POINTS_SOURCE_BONUSES, CONF_LABEL: "Bonuses"},
+    {CONF_VALUE: POINTS_SOURCE_PENALTIES, CONF_LABEL: "Penalties"},
+    {CONF_VALUE: POINTS_SOURCE_BADGES, CONF_LABEL: "Badges"},
+    {CONF_VALUE: POINTS_SOURCE_ACHIEVEMENTS, CONF_LABEL: "Achievements"},
+    {CONF_VALUE: POINTS_SOURCE_CHALLENGES, CONF_LABEL: "Challenges"},
+    {CONF_VALUE: POINTS_SOURCE_REWARDS, CONF_LABEL: "Rewards"},
+    {CONF_VALUE: POINTS_SOURCE_OTHER, CONF_LABEL: "Other"},
+]
+
+# --- Kid Point Stats (modeled after chore stats) ---
+DATA_KID_POINT_STATS = "point_stats"
+
+# --- Per-period totals ---
+DATA_KID_POINT_STATS_EARNED_TODAY = "points_earned_today"
+DATA_KID_POINT_STATS_EARNED_WEEK = "points_earned_week"
+DATA_KID_POINT_STATS_EARNED_MONTH = "points_earned_month"
+DATA_KID_POINT_STATS_EARNED_YEAR = "points_earned_year"
+DATA_KID_POINT_STATS_EARNED_ALL_TIME = "points_earned_all_time"
+
+# --- Per-period by-source breakdowns ---
+DATA_KID_POINT_STATS_BY_SOURCE_TODAY = "points_by_source_today"
+DATA_KID_POINT_STATS_BY_SOURCE_WEEK = "points_by_source_week"
+DATA_KID_POINT_STATS_BY_SOURCE_MONTH = "points_by_source_month"
+DATA_KID_POINT_STATS_BY_SOURCE_YEAR = "points_by_source_year"
+DATA_KID_POINT_STATS_BY_SOURCE_ALL_TIME = "points_by_source_all_time"
+
+# --- Per-period spent (negative deltas) ---
+DATA_KID_POINT_STATS_SPENT_TODAY = "points_spent_today"
+DATA_KID_POINT_STATS_SPENT_WEEK = "points_spent_week"
+DATA_KID_POINT_STATS_SPENT_MONTH = "points_spent_month"
+DATA_KID_POINT_STATS_SPENT_YEAR = "points_spent_year"
+DATA_KID_POINT_STATS_SPENT_ALL_TIME = "points_spent_all_time"
+
+# --- Per-period net (earned - spent) ---
+DATA_KID_POINT_STATS_NET_TODAY = "points_net_today"
+DATA_KID_POINT_STATS_NET_WEEK = "points_net_week"
+DATA_KID_POINT_STATS_NET_MONTH = "points_net_month"
+DATA_KID_POINT_STATS_NET_YEAR = "points_net_year"
+DATA_KID_POINT_STATS_NET_ALL_TIME = "points_net_all_time"
+
+# --- Streaks (days with positive points) ---
+DATA_KID_POINT_STATS_EARNING_STREAK_CURRENT = "points_earning_streak_current"
+DATA_KID_POINT_STATS_EARNING_STREAK_LONGEST = "points_earning_streak_longest"
+
+# --- Averages ---
+DATA_KID_POINT_STATS_AVG_PER_DAY_WEEK = "avg_points_per_day_week"
+DATA_KID_POINT_STATS_AVG_PER_DAY_MONTH = "avg_points_per_day_month"
+DATA_KID_POINT_STATS_AVG_PER_CHORE = "avg_points_per_chore"
+
+# --- Highest balance ever (highest balance) ---
+DATA_KID_POINT_STATS_HIGHEST_BALANCE = "highest_balance"
+
+# --- All time point stats ---
+DATA_KID_POINTS_EARNED_ALL_TIME = "points_earned_all_time"
+DATA_KID_POINTS_SPENT_ALL_TIME = "points_spent_all_time"
+DATA_KID_POINTS_NET_ALL_TIME = "points_net_all_time"
+DATA_KID_POINTS_BY_SOURCE_ALL_TIME = "points_by_source_all_time"
+
 # PARENTS
 DATA_PARENT_ASSOCIATED_KIDS = "associated_kids"
 DATA_PARENT_ENABLE_NOTIFICATIONS = "enable_notifications"

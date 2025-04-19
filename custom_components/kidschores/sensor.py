@@ -444,6 +444,19 @@ class KidPointsSensor(CoordinatorEntity, SensorEntity):
         """Use the points' custom icon if set, else fallback."""
         return self._points_icon or const.DEFAULT_POINTS_ICON
 
+    @property
+    def extra_state_attributes(self):
+        """Expose all point stats as attributes."""
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        point_stats = kid_info.get(const.DATA_KID_POINT_STATS, {})
+        attributes = {
+            const.ATTR_KID_NAME: self._kid_name,
+        }
+        # Add all point stats as attributes, prefixed for clarity
+        for key, value in point_stats.items():
+            attributes[f"point_stat_{key}"] = value
+        return attributes
+
 
 # ------------------------------------------------------------------------------------------
 class KidMaxPointsEverSensor(CoordinatorEntity, SensorEntity):
@@ -471,7 +484,10 @@ class KidMaxPointsEverSensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         """Return the highest points total the kid has ever reached."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        return kid_info.get(const.DATA_KID_MAX_POINTS_EVER, const.DEFAULT_ZERO)
+        point_stats = kid_info.get(const.DATA_KID_POINT_STATS, {})
+        return point_stats.get(
+            const.DATA_KID_POINT_STATS_HIGHEST_BALANCE, const.DEFAULT_ZERO
+        )
 
     @property
     def icon(self):
@@ -1207,7 +1223,8 @@ class KidPointsEarnedDailySensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         """Return how many net points the kid has earned so far today."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        return kid_info.get(const.DATA_KID_POINTS_EARNED_TODAY, const.DEFAULT_ZERO)
+        point_stats = kid_info.get(const.DATA_KID_POINT_STATS, {})
+        return point_stats.get(const.DATA_KID_POINT_STATS_NET_TODAY, const.DEFAULT_ZERO)
 
     @property
     def native_unit_of_measurement(self):
@@ -1245,7 +1262,8 @@ class KidPointsEarnedWeeklySensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         """Return how many net points the kid has earned this week."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        return kid_info.get(const.DATA_KID_POINTS_EARNED_WEEKLY, const.DEFAULT_ZERO)
+        point_stats = kid_info.get(const.DATA_KID_POINT_STATS, {})
+        return point_stats.get(const.DATA_KID_POINT_STATS_NET_WEEK, const.DEFAULT_ZERO)
 
     @property
     def native_unit_of_measurement(self):
@@ -1283,7 +1301,8 @@ class KidPointsEarnedMonthlySensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         """Return how many net points the kid has earned this month."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        return kid_info.get(const.DATA_KID_POINTS_EARNED_MONTHLY, const.DEFAULT_ZERO)
+        point_stats = kid_info.get(const.DATA_KID_POINT_STATS, {})
+        return point_stats.get(const.DATA_KID_POINT_STATS_NET_MONTH, const.DEFAULT_ZERO)
 
     @property
     def native_unit_of_measurement(self):
