@@ -469,7 +469,7 @@ BADGE_TYPE_CHALLENGE_LINKED = "challenge_linked"
 BADGE_TYPE_CUMULATIVE = "cumulative"
 BADGE_TYPE_DAILY = "daily"
 BADGE_TYPE_PERIODIC = "periodic"
-BADGE_TYPE_SPECIAL_OCCASION = "special_occasions"
+BADGE_TYPE_SPECIAL_OCCASION = "special_occasion"
 
 # Reward configuration keys
 CONF_REWARD_COST = "reward_cost"
@@ -549,11 +549,61 @@ DATA_REWARDS = "rewards"
 DATA_KID_APPROVED_CHORES = "approved_chores"
 DATA_KID_BADGE_GRACE_EXPIRY = "badge_grace_expiry"
 DATA_KID_BADGE_EARNED_ID = "badge_id"
-DATA_KID_BADGE_EARNED_NAME = "badge_name"
-DATA_KID_BADGE_EARNED_LAST_AWARDED = "last_awarded_date"
-DATA_KID_BADGE_EARNED_AWARD_COUNT = "award_count"
+DATA_KID_BADGES_EARNED_NAME = "badge_name"
+DATA_KID_BADGES_EARNED_LAST_AWARDED = "last_awarded_date"
+DATA_KID_BADGES_EARNED_AWARD_COUNT = "award_count"
 DATA_KID_BADGES = "badges"
 DATA_KID_BADGES_EARNED = "badges_earned"
+DATA_KID_BADGES_EARNED_PERIODS = "periods"
+DATA_KID_BADGES_EARNED_PERIODS_DAILY = "daily"
+DATA_KID_BADGES_EARNED_PERIODS_WEEKLY = "weekly"
+DATA_KID_BADGES_EARNED_PERIODS_MONTHLY = "monthly"
+DATA_KID_BADGES_EARNED_PERIODS_YEARLY = "yearly"
+
+
+# Badge Progress Data Structure
+DATA_KID_BADGE_PROGRESS = "badge_progress"
+
+# Common Badge Progress Fields
+DATA_KID_BADGE_PROGRESS_APPROVED_COUNT = "approved_count"
+DATA_KID_BADGE_PROGRESS_CHORES_COMPLETED = "chores_completed"
+DATA_KID_BADGE_PROGRESS_CHORES_CYCLE_COUNT = "chores_cycle_count"
+DATA_KID_BADGE_PROGRESS_CHORES_TODAY = "chores_today"
+DATA_KID_BADGE_PROGRESS_CRITERIA_MET = "criteria_met"
+DATA_KID_BADGE_PROGRESS_CYCLE_COUNT = "cycle_count"
+DATA_KID_BADGE_PROGRESS_DAYS_COMPLETED = "days_completed"
+DATA_KID_BADGE_PROGRESS_DAYS_CYCLE_COUNT = "days_cycle_count"
+DATA_KID_BADGE_PROGRESS_END_DATE = "end_date"
+DATA_KID_BADGE_PROGRESS_LAST_AWARDED = "last_awarded"
+DATA_KID_BADGE_PROGRESS_LAST_UPDATE_DAY = "last_update_day"
+DATA_KID_BADGE_PROGRESS_NAME = "name"
+DATA_KID_BADGE_PROGRESS_OVERALL_PROGRESS = "overall_progress"
+DATA_KID_BADGE_PROGRESS_POINTS_CYCLE_COUNT = "points_cycle_count"
+DATA_KID_BADGE_PROGRESS_POINTS_TODAY = "points_today"
+DATA_KID_BADGE_PROGRESS_RECURRING_FREQUENCY = "recurring_frequency"
+DATA_KID_BADGE_PROGRESS_START_DATE = "start_date"
+DATA_KID_BADGE_PROGRESS_STATUS = "status"
+DATA_KID_BADGE_PROGRESS_TARGET_THRESHOLD_VALUE = "threshold_value"
+DATA_KID_BADGE_PROGRESS_TARGET_TYPE = "target_type"
+DATA_KID_BADGE_PROGRESS_TODAY_COMPLETED = "today_completed"
+DATA_KID_BADGE_PROGRESS_TOTAL_COUNT = "total_count"
+DATA_KID_BADGE_PROGRESS_TRACKED_CHORES = "tracked_chores"
+DATA_KID_BADGE_PROGRESS_TYPE = "badge_type"
+
+# For Points Target Type
+DATA_KID_BADGE_PROGRESS_POINTS_CYCLE_COUNT = "points_cycle_count"
+
+# For Chore Count Target Type
+DATA_KID_BADGE_PROGRESS_CHORES_CYCLE_COUNT = "chores_cycle_count"
+
+# For All Required Chores Target Type
+DATA_KID_BADGE_PROGRESS_DAYS_CYCLE_COUNT = "days_cycle_count"
+
+# Shared fields for tracking across target types
+DATA_KID_BADGE_PROGRESS_TRACKED_CHORES = "tracked_chores"
+DATA_KID_BADGE_PROGRESS_CHORES_COMPLETED = "chores_completed"
+DATA_KID_BADGE_PROGRESS_DAYS_COMPLETED = "days_completed"
+
 DATA_KID_BONUS_APPLIES = "bonus_applies"
 DATA_KID_CHORE_APPROVALS = "chore_approvals"
 DATA_KID_CHORE_CLAIMS = "chore_claims"
@@ -563,6 +613,91 @@ DATA_KID_COMPLETED_CHORES_MONTHLY = "completed_chores_monthly"
 DATA_KID_COMPLETED_CHORES_TOTAL = "completed_chores_total"
 DATA_KID_COMPLETED_CHORES_TODAY = "completed_chores_today"
 DATA_KID_COMPLETED_CHORES_WEEKLY = "completed_chores_weekly"
+DATA_KID_COMPLETED_CHORES_YEARLY = "completed_chores_yearly"
+
+# Kid Chore Data Structure Constants
+DATA_KID_CHORE_DATA = "chore_data"
+DATA_KID_CHORE_DATA_STATE = "state"
+DATA_KID_CHORE_DATA_NAME = "name"
+DATA_KID_CHORE_DATA_DUE_DATE = "due_date"
+DATA_KID_CHORE_DATA_LAST_COMPLETED = "last_completed"
+DATA_KID_CHORE_DATA_LAST_CLAIMED = "last_claimed"
+DATA_KID_CHORE_DATA_LAST_DISAPPROVED = "last_disapproved"
+DATA_KID_CHORE_DATA_LAST_OVERDUE = "last_overdue"
+DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME = "last_longest_streak_all_time"
+DATA_KID_CHORE_DATA_TOTAL_COUNT = "total_count"
+DATA_KID_CHORE_DATA_TOTAL_POINTS = "total_points"
+DATA_KID_CHORE_DATA_PERIODS = "periods"
+DATA_KID_CHORE_DATA_PERIODS_DAILY = "daily"
+DATA_KID_CHORE_DATA_PERIODS_WEEKLY = "weekly"
+DATA_KID_CHORE_DATA_PERIODS_MONTHLY = "monthly"
+DATA_KID_CHORE_DATA_PERIODS_YEARLY = "yearly"
+DATA_KID_CHORE_DATA_PERIOD_COUNT = "count"
+DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT = "disapproved_count"
+DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK = "longest_streak"
+DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT = "overdue_count"
+DATA_KID_CHORE_DATA_PERIOD_POINTS = "points"
+DATA_KID_CHORE_DATA_BADGE_REFS = "badge_refs"
+
+# Chore Stats Keys
+DATA_KID_CHORE_STATS = "chore_stats"
+
+# --- Completion Counts ---
+DATA_KID_CHORE_STATS_COMPLETED_TODAY = "completed_today"
+DATA_KID_CHORE_STATS_COMPLETED_WEEK = "completed_week"
+DATA_KID_CHORE_STATS_COMPLETED_MONTH = "completed_month"
+DATA_KID_CHORE_STATS_COMPLETED_YEAR = "completed_year"
+DATA_KID_CHORE_STATS_COMPLETED_ALL_TIME = "completed_all_time"
+
+# --- Most Completed Chore ---
+DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE = "most_completed_chore"
+DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_WEEK = "most_completed_chore_week"
+DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_MONTH = "most_completed_chore_month"
+DATA_KID_CHORE_STATS_MOST_COMPLETED_CHORE_YEAR = "most_completed_chore_year"
+
+# --- Last Completion Date ---
+DATA_KID_CHORE_STATS_COMPLETED_LAST_DATE = "completed_last_date"
+
+# --- Total Points from Chores ---
+DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_TODAY = "total_points_from_chores_today"
+DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_WEEK = "total_points_from_chores_week"
+DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_MONTH = "total_points_from_chores_month"
+DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_YEAR = "total_points_from_chores_year"
+DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_ALL_TIME = (
+    "total_points_from_chores_all_time"
+)
+
+# --- Overdue Counts ---
+DATA_KID_CHORE_STATS_OVERDUE_COUNT_TODAY = "overdue_count_today"
+DATA_KID_CHORE_STATS_OVERDUE_COUNT_WEEK = "overdue_count_week"
+DATA_KID_CHORE_STATS_OVERDUE_COUNT_MONTH = "overdue_count_month"
+DATA_KID_CHORE_STATS_OVERDUE_COUNT_YEAR = "overdue_count_year"
+DATA_KID_CHORE_STATS_OVERDUE_COUNT_ALL_TIME = "overdue_count_all_time"
+
+# --- Claimed but Not Approved ---
+DATA_KID_CHORE_STATS_DISAPPROVED_TODAY = "disapproved_today"
+DATA_KID_CHORE_STATS_DISAPPROVED_WEEK = "disapproved_week"
+DATA_KID_CHORE_STATS_DISAPPROVED_MONTH = "disapproved_month"
+DATA_KID_CHORE_STATS_DISAPPROVED_YEAR = "disapproved_year"
+DATA_KID_CHORE_STATS_DISAPPROVED_ALL_TIME = "disapproved_all_time"
+
+# --- Chores Current Stats ---
+DATA_KID_CHORE_STATS_CURRENT_DUE_TODAY = "current_due_today"
+DATA_KID_CHORE_STATS_CURRENT_OVERDUE = "current_overdue"
+DATA_KID_CHORE_STATS_CURRENT_CLAIMED = "current_claimed"
+DATA_KID_CHORE_STATS_CURRENT_APPROVED = "current_approved"
+
+# --- Longest Streaks ---
+DATA_KID_CHORE_STATS_LONGEST_STREAK_WEEK = "longest_streak_week"
+DATA_KID_CHORE_STATS_LONGEST_STREAK_MONTH = "longest_streak_month"
+DATA_KID_CHORE_STATS_LONGEST_STREAK_YEAR = "longest_streak_year"
+DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME = "longest_streak_all_time"
+
+# --- Average Chores Per Day ---
+DATA_KID_CHORE_STATS_AVG_PER_DAY_MONTH = "avg_per_day_month"
+DATA_KID_CHORE_STATS_AVG_PER_DAY_WEEK = "avg_per_day_week"
+
+
 # --- Badge Progress Tracking ---
 DATA_KID_CUMULATIVE_BADGE_PROGRESS = "cumulative_badge_progress"
 
@@ -623,6 +758,7 @@ DATA_KID_POINTS = "points"
 DATA_KID_POINTS_EARNED_MONTHLY = "points_earned_monthly"
 DATA_KID_POINTS_EARNED_TODAY = "points_earned_today"
 DATA_KID_POINTS_EARNED_WEEKLY = "points_earned_weekly"
+DATA_KID_POINTS_EARNED_YEARLY = "points_earned_yearly"
 DATA_KID_POINTS_MULTIPLIER = "points_multiplier"
 DATA_KID_PRE_RESET_BADGE = "pre_reset_badge"
 DATA_KID_REDEEMED_REWARDS = "redeemed_rewards"
@@ -630,6 +766,101 @@ DATA_KID_REWARD_APPROVALS = "reward_approvals"
 DATA_KID_REWARD_CLAIMS = "reward_claims"
 DATA_KID_TODAY_CHORE_APPROVALS = "today_chore_approvals"
 DATA_KID_USE_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
+
+# ——————————————————————————————————————————————
+# Kid Point History Data Structure
+# ——————————————————————————————————————————————
+
+# Top‑level key for storing period‑by‑period point history
+DATA_KID_POINT_DATA = "point_data"
+
+# Sub‑section containing all period buckets
+DATA_KID_POINT_DATA_PERIODS = "periods"
+
+# Individual period buckets
+DATA_KID_POINT_DATA_PERIODS_DAILY = "daily"
+DATA_KID_POINT_DATA_PERIODS_WEEKLY = "weekly"
+DATA_KID_POINT_DATA_PERIODS_MONTHLY = "monthly"
+DATA_KID_POINT_DATA_PERIODS_YEARLY = "yearly"
+
+# Within each period entry:
+#   – points_total: net delta for that period
+#   – by_source: breakdown of delta by source type
+DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL = "points_total"
+DATA_KID_POINT_DATA_PERIOD_BY_SOURCE = "by_source"
+
+# Point Sources
+# --- Point Source Types (all plural) ---
+POINTS_SOURCE_CHORES = "chores"
+POINTS_SOURCE_BONUSES = "bonuses"
+POINTS_SOURCE_PENALTIES = "penalties"
+POINTS_SOURCE_BADGES = "badges"
+POINTS_SOURCE_ACHIEVEMENTS = "achievements"
+POINTS_SOURCE_CHALLENGES = "challenges"
+POINTS_SOURCE_REWARDS = "rewards"
+POINTS_SOURCE_MANUAL = "manual"
+POINTS_SOURCE_OTHER = "other"
+
+# Example list of valid sources for UI/enumeration:
+POINTS_SOURCE_OPTIONS = [
+    {CONF_VALUE: POINTS_SOURCE_CHORES, CONF_LABEL: "Chores"},
+    {CONF_VALUE: POINTS_SOURCE_BONUSES, CONF_LABEL: "Bonuses"},
+    {CONF_VALUE: POINTS_SOURCE_PENALTIES, CONF_LABEL: "Penalties"},
+    {CONF_VALUE: POINTS_SOURCE_BADGES, CONF_LABEL: "Badges"},
+    {CONF_VALUE: POINTS_SOURCE_ACHIEVEMENTS, CONF_LABEL: "Achievements"},
+    {CONF_VALUE: POINTS_SOURCE_CHALLENGES, CONF_LABEL: "Challenges"},
+    {CONF_VALUE: POINTS_SOURCE_REWARDS, CONF_LABEL: "Rewards"},
+    {CONF_VALUE: POINTS_SOURCE_OTHER, CONF_LABEL: "Other"},
+]
+
+# --- Kid Point Stats (modeled after chore stats) ---
+DATA_KID_POINT_STATS = "point_stats"
+
+# --- Per-period totals ---
+DATA_KID_POINT_STATS_EARNED_TODAY = "points_earned_today"
+DATA_KID_POINT_STATS_EARNED_WEEK = "points_earned_week"
+DATA_KID_POINT_STATS_EARNED_MONTH = "points_earned_month"
+DATA_KID_POINT_STATS_EARNED_YEAR = "points_earned_year"
+DATA_KID_POINT_STATS_EARNED_ALL_TIME = "points_earned_all_time"
+
+# --- Per-period by-source breakdowns ---
+DATA_KID_POINT_STATS_BY_SOURCE_TODAY = "points_by_source_today"
+DATA_KID_POINT_STATS_BY_SOURCE_WEEK = "points_by_source_week"
+DATA_KID_POINT_STATS_BY_SOURCE_MONTH = "points_by_source_month"
+DATA_KID_POINT_STATS_BY_SOURCE_YEAR = "points_by_source_year"
+DATA_KID_POINT_STATS_BY_SOURCE_ALL_TIME = "points_by_source_all_time"
+
+# --- Per-period spent (negative deltas) ---
+DATA_KID_POINT_STATS_SPENT_TODAY = "points_spent_today"
+DATA_KID_POINT_STATS_SPENT_WEEK = "points_spent_week"
+DATA_KID_POINT_STATS_SPENT_MONTH = "points_spent_month"
+DATA_KID_POINT_STATS_SPENT_YEAR = "points_spent_year"
+DATA_KID_POINT_STATS_SPENT_ALL_TIME = "points_spent_all_time"
+
+# --- Per-period net (earned - spent) ---
+DATA_KID_POINT_STATS_NET_TODAY = "points_net_today"
+DATA_KID_POINT_STATS_NET_WEEK = "points_net_week"
+DATA_KID_POINT_STATS_NET_MONTH = "points_net_month"
+DATA_KID_POINT_STATS_NET_YEAR = "points_net_year"
+DATA_KID_POINT_STATS_NET_ALL_TIME = "points_net_all_time"
+
+# --- Streaks (days with positive points) ---
+DATA_KID_POINT_STATS_EARNING_STREAK_CURRENT = "points_earning_streak_current"
+DATA_KID_POINT_STATS_EARNING_STREAK_LONGEST = "points_earning_streak_longest"
+
+# --- Averages ---
+DATA_KID_POINT_STATS_AVG_PER_DAY_WEEK = "avg_points_per_day_week"
+DATA_KID_POINT_STATS_AVG_PER_DAY_MONTH = "avg_points_per_day_month"
+DATA_KID_POINT_STATS_AVG_PER_CHORE = "avg_points_per_chore"
+
+# --- Highest balance ever (highest balance) ---
+DATA_KID_POINT_STATS_HIGHEST_BALANCE = "highest_balance"
+
+# --- All time point stats ---
+DATA_KID_POINTS_EARNED_ALL_TIME = "points_earned_all_time"
+DATA_KID_POINTS_SPENT_ALL_TIME = "points_spent_all_time"
+DATA_KID_POINTS_NET_ALL_TIME = "points_net_all_time"
+DATA_KID_POINTS_BY_SOURCE_ALL_TIME = "points_by_source_all_time"
 
 # PARENTS
 DATA_PARENT_ASSOCIATED_KIDS = "associated_kids"
@@ -700,16 +931,19 @@ DATA_BADGE_TRACKED_CHORES = "tracked_chores"
 DATA_BADGE_TRACKED_CHORES_SELECTED_CHORES = "selected_chores"
 DATA_BADGE_TYPE = "badge_type"
 
+# BADGES - DEPRECATED but used in migration
+DATA_BADGE_THRESHOLD_TYPE = "threshold_type"  # USED IN MIGRATION TO 4.0
+DATA_BADGE_THRESHOLD_VALUE = "threshold_value"  # USED IN  MIGRATION TO 4.0
+DATA_BADGE_CHORE_COUNT_TYPE = "chore_count_type"  # USED IN  MIGRATION TO 4.0
+DATA_BADGE_POINTS_MULTIPLIER = "points_multiplier"  # USED IN  MIGRATION TO 4.0
+
 
 # BADGES - DEPRECATED Constants
 DATA_BADGE_REQUIRED_CHORES = "required_chores"  # NEEDS TO BE REMOVED AFTER FIX
 DATA_BADGE_RESET_GRACE_PERIOD = "reset_grace_period"  # NEEDS TO BE REMOVED AFTER FIX
 DATA_BADGE_RESET_PERIODICALLY = "reset_periodically"  # NEEDS TO BE REMOVED AFTER FIX
 DATA_BADGE_RESET_TYPE = "reset_type"  # NEEDS TO BE REMOVED AFTER FIX
-DATA_BADGE_THRESHOLD_TYPE = "threshold_type"  # CAN BE REMOVED AFTER MIGRATION TO 4.0
-DATA_BADGE_THRESHOLD_VALUE = "threshold_value"  # CAN BE REMOVED AFTER MIGRATION TO 4.0
 # DATA_BADGE_ASSIGNED_KIDS = "assigned_kids"
-# DATA_BADGE_CHORE_COUNT_TYPE = "chore_count_type"
 # DATA_BADGE_CRITERIA_MODE = "criteria_mode"
 # DATA_BADGE_CRITERIA_MODE_CHORES = "chores"
 # DATA_BADGE_CRITERIA_MODE_POINTS = "points"
@@ -936,9 +1170,35 @@ DEFAULT_ZERO = 0
 # ------------------------------------------------------------------------------------------------
 # Badge Threshold Types
 # ------------------------------------------------------------------------------------------------
-BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT = "chore_count"
+# Badge Target Types for all supported badge logic
+
 BADGE_TARGET_THRESHOLD_TYPE_POINTS = "points"
-BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED = "all_chores_required"
+BADGE_TARGET_THRESHOLD_TYPE_POINTS_CHORES = "points_chores"
+BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT = "chore_count"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_CHORES = "days_all_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_CHORES = "days_80pct_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_CHORES_NO_OVERDUE = (
+    "days_all_chores_no_overdue"
+)
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_DUE_CHORES = "days_all_due_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_DUE_CHORES = "days_80pct_due_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_DUE_CHORES_NO_OVERDUE = (
+    "days_all_due_chores_no_overdue"
+)
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_3_CHORES = "days_min_3_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_5_CHORES = "days_min_5_chores"
+BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_7_CHORES = "days_min_7_chores"
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES = "streak_all_chores"
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_CHORES = "streak_80pct_chores"
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES_NO_OVERDUE = (
+    "streak_all_chores_no_overdue"
+)
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_DUE_CHORES = "streak_80pct_due_chores"
+BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_DUE_CHORES_NO_OVERDUE = (
+    "streak_all_due_chores_no_overdue"
+)
+
+# Legacy
 BADGE_THRESHOLD_TYPE_CHORE_COUNT = "chore_count"
 BADGE_THRESHOLD_TYPE_POINTS = "points"
 
@@ -963,6 +1223,9 @@ REWARD_STATE_CLAIMED = "claimed"
 REWARD_STATE_NOT_CLAIMED = "not_claimed"
 
 # Badge States
+BADGE_STATE_IN_PROGRESS = "in_progress"
+BADGE_STATE_EARNED = "earned"
+BADGE_STATE_ACTIVE_CYCLE = "active_cycle"
 CUMULATIVE_BADGE_STATE_ACTIVE = "active"
 CUMULATIVE_BADGE_STATE_GRACE = "grace"
 CUMULATIVE_BADGE_STATE_DEMOTED = "demoted"
@@ -992,6 +1255,7 @@ ATTR_ALL_EARNED_BADGES = "all_earned_badges"
 ATTR_ALLOW_MULTIPLE_CLAIMS_PER_DAY = "allow_multiple_claims_per_day"
 ATTR_APPLICABLE_DAYS = "applicable_days"
 ATTR_AWARDED = "awarded"
+ATTR_BADGE_AWARDS = "awards"
 ATTR_ASSIGNED_KIDS = "assigned_kids"
 ATTR_ASSOCIATED_ACHIEVEMENT = "associated_achievement"
 ATTR_ASSOCIATED_CHALLENGE = "associated_challenge"
@@ -1023,6 +1287,7 @@ ATTR_DEFAULT_POINTS = "default_points"
 ATTR_DESCRIPTION = "description"
 ATTR_DUE_DATE = "due_date"
 ATTR_END_DATE = "end_date"
+ATTR_FRIENDLY_NAME = "friendly_name"
 ATTR_GLOBAL_STATE = "global_state"
 ATTR_HIGHEST_BADGE_THRESHOLD_VALUE = "highest_badge_threshold_value"
 ATTR_KID_NAME = "kid_name"
@@ -1049,6 +1314,7 @@ ATTR_SIGN_LABEL = "sign_label"
 ATTR_START_DATE = "start_date"
 ATTR_STREAKS_BY_ACHIEVEMENT = "streaks_by_achievement"
 ATTR_SHARED_CHORE = "shared_chore"
+ATTR_TARGET = "target"
 ATTR_TARGET_VALUE = "target_value"
 ATTR_THRESHOLD_TYPE = "threshold_type"
 ATTR_THRESHOLD_VALUE = "threshold_value"
@@ -1617,7 +1883,7 @@ AWARD_MODE_OPTIONS = [
     CONF_BADGE_AWARD_POINTS_REWARD,
 ]
 
-# Badge Threshold Type
+# DEPRECATED - Badge Threshold Type
 THRESHOLD_TYPE_OPTIONS = [BADGE_THRESHOLD_TYPE_POINTS, BADGE_THRESHOLD_TYPE_CHORE_COUNT]
 
 # Badge Cumulative Reset Period
@@ -1636,8 +1902,6 @@ BADGE_CUMULATIVE_RESET_TYPE_OPTIONS = [
     {"value": FREQUENCY_CUSTOM_1_YEAR, "label": "Custom 1-Year"},
 ]
 
-# Badge Reset Period
-BADGE_PERIOD_OPTIONS = [CONF_WEEKLY, CONF_BIWEEKLY, CONF_MONTHLY, CONF_CUSTOM]
 
 # Badge Periodic Reset Schedule
 BADGE_RESET_SCHEDULE_OPTIONS = [
@@ -1655,17 +1919,84 @@ BADGE_RESET_SCHEDULE_OPTIONS = [
     {"value": CONF_CUSTOM, "label": "Custom (define period below)"},
 ]
 
+# Badge target handler constants for handler mapping keys
+BADGE_HANDLER_PARAM_PERCENT_REQUIRED = "percent_required"
+BADGE_HANDLER_PARAM_ONLY_DUE_TODAY = "only_due_today"
+BADGE_HANDLER_PARAM_REQUIRE_NO_OVERDUE = "require_no_overdue"
+BADGE_HANDLER_PARAM_MIN_COUNT = "min_count"
+BADGE_HANDLER_PARAM_FROM_CHORES_ONLY = "from_chores_only"
+
 # Badge Special Occasion Types
 OCCASION_TYPE_OPTIONS = [CONF_BIRTHDAY, CONF_HOLIDAY, CONF_CUSTOM]
 
 TARGET_TYPE_OPTIONS = [
-    {CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT, CONF_LABEL: "Chore Count"},
-    {CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_POINTS, CONF_LABEL: "Points"},
+    {CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_POINTS, CONF_LABEL: "Points Earned"},
     {
-        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED,
-        CONF_LABEL: "All Chores Required",
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_POINTS_CHORES,
+        CONF_LABEL: "Points Earned (From Chores)",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT,
+        CONF_LABEL: "Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_CHORES,
+        CONF_LABEL: "Days Selected Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_CHORES,
+        CONF_LABEL: "Days 80% of Selected Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Days Selected Chores Completed (No Overdue)",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_DUE_CHORES,
+        CONF_LABEL: "Days Selected Due Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_80PCT_DUE_CHORES,
+        CONF_LABEL: "Days 80% of Selected Due Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_SELECTED_DUE_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Days Selected Due Chores Completed (No Overdue)",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_3_CHORES,
+        CONF_LABEL: "Days Minimum 3 Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_5_CHORES,
+        CONF_LABEL: "Days Minimum 5 Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_DAYS_MIN_7_CHORES,
+        CONF_LABEL: "Days Minimum 7 Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES,
+        CONF_LABEL: "Streak: Selected Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_CHORES,
+        CONF_LABEL: "Streak: 80% of Selected Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Streak: Selected Chores Completed (No Overdue)",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_DUE_CHORES,
+        CONF_LABEL: "Streak: 80% of Selected Due Chores Completed",
+    },
+    {
+        CONF_VALUE: BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_DUE_CHORES_NO_OVERDUE,
+        CONF_LABEL: "Streak: Selected Due Chores Completed (No Overdue)",
     },
 ]
+
 
 # Badge types for include_target component
 INCLUDE_TARGET_BADGE_TYPES = [
@@ -1691,12 +2022,11 @@ INCLUDE_CHALLENGE_LINKED_BADGE_TYPES = [
 ]
 
 # Badge types for include_tracked_chores component
-INCLUDE_TRACKED_CHORES_BADGE_TYPES = [
-    BADGE_TYPE_PERIODIC,
-]
+INCLUDE_TRACKED_CHORES_BADGE_TYPES = [BADGE_TYPE_PERIODIC, BADGE_TYPE_DAILY]
 
 # Badge types for include_assigned_to component
 INCLUDE_ASSIGNED_TO_BADGE_TYPES = [
+    BADGE_TYPE_CUMULATIVE,
     BADGE_TYPE_DAILY,
     BADGE_TYPE_PERIODIC,
     BADGE_TYPE_SPECIAL_OCCASION,

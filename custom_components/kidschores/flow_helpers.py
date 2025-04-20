@@ -309,619 +309,6 @@ def build_chore_schema(kids_dict, default=None):
 # ----------------------------------------------------------------------------------
 
 
-def build_badge_cumulative_schema(default: dict = None, rewards_list: list = None):
-    """Build schema for cumulative badges (by points or chore count)."""
-    default = default or {}
-    rewards_list = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}] + (
-        rewards_list or []
-    )
-    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
-
-    return vol.Schema(
-        {
-            vol.Required(
-                const.CONF_BADGE_NAME,
-                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_DESCRIPTION,
-                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, []),
-            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
-            vol.Optional(
-                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
-            ): selector.IconSelector(),
-            vol.Required(
-                const.CONF_BADGE_THRESHOLD_VALUE,
-                default=default.get(
-                    const.CONF_BADGE_THRESHOLD_VALUE,
-                    const.DEFAULT_BADGE_THRESHOLD_VALUE,
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=1,
-                )
-            ),
-            vol.Required(
-                const.CONF_BADGE_AWARD_MODE,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.AWARD_MODE_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_POINTS,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=1,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_REWARD,
-                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=rewards_list,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
-                )
-            ),
-            vol.Required(
-                const.CONF_BADGE_POINTS_MULTIPLIER,
-                default=default.get(
-                    const.CONF_BADGE_POINTS_MULTIPLIER, const.DEFAULT_POINTS_MULTIPLIER
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    step=0.01,
-                    min=1.0,
-                )
-            ),
-            vol.Required(
-                const.CONF_BADGE_RESET_PERIODICALLY,
-                default=default.get(const.CONF_BADGE_RESET_PERIODICALLY, False),
-            ): selector.BooleanSelector(),
-            # Following fields are used only when periodic reset is enabled.
-            vol.Optional(
-                const.CONF_BADGE_RESET_TYPE,
-                default=default.get(const.CONF_BADGE_RESET_TYPE, const.CONF_NONE),
-            ): vol.Any(
-                None,
-                selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=const.BADGE_CUMULATIVE_RESET_TYPE_OPTIONS,
-                        translation_key=const.TRANS_KEY_FLOW_HELPERS_RESET_TYPE,
-                        mode=selector.SelectSelectorMode.DROPDOWN,
-                    )
-                ),
-            ),
-            vol.Optional(
-                const.CONF_BADGE_CUSTOM_RESET_DATE,
-                default=default.get(
-                    const.CONF_BADGE_CUSTOM_RESET_DATE, const.CONF_NONE
-                ),
-            ): vol.Any(None, selector.DateSelector()),
-            vol.Optional(
-                const.CONF_BADGE_RESET_GRACE_PERIOD,
-                default=default.get(
-                    const.CONF_BADGE_RESET_GRACE_PERIOD,
-                    const.DEFAULT_BADGE_RESET_GRACE_PERIOD,
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX, min=0, step=1
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_MAINTENANCE_RULES,
-                default=default.get(
-                    const.CONF_BADGE_MAINTENANCE_RULES,
-                    const.DEFAULT_BADGE_MAINTENANCE_THRESHOLD,
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX, min=0, step=1
-                )
-            ),
-            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
-        }
-    )
-
-
-def build_badge_daily_schema(default: dict = None, rewards_list: list = None):
-    """Build schema for daily badges that reset every day."""
-    default = default or {}
-    rewards_list = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}] + (
-        rewards_list or []
-    )
-    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
-
-    return vol.Schema(
-        {
-            vol.Required(
-                const.CONF_BADGE_NAME,
-                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_DESCRIPTION,
-                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, []),
-            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
-            vol.Optional(
-                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
-            ): selector.IconSelector(),
-            vol.Required(
-                const.CONF_BADGE_DAILY_THRESHOLD_TYPE,
-                default=default.get(
-                    const.CONF_BADGE_DAILY_THRESHOLD_TYPE,
-                    const.DEFAULT_BADGE_THRESHOLD_TYPE,
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.THRESHOLD_TYPE_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_DAILY_THRESHOLD_TYPE,
-                )
-            ),
-            vol.Required(
-                const.CONF_BADGE_DAILY_THRESHOLD,
-                default=default.get(
-                    const.CONF_BADGE_DAILY_THRESHOLD,
-                    const.DEFAULT_BADGE_DAILY_THRESHOLD,
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=1,
-                )
-            ),
-            vol.Required(
-                const.CONF_BADGE_AWARD_MODE,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.AWARD_MODE_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_POINTS,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=1,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_REWARD,
-                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=rewards_list,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
-                )
-            ),
-            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
-        }
-    )
-
-
-def old_build_badge_periodic_schema(
-    default: dict = None, rewards_list: list = None, chores_list: list = None
-):
-    """Build schema for periodic badges (e.g. weekly or monthly)."""
-    default = default or {}
-
-    rewards_list = [
-        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + rewards_list or []
-    chores_list = [
-        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + chores_list or []
-    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
-
-    return vol.Schema(
-        {
-            vol.Required(
-                const.CONF_BADGE_NAME,
-                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_DESCRIPTION,
-                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, []),
-            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
-            vol.Optional(
-                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
-            ): selector.IconSelector(),
-            vol.Required(
-                const.CONF_BADGE_RESET_SCHEDULE,
-                default=default.get(const.CONF_BADGE_RESET_SCHEDULE, const.CONF_WEEKLY),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.BADGE_RESET_SCHEDULE_OPTIONS,
-                    translation_key=const.TRANS_KEY_CFOP_RESET_SCHEDULE,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_START_DATE,
-                default=default.get(const.CONF_BADGE_START_DATE, None),
-            ): vol.Any(None, selector.DateSelector()),
-            vol.Optional(
-                const.CONF_BADGE_END_DATE,
-                default=default.get(const.CONF_BADGE_END_DATE, None),
-            ): vol.Any(None, selector.DateSelector()),
-            vol.Optional(
-                const.CONF_BADGE_PERIODIC_RECURRENT,
-                default=default.get(const.CONF_BADGE_PERIODIC_RECURRENT, False),
-            ): selector.BooleanSelector(),
-            vol.Required(
-                const.CONF_BADGE_THRESHOLD_TYPE,
-                default=default.get(
-                    const.CONF_BADGE_THRESHOLD_TYPE, const.DEFAULT_BADGE_THRESHOLD_TYPE
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.THRESHOLD_TYPE_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_THRESHOLD_TYPE,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_REQUIRED_CHORES,
-                default=default.get(const.CONF_BADGE_REQUIRED_CHORES, []),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=chores_list,
-                    multiple=True,
-                    translation_key=const.TRANS_KEY_CFOF_REQUIRED_CHORES,
-                )
-            ),
-            vol.Required(
-                const.CONF_BADGE_THRESHOLD_VALUE,
-                default=default.get(
-                    const.CONF_BADGE_THRESHOLD_VALUE,
-                    const.DEFAULT_BADGE_THRESHOLD_VALUE,
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=1,
-                )
-            ),
-            vol.Required(
-                const.CONF_BADGE_AWARD_MODE,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.AWARD_MODE_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_POINTS,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=1,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_REWARD,
-                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=rewards_list,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
-                )
-            ),
-            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
-        }
-    )
-
-
-def build_badge_achievement_schema(
-    default: dict = None, achievements_list: list = None, rewards_list: list = None
-):
-    """Build schema for achievement‑linked badges."""
-    default = default or {}
-    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
-    achievements_list = [
-        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + achievements_list or []
-    rewards_list = [
-        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + rewards_list or []
-
-    return vol.Schema(
-        {
-            vol.Required(
-                const.CONF_BADGE_NAME,
-                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_DESCRIPTION,
-                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, []),
-            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
-            vol.Optional(
-                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
-            ): selector.IconSelector(),
-            vol.Required(
-                const.CONF_BADGE_ASSOCIATED_ACHIEVEMENT,
-                default=default.get(
-                    const.CONF_BADGE_ASSOCIATED_ACHIEVEMENT, const.CONF_EMPTY
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=achievements_list,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ASSOCIATED_ACHIEVEMENT,
-                )
-            ),
-            vol.Required(
-                const.CONF_BADGE_AWARD_MODE,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.AWARD_MODE_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_POINTS,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=1,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_REWARD,
-                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=rewards_list,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
-                )
-            ),
-            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
-        }
-    )
-
-
-def build_badge_challenge_schema(
-    default: dict = None, challenges_list: list = None, rewards_list: list = None
-):
-    """Build schema for challenge‑linked badges."""
-    default = default or {}
-    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
-    challenges_list = [
-        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + challenges_list or []
-    rewards_list = [
-        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + rewards_list or []
-
-    return vol.Schema(
-        {
-            vol.Required(
-                const.CONF_BADGE_NAME,
-                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_DESCRIPTION,
-                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, []),
-            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
-            vol.Optional(
-                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
-            ): selector.IconSelector(),
-            vol.Required(
-                const.CONF_BADGE_ASSOCIATED_CHALLENGE,
-                default=default.get(
-                    const.CONF_BADGE_ASSOCIATED_CHALLENGE, const.CONF_EMPTY
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=challenges_list,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ASSOCIATED_CHALLENGE,
-                )
-            ),
-            vol.Required(
-                const.CONF_BADGE_AWARD_MODE,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.AWARD_MODE_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_POINTS,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=1,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_REWARD,
-                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=rewards_list,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
-                )
-            ),
-            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
-        }
-    )
-
-
-def build_badge_special_occasions_schema(
-    default: dict = None, rewards_list: list = None, kids_dict: list = None
-):
-    """Build schema for special occasion badges."""
-    default = default or {}
-    internal_id_default = default.get(const.CONF_INTERNAL_ID, str(uuid.uuid4()))
-    rewards_list = [
-        {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
-    ] + rewards_list or []
-
-    kids_options = [
-        {"value": kid_id, "label": kid_name} for kid_name, kid_id in kids_dict.items()
-    ]
-    default_assigned_kids = default.get(const.CONF_BADGE_ASSIGNED_KIDS, [])
-    if not isinstance(default_assigned_kids, list):
-        default_assigned_kids = [default_assigned_kids]
-
-    return vol.Schema(
-        {
-            vol.Required(
-                const.CONF_BADGE_NAME,
-                default=default.get(const.CONF_NAME, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_DESCRIPTION,
-                default=default.get(const.CONF_DESCRIPTION, const.CONF_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CONF_BADGE_LABELS,
-                default=default.get(const.CONF_BADGE_LABELS, []),
-            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
-            vol.Optional(
-                const.CONF_ICON, default=default.get(const.CONF_ICON, const.CONF_EMPTY)
-            ): selector.IconSelector(),
-            vol.Required(
-                const.CONF_BADGE_ASSIGNED_KIDS, default=default_assigned_kids
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=kids_options,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_ASSIGNED_KIDS,
-                    multiple=True,
-                )
-            ),
-            vol.Required(
-                const.CONF_BADGE_OCCASION_TYPE,
-                default=default.get(const.CONF_BADGE_OCCASION_TYPE, const.CONF_HOLIDAY),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.OCCASION_TYPE_OPTIONS,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_OCCASION_TYPE,
-                )
-            ),
-            vol.Required(
-                const.CONF_BADGE_OCCASION_DATE,
-                default=default.get(const.CONF_BADGE_OCCASION_DATE, const.CONF_EMPTY),
-            ): selector.DateSelector(),
-            vol.Required(
-                const.CONF_BADGE_SPECIAL_OCCASION_RECURRENCY,
-                default=default.get(
-                    const.CONF_BADGE_SPECIAL_OCCASION_RECURRENCY, False
-                ),
-            ): selector.BooleanSelector(),
-            vol.Required(
-                const.CONF_BADGE_AWARD_MODE,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.AWARD_MODE_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_MODE,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_POINTS,
-                default=default.get(
-                    const.CONF_BADGE_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=1,
-                )
-            ),
-            vol.Optional(
-                const.CONF_BADGE_AWARD_REWARD,
-                default=default.get(const.CONF_BADGE_AWARD_REWARD, const.CONF_EMPTY),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=rewards_list,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_AWARD_REWARD,
-                )
-            ),
-            vol.Required(const.CONF_INTERNAL_ID, default=internal_id_default): str,
-        }
-    )
-
-
-# ----------------------------------------------------------------------------------
-# BADGES - HELPERS
-# ----------------------------------------------------------------------------------
-
-
 # --- Consolidated Build Function ---
 def build_badge_common_data(
     user_input: Dict[str, Any],
@@ -976,10 +363,7 @@ def build_badge_common_data(
         )
         threshold_value = const.DEFAULT_BADGE_TARGET_THRESHOLD_VALUE  # Default
         try:
-            if target_type == const.BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED:
-                threshold_value = int(threshold_value_input)
-            else:
-                threshold_value = int(threshold_value_input)
+            threshold_value = float(threshold_value_input)
         except (TypeError, ValueError, AttributeError):
             const.LOGGER.warning(
                 "Could not parse target threshold value '%s' for type '%s'. Using default.",
@@ -1004,9 +388,7 @@ def build_badge_common_data(
         occasion_type = user_input.get(
             const.CFOF_BADGES_INPUT_OCCASION_TYPE, const.CONF_EMPTY
         )
-        badge_data[const.DATA_BADGE_SPECIAL_OCCASION_TYPE] = {
-            const.DATA_BADGE_OCCASION_TYPE: occasion_type
-        }
+        badge_data[const.DATA_BADGE_SPECIAL_OCCASION_TYPE] = occasion_type
 
     # --- Achievement-Linked Component ---
     if include_achievement_linked:
@@ -1175,6 +557,8 @@ def validate_badge_common_inputs(  # Renamed
 
     is_cumulative = badge_type == const.BADGE_TYPE_CUMULATIVE
     is_periodic = badge_type == const.BADGE_TYPE_PERIODIC
+    is_daily = badge_type == const.BADGE_TYPE_DAILY
+    is_special_occasion = badge_type == const.BADGE_TYPE_SPECIAL_OCCASION
 
     # --- Start Common Validation ---
     badge_name = user_input.get(const.CFOF_BADGES_INPUT_NAME, "").strip()
@@ -1196,40 +580,22 @@ def validate_badge_common_inputs(  # Renamed
 
     # --- Target Component Validation ---
     if include_target:
-        target_type = user_input.get(
-            const.CFOF_BADGES_INPUT_TARGET_TYPE, const.DEFAULT_BADGE_TARGET_TYPE
-        )
-        target_threshold = user_input.get(
-            const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE
-        )
-        allowed_types = [
-            const.BADGE_TARGET_THRESHOLD_TYPE_POINTS,
-            const.BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT,
-            const.BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED,
-        ]
+        # Special Occasion badge handling - force target type and threshold value
+        if is_special_occasion:
+            # Force special occasion badges to use points with threshold 1
+            user_input[const.CFOF_BADGES_INPUT_TARGET_TYPE] = (
+                const.BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT
+            )
+            user_input[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = 1
 
-        if target_type not in allowed_types:
-            errors[const.CFOF_BADGES_INPUT_TARGET_TYPE] = (
-                "invalid_target_type"  # Use translation key
+        # Cumulative badge handling - force target type to points
+        elif is_cumulative:
+            # Force cumulative badges to use points
+            user_input[const.CFOF_BADGES_INPUT_TARGET_TYPE] = (
+                const.BADGE_TARGET_THRESHOLD_TYPE_POINTS
             )
 
-        if target_threshold is None or str(target_threshold).strip() == "":
-            errors[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = (
-                "target_threshold_required"  # Use translation key
-            )
-        else:
-            try:
-                value = int(target_threshold)
-                if value <= 0:
-                    errors[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = (
-                        const.TRANS_KEY_CFOF_INVALID_BADGE_TARGET_THRESHOLD_VALUE
-                    )
-            except (TypeError, ValueError):
-                errors[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = (
-                    const.TRANS_KEY_CFOF_INVALID_BADGE_TARGET_THRESHOLD_VALUE
-                )
-        # Validate maintenance rules if cumulative
-        if is_cumulative:
+            # Validate maintenance rules
             maintenance_rules = user_input.get(
                 const.CFOF_BADGES_INPUT_MAINTENANCE_RULES
             )
@@ -1238,6 +604,32 @@ def validate_badge_common_inputs(  # Renamed
                     "invalid_maintenance_rules"
                 )
         else:
+            # Regular badge validation
+            target_type = user_input.get(
+                const.CFOF_BADGES_INPUT_TARGET_TYPE, const.DEFAULT_BADGE_TARGET_TYPE
+            )
+            target_threshold = user_input.get(
+                const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE
+            )
+
+            if target_threshold is None or str(target_threshold).strip() == "":
+                errors[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = (
+                    "target_threshold_required"  # Use translation key
+                )
+            else:
+                try:
+                    value = float(target_threshold)
+                    if value <= 0:
+                        errors[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = (
+                            const.TRANS_KEY_CFOF_INVALID_BADGE_TARGET_THRESHOLD_VALUE
+                        )
+                except (TypeError, ValueError):
+                    errors[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = (
+                        const.TRANS_KEY_CFOF_INVALID_BADGE_TARGET_THRESHOLD_VALUE
+                    )
+
+        # Handle maintenance rules for non-cumulative badges
+        if not is_cumulative:
             # If not cumulative, set maintenance rules to Zero
             user_input[const.CFOF_BADGES_INPUT_MAINTENANCE_RULES] = const.DEFAULT_ZERO
 
@@ -1272,27 +664,12 @@ def validate_badge_common_inputs(  # Renamed
             )
 
     # --- Tracked Chores Component Validation ---
-    if include_tracked_chores:  # Use renamed flag
+    if include_tracked_chores:
         selected_chores = user_input.get(const.CFOF_BADGES_INPUT_SELECTED_CHORES, [])
         if not isinstance(selected_chores, list):
             errors[const.CFOF_BADGES_INPUT_SELECTED_CHORES] = (
                 "invalid_format_list_expected"  # Use translation keys
             )
-        target_type = user_input.get(const.CFOF_BADGES_INPUT_TARGET_TYPE)
-        # Require chores only if target type necessitates it
-        if target_type in [
-            const.BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED,
-        ]:
-            actual_chores = [
-                chore_id
-                for chore_id in selected_chores
-                if chore_id and chore_id != const.CONF_EMPTY
-            ]
-            if not actual_chores:
-                errors[const.CFOF_BADGES_INPUT_SELECTED_CHORES] = (
-                    "chores_required_for_target_type"  # Use translation keys
-                )
-        # Optional: Check existence of chore IDs here if needed
 
     # --- Assigned To Component Validation ---
     if include_assigned_to:
@@ -1414,6 +791,17 @@ def validate_badge_common_inputs(  # Renamed
                 const.DEFAULT_ZERO
             )
 
+        if is_daily:
+            user_input[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY] = (
+                const.CONF_DAILY
+            )
+
+        # Special occasion is just a periodic badge that has a start and end date of the same day.
+        if is_special_occasion:
+            user_input[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE] = (
+                user_input.get(const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE)
+            )
+
     return errors
 
 
@@ -1519,12 +907,32 @@ def build_badge_common_schema(
     # --- Target Component Schema ---
     if include_target:
         # Filter target_type_options based on whether tracked chores are included
-        target_type_options = [
-            option
-            for option in const.TARGET_TYPE_OPTIONS or []
-            if include_tracked_chores
-            or option["value"] != const.BADGE_TARGET_THRESHOLD_TYPE_ALL_CHORES_REQUIRED
-        ]
+        # For daily badges, filter out all streak targets
+        if badge_type == const.BADGE_TYPE_DAILY:
+            streak_types = {
+                const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES,
+                const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_CHORES,
+                const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_CHORES_NO_OVERDUE,
+                const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_80PCT_DUE_CHORES,
+                const.BADGE_TARGET_THRESHOLD_TYPE_STREAK_SELECTED_DUE_CHORES_NO_OVERDUE,
+            }
+            target_type_options = [
+                option
+                for option in const.TARGET_TYPE_OPTIONS or []
+                if option["value"] not in streak_types
+            ]
+        else:
+            target_type_options = [
+                option
+                for option in const.TARGET_TYPE_OPTIONS or []
+                if include_tracked_chores
+                or option["value"]
+                in (
+                    const.BADGE_TARGET_THRESHOLD_TYPE_POINTS,
+                    const.BADGE_TARGET_THRESHOLD_TYPE_POINTS_CHORES,
+                    const.BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT,
+                )
+            ]
 
         default_target_type = default.get(
             const.CFOF_BADGES_INPUT_TARGET_TYPE,
@@ -1540,19 +948,7 @@ def build_badge_common_schema(
             ),
         )
 
-        # Handle special occasion badges
-        if is_special_occasion:
-            # Force target_type to "chore count" and threshold to 1 chore completed
-            default[const.CFOF_BADGES_INPUT_TARGET_TYPE] = (
-                const.BADGE_TARGET_THRESHOLD_TYPE_CHORE_COUNT
-            )
-            default[const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE] = 1
-        elif is_cumulative:
-            # Force target_type to "points" for cumulative badges
-            default[const.CFOF_BADGES_INPUT_TARGET_TYPE] = (
-                const.BADGE_TARGET_THRESHOLD_TYPE_POINTS
-            )
-        else:
+        if not (is_cumulative or is_special_occasion):
             # Include the target_type field for non-cumulative badges
             schema_fields.update(
                 {
@@ -1575,9 +971,9 @@ def build_badge_common_schema(
                 {
                     vol.Required(
                         const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE,
-                        default=int(
+                        default=float(
                             default_threshold
-                        ),  # Ensure the default is an integer
+                        ),  # Ensure the default is a float
                     ): vol.All(
                         selector.NumberSelector(
                             selector.NumberSelectorConfig(
@@ -1586,7 +982,7 @@ def build_badge_common_schema(
                                 step=1,
                             )
                         ),
-                        vol.Coerce(int),  # Coerce the input to an integer
+                        vol.Coerce(float),  # Coerce the input to an integer
                         vol.Range(min=0),  # Ensure non-negative values
                     ),
                 }
@@ -1626,9 +1022,7 @@ def build_badge_common_schema(
         occasion_type_options = const.OCCASION_TYPE_OPTIONS or []
         default_occasion_type = default.get(
             const.CFOF_BADGES_INPUT_OCCASION_TYPE,
-            default.get(const.DATA_BADGE_SPECIAL_OCCASION_TYPE, {}).get(
-                const.DATA_BADGE_OCCASION_TYPE, const.CONF_EMPTY
-            ),
+            default.get(const.DATA_BADGE_SPECIAL_OCCASION_TYPE, const.CONF_EMPTY),
         )
         schema_fields.update(
             {
@@ -1876,55 +1270,55 @@ def build_badge_common_schema(
     # --- Reset Component Schema ---
     if include_reset_schedule:
         # Define defaults at the top for easier adjustments
+        # Get the reset_schedule once instead of repeated lookups
+        reset_schedule = default.get(const.DATA_BADGE_RESET_SCHEDULE, {})
+
+        # Get defaults from user_input first (if present), then from reset_schedule, then use defaults
         default_recurring_frequency = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY,
             ),
         )
         default_custom_interval = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL,
             ),
         )
         default_custom_interval_unit = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT,
             ),
         )
         default_start_date = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_START_DATE,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_START_DATE,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_START_DATE,
             ),
         )
         default_end_date = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_END_DATE,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_END_DATE,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_END_DATE,
             ),
         )
         default_grace_period_days = default.get(
             const.CFOF_BADGES_INPUT_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
-            default.get(const.DATA_BADGE_RESET_SCHEDULE, {}).get(
+            reset_schedule.get(
                 const.DATA_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
                 const.DEFAULT_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS,
             ),
         )
 
-        # For BADGE_TYPE_DAILY, set frequency to daily and skip showing reset fields
-        if is_daily:
-            default[const.CFOF_BADGES_INPUT_RESET_SCHEDULE_RECURRING_FREQUENCY] = (
-                const.FREQUENCY_DAILY
-            )
-        else:
+        # For BADGE_TYPE_DAILY hide reset schedule fields and force value in validation
+        if not is_daily:
             # Build the schema fields for other badge types
             schema_fields.update(
                 {

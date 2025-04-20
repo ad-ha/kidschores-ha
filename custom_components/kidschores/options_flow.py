@@ -738,10 +738,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 const.LOGGER.error("ERROR: Invalid Internal ID for editing badge.")
                 return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_BADGE)
         else:
-            internal_id = self.context.get(const.CFOF_GLOBAL_INPUT_INTERNAL_ID)
-            if not internal_id:
-                internal_id = str(uuid.uuid4())
-                self.context[const.CFOF_GLOBAL_INPUT_INTERNAL_ID] = internal_id
+            # Generate a new internal_id for adding a badge
+            internal_id = str(uuid.uuid4())
+            self.context[const.CFOF_GLOBAL_INPUT_INTERNAL_ID] = internal_id
 
         # Use default_data for editing or initialize an empty dictionary for adding
         badge_data = default_data or {}
