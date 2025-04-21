@@ -298,7 +298,7 @@ def get_today_chore_and_point_progress(
 
         # Chore count today
         count_today = daily_stats.get(today_iso, {}).get(
-            const.DATA_KID_CHORE_DATA_PERIOD_COUNT, 0
+            const.DATA_KID_CHORE_DATA_PERIOD_APPROVED, 0
         )
         if count_today > 0:
             count_per_chore[chore_id] = count_today

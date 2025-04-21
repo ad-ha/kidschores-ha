@@ -527,7 +527,7 @@ class CompletedChoresTotalSensor(CoordinatorEntity, SensorEntity):
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
         stats = kid_info.get(const.DATA_KID_CHORE_STATS, {})
         return stats.get(
-            const.DATA_KID_CHORE_STATS_COMPLETED_ALL_TIME, const.DEFAULT_ZERO
+            const.DATA_KID_CHORE_STATS_APPROVED_ALL_TIME, const.DEFAULT_ZERO
         )
 
     @property
@@ -570,7 +570,7 @@ class CompletedChoresDailySensor(CoordinatorEntity, SensorEntity):
         """Return the number of chores completed today."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
         stats = kid_info.get(const.DATA_KID_CHORE_STATS, {})
-        return stats.get(const.DATA_KID_CHORE_STATS_COMPLETED_TODAY, const.DEFAULT_ZERO)
+        return stats.get(const.DATA_KID_CHORE_STATS_APPROVED_TODAY, const.DEFAULT_ZERO)
 
 
 # ------------------------------------------------------------------------------------------
@@ -599,7 +599,7 @@ class CompletedChoresWeeklySensor(CoordinatorEntity, SensorEntity):
         """Return the number of chores completed this week."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
         stats = kid_info.get(const.DATA_KID_CHORE_STATS, {})
-        return stats.get(const.DATA_KID_CHORE_STATS_COMPLETED_WEEK, const.DEFAULT_ZERO)
+        return stats.get(const.DATA_KID_CHORE_STATS_APPROVED_WEEK, const.DEFAULT_ZERO)
 
 
 # ------------------------------------------------------------------------------------------
@@ -628,7 +628,7 @@ class CompletedChoresMonthlySensor(CoordinatorEntity, SensorEntity):
         """Return the number of chores completed this month."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
         stats = kid_info.get(const.DATA_KID_CHORE_STATS, {})
-        return stats.get(const.DATA_KID_CHORE_STATS_COMPLETED_MONTH, const.DEFAULT_ZERO)
+        return stats.get(const.DATA_KID_CHORE_STATS_APPROVED_MONTH, const.DEFAULT_ZERO)
 
 
 # ------------------------------------------------------------------------------------------
