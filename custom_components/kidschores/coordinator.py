@@ -141,57 +141,79 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
         const.LOGGER.info("INFO: Chore data migration complete.")
 
-    def _migrate_kid_chore_streaks(self, kid_id: str, chore_id: str):
-        """Migrate legacy streak data to the new kid chores structure (period-based)."""
+    def _migrate_legacy_kid_chore_data_and_streaks(self, kid_id: str, chore_id: str):
+        """Migrate legacy streak and stats data to the new kid chores structure (period-based)."""
         kid_info = self.kids_data.get(kid_id)
         if not kid_info:
             return
 
-        # If legacy streak data exists for this chore
-        if (
-            const.DATA_KID_CHORE_STREAKS in kid_info
-            and chore_id in kid_info[const.DATA_KID_CHORE_STREAKS]
-        ):
-            legacy_streak = kid_info[const.DATA_KID_CHORE_STREAKS][chore_id]
+        # Ensure new structure exists
+        if const.DATA_KID_CHORE_DATA not in kid_info:
+            kid_info[const.DATA_KID_CHORE_DATA] = {}
 
-            # Ensure new structure exists
-            if const.DATA_KID_CHORE_DATA not in kid_info:
-                kid_info[const.DATA_KID_CHORE_DATA] = {}
+        if chore_id not in kid_info[const.DATA_KID_CHORE_DATA]:
+            chore_info = self.chores_data.get(chore_id, {})
+            chore_name = chore_info.get(const.DATA_CHORE_NAME, chore_id)
+            kid_info[const.DATA_KID_CHORE_DATA][chore_id] = {
+                const.DATA_KID_CHORE_DATA_NAME: chore_name,
+                const.DATA_KID_CHORE_DATA_STATE: const.CHORE_STATE_PENDING,
+                const.DATA_KID_CHORE_DATA_LAST_CLAIMED: None,
+                const.DATA_KID_CHORE_DATA_LAST_COMPLETED: None,
+                const.DATA_KID_CHORE_DATA_LAST_DISAPPROVED: None,
+                const.DATA_KID_CHORE_DATA_LAST_OVERDUE: None,
+                const.DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME: None,
+                const.DATA_KID_CHORE_DATA_TOTAL_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_TOTAL_POINTS: 0.0,
+                const.DATA_KID_CHORE_DATA_PERIODS: {
+                    const.DATA_KID_CHORE_DATA_PERIODS_DAILY: {},
+                    const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY: {},
+                    const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY: {},
+                    const.DATA_KID_CHORE_DATA_PERIODS_YEARLY: {},
+                },
+                const.DATA_KID_CHORE_DATA_BADGE_REFS: [],
+            }
 
-            if chore_id not in kid_info[const.DATA_KID_CHORE_DATA]:
-                chore_info = self.chores_data.get(chore_id, {})
-                chore_name = chore_info.get(const.DATA_CHORE_NAME, chore_id)
-                kid_info[const.DATA_KID_CHORE_DATA][chore_id] = {
-                    const.DATA_KID_CHORE_DATA_NAME: chore_name,
-                    const.DATA_KID_CHORE_DATA_STATE: const.CHORE_STATE_PENDING,
-                    const.DATA_KID_CHORE_DATA_LAST_CLAIMED: None,
-                    const.DATA_KID_CHORE_DATA_LAST_COMPLETED: None,
-                    const.DATA_KID_CHORE_DATA_LAST_DISAPPROVED: None,
-                    const.DATA_KID_CHORE_DATA_LAST_OVERDUE: None,
-                    const.DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME: None,
-                    const.DATA_KID_CHORE_DATA_TOTAL_COUNT: 0,
-                    const.DATA_KID_CHORE_DATA_TOTAL_POINTS: 0.0,
-                    const.DATA_KID_CHORE_DATA_PERIODS: {
-                        const.DATA_KID_CHORE_DATA_PERIODS_DAILY: {},
-                        const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY: {},
-                        const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY: {},
-                        const.DATA_KID_CHORE_DATA_PERIODS_YEARLY: {},
-                    },
-                    const.DATA_KID_CHORE_DATA_BADGE_REFS: [],
-                }
+        kid_chore_data = kid_info[const.DATA_KID_CHORE_DATA][chore_id]
+        periods = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
 
-            # Migrate streak data into the new period-based structure
-            kid_chore_data = kid_info[const.DATA_KID_CHORE_DATA][chore_id]
-            periods = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
+        # --- Migrate legacy streaks ---
+        legacy_streak = kid_info.get(const.DATA_KID_CHORE_STREAKS, {}).get(chore_id, {})
+        last_date = legacy_streak.get(const.DATA_KID_LAST_STREAK_DATE)
+        if last_date:
+            # Daily
+            daily_stats = periods[const.DATA_KID_CHORE_DATA_PERIODS_DAILY].setdefault(
+                last_date,
+                {
+                    const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
+                    const.DATA_KID_CHORE_DATA_PERIOD_POINTS: 0.0,
+                    const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT: 0,
+                    const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT: 0,
+                    const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK: 0,
+                },
+            )
+            daily_stats[const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK] = (
+                legacy_streak.get(const.DATA_KID_CURRENT_STREAK, 0)
+            )
 
-            # Use legacy streak last date as the daily period key if available
-            last_date = legacy_streak.get(const.DATA_KID_LAST_STREAK_DATE)
+        for period_key, period_fmt in [
+            (const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY, "%Y-W%V"),
+            (const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY, "%Y-%m"),
+            (const.DATA_KID_CHORE_DATA_PERIODS_YEARLY, "%Y"),
+        ]:
             if last_date:
-                # Daily
-                daily_stats = periods[
-                    const.DATA_KID_CHORE_DATA_PERIODS_DAILY
-                ].setdefault(
-                    last_date,
+                try:
+                    from datetime import datetime
+
+                    dt = datetime.fromisoformat(last_date)
+                    period_id = dt.strftime(period_fmt)
+                except Exception:
+                    period_id = None
+            else:
+                period_id = None
+
+            if period_id:
+                stats = periods[period_key].setdefault(
+                    period_id,
                     {
                         const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
                         const.DATA_KID_CHORE_DATA_PERIOD_POINTS: 0.0,
@@ -200,66 +222,111 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK: 0,
                     },
                 )
-                daily_stats[const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK] = (
-                    legacy_streak.get(const.DATA_KID_CURRENT_STREAK, 0)
+                stats[const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK] = (
+                    legacy_streak.get(const.DATA_KID_MAX_STREAK, 0)
                 )
 
-            # Optionally, set max streak for all periods (for migration, set to legacy max)
-            for period_key, period_dict in [
-                (const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY, "%Y-W%V"),
-                (const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY, "%Y-%m"),
-                (const.DATA_KID_CHORE_DATA_PERIODS_YEARLY, "%Y"),
-            ]:
-                # If last_date is available, use it to generate the period key
-                if last_date:
-                    try:
-                        from datetime import datetime
+        # --- Migrate claim/approval counts ---
+        claims = kid_info.get(const.DATA_KID_CHORE_CLAIMS, {}).get(chore_id, 0)
+        approvals = kid_info.get(const.DATA_KID_CHORE_APPROVALS, {}).get(chore_id, 0)
+        kid_chore_data[const.DATA_KID_CHORE_DATA_TOTAL_COUNT] = approvals
 
-                        dt = datetime.fromisoformat(last_date)
-                        period_id = dt.strftime(period_dict)
-                    except Exception:
-                        period_id = None
-                else:
-                    period_id = None
+        # --- Migrate period completion counts ---
+        from datetime import datetime
 
-                if period_id:
-                    stats = periods[period_key].setdefault(
-                        period_id,
-                        {
-                            const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
-                            const.DATA_KID_CHORE_DATA_PERIOD_POINTS: 0.0,
-                            const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT: 0,
-                            const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT: 0,
-                            const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK: 0,
-                        },
-                    )
-                    stats[const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK] = (
-                        legacy_streak.get(const.DATA_KID_MAX_STREAK, 0)
-                    )
+        now_local = kh.get_now_local_time()
+        today_iso = now_local.date().isoformat()
+        week_iso = now_local.strftime("%Y-W%V")
+        month_iso = now_local.strftime("%Y-%m")
+        year_iso = now_local.strftime("%Y")
 
-            # Also update all-time longest streak if legacy max is higher
-            stats = kid_info.setdefault(const.DATA_KID_CHORE_STATS, {})
-            legacy_max = legacy_streak.get(const.DATA_KID_MAX_STREAK, 0)
-            if legacy_max > stats.get(
-                const.DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME, 0
-            ):
-                stats[const.DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME] = legacy_max
-                kid_chore_data[
-                    const.DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME
-                ] = last_date
+        # Daily
+        periods[const.DATA_KID_CHORE_DATA_PERIODS_DAILY].setdefault(
+            today_iso,
+            {
+                const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_POINTS: 0.0,
+                const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK: 0,
+            },
+        )[const.DATA_KID_CHORE_DATA_PERIOD_COUNT] = kid_info.get(
+            const.DATA_KID_COMPLETED_CHORES_TODAY, 0
+        )
 
-            # Remove legacy data after migration
-            # del kid_info[const.DATA_KID_CHORE_STREAKS][chore_id]
-            # if not kid_info[const.DATA_KID_CHORE_STREAKS]:
-            #     del kid_info[const.DATA_KID_CHORE_STREAKS]
+        # Weekly
+        periods[const.DATA_KID_CHORE_DATA_PERIODS_WEEKLY].setdefault(
+            week_iso,
+            {
+                const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_POINTS: 0.0,
+                const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK: 0,
+            },
+        )[const.DATA_KID_CHORE_DATA_PERIOD_COUNT] = kid_info.get(
+            const.DATA_KID_COMPLETED_CHORES_WEEKLY, 0
+        )
+
+        # Monthly
+        periods[const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY].setdefault(
+            month_iso,
+            {
+                const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_POINTS: 0.0,
+                const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK: 0,
+            },
+        )[const.DATA_KID_CHORE_DATA_PERIOD_COUNT] = kid_info.get(
+            const.DATA_KID_COMPLETED_CHORES_MONTHLY, 0
+        )
+
+        # Yearly
+        periods[const.DATA_KID_CHORE_DATA_PERIODS_YEARLY].setdefault(
+            year_iso,
+            {
+                const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_POINTS: 0.0,
+                const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED_COUNT: 0,
+                const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK: 0,
+            },
+        )[const.DATA_KID_CHORE_DATA_PERIOD_COUNT] = kid_info.get(
+            const.DATA_KID_COMPLETED_CHORES_TOTAL, 0
+        )
+
+        # --- Update all-time and yearly stats from legacy totals ---
+        stats = kid_info.setdefault(const.DATA_KID_CHORE_STATS, {})
+        legacy_max = legacy_streak.get(const.DATA_KID_MAX_STREAK, 0)
+        if legacy_max > stats.get(
+            const.DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME, 0
+        ):
+            stats[const.DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME] = legacy_max
+            kid_chore_data[const.DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME] = (
+                last_date
+            )
+
+        # Migrate all-time and yearly completed counts from legacy
+        stats[const.DATA_KID_CHORE_STATS_COMPLETED_ALL_TIME] = kid_info.get(
+            const.DATA_KID_COMPLETED_CHORES_TOTAL, 0
+        )
+        stats[const.DATA_KID_CHORE_STATS_COMPLETED_YEAR] = kid_info.get(
+            const.DATA_KID_COMPLETED_CHORES_TOTAL, 0
+        )
+
+        # Optionally, remove legacy data after migration
+        # del kid_info[const.DATA_KID_CHORE_STREAKS][chore_id]
+        # if not kid_info[const.DATA_KID_CHORE_STREAKS]:
+        #     del kid_info[const.DATA_KID_CHORE_STREAKS]
 
     def _migrate_badges(self):
-        """Migrate legacy badges into cumulative badges.
+        """Migrate legacy badges into cumulative badges and ensure all required fields exist.
 
         For badges whose threshold_type is set to the legacy value (e.g. BADGE_THRESHOLD_TYPE_CHORE_COUNT),
         compute the new threshold as the legacy count multiplied by the average default points across all chores.
         Also, set reset fields to empty and disable periodic resets.
-        For any other badge without a badge
+        For any badge, ensure all required fields and nested structures exist using constants.
         """
         badges_dict = self._data.get(const.DATA_BADGES, {})
         chores_dict = self._data.get(const.DATA_CHORES, {})
@@ -284,15 +351,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Process each badge.
         for badge_id, badge_info in badges_dict.items():
+            # --- Legacy migration logic ---
             if badge_info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE:
-                # If the badge is already moved to cumulative, skip it.
-                continue
-
-            # Check if the badge uses the legacy "chore_count" threshold type if so estimate points and assign.
-            if (
-                badge_info.get(const.DATA_BADGE_THRESHOLD_TYPE)
-                == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT
-            ):
+                # If the badge is already moved to cumulative, skip legacy migration.
+                pass
+            else:
+                # Check if the badge uses the legacy "chore_count" threshold type if so estimate points and assign.
                 if (
                     badge_info.get(const.DATA_BADGE_THRESHOLD_TYPE)
                     == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT
@@ -307,9 +371,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     except Exception:
                         new_threshold = old_threshold
 
-                    # Update the badge data to be a cumulative points badge.
-                    badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = new_threshold
+                    # Force to points type and set new value
                     badge_info[const.DATA_BADGE_THRESHOLD_TYPE] = const.CONF_POINTS
+                    badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = new_threshold
+
+                    # Also update the target structure immediately
+                    badge_info.setdefault(const.DATA_BADGE_TARGET, {})
+                    badge_info[const.DATA_BADGE_TARGET][
+                        const.DATA_BADGE_TARGET_TYPE
+                    ] = const.CONF_POINTS
+                    badge_info[const.DATA_BADGE_TARGET][
+                        const.DATA_BADGE_TARGET_THRESHOLD_VALUE
+                    ] = new_threshold
 
                     const.LOGGER.info(
                         "INFO: Legacy Chore Count Badge '%s' migrated: Old threshold %s -> New threshold %s (average_points=%.2f)",
@@ -319,52 +392,115 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         average_points,
                     )
 
-            # Migrate to new data schema and remove legacy fields
+                    # Remove legacy fields now so they can't overwrite later
+                    badge_info.pop(const.DATA_BADGE_THRESHOLD_TYPE, None)
+                    badge_info.pop(const.DATA_BADGE_THRESHOLD_VALUE, None)
 
-            # Set badge type to cumulative if not already set
-            if const.DATA_BADGE_TYPE not in badge_info:
-                badge_info[const.DATA_BADGE_TYPE] = const.BADGE_TYPE_CUMULATIVE
+                # Set badge type to cumulative if not already set
+                if const.DATA_BADGE_TYPE not in badge_info:
+                    badge_info[const.DATA_BADGE_TYPE] = const.BADGE_TYPE_CUMULATIVE
 
-            # Initialize the new nested structures if they don't exist
-            if const.DATA_BADGE_TARGET not in badge_info:
-                badge_info[const.DATA_BADGE_TARGET] = {}
+            # --- Ensure all required fields and nested structures exist using constants ---
 
-            if const.DATA_BADGE_AWARDS not in badge_info:
+            # assigned_to
+            if const.DATA_BADGE_ASSIGNED_TO not in badge_info:
+                badge_info[const.DATA_BADGE_ASSIGNED_TO] = []
+
+            # reset_schedule
+            if const.DATA_BADGE_RESET_SCHEDULE not in badge_info:
+                badge_info[const.DATA_BADGE_RESET_SCHEDULE] = {
+                    const.DATA_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY: const.FREQUENCY_NONE,
+                    const.DATA_BADGE_RESET_SCHEDULE_START_DATE: None,
+                    const.DATA_BADGE_RESET_SCHEDULE_END_DATE: None,
+                    const.DATA_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS: 0,
+                    const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL: None,
+                    const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT: None,
+                }
+
+            # awards
+            if const.DATA_BADGE_AWARDS not in badge_info or not isinstance(
+                badge_info[const.DATA_BADGE_AWARDS], dict
+            ):
                 badge_info[const.DATA_BADGE_AWARDS] = {}
+            badge_info[const.DATA_BADGE_AWARDS].setdefault(
+                const.DATA_BADGE_AWARDS_AWARD_MODE, const.CONF_BADGE_AWARD_NONE
+            )
+            badge_info[const.DATA_BADGE_AWARDS].setdefault(
+                const.DATA_BADGE_AWARDS_AWARD_POINTS, 0
+            )
+            badge_info[const.DATA_BADGE_AWARDS].setdefault(
+                const.DATA_BADGE_AWARDS_AWARD_REWARD, ""
+            )
+            badge_info[const.DATA_BADGE_AWARDS].setdefault(
+                const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
+                badge_info.get(
+                    const.DATA_BADGE_POINTS_MULTIPLIER, const.DEFAULT_POINTS_MULTIPLIER
+                ),
+            )
 
-            # Migrate threshold_type to target.target_type
+            # target
+            if const.DATA_BADGE_TARGET not in badge_info or not isinstance(
+                badge_info[const.DATA_BADGE_TARGET], dict
+            ):
+                badge_info[const.DATA_BADGE_TARGET] = {}
+            badge_info[const.DATA_BADGE_TARGET].setdefault(
+                const.DATA_BADGE_TARGET_TYPE,
+                badge_info.get(
+                    const.DATA_BADGE_THRESHOLD_TYPE,
+                    const.BADGE_TARGET_THRESHOLD_TYPE_POINTS,
+                ),
+            )
+            badge_info[const.DATA_BADGE_TARGET].setdefault(
+                const.DATA_BADGE_TARGET_THRESHOLD_VALUE,
+                badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, 0),
+            )
+            badge_info[const.DATA_BADGE_TARGET].setdefault(
+                const.DATA_BADGE_MAINTENANCE_RULES, 0
+            )
+
+            # --- Migrate threshold_type/value to target if not already done ---
             if const.DATA_BADGE_THRESHOLD_TYPE in badge_info:
                 badge_info[const.DATA_BADGE_TARGET][const.DATA_BADGE_TARGET_TYPE] = (
                     badge_info.get(const.DATA_BADGE_THRESHOLD_TYPE)
                 )
-
-            # Migrate threshold_value to target.threshold_value
             if const.DATA_BADGE_THRESHOLD_VALUE in badge_info:
                 badge_info[const.DATA_BADGE_TARGET][
                     const.DATA_BADGE_TARGET_THRESHOLD_VALUE
                 ] = badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE)
 
-            # Migrate points_multiplier to awards.points_multiplier
-            if const.DATA_BADGE_AWARDS_POINT_MULTIPLIER in badge_info:
+            # Migrate points_multiplier to awards.points_multiplier if not already done
+            if const.DATA_BADGE_POINTS_MULTIPLIER in badge_info:
                 badge_info[const.DATA_BADGE_AWARDS][
                     const.DATA_BADGE_AWARDS_POINT_MULTIPLIER
-                ] = float(badge_info.get(const.DATA_BADGE_AWARDS_POINT_MULTIPLIER, 1.0))
+                ] = float(
+                    badge_info.get(
+                        const.DATA_BADGE_POINTS_MULTIPLIER,
+                        const.DEFAULT_POINTS_MULTIPLIER,
+                    )
+                )
 
-            # Clean up any legacy fields that might exist outside the new nested structure
+            # --- Clean up any legacy fields that might exist outside the new nested structure ---
             legacy_fields = [
                 const.DATA_BADGE_THRESHOLD_TYPE,
                 const.DATA_BADGE_THRESHOLD_VALUE,
                 const.DATA_BADGE_CHORE_COUNT_TYPE,
                 const.DATA_BADGE_POINTS_MULTIPLIER,
             ]
-
             for field in legacy_fields:
-                if field in self._data[const.DATA_BADGES][badge_id]:
+                if field in badge_info:
                     temp = "#####################********* DISABLED DELETE WHILE DEVELOPING *********#####################"
-                    # del self._data[const.DATA_BADGES][badge_id][field]
+                    del badge_info[field]
 
         self._persist()
         self.async_set_updated_data(self._data)
+
+        # --- Update config_entry.options so the UI sees the migrated badges ---
+        updated_options = dict(self.config_entry.options)
+        updated_options[const.CONF_BADGES] = self._data.get(const.DATA_BADGES, {})
+        self.hass.config_entries.async_update_entry(
+            self.config_entry, options=updated_options
+        )
+
         const.LOGGER.info(
             "INFO: Badge Migration - Completed migration of legacy badges to new structure"
         )
@@ -438,6 +574,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             now_local = kh.get_now_local_time()
             week_local_iso = now_local.strftime("%Y-W%V")
             month_local_iso = now_local.strftime("%Y-%m")
+            year_local_iso = now_local.strftime("%Y")
 
             # Helper to migrate if legacy > 0 and period is missing or zero
             def migrate_period(period_key, period_id, legacy_value):
@@ -454,9 +591,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         entry[const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL] = (
                             legacy_value
                         )
-                        # Optionally, you can set a generic source if you want
+                        # Use a point source of other
                         entry[const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE][
-                            "migrated"
+                            const.POINTS_SOURCE_OTHER
                         ] = legacy_value
 
             migrate_period(
@@ -469,12 +606,33 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.DATA_KID_POINT_DATA_PERIODS_MONTHLY, month_local_iso, legacy_month
             )
 
+            # Set yearly period points to legacy_max if > 0
+            if legacy_max > 0:
+                yearly_bucket = periods.setdefault(
+                    const.DATA_KID_POINT_DATA_PERIODS_YEARLY, {}
+                )
+                yearly_entry = yearly_bucket.setdefault(
+                    year_local_iso,
+                    {
+                        const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL: 0.0,
+                        const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE: {},
+                    },
+                )
+                yearly_entry[const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL] = legacy_max
+                yearly_entry[const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE][
+                    const.POINTS_SOURCE_OTHER
+                ] = legacy_max
+
             # Migrate legacy max points ever to point_stats highest balance if needed
             point_stats = kid_info.setdefault(const.DATA_KID_POINT_STATS, {})
             if legacy_max > 0 and legacy_max > point_stats.get(
                 const.DATA_KID_POINT_STATS_HIGHEST_BALANCE, 0.0
             ):
                 point_stats[const.DATA_KID_POINT_STATS_HIGHEST_BALANCE] = legacy_max
+
+            # Set points_earned_all_time to legacy_max if > 0
+            if legacy_max > 0:
+                point_stats[const.DATA_KID_POINT_STATS_EARNED_ALL_TIME] = legacy_max
 
             # Optionally, remove legacy fields after migration
             # kid_info.pop(const.DATA_KID_POINTS_EARNED_TODAY, None)
@@ -545,6 +703,17 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 # Migrate legacy point stats to new structure
                 self._migrate_legacy_point_stats()
 
+                # Migrate legacy chore streaks and stats to new structure
+                for kid_id, kid_info in self.kids_data.items():
+                    for chore_id, chore_info in self.chores_data.items():
+                        assigned_kids = chore_info.get(
+                            const.DATA_CHORE_ASSIGNED_KIDS, []
+                        )
+                        if not assigned_kids or kid_id in assigned_kids:
+                            self._migrate_legacy_kid_chore_data_and_streaks(
+                                kid_id, chore_id
+                            )
+
                 # Flag migrations as done
                 self._data[const.MIGRATION_PERFORMED] = True
                 self._data[const.MIGRATION_KEY_VERSION] = current_version
@@ -590,6 +759,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Initialize badge references in kid chore tracking
         self._update_chore_badge_references_for_kid()
+
+        # Initialize chore and point stats
+        for kid_id, kid_info in self.kids_data.items():
+            self._recalculate_chore_stats_for_kid(kid_id)
+            self._recalculate_point_stats_for_kid(kid_id)
 
         self._persist()
         await super().async_config_entry_first_refresh()
@@ -2586,6 +2760,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             },
         )
 
+        # --- Update period stats for approval ---
+        periods_data = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
+
         # --- Use a consistent default dict for all period stats ---
         period_default = {
             const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
@@ -2645,9 +2822,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_ALL_TIME,
                     points_awarded,
                 )
-
-                # --- Update period stats for approval ---
-                periods_data = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
 
                 # Daily
                 daily_stats = periods_data[
@@ -2790,7 +2964,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 and previous_state == const.CHORE_STATE_CLAIMED
             ):
                 kid_chore_data[const.DATA_KID_CHORE_DATA_LAST_DISAPPROVED] = now_iso
-                periods_data = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
 
                 daily_stats = periods_data[
                     const.DATA_KID_CHORE_DATA_PERIODS_DAILY
@@ -3171,6 +3344,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         kid_info[const.DATA_KID_POINTS_EARNED_TODAY] += delta_value
         kid_info[const.DATA_KID_POINTS_EARNED_WEEKLY] += delta_value
         kid_info[const.DATA_KID_POINTS_EARNED_MONTHLY] += delta_value
+        kid_info[const.DATA_KID_MAX_POINTS_EVER] += delta_value
 
         # 4) Legacy cumulative badge logic
         progress = kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {})
@@ -3293,7 +3467,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_KID_POINT_STATS_EARNED_MONTH: 0.0,
             const.DATA_KID_POINT_STATS_EARNED_YEAR: 0.0,
             # All-time stats (handled incrementally in update_kid_points, not recalculated here)
-            const.DATA_KID_POINT_STATS_EARNED_ALL_TIME: kid_info.get(
+            const.DATA_KID_POINT_STATS_EARNED_ALL_TIME: point_stats.get(
                 const.DATA_KID_POINT_STATS_EARNED_ALL_TIME, 0.0
             ),
             # By-source breakdowns
@@ -3311,7 +3485,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_KID_POINT_STATS_SPENT_MONTH: 0.0,
             const.DATA_KID_POINT_STATS_SPENT_YEAR: 0.0,
             # All-time spent (handled incrementally)
-            const.DATA_KID_POINT_STATS_SPENT_ALL_TIME: kid_info.get(
+            const.DATA_KID_POINT_STATS_SPENT_ALL_TIME: point_stats.get(
                 const.DATA_KID_POINT_STATS_SPENT_ALL_TIME, 0.0
             ),
             # Net (earned - spent)
@@ -3320,11 +3494,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_KID_POINT_STATS_NET_MONTH: 0.0,
             const.DATA_KID_POINT_STATS_NET_YEAR: 0.0,
             # All-time net (handled incrementally)
-            const.DATA_KID_POINT_STATS_NET_ALL_TIME: kid_info.get(
+            const.DATA_KID_POINT_STATS_NET_ALL_TIME: point_stats.get(
                 const.DATA_KID_POINT_STATS_NET_ALL_TIME, 0.0
             ),
             # Highest balance ever (handled incrementally)
-            const.DATA_KID_POINT_STATS_HIGHEST_BALANCE: kid_info.get(
+            const.DATA_KID_POINT_STATS_HIGHEST_BALANCE: point_stats.get(
                 const.DATA_KID_POINT_STATS_HIGHEST_BALANCE, 0.0
             ),
             # Averages (calculated below)
