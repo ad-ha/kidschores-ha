@@ -254,12 +254,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             #     del kid_info[const.DATA_KID_CHORE_STREAKS]
 
     def _migrate_badges(self):
-        """Migrate legacy badges into cumulative badges.
+        """Migrate legacy badges into cumulative badges and ensure all required fields exist.
 
         For badges whose threshold_type is set to the legacy value (e.g. BADGE_THRESHOLD_TYPE_CHORE_COUNT),
         compute the new threshold as the legacy count multiplied by the average default points across all chores.
         Also, set reset fields to empty and disable periodic resets.
-        For any other badge without a badge
+        For any badge, ensure all required fields and nested structures exist using constants.
         """
         badges_dict = self._data.get(const.DATA_BADGES, {})
         chores_dict = self._data.get(const.DATA_CHORES, {})
@@ -284,15 +284,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Process each badge.
         for badge_id, badge_info in badges_dict.items():
+            # --- Legacy migration logic ---
             if badge_info.get(const.DATA_BADGE_TYPE) == const.BADGE_TYPE_CUMULATIVE:
-                # If the badge is already moved to cumulative, skip it.
-                continue
-
-            # Check if the badge uses the legacy "chore_count" threshold type if so estimate points and assign.
-            if (
-                badge_info.get(const.DATA_BADGE_THRESHOLD_TYPE)
-                == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT
-            ):
+                # If the badge is already moved to cumulative, skip legacy migration.
+                pass
+            else:
+                # Check if the badge uses the legacy "chore_count" threshold type if so estimate points and assign.
                 if (
                     badge_info.get(const.DATA_BADGE_THRESHOLD_TYPE)
                     == const.BADGE_THRESHOLD_TYPE_CHORE_COUNT
@@ -319,49 +316,93 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         average_points,
                     )
 
-            # Migrate to new data schema and remove legacy fields
+                # Set badge type to cumulative if not already set
+                if const.DATA_BADGE_TYPE not in badge_info:
+                    badge_info[const.DATA_BADGE_TYPE] = const.BADGE_TYPE_CUMULATIVE
 
-            # Set badge type to cumulative if not already set
-            if const.DATA_BADGE_TYPE not in badge_info:
-                badge_info[const.DATA_BADGE_TYPE] = const.BADGE_TYPE_CUMULATIVE
+            # --- Ensure all required fields and nested structures exist using constants ---
 
-            # Initialize the new nested structures if they don't exist
-            if const.DATA_BADGE_TARGET not in badge_info:
-                badge_info[const.DATA_BADGE_TARGET] = {}
+            # assigned_to
+            if const.DATA_BADGE_ASSIGNED_TO not in badge_info:
+                badge_info[const.DATA_BADGE_ASSIGNED_TO] = []
 
-            if const.DATA_BADGE_AWARDS not in badge_info:
+            # reset_schedule
+            if const.DATA_BADGE_RESET_SCHEDULE not in badge_info:
+                badge_info[const.DATA_BADGE_RESET_SCHEDULE] = {
+                    const.DATA_BADGE_RESET_SCHEDULE_RECURRING_FREQUENCY: const.FREQUENCY_NONE,
+                    const.DATA_BADGE_RESET_SCHEDULE_START_DATE: None,
+                    const.DATA_BADGE_RESET_SCHEDULE_END_DATE: None,
+                    const.DATA_BADGE_RESET_SCHEDULE_GRACE_PERIOD_DAYS: 0,
+                    const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL: None,
+                    const.DATA_BADGE_RESET_SCHEDULE_CUSTOM_INTERVAL_UNIT: None,
+                }
+
+            # awards
+            if const.DATA_BADGE_AWARDS not in badge_info or not isinstance(
+                badge_info[const.DATA_BADGE_AWARDS], dict
+            ):
                 badge_info[const.DATA_BADGE_AWARDS] = {}
+            badge_info[const.DATA_BADGE_AWARDS].setdefault(
+                const.DATA_BADGE_AWARDS_AWARD_MODE, const.CONF_BADGE_AWARD_NONE
+            )
+            badge_info[const.DATA_BADGE_AWARDS].setdefault(
+                const.DATA_BADGE_AWARDS_AWARD_POINTS, 0
+            )
+            badge_info[const.DATA_BADGE_AWARDS].setdefault(
+                const.DATA_BADGE_AWARDS_AWARD_REWARD, ""
+            )
+            badge_info[const.DATA_BADGE_AWARDS].setdefault(
+                const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
+                badge_info.get(const.DATA_BADGE_POINTS_MULTIPLIER, 1.0),
+            )
 
-            # Migrate threshold_type to target.target_type
+            # target
+            if const.DATA_BADGE_TARGET not in badge_info or not isinstance(
+                badge_info[const.DATA_BADGE_TARGET], dict
+            ):
+                badge_info[const.DATA_BADGE_TARGET] = {}
+            badge_info[const.DATA_BADGE_TARGET].setdefault(
+                const.DATA_BADGE_TARGET_TYPE,
+                badge_info.get(
+                    const.DATA_BADGE_THRESHOLD_TYPE,
+                    const.BADGE_TARGET_THRESHOLD_TYPE_POINTS,
+                ),
+            )
+            badge_info[const.DATA_BADGE_TARGET].setdefault(
+                const.DATA_BADGE_TARGET_THRESHOLD_VALUE,
+                badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE, 0),
+            )
+            badge_info[const.DATA_BADGE_TARGET].setdefault(
+                const.DATA_BADGE_MAINTENANCE_RULES, 0
+            )
+
+            # --- Migrate threshold_type/value to target if not already done ---
             if const.DATA_BADGE_THRESHOLD_TYPE in badge_info:
                 badge_info[const.DATA_BADGE_TARGET][const.DATA_BADGE_TARGET_TYPE] = (
                     badge_info.get(const.DATA_BADGE_THRESHOLD_TYPE)
                 )
-
-            # Migrate threshold_value to target.threshold_value
             if const.DATA_BADGE_THRESHOLD_VALUE in badge_info:
                 badge_info[const.DATA_BADGE_TARGET][
                     const.DATA_BADGE_TARGET_THRESHOLD_VALUE
                 ] = badge_info.get(const.DATA_BADGE_THRESHOLD_VALUE)
 
-            # Migrate points_multiplier to awards.points_multiplier
-            if const.DATA_BADGE_AWARDS_POINT_MULTIPLIER in badge_info:
+            # Migrate points_multiplier to awards.points_multiplier if not already done
+            if const.DATA_BADGE_POINTS_MULTIPLIER in badge_info:
                 badge_info[const.DATA_BADGE_AWARDS][
                     const.DATA_BADGE_AWARDS_POINT_MULTIPLIER
-                ] = float(badge_info.get(const.DATA_BADGE_AWARDS_POINT_MULTIPLIER, 1.0))
+                ] = float(badge_info.get(const.DATA_BADGE_POINTS_MULTIPLIER, 1.0))
 
-            # Clean up any legacy fields that might exist outside the new nested structure
+            # --- Clean up any legacy fields that might exist outside the new nested structure ---
             legacy_fields = [
                 const.DATA_BADGE_THRESHOLD_TYPE,
                 const.DATA_BADGE_THRESHOLD_VALUE,
                 const.DATA_BADGE_CHORE_COUNT_TYPE,
                 const.DATA_BADGE_POINTS_MULTIPLIER,
             ]
-
             for field in legacy_fields:
-                if field in self._data[const.DATA_BADGES][badge_id]:
+                if field in badge_info:
                     temp = "#####################********* DISABLED DELETE WHILE DEVELOPING *********#####################"
-                    # del self._data[const.DATA_BADGES][badge_id][field]
+                    del badge_info[field]
 
         self._persist()
         self.async_set_updated_data(self._data)
@@ -2586,6 +2627,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             },
         )
 
+        # --- Update period stats for approval ---
+        periods_data = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
+
         # --- Use a consistent default dict for all period stats ---
         period_default = {
             const.DATA_KID_CHORE_DATA_PERIOD_COUNT: 0,
@@ -2645,9 +2689,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     const.DATA_KID_CHORE_STATS_TOTAL_POINTS_FROM_CHORES_ALL_TIME,
                     points_awarded,
                 )
-
-                # --- Update period stats for approval ---
-                periods_data = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
 
                 # Daily
                 daily_stats = periods_data[
@@ -2790,7 +2831,6 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 and previous_state == const.CHORE_STATE_CLAIMED
             ):
                 kid_chore_data[const.DATA_KID_CHORE_DATA_LAST_DISAPPROVED] = now_iso
-                periods_data = kid_chore_data[const.DATA_KID_CHORE_DATA_PERIODS]
 
                 daily_stats = periods_data[
                     const.DATA_KID_CHORE_DATA_PERIODS_DAILY
