@@ -304,9 +304,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     except Exception:
                         new_threshold = old_threshold
 
-                    # Update the badge data to be a cumulative points badge.
-                    badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = new_threshold
+                    # Force to points type and set new value
                     badge_info[const.DATA_BADGE_THRESHOLD_TYPE] = const.CONF_POINTS
+                    badge_info[const.DATA_BADGE_THRESHOLD_VALUE] = new_threshold
+
+                    # Also update the target structure immediately
+                    badge_info.setdefault(const.DATA_BADGE_TARGET, {})
+                    badge_info[const.DATA_BADGE_TARGET][
+                        const.DATA_BADGE_TARGET_TYPE
+                    ] = const.CONF_POINTS
+                    badge_info[const.DATA_BADGE_TARGET][
+                        const.DATA_BADGE_TARGET_THRESHOLD_VALUE
+                    ] = new_threshold
 
                     const.LOGGER.info(
                         "INFO: Legacy Chore Count Badge '%s' migrated: Old threshold %s -> New threshold %s (average_points=%.2f)",
@@ -315,6 +324,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         new_threshold,
                         average_points,
                     )
+
+                    # Remove legacy fields now so they can't overwrite later
+                    badge_info.pop(const.DATA_BADGE_THRESHOLD_TYPE, None)
+                    badge_info.pop(const.DATA_BADGE_THRESHOLD_VALUE, None)
 
                 # Set badge type to cumulative if not already set
                 if const.DATA_BADGE_TYPE not in badge_info:
@@ -353,7 +366,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             badge_info[const.DATA_BADGE_AWARDS].setdefault(
                 const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
-                badge_info.get(const.DATA_BADGE_POINTS_MULTIPLIER, 1.0),
+                badge_info.get(
+                    const.DATA_BADGE_POINTS_MULTIPLIER, const.DEFAULT_POINTS_MULTIPLIER
+                ),
             )
 
             # target
@@ -390,7 +405,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             if const.DATA_BADGE_POINTS_MULTIPLIER in badge_info:
                 badge_info[const.DATA_BADGE_AWARDS][
                     const.DATA_BADGE_AWARDS_POINT_MULTIPLIER
-                ] = float(badge_info.get(const.DATA_BADGE_POINTS_MULTIPLIER, 1.0))
+                ] = float(
+                    badge_info.get(
+                        const.DATA_BADGE_POINTS_MULTIPLIER,
+                        const.DEFAULT_POINTS_MULTIPLIER,
+                    )
+                )
 
             # --- Clean up any legacy fields that might exist outside the new nested structure ---
             legacy_fields = [
@@ -406,6 +426,14 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         self._persist()
         self.async_set_updated_data(self._data)
+
+        # --- Update config_entry.options so the UI sees the migrated badges ---
+        updated_options = dict(self.config_entry.options)
+        updated_options[const.CONF_BADGES] = self._data.get(const.DATA_BADGES, {})
+        self.hass.config_entries.async_update_entry(
+            self.config_entry, options=updated_options
+        )
+
         const.LOGGER.info(
             "INFO: Badge Migration - Completed migration of legacy badges to new structure"
         )
@@ -479,6 +507,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             now_local = kh.get_now_local_time()
             week_local_iso = now_local.strftime("%Y-W%V")
             month_local_iso = now_local.strftime("%Y-%m")
+            year_local_iso = now_local.strftime("%Y")
 
             # Helper to migrate if legacy > 0 and period is missing or zero
             def migrate_period(period_key, period_id, legacy_value):
@@ -495,9 +524,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                         entry[const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL] = (
                             legacy_value
                         )
-                        # Optionally, you can set a generic source if you want
+                        # Use a point source of other
                         entry[const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE][
-                            "migrated"
+                            const.POINTS_SOURCE_OTHER
                         ] = legacy_value
 
             migrate_period(
@@ -510,12 +539,33 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.DATA_KID_POINT_DATA_PERIODS_MONTHLY, month_local_iso, legacy_month
             )
 
+            # Set yearly period points to legacy_max if > 0
+            if legacy_max > 0:
+                yearly_bucket = periods.setdefault(
+                    const.DATA_KID_POINT_DATA_PERIODS_YEARLY, {}
+                )
+                yearly_entry = yearly_bucket.setdefault(
+                    year_local_iso,
+                    {
+                        const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL: 0.0,
+                        const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE: {},
+                    },
+                )
+                yearly_entry[const.DATA_KID_POINT_DATA_PERIOD_POINTS_TOTAL] = legacy_max
+                yearly_entry[const.DATA_KID_POINT_DATA_PERIOD_BY_SOURCE][
+                    const.POINTS_SOURCE_OTHER
+                ] = legacy_max
+
             # Migrate legacy max points ever to point_stats highest balance if needed
             point_stats = kid_info.setdefault(const.DATA_KID_POINT_STATS, {})
             if legacy_max > 0 and legacy_max > point_stats.get(
                 const.DATA_KID_POINT_STATS_HIGHEST_BALANCE, 0.0
             ):
                 point_stats[const.DATA_KID_POINT_STATS_HIGHEST_BALANCE] = legacy_max
+
+            # Set points_earned_all_time to legacy_max if > 0
+            if legacy_max > 0:
+                point_stats[const.DATA_KID_POINT_STATS_EARNED_ALL_TIME] = legacy_max
 
             # Optionally, remove legacy fields after migration
             # kid_info.pop(const.DATA_KID_POINTS_EARNED_TODAY, None)
