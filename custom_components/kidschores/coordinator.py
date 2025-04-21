@@ -3261,6 +3261,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         kid_info[const.DATA_KID_POINTS_EARNED_TODAY] += delta_value
         kid_info[const.DATA_KID_POINTS_EARNED_WEEKLY] += delta_value
         kid_info[const.DATA_KID_POINTS_EARNED_MONTHLY] += delta_value
+        kid_info[const.DATA_KID_MAX_POINTS_EVER] += delta_value
 
         # 4) Legacy cumulative badge logic
         progress = kid_info.get(const.DATA_KID_CUMULATIVE_BADGE_PROGRESS, {})
@@ -3383,7 +3384,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_KID_POINT_STATS_EARNED_MONTH: 0.0,
             const.DATA_KID_POINT_STATS_EARNED_YEAR: 0.0,
             # All-time stats (handled incrementally in update_kid_points, not recalculated here)
-            const.DATA_KID_POINT_STATS_EARNED_ALL_TIME: kid_info.get(
+            const.DATA_KID_POINT_STATS_EARNED_ALL_TIME: point_stats.get(
                 const.DATA_KID_POINT_STATS_EARNED_ALL_TIME, 0.0
             ),
             # By-source breakdowns
@@ -3401,7 +3402,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_KID_POINT_STATS_SPENT_MONTH: 0.0,
             const.DATA_KID_POINT_STATS_SPENT_YEAR: 0.0,
             # All-time spent (handled incrementally)
-            const.DATA_KID_POINT_STATS_SPENT_ALL_TIME: kid_info.get(
+            const.DATA_KID_POINT_STATS_SPENT_ALL_TIME: point_stats.get(
                 const.DATA_KID_POINT_STATS_SPENT_ALL_TIME, 0.0
             ),
             # Net (earned - spent)
@@ -3410,11 +3411,11 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_KID_POINT_STATS_NET_MONTH: 0.0,
             const.DATA_KID_POINT_STATS_NET_YEAR: 0.0,
             # All-time net (handled incrementally)
-            const.DATA_KID_POINT_STATS_NET_ALL_TIME: kid_info.get(
+            const.DATA_KID_POINT_STATS_NET_ALL_TIME: point_stats.get(
                 const.DATA_KID_POINT_STATS_NET_ALL_TIME, 0.0
             ),
             # Highest balance ever (handled incrementally)
-            const.DATA_KID_POINT_STATS_HIGHEST_BALANCE: kid_info.get(
+            const.DATA_KID_POINT_STATS_HIGHEST_BALANCE: point_stats.get(
                 const.DATA_KID_POINT_STATS_HIGHEST_BALANCE, 0.0
             ),
             # Averages (calculated below)
