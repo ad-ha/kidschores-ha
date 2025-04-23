@@ -432,9 +432,6 @@ def build_badge_common_data(
     # --- Awards Component ---
     if include_awards:
         # Logic from build_badge_awards_data
-        mode = user_input.get(
-            const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-        )
         points_input = user_input.get(
             const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_BADGE_AWARD_POINTS
         )
@@ -446,25 +443,19 @@ def build_badge_common_data(
                 "Could not parse award points value '%s'. Using default.", points_input
             )
             pass  # Use default
-        reward = user_input.get(const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY)
         multiplier = user_input.get(
             const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER, const.CONF_NONE
         )
 
-        # Apply cleaning based on mode
-        if mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
-            reward = const.CONF_EMPTY
-        elif mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
-            points = const.DEFAULT_ZERO  # Store zero
-        elif mode == const.CONF_BADGE_AWARD_NONE:
-            points = const.DEFAULT_ZERO
-            reward = const.CONF_EMPTY
+        # --- Unified Award Items ---
+        award_items = user_input.get(const.CFOF_BADGES_INPUT_AWARD_ITEMS, [])
+        if not isinstance(award_items, list):
+            award_items = [award_items] if award_items else []
 
         badge_data[const.DATA_BADGE_AWARDS] = {
-            const.DATA_BADGE_AWARDS_AWARD_MODE: mode,
             const.DATA_BADGE_AWARDS_AWARD_POINTS: points,
-            const.DATA_BADGE_AWARDS_AWARD_REWARD: reward,
             const.DATA_BADGE_AWARDS_POINT_MULTIPLIER: multiplier,
+            const.DATA_BADGE_AWARDS_AWARD_ITEMS: award_items,
         }
 
     # --- Reset Component ---
@@ -522,10 +513,13 @@ def build_badge_common_data(
 # --- Consolidated Validation Function ---
 
 
-def validate_badge_common_inputs(  # Renamed
+def validate_badge_common_inputs(
     user_input: Dict[str, Any],
     internal_id: str,
     existing_badges: Optional[Dict[str, Any]] = None,
+    rewards_dict: Optional[Dict[str, Any]] = None,
+    bonuses_dict: Optional[Dict[str, Any]] = None,
+    penalties_dict: Optional[Dict[str, Any]] = None,
     badge_type: str = const.BADGE_TYPE_CUMULATIVE,
 ) -> Dict[str, str]:
     """
@@ -542,6 +536,10 @@ def validate_badge_common_inputs(  # Renamed
     """
     errors: Dict[str, str] = {}
     existing_badges = existing_badges or {}
+
+    rewards_dict = rewards_dict or {}
+    bonuses_dict = bonuses_dict or {}
+    penalties_dict = penalties_dict or {}
 
     # --- Set include_ flags based on badge type ---
     include_target = badge_type in const.INCLUDE_TARGET_BADGE_TYPES
@@ -681,63 +679,78 @@ def validate_badge_common_inputs(  # Renamed
         # Optional: Check existence of kid IDs here if needed
 
     # --- Awards Component Validation ---
+    award_items_valid_values = None
     if include_awards:
-        # Logic from validate_badge_awards_inputs
-        award_mode = user_input.get(
-            const.CFOF_BADGES_INPUT_AWARD_MODE, const.DEFAULT_BADGE_AWARD_MODE
-        )
-        # Perform cleaning within validation - modifies user_input dict passed in!
-        # Consider if this is desired, or if cleaning should only happen in build_data.
-        # Let's keep it as per original function for now.
-        if award_mode == const.CFOF_BADGES_INPUT_AWARD_POINTS:
-            user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
-        elif award_mode == const.CFOF_BADGES_INPUT_AWARD_REWARD:
-            user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-        elif award_mode == const.CONF_BADGE_AWARD_NONE:
-            user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
-            user_input[const.CFOF_BADGES_INPUT_AWARD_REWARD] = const.CONF_EMPTY
+        # ...existing award_mode logic...
 
-        # Validate based on potentially cleaned user_input
-        if award_mode in (
-            const.CFOF_BADGES_INPUT_AWARD_POINTS,
-            const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-        ):
+        award_items = user_input.get(const.CFOF_BADGES_INPUT_AWARD_ITEMS, [])
+        if not isinstance(award_items, list):
+            award_items = [award_items] if award_items else []
+
+        # If award_items_valid_values is not provided, build it here
+        if award_items_valid_values is None:
+            award_items_valid_values = [
+                const.AWARD_ITEMS_KEY_POINTS,
+                const.AWARD_ITEMS_KEY_POINTS_MULTIPLIER,
+            ]
+            if rewards_dict:
+                award_items_valid_values += [
+                    f"{const.AWARD_ITEMS_PREFIX_REWARD}{reward_id}"
+                    for reward_id in rewards_dict.keys()
+                ]
+            if bonuses_dict:
+                award_items_valid_values += [
+                    f"{const.AWARD_ITEMS_PREFIX_BONUS}{bonus_id}"
+                    for bonus_id in bonuses_dict.keys()
+                ]
+            if penalties_dict:
+                award_items_valid_values += [
+                    f"{const.AWARD_ITEMS_PREFIX_PENALTY}{penalty_id}"
+                    for penalty_id in penalties_dict.keys()
+                ]
+
+        # 1. POINTS: logic
+        if const.AWARD_ITEMS_KEY_POINTS in award_items:
             points = user_input.get(
                 const.CFOF_BADGES_INPUT_AWARD_POINTS, const.DEFAULT_ZERO
             )
             try:
-                if float(points) <= 0:
+                if float(points) <= const.DEFAULT_ZERO:
                     errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
-                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM  # Simpler key, provide context in translation
+                        const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM
                     )
             except (TypeError, ValueError):
                 errors[const.CFOF_BADGES_INPUT_AWARD_POINTS] = (
                     const.TRANS_KEY_CFOF_ERROR_AWARD_POINTS_MINIMUM
                 )
-        if award_mode in (
-            const.CFOF_BADGES_INPUT_AWARD_REWARD,
-            const.CFOF_BADGES_INPUT_AWARD_POINTS_REWARD,
-        ):
-            reward = user_input.get(
-                const.CFOF_BADGES_INPUT_AWARD_REWARD, const.CONF_EMPTY
-            )
-            if not reward or reward == const.CONF_EMPTY:
-                errors[const.CFOF_BADGES_INPUT_AWARD_REWARD] = (
-                    const.TRANS_KEY_CFOF_ERROR_REWARD_SELECTION  # Simpler key
-                )
+        else:
+            user_input[const.CFOF_BADGES_INPUT_AWARD_POINTS] = const.DEFAULT_ZERO
 
-        if is_cumulative:
-            multiplier = user_input.get(const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER)
+        # 2. POINTS MULTIPLIER: logic
+        if const.AWARD_ITEMS_KEY_POINTS_MULTIPLIER in award_items:
+            multiplier = user_input.get(
+                const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER,
+                const.DEFAULT_POINTS_MULTIPLIER,
+            )
             try:
-                if float(multiplier) <= 0:
+                if float(multiplier) <= const.DEFAULT_ZERO:
                     errors[const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER] = (
-                        "invalid_multiplier"
+                        const.TRANS_KEY_CFOF_ERROR_AWARD_INVALID_MULTIPLIER
                     )
             except (TypeError, ValueError):
-                errors[const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER] = "invalid_multiplier"
+                errors[const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER] = (
+                    const.TRANS_KEY_CFOF_ERROR_AWARD_INVALID_MULTIPLIER
+                )
         else:
-            # If not cumulative, set multiplier to None
             user_input[const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER] = const.CONF_NONE
+
+        # 3. All selected award_items must be valid
+        for item in award_items:
+            if item not in award_items_valid_values:
+                errors[const.CFOF_BADGES_INPUT_AWARD_ITEMS] = (
+                    const.TRANS_KEY_CFOF_ERROR_AWARD_INVALID_AWARD_ITEM
+                )
+                break
 
     # --- Reset Component Validation ---
     if include_reset_schedule:
@@ -813,8 +826,10 @@ def build_badge_common_schema(
     kids_dict: Optional[Dict[str, Any]] = None,
     chores_dict: Optional[Dict[str, Any]] = None,
     rewards_dict: Optional[Dict[str, Any]] = None,
-    challenges_dict: Optional[Dict[str, Any]] = None,  # Add challenges
-    achievements_dict: Optional[Dict[str, Any]] = None,  # Add achievements
+    challenges_dict: Optional[Dict[str, Any]] = None,
+    achievements_dict: Optional[Dict[str, Any]] = None,
+    bonuses_dict: Optional[Dict[str, Any]] = None,
+    penalties_dict: Optional[Dict[str, Any]] = None,
     badge_type: str = const.BADGE_TYPE_CUMULATIVE,
 ) -> Dict[vol.Marker, Any]:
     """
@@ -844,6 +859,8 @@ def build_badge_common_schema(
     rewards_dict = rewards_dict or {}
     challenges_dict = challenges_dict or {}
     achievements_dict = achievements_dict or {}
+    bonuses_dict = bonuses_dict or {}
+    penalties_dict = penalties_dict or {}
     # Initialize schema fields
     schema_fields = {}
 
@@ -857,6 +874,7 @@ def build_badge_common_schema(
     include_tracked_chores = badge_type in const.INCLUDE_TRACKED_CHORES_BADGE_TYPES
     include_assigned_to = badge_type in const.INCLUDE_ASSIGNED_TO_BADGE_TYPES
     include_awards = badge_type in const.INCLUDE_AWARDS_BADGE_TYPES
+    include_penalties = badge_type in const.INCLUDE_PENALTIES_BADGE_TYPES
     include_reset_schedule = badge_type in const.INCLUDE_RESET_SCHEDULE_BADGE_TYPES
 
     is_cumulative = badge_type == const.BADGE_TYPE_CUMULATIVE
@@ -1166,40 +1184,88 @@ def build_badge_common_schema(
         )
 
     # --- Awards Component Schema ---
+    award_items_valid_values = []
     if include_awards:
         # Logic from build_badge_awards_schema
-        rewards_options = const.REWARD_OPTION_NONE[:]
+
+        award_items_options = []
+
+        award_items_options.append(
+            {
+                const.CONF_VALUE: const.AWARD_ITEMS_KEY_POINTS,
+                const.CONF_LABEL: const.AWARD_ITEMS_LABEL_POINTS,
+            }
+        )
+
+        if is_cumulative:
+            award_items_options.append(
+                {
+                    const.CONF_VALUE: const.AWARD_ITEMS_KEY_POINTS_MULTIPLIER,
+                    const.CONF_LABEL: const.AWARD_ITEMS_LABEL_POINTS_MULTIPLIER,
+                }
+            )
 
         if rewards_dict:
-            rewards_options += [
-                {
-                    const.CONF_VALUE: reward_id,
-                    const.CONF_LABEL: reward.get(
-                        const.DATA_REWARD_NAME, const.CONF_NONE_TEXT
-                    ),
-                }
-                for reward_id, reward in rewards_dict.items()
-            ]
-        # Use SelectSelector for mode too
-        award_mode_options = const.AWARD_MODE_OPTIONS or []
+            for reward_id, reward in rewards_dict.items():
+                label = f"{const.AWARD_ITEMS_LABEL_REWARD} {reward.get(const.DATA_REWARD_NAME, reward_id)}"
+                award_items_options.append(
+                    {
+                        const.CONF_VALUE: f"{const.AWARD_ITEMS_PREFIX_REWARD}{reward_id}",
+                        const.CONF_LABEL: label,
+                    }
+                )
+        if bonuses_dict:
+            for bonus_id, bonus in bonuses_dict.items():
+                label = f"{const.AWARD_ITEMS_LABEL_BONUS} {bonus.get(const.DATA_BONUS_NAME, bonus_id)}"
+                award_items_options.append(
+                    {
+                        const.CONF_VALUE: f"{const.AWARD_ITEMS_PREFIX_BONUS}{bonus_id}",
+                        const.CONF_LABEL: label,
+                    }
+                )
+        if include_penalties:
+            if penalties_dict:
+                for penalty_id, penalty in penalties_dict.items():
+                    label = f"{const.AWARD_ITEMS_LABEL_PENALTY} {penalty.get(const.DATA_PENALTY_NAME, penalty_id)}"
+                    award_items_options.append(
+                        {
+                            const.CONF_VALUE: f"{const.AWARD_ITEMS_PREFIX_PENALTY}{penalty_id}",
+                            const.CONF_LABEL: label,
+                        }
+                    )
+
+        default_award_items = default.get(
+            const.CFOF_BADGES_INPUT_AWARD_ITEMS,
+            default.get(const.DATA_BADGE_AWARDS, {}).get(
+                const.DATA_BADGE_AWARDS_AWARD_ITEMS, []
+            ),
+        )
+
+        # Build options list to send to validation
+        award_items_valid_values = [
+            opt[const.CONF_VALUE] for opt in award_items_options
+        ]
+
         schema_fields.update(
             {
-                vol.Required(
-                    const.CFOF_BADGES_INPUT_AWARD_MODE,
-                    default=default.get(
-                        const.CFOF_BADGES_INPUT_AWARD_MODE,
-                        default.get(const.DATA_BADGE_AWARDS, {}).get(
-                            const.DATA_BADGE_AWARDS_AWARD_MODE,
-                            const.DEFAULT_BADGE_AWARD_MODE,
-                        ),
-                    ),
+                vol.Optional(
+                    const.CFOF_BADGES_INPUT_AWARD_ITEMS,
+                    default=default_award_items
+                    if isinstance(default_award_items, list)
+                    else [],
                 ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
-                        options=award_mode_options,
+                        options=award_items_options,
+                        multiple=True,
                         mode=selector.SelectSelectorMode.DROPDOWN,
-                        translation_key=const.TRANS_KEY_CFOF_BADGE_AWARD_MODE,  # Add translation key
+                        translation_key=const.TRANS_KEY_CFOF_BADGE_AWARD_ITEMS,
                     )
-                ),
+                )
+            }
+        )
+
+        schema_fields.update(
+            {
                 # Points field is technically optional depending on mode, but schema can keep it simple
                 # Validation layer handles the logic of whether value is needed/used
                 vol.Optional(
@@ -1226,21 +1292,6 @@ def build_badge_common_schema(
                     vol.Range(
                         min=0.0
                     ),  # Ensure the value is greater than or equal to zero
-                ),
-                vol.Optional(
-                    const.CFOF_BADGES_INPUT_AWARD_REWARD,
-                    default=default.get(
-                        const.CFOF_BADGES_INPUT_AWARD_REWARD,
-                        default.get(const.DATA_BADGE_AWARDS, {}).get(
-                            const.DATA_BADGE_AWARDS_AWARD_REWARD, const.CONF_EMPTY
-                        ),
-                    ),
-                ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=rewards_options,
-                        translation_key=const.TRANS_KEY_CFOF_BADGE_AWARD_REWARD,
-                        mode=selector.SelectSelectorMode.DROPDOWN,
-                    )
                 ),
             }
         )

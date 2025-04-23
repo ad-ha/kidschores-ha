@@ -34,6 +34,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PERCENTAGE, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.entity_registry import async_get
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
@@ -311,7 +312,7 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        """Include points, description, etc."""
+        """Include points, description, etc. Uses new per-chore data where possible."""
         chore_info = self.coordinator.chores_data.get(self._chore_id, {})
         shared = chore_info.get(const.DATA_CHORE_SHARED_CHORE, False)
         global_state = chore_info.get(const.DATA_CHORE_STATE, const.CHORE_STATE_UNKNOWN)
@@ -324,14 +325,55 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
         ]
 
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        chore_streak_data = kid_info.get(const.DATA_KID_CHORE_STREAKS, {}).get(
+        kid_chore_data = kid_info.get(const.DATA_KID_CHORE_DATA, {}).get(
             self._chore_id, {}
         )
-        current_streak = chore_streak_data.get(
-            const.DATA_KID_CURRENT_STREAK, const.DEFAULT_ZERO
+        periods = kid_chore_data.get(const.DATA_KID_CHORE_DATA_PERIODS, {})
+        all_time_stats = periods.get(
+            const.DATA_KID_CHORE_DATA_PERIODS_ALL_TIME, {}
+        ).get(const.PERIOD_ALL_TIME, {})
+
+        # Use new per-chore data for counts and streaks
+        claims_count = all_time_stats.get(
+            const.DATA_KID_CHORE_DATA_PERIOD_CLAIMED, const.DEFAULT_ZERO
         )
-        highest_streak = chore_streak_data.get(
-            const.DATA_KID_MAX_STREAK, const.DEFAULT_ZERO
+        approvals_count = all_time_stats.get(
+            const.DATA_KID_CHORE_DATA_PERIOD_APPROVED, const.DEFAULT_ZERO
+        )
+
+        # Get today's and yesterday's ISO dates
+        today_local_iso = kh.get_today_local_date().isoformat()
+        yesterday_local_iso = kh.adjust_datetime_by_interval(
+            today_local_iso,
+            interval_unit=const.CONF_DAYS,
+            delta=-1,
+            require_future=False,
+            return_type=const.HELPER_RETURN_ISO_DATE,
+        )
+
+        daily_periods = periods.get(const.DATA_KID_CHORE_DATA_PERIODS_DAILY, {})
+
+        # Try to get the current streak from today's data; if not present, fallback to yesterday's
+        current_streak = daily_periods.get(today_local_iso, {}).get(
+            const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK
+        ) or daily_periods.get(yesterday_local_iso, {}).get(
+            const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK, const.DEFAULT_ZERO
+        )
+
+        highest_streak = all_time_stats.get(
+            const.DATA_KID_CHORE_DATA_PERIOD_LONGEST_STREAK, const.DEFAULT_ZERO
+        )
+        points_earned = all_time_stats.get(
+            const.DATA_KID_CHORE_DATA_PERIOD_POINTS, const.DEFAULT_ZERO
+        )
+        overdue_count = all_time_stats.get(
+            const.DATA_KID_CHORE_DATA_PERIOD_OVERDUE, const.DEFAULT_ZERO
+        )
+        disapproved_count = all_time_stats.get(
+            const.DATA_KID_CHORE_DATA_PERIOD_DISAPPROVED, const.DEFAULT_ZERO
+        )
+        last_longest_streak_date = kid_chore_data.get(
+            const.DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME
         )
 
         stored_labels = chore_info.get(const.DATA_CHORE_LABELS, [])
@@ -345,25 +387,8 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
             const.ATTR_DESCRIPTION: chore_info.get(
                 const.DATA_CHORE_DESCRIPTION, const.CONF_EMPTY
             ),
-            const.ATTR_CHORE_CLAIMS_COUNT: kid_info.get(
-                const.DATA_KID_CHORE_CLAIMS, {}
-            ).get(self._chore_id, const.DEFAULT_ZERO),
-            const.ATTR_CHORE_APPROVALS_COUNT: kid_info.get(
-                const.DATA_KID_CHORE_APPROVALS, {}
-            ).get(self._chore_id, const.DEFAULT_ZERO),
-            const.ATTR_CHORE_CURRENT_STREAK: current_streak,
-            const.ATTR_CHORE_HIGHEST_STREAK: highest_streak,
-            const.ATTR_SHARED_CHORE: shared,
-            const.ATTR_GLOBAL_STATE: global_state,
-            const.ATTR_RECURRING_FREQUENCY: chore_info.get(
-                const.DATA_CHORE_RECURRING_FREQUENCY, const.CONF_NONE_TEXT
-            ),
-            const.ATTR_APPLICABLE_DAYS: chore_info.get(
-                const.DATA_CHORE_APPLICABLE_DAYS, []
-            ),
-            const.ATTR_DUE_DATE: chore_info.get(
-                const.DATA_CHORE_DUE_DATE, const.DUE_DATE_NOT_SET
-            ),
+            const.ATTR_ASSIGNED_KIDS: assigned_kids_names,
+            const.ATTR_LABELS: friendly_labels,
             const.ATTR_DEFAULT_POINTS: chore_info.get(
                 const.DATA_CHORE_DEFAULT_POINTS, const.DEFAULT_ZERO
             ),
@@ -373,15 +398,26 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
             const.ATTR_ALLOW_MULTIPLE_CLAIMS_PER_DAY: chore_info.get(
                 const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY, False
             ),
-            const.ATTR_ASSIGNED_KIDS: assigned_kids_names,
-            const.ATTR_LABELS: friendly_labels,
+            const.ATTR_CHORE_POINTS_EARNED: points_earned,
+            const.ATTR_CHORE_APPROVALS_COUNT: approvals_count,
+            const.ATTR_CHORE_CLAIMS_COUNT: claims_count,
+            const.ATTR_CHORE_DISAPPROVED_COUNT: disapproved_count,
+            const.ATTR_CHORE_OVERDUE_COUNT: overdue_count,
+            const.ATTR_CHORE_CURRENT_STREAK: current_streak,
+            const.ATTR_CHORE_HIGHEST_STREAK: highest_streak,
+            const.ATTR_CHORE_LAST_LONGEST_STREAK_DATE: last_longest_streak_date,
+            const.ATTR_SHARED_CHORE: shared,
+            const.ATTR_GLOBAL_STATE: global_state,
+            const.ATTR_DUE_DATE: chore_info.get(
+                const.DATA_CHORE_DUE_DATE, const.DUE_DATE_NOT_SET
+            ),
+            const.ATTR_RECURRING_FREQUENCY: chore_info.get(
+                const.DATA_CHORE_RECURRING_FREQUENCY, const.CONF_NONE_TEXT
+            ),
+            const.ATTR_APPLICABLE_DAYS: chore_info.get(
+                const.DATA_CHORE_APPLICABLE_DAYS, []
+            ),
         }
-
-        if chore_info.get(const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY, False):
-            today_approvals = kid_info.get(
-                const.DATA_KID_TODAY_CHORE_APPROVALS, {}
-            ).get(self._chore_id, const.DEFAULT_ZERO)
-            attributes[const.ATTR_CHORE_APPROVALS_TODAY] = today_approvals
 
         if (
             chore_info.get(const.DATA_CHORE_RECURRING_FREQUENCY)
@@ -393,6 +429,47 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
             attributes[const.ATTR_CUSTOM_FREQUENCY_UNIT] = chore_info.get(
                 const.DATA_CHORE_CUSTOM_INTERVAL_UNIT
             )
+
+        # Show today's approvals if allowed
+        if chore_info.get(const.DATA_CHORE_ALLOW_MULTIPLE_CLAIMS_PER_DAY, False):
+            today_approvals = (
+                periods.get(const.DATA_KID_CHORE_DATA_PERIODS_DAILY, {})
+                .get(kh.get_today_local_date().isoformat(), {})
+                .get(const.DATA_KID_CHORE_DATA_PERIOD_APPROVED, const.DEFAULT_ZERO)
+            )
+            attributes[const.ATTR_CHORE_APPROVALS_TODAY] = today_approvals
+
+        # Add claim, approve, disapprove button entity ids to attributes for direct ui access.
+        button_types = [
+            (
+                const.BUTTON_KC_UID_SUFFIX_APPROVE,
+                const.ATTR_CHORE_APPROVE_BUTTON_ENTITY_ID,
+            ),
+            (
+                const.BUTTON_KC_UID_SUFFIX_DISAPPROVE,
+                const.ATTR_CHORE_DISAPPROVE_BUTTON_ENTITY_ID,
+            ),
+            (const.BUTTON_KC_UID_SUFFIX_CLAIM, const.ATTR_CHORE_CLAIM_BUTTON_ENTITY_ID),
+        ]
+        button_entity_ids = {}
+        try:
+            entity_registry = async_get(self.hass)
+            for suffix, attr_name in button_types:
+                unique_id = (
+                    f"{self._entry.entry_id}_{self._kid_id}_{self._chore_id}{suffix}"
+                )
+                entity_id = None
+                for entity in entity_registry.entities.values():
+                    if entity.unique_id == unique_id:
+                        entity_id = entity.entity_id
+                        break
+                button_entity_ids[attr_name] = entity_id
+        except Exception:
+            for _, attr_name in button_types:
+                button_entity_ids[attr_name] = None
+
+        # Add button entity IDs to the attributes
+        attributes.update(button_entity_ids)
 
         return attributes
 
@@ -688,6 +765,7 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         """Provide additional details about the highest cumulative badge,
         including the points needed to reach the next cumulative badge,
         reset schedule, maintenance rules, description, and awards if present.
+        Also shows baseline points, cycle points, grace_end_date, and points to maintenance if applicable.
         """
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
         earned_badge_list = [
@@ -717,6 +795,19 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_POINTS_NEEDED,
             const.DEFAULT_ZERO,
         )
+        baseline_points = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_BASELINE,
+            const.DEFAULT_ZERO,
+        )
+        cycle_points = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CYCLE_POINTS,
+            const.DEFAULT_ZERO,
+        )
+        grace_end_date = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_GRACE_END_DATE,
+            None,
+        )
+
         current_badge_info = self.coordinator.badges_data.get(current_badge_id, {})
 
         stored_labels = current_badge_info.get(const.DATA_BADGE_LABELS, [])
@@ -730,13 +821,36 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
         if description:
             extra_attrs[const.DATA_BADGE_DESCRIPTION] = description
 
+        # Add baseline points, cycle points, and grace_end_date using constants
+        extra_attrs[const.ATTR_BADGE_CUMULATIVE_BASELINE_POINTS] = baseline_points
+        extra_attrs[const.ATTR_BADGE_CUMULATIVE_CYCLE_POINTS] = cycle_points
+
+        target_info = current_badge_info.get(const.DATA_BADGE_TARGET, {})
+
+        # maintenance_rules is an int inside target_info
+        maintenance_rules = target_info.get(const.DATA_BADGE_MAINTENANCE_RULES, 0)
+        maintenance_end_date = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_MAINTENANCE_END_DATE, None
+        )
+        if maintenance_rules > 0 and maintenance_end_date:
+            extra_attrs[const.ATTR_BADGE_CUMULATIVE_MAINTENANCE_END_DATE] = (
+                maintenance_end_date
+            )
+            extra_attrs[const.ATTR_BADGE_CUMULATIVE_GRACE_END_DATE] = grace_end_date
+            extra_attrs[const.ATTR_BADGE_CUMULATIVE_MAINTENANCE_POINTS_REQUIRED] = (
+                maintenance_rules
+            )
+            points_to_maintenance = max(0, maintenance_rules - cycle_points)
+            extra_attrs[const.ATTR_BADGE_CUMULATIVE_POINTS_TO_MAINTENANCE] = (
+                points_to_maintenance
+            )
+
         # Add reset_schedule fields if recurring_frequency is present
         reset_schedule = current_badge_info.get(const.DATA_BADGE_RESET_SCHEDULE, {})
         if reset_schedule:
             extra_attrs[const.DATA_BADGE_RESET_SCHEDULE] = reset_schedule
 
         # Add Target fields if present
-        target_info = current_badge_info.get(const.DATA_BADGE_TARGET, {})
         if target_info:
             extra_attrs[const.DATA_BADGE_TARGET] = target_info
 
@@ -747,13 +861,13 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
 
         return {
             const.ATTR_KID_NAME: self._kid_name,
+            const.ATTR_LABELS: friendly_labels,
             const.ATTR_ALL_EARNED_BADGES: earned_badge_list,
             const.ATTR_HIGHEST_BADGE_THRESHOLD_VALUE: highest_badge_threshold_value,
+            const.ATTR_POINTS_TO_NEXT_BADGE: points_to_next_badge,
             const.ATTR_CURRENT_BADGE_ID: current_badge_id,
             const.ATTR_CURRENT_BADGE_NAME: current_badge_name,
             const.ATTR_BADGE_STATUS: badge_status,
-            const.ATTR_POINTS_TO_NEXT_BADGE: points_to_next_badge,
-            const.ATTR_LABELS: friendly_labels,
             **extra_attrs,
         }
 
@@ -834,7 +948,7 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
             self.coordinator.chores_data.get(chore_id, {}).get(
                 const.DATA_CHORE_NAME, chore_id
             )
-            for chore_id in badge_info.get(const.DATA_BADGE_REQUIRED_CHORES, [])
+            for chore_id in badge_info.get(const.DATA_BADGE_REQUIRED_CHORES_LEGACY, [])
         ]
 
         # Awards info
@@ -1363,7 +1477,7 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
                     else const.DEFAULT_ZERO
                 )
                 current_total = self.coordinator.kids_data.get(kid_id, {}).get(
-                    const.DATA_KID_COMPLETED_CHORES_TOTAL, const.DEFAULT_ZERO
+                    const.DATA_KID_COMPLETED_CHORES_TOTAL_LEGACY, const.DEFAULT_ZERO
                 )
                 total_current += current_total
                 total_effective_target += baseline + target
@@ -1402,7 +1516,7 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
 
             for kid_id in assigned_kids:
                 daily = self.coordinator.kids_data.get(kid_id, {}).get(
-                    const.DATA_KID_COMPLETED_CHORES_TODAY, const.DEFAULT_ZERO
+                    const.DATA_KID_COMPLETED_CHORES_TODAY_LEGACY, const.DEFAULT_ZERO
                 )
                 kid_progress = (
                     100
@@ -1466,7 +1580,7 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
             ):
                 kids_progress[kid_name] = self.coordinator.kids_data.get(
                     kid_id, {}
-                ).get(const.DATA_KID_COMPLETED_CHORES_TODAY, const.DEFAULT_ZERO)
+                ).get(const.DATA_KID_COMPLETED_CHORES_TODAY_LEGACY, const.DEFAULT_ZERO)
             else:
                 kids_progress[kid_name] = const.DEFAULT_ZERO
 
@@ -1706,7 +1820,7 @@ class AchievementProgressSensor(CoordinatorEntity, SensorEntity):
             )
 
             current_total = self.coordinator.kids_data.get(self._kid_id, {}).get(
-                const.DATA_KID_COMPLETED_CHORES_TODAY, const.DEFAULT_ZERO
+                const.DATA_KID_COMPLETED_CHORES_TODAY_LEGACY, const.DEFAULT_ZERO
             )
 
             effective_target = baseline + target
@@ -1738,7 +1852,7 @@ class AchievementProgressSensor(CoordinatorEntity, SensorEntity):
 
         elif ach_type == const.ACHIEVEMENT_TYPE_DAILY_MIN:
             daily = self.coordinator.kids_data.get(self._kid_id, {}).get(
-                const.DATA_KID_COMPLETED_CHORES_TOTAL, const.DEFAULT_ZERO
+                const.DATA_KID_COMPLETED_CHORES_TOTAL_LEGACY, const.DEFAULT_ZERO
             )
 
             percent = (
@@ -1794,7 +1908,7 @@ class AchievementProgressSensor(CoordinatorEntity, SensorEntity):
             == const.ACHIEVEMENT_TYPE_DAILY_MIN
         ):
             raw_progress = self.coordinator.kids_data.get(self._kid_id, {}).get(
-                const.DATA_KID_COMPLETED_CHORES_TODAY, const.DEFAULT_ZERO
+                const.DATA_KID_COMPLETED_CHORES_TODAY_LEGACY, const.DEFAULT_ZERO
             )
 
         associated_chore = const.CONF_EMPTY
@@ -2036,7 +2150,10 @@ class KidHighestStreakSensor(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return the highest current streak among all streak achievements for the kid."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
-        return kid_info.get(const.DATA_KID_OVERALL_CHORE_STREAK, const.DEFAULT_ZERO)
+        chore_stats = kid_info.get(const.DATA_KID_CHORE_STATS, {})
+        return chore_stats.get(
+            const.DATA_KID_CHORE_STATS_LONGEST_STREAK_ALL_TIME, const.DEFAULT_ZERO
+        )
 
     @property
     def extra_state_attributes(self) -> dict:

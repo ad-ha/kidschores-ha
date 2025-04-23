@@ -92,55 +92,55 @@
         }
       },
       "badges": {
-        "title": "Add Cumulative Badge",
-        "description": "Configure the details for a cumulative badge. These badges reward kids for reaching lifetime point thresholds and support maintenance cycles to encourage ongoing performance.",
-        "data": {
-          "badge_name": "Badge Name",
-          "badge_description": "Badge Description (Optional)",
-          "badge_labels": "Labels (Optional)",
-          "icon": "Badge Icon (mdi:xxx)",
-          "target_type": "🎯 TARGET: Target Type",
-          "threshhold_value": "🎯 TARGET: Threshold Value",
-          "maintenance_rules": "🎯 TARGET: Maintenance Points (Optional)",
-          "occasion_type": "🎉 Occasion Type",
-          "associated_achievement": "🏆 Associated Achievement",
-          "associated_challenge": "🏁 Associated Challenge",
-          "selected_chores": "🧹 Tracked Chores (Optional)",
-          "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
-          "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)",
-          "points_multiplier": "🎁 AWARDS: Points Multiplier (Default 💎 1.0x)",
-          "recurring_frequency": "🔄 MAINTENANCE CYCLE: Frequency",
-          "custom_interval": "🔄 MAINTENANCE CYCLE: Custom Interval (Required for Custom Frequency)",
-          "custom_interval_unit": "🔄 MAINTENANCE CYCLE: Custom Interval Unit (Required for Custom Frequency)",
-          "start_date": "🔄 RESET CYCLE: Start Date (Optional)",
-          "end_date": "🔄 MAINTENANCE CYCLE: End Date (Optional)",
-          "grace_period_days": "🔄 MAINTENANCE CYCLE: Grace Period in Days (Optional)"
-        },
-        "data_description": {
-          "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
-          "badge_description": "Provide a description of the badge's purpose or criteria (optional).",
-          "badge_labels": "Add labels to categorize or tag the badge (optional).",
-          "icon": "Specify an icon for the badge using Material Design Icons (e.g., mdi:star).",
-          "target_type": "Select the type of target for this badge (e.g., points or chore count).",
-          "threshhold_value": "Set the total lifetime points required to earn this badge.",
-          "maintenance_rules": "Specify the minimum points required during the maintenance cycle to retain the badge and its active multiplier (optional).",
-          "occasion_type": "Choose the type of occasion for this badge (e.g., holiday, birthday).",
-          "associated_achievement": "Link this badge to an achievement for tracking.",
-          "associated_challenge": "Link this badge to a challenge for tracking.",
-          "selected_chores": "Select the chores that contribute points toward this badge (optional).",
-          "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional).",
-          "points_multiplier": "Set a multiplier for points earned while this badge is active (e.g., 1.5x).",
-          "recurring_frequency": "Enable the maintenance cycle, requiring the specified minimum points to be earned before the end of the period. (e.g., weekly, monthly).",
-          "custom_interval": "Specify the NUMBER of days, week, months, etc. for Custom Frequency (e.g., 3 if you set 3 weeks). Only applies to Custom Frequency.",
-          "custom_interval_unit": "Select the unit for the custom interval (e.g., days, weeks). Only applies to Custom Frequency.",
-          "start_date": "Set the start date (optional).",
-          "end_date": "Select the date for the end of the maintenance cycle. (optional).",
-          "grace_period_days": "Specify the number of extra days after the end of the cycle kids to meet required points before demotion. (optional)."
+        "add_badge_cumulative": {
+          "title": "Add Cumulative Badge",
+          "description": "Configure the details for a cumulative badge. These badges reward kids for reaching lifetime point thresholds and support maintenance cycles to encourage ongoing performance.",
+          "data": {
+            "badge_name": "Badge Name",
+            "badge_description": "Badge Description (Optional)",
+            "badge_labels": "Labels (Optional)",
+            "icon": "Badge Icon (mdi:xxx)",
+            "target_type": "🎯 TARGET: Target Type",
+            "threshhold_value": "🎯 TARGET: Threshold Value",
+            "maintenance_rules": "🎯 TARGET: Maintenance Points (Optional)",
+            "occasion_type": "🎉 Occasion Type",
+            "associated_achievement": "🏆 Associated Achievement",
+            "associated_challenge": "🏁 Associated Challenge",
+            "selected_chores": "🧹 Tracked Chores (Optional)",
+            "assigned_to": "🧒 Assigned Kids (Optional)",
+            "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses, Multiplier (Optional)",
+            "award_points": "🎁 AWARDS: Points Awarded (Optional)",
+            "points_multiplier": "🎁 AWARDS: Points Multiplier (Default 💎 1.0x)",
+            "recurring_frequency": "🔄 MAINTENANCE CYCLE: Frequency",
+            "custom_interval": "🔄 MAINTENANCE CYCLE: Custom Interval (Required for Custom Frequency)",
+            "custom_interval_unit": "🔄 MAINTENANCE CYCLE: Custom Interval Unit (Required for Custom Frequency)",
+            "start_date": "🔄 RESET CYCLE: Start Date (Optional)",
+            "end_date": "🔄 MAINTENANCE CYCLE: End Date (Optional)",
+            "grace_period_days": "🔄 MAINTENANCE CYCLE: Grace Period in Days (Optional)"
+          },
+          "data_description": {
+            "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
+            "badge_description": "Provide a description of the badge's purpose or criteria (optional).",
+            "badge_labels": "Add labels to categorize or tag the badge (optional).",
+            "icon": "Specify an icon for the badge using Material Design Icons (e.g., mdi:star).",
+            "target_type": "Select the type of target for this badge (e.g., points or chore count).",
+            "threshhold_value": "Set the total lifetime points required to earn this badge.",
+            "maintenance_rules": "Specify the minimum points required during the maintenance cycle to retain the badge and its active multiplier (optional).",
+            "occasion_type": "Choose the type of occasion for this badge (e.g., holiday, birthday).",
+            "associated_achievement": "Link this badge to an achievement for tracking.",
+            "associated_challenge": "Link this badge to a challenge for tracking.",
+            "selected_chores": "Select the chores that contribute points toward this badge. Leave blank if you want to track all assigned chores (optional).",
+            "assigned_to": "Assign this badge to specific kids for tracking.",
+            "award_items": "Select one or more from points, rewards, bonuses, or a points multiplier. All selected items will be granted or applied when the badge is earned. (optional)",
+            "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional).",
+            "points_multiplier": "If multiplier is a selected award, set a multiplier for points earned while this badge is active (e.g., 1.5x).",
+            "recurring_frequency": "Enable the maintenance cycle, requiring the specified minimum points to be earned before the end of the period. (e.g., weekly, monthly).",
+            "custom_interval": "Specify the NUMBER of days, week, months, etc. for Custom Frequency (e.g., 3 if you set 3 weeks). Only applies to Custom Frequency.",
+            "custom_interval_unit": "Select the unit for the custom interval (e.g., days, weeks). Only applies to Custom Frequency.",
+            "start_date": "Set the start date (optional).",
+            "end_date": "Select the date for the end of the maintenance cycle. (optional).",
+            "grace_period_days": "Specify the number of extra days after the end of the cycle kids to meet required points before demotion. (optional)."
+          }
         }
       },
       "reward_count": {
@@ -404,9 +404,8 @@
           "associated_challenge": "🏁 Associated Challenge",
           "selected_chores": "🧹 Tracked Chores (Optional)",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses, Multiplier (Optional)",
           "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)",
           "points_multiplier": "🎁 AWARDS: Points Multiplier (Default 💎 1.0x)",
           "recurring_frequency": "🔄 MAINTENANCE CYCLE: Frequency",
           "custom_interval": "🔄 MAINTENANCE CYCLE: Custom Interval (Required for Custom Frequency)",
@@ -426,12 +425,11 @@
           "occasion_type": "Choose the type of occasion for this badge (e.g., holiday, birthday).",
           "associated_achievement": "Link this badge to an achievement for tracking.",
           "associated_challenge": "Link this badge to a challenge for tracking.",
-          "selected_chores": "Select the chores that contribute points toward this badge (optional).",
+          "selected_chores": "Select the chores that contribute points toward this badge. Leave blank if you want to track all assigned chores (optional).",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional).",
-          "points_multiplier": "Set a multiplier for points earned while this badge is active (e.g., 1.5x).",
+          "award_items": "Select one or more from points, rewards, bonuses, or a points multiplier. All selected items will be granted or applied when the badge is earned. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional).",
+          "points_multiplier": "If multiplier is a selected award, set a multiplier for points earned while this badge is active (e.g., 1.5x).",
           "recurring_frequency": "Enable the maintenance cycle, requiring the specified minimum points to be earned before the end of the period. (e.g., weekly, monthly).",
           "custom_interval": "Specify the NUMBER of days, week, months, etc. for Custom Frequency (e.g., 3 if you set 3 weeks). Only applies to Custom Frequency.",
           "custom_interval_unit": "Select the unit for the custom interval (e.g., days, weeks). Only applies to Custom Frequency.",
@@ -452,9 +450,8 @@
           "threshhold_value": "🎯 DAILY TARGET: Threshold Value",
           "selected_chores": "🧹 Tracked Chores (Optional)",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
-          "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)"
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses, Penalties (Optional)",
+          "award_points": "🎁 AWARDS: Points Awarded (Optional)"
         },
         "data_description": {
           "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
@@ -465,9 +462,8 @@
           "threshhold_value": "Set the daily points, chore count, or number of days required to earn this badge. For 'Days' target types, enter 1 since the badge is evaluated daily (e.g., 1 for a one-day complete all selected chores).",
           "selected_chores": "Select the chores that contribute points toward this badge. Leave blank if you want to track all assigned chores (optional).",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional)."
+          "award_items": "Select one or more from points, rewards, bonuses, or penalties. All selected items will be granted or applied when the badge is earned. Penalties will only be applied if the badge is not earned by the end date or reset date. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional)."
         }
       },
       "add_badge_periodic": {
@@ -486,16 +482,13 @@
           "associated_challenge": "🏁 Associated Challenge",
           "selected_chores": "🧹 Tracked Chores (Optional)",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses, Penalties (Optional)",
           "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)",
-          "points_multiplier": "🎁 AWARDS: Points Multiplier (Default 💎 1.0x)",
           "recurring_frequency": "🔄 RESET CYCLE: Frequency",
           "custom_interval": "🔄 RESET CYCLE: Custom Interval (Required for Custom Frequency)",
           "custom_interval_unit": "🔄 RESET CYCLE: Custom Interval Unit (Required for Custom Frequency)",
           "start_date": "🔄 RESET CYCLE: Start Date (Optional)",
-          "end_date": "🔄 RESET CYCLE: End Date (Optional)",
-          "grace_period_days": "🔄 RESET CYCLE: Grace Period in Days (Optional)"
+          "end_date": "🔄 RESET CYCLE: End Date (Optional)"
         },
         "data_description": {
           "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
@@ -510,16 +503,13 @@
           "associated_challenge": "Link this badge to a challenge for tracking.",
           "selected_chores": "Select the chores that contribute points toward this badge. Leave blank if you want to track all assigned chores (optional).",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional).",
-          "points_multiplier": "Set a multiplier for points earned while this badge is active (e.g., 1.5x).",
+          "award_items": "Select one or more from points, rewards, bonuses, or penalties. All selected items will be granted or applied when the badge is earned. Penalties will only be applied if the badge is not earned by the end date or reset date. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional).",
           "recurring_frequency": "Define the reset schedule for this badge (e.g., weekly, monthly).",
           "custom_interval": "Specify the NUMBER of days, weeks, months, etc. for Custom Frequency (e.g., 3 if you set 3 weeks).",
           "custom_interval_unit": "Select the unit for the custom interval (e.g., days, weeks).",
           "start_date": "Set the start date for the reset cycle (optional).",
-          "end_date": "Set the end date for the reset cycle (optional).",
-          "grace_period_days": "Specify the number of extra days after the end of the cycle for kids to meet required points before demotion (optional)."
+          "end_date": "Set the end date for the reset cycle (optional)."
         }
       },
       "add_badge_achievement": {
@@ -532,9 +522,8 @@
           "icon": "Badge Icon (mdi:xxx)",
           "associated_achievement": "🏆 Associated Achievement",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
-          "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)"
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses (Optional)",
+          "award_points": "🎁 AWARDS: Points Awarded (Optional)"
         },
         "data_description": {
           "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
@@ -543,9 +532,8 @@
           "icon": "Specify an icon for the badge using Material Design Icons (e.g., mdi:star).",
           "associated_achievement": "Link this badge to a specific achievement for tracking.",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional)."
+          "award_items": "Select one or more from points, rewards, or bonuses. All selected items will be granted or applied when the badge is earned. Penalties will only be applied if the badge is not earned by the end date or reset date. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional)."
         }
       },
       "add_badge_challenge": {
@@ -558,9 +546,8 @@
           "icon": "Badge Icon (mdi:xxx)",
           "associated_challenge": "🏁 Associated Challenge",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
-          "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)"
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses (Optional)",
+          "award_points": "🎁 AWARDS: Points Awarded (Optional)"
         },
         "data_description": {
           "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
@@ -569,9 +556,8 @@
           "icon": "Specify an icon for the badge using Material Design Icons (e.g., mdi:star).",
           "associated_challenge": "Link this badge to a specific challenge for tracking.",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional)."
+          "award_items": "Select one or more from points, rewards, or bonuses. All selected items will be granted or applied when the badge is earned. Penalties will only be applied if the badge is not earned by the end date or reset date. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional)."
         }
       },
       "add_badge_special": {
@@ -590,9 +576,8 @@
           "start_date": "🔄 RECURRENCE: Start Date (Optional)",
           "grace_period_days": "🔄 RECURRENCEE: Grace Period in Days (Optional)",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
-          "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)"
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses (Optional)",
+          "award_points": "🎁 AWARDS: Points Awarded (Optional)"
         },
         "data_description": {
           "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
@@ -607,9 +592,8 @@
           "start_date": "Set the start date for the reset cycle (optional).",
           "grace_period_days": "Specify the number of extra days after the end of the cycle for kids to meet required points before demotion (optional).",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional)."
+          "award_items": "Select one or more from points, rewards, or bonuses. All selected items will be granted or applied when the badge is earned. Penalties will only be applied if the badge is not earned by the end date or reset date. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional)."
         }
       },
       "add_reward": {
@@ -749,9 +733,8 @@
           "associated_challenge": "🏁 Associated Challenge",
           "selected_chores": "🧹 Tracked Chores (Optional)",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses, Multiplier (Optional)",
           "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)",
           "points_multiplier": "🎁 AWARDS: Points Multiplier (Default 💎 1.0x)",
           "recurring_frequency": "🔄 MAINTENANCE CYCLE: Frequency",
           "custom_interval": "🔄 MAINTENANCE CYCLE: Custom Interval (Required for Custom Frequency)",
@@ -773,10 +756,9 @@
           "associated_challenge": "Link this badge to a challenge for tracking.",
           "selected_chores": "Select the chores that contribute points toward this badge. Leave blank if you want to track all assigned chores (optional).",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional).",
-          "points_multiplier": "Set a multiplier for points earned while this badge is active (e.g., 1.5x).",
+          "award_items": "Select one or more from points, rewards, bonuses, or a points multiplier. All selected items will be granted or applied when the badge is earned. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional).",
+          "points_multiplier": "If multiplier is a selected award, set a multiplier for points earned while this badge is active (e.g., 1.5x).",
           "recurring_frequency": "Enable the maintenance cycle, requiring the specified minimum points to be earned before the end of the period. (e.g., weekly, monthly).",
           "custom_interval": "Specify the NUMBER of days, week, months, etc. for Custom Frequency (e.g., 3 if you set 3 weeks). Only applies to Custom Frequency.",
           "custom_interval_unit": "Select the unit for the custom interval (e.g., days, weeks). Only applies to Custom Frequency.",
@@ -797,9 +779,8 @@
           "threshhold_value": "🎯 DAILY TARGET: Threshold Value",
           "selected_chores": "🧹 Tracked Chores (Optional)",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
-          "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)"
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses, Penalties (Optional)",
+          "award_points": "🎁 AWARDS: Points Awarded (Optional)"
         },
         "data_description": {
           "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
@@ -810,9 +791,8 @@
           "threshhold_value": "Set the daily points, chore count, or number of days required to earn this badge. For 'Days' target types, enter 1 since the badge is evaluated daily (e.g., 1 for a one-day complete all selected chores).",
           "selected_chores": "Select the chores that contribute points toward this badge. Leave blank if you want to track all assigned chores (optional).",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional)."
+          "award_items": "Select one or more from points, rewards, bonuses, or penalties. All selected items will be granted or applied when the badge is earned. Penalties will only be applied if the badge is not earned by the end date or reset date. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional)."
         }
       },
       "edit_badge_periodic": {
@@ -831,16 +811,13 @@
           "associated_challenge": "🏁 Associated Challenge",
           "selected_chores": "🧹 Tracked Chores (Optional)",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses, Penalties (Optional)",
           "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)",
-          "points_multiplier": "🎁 AWARDS: Points Multiplier (Default 💎 1.0x)",
           "recurring_frequency": "🔄 RESET CYCLE: Frequency",
           "custom_interval": "🔄 RESET CYCLE: Custom Interval (Required for Custom Frequency)",
           "custom_interval_unit": "🔄 RESET CYCLE: Custom Interval Unit (Required for Custom Frequency)",
           "start_date": "🔄 RESET CYCLE: Start Date (Optional)",
-          "end_date": "🔄 RESET CYCLE: End Date (Optional)",
-          "grace_period_days": "🔄 RESET CYCLE: Grace Period in Days (Optional)"
+          "end_date": "🔄 RESET CYCLE: End Date (Optional)"
         },
         "data_description": {
           "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
@@ -855,16 +832,13 @@
           "associated_challenge": "Link this badge to a challenge for tracking.",
           "selected_chores": "Select the chores that contribute points toward this badge. Leave blank if you want to track all assigned chores (optional).",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional).",
-          "points_multiplier": "Set a multiplier for points earned while this badge is active (e.g., 1.5x).",
+          "award_items": "Select one or more from points, rewards, bonuses, or penalties. All selected items will be granted or applied when the badge is earned. Penalties will only be applied if the badge is not earned by the end date or reset date. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional).",
           "recurring_frequency": "Define the reset schedule for this badge (e.g., weekly, monthly).",
           "custom_interval": "Specify the NUMBER of days, weeks, months, etc. for Custom Frequency (e.g., 3 if you set 3 weeks).",
           "custom_interval_unit": "Select the unit for the custom interval (e.g., days, weeks).",
           "start_date": "Set the start date for the reset cycle (optional).",
-          "end_date": "Set the end date for the reset cycle (optional).",
-          "grace_period_days": "Specify the number of extra days after the end of the cycle for kids to meet required points before demotion (optional)."
+          "end_date": "Set the end date for the reset cycle (optional)."
         }
       },
       "edit_badge_achievement": {
@@ -877,9 +851,8 @@
           "icon": "Badge Icon (mdi:xxx)",
           "associated_achievement": "🏆 Associated Achievement",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
-          "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)"
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses (Optional)",
+          "award_points": "🎁 AWARDS: Points Awarded (Optional)"
         },
         "data_description": {
           "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
@@ -888,9 +861,8 @@
           "icon": "Specify an icon for the badge using Material Design Icons (e.g., mdi:star).",
           "associated_achievement": "Link this badge to a specific achievement for tracking.",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional)."
+          "award_items": "Select one or more from points, rewards, or bonuses. All selected items will be granted or applied when the badge is earned. Penalties will only be applied if the badge is not earned by the end date or reset date. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional)."
         }
       },
       "edit_badge_challenge": {
@@ -903,9 +875,8 @@
           "icon": "Badge Icon (mdi:xxx)",
           "associated_challenge": "🏁 Associated Challenge",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
-          "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)"
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses (Optional)",
+          "award_points": "🎁 AWARDS: Points Awarded (Optional)"
         },
         "data_description": {
           "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
@@ -914,9 +885,8 @@
           "icon": "Specify an icon for the badge using Material Design Icons (e.g., mdi:star).",
           "associated_challenge": "Link this badge to a specific challenge for tracking.",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional)."
+          "award_items": "Select one or more from points, rewards, or bonuses. All selected items will be granted or applied when the badge is earned. Penalties will only be applied if the badge is not earned by the end date or reset date. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional)."
         }
       },
       "edit_badge_special": {
@@ -935,9 +905,8 @@
           "start_date": "🔄 RECURRENCE: Start Date (Optional)",
           "grace_period_days": "🔄 RECURRENCEE: Grace Period in Days (Optional)",
           "assigned_to": "🧒 Assigned Kids (Optional)",
-          "award_mode": "🎁 AWARDS: Reward Mode",
-          "award_points": "🎁 AWARDS: Points Awarded (Optional)",
-          "award_reward": "🎁 AWARDS: Reward Awarded (Optional)"
+          "award_items": "🎁 AWARDS: Select Points, Rewards, Bonuses (Optional)",
+          "award_points": "🎁 AWARDS: Points Awarded (Optional)"
         },
         "data_description": {
           "badge_name": "Enter a unique name for the badge. This name will be displayed in the system.",
@@ -952,9 +921,8 @@
           "start_date": "Set the start date for the reset cycle (optional).",
           "grace_period_days": "Specify the number of extra days after the end of the cycle for kids to meet required points before demotion (optional).",
           "assigned_to": "Assign this badge to specific kids for tracking.",
-          "award_mode": "Choose how rewards are given for this badge: Points, Rewards, or both.",
-          "award_points": "Specify the number of points awarded when this badge is earned (optional).",
-          "award_reward": "Select a reward to be given when this badge is earned (optional)."
+          "award_items": "Select one or more from points, rewards, or bonuses. All selected items will be granted or applied when the badge is earned. Penalties will only be applied if the badge is not earned by the end date or reset date. (optional)",
+          "award_points": "If points are a selected award, specify the number of points to apply when this badge is earned. (optional)."
         }
       },
       "edit_reward": {

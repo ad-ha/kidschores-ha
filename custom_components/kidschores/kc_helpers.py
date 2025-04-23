@@ -312,9 +312,10 @@ def get_today_chore_and_point_progress(
         if streak_today > longest_chore_streak:
             longest_chore_streak = streak_today
 
-    # Points from all sources (if tracked in kid_info)
-    total_points_all_sources = kid_info.get(
-        const.DATA_KID_POINTS_EARNED_TODAY, total_points_chores
+    # Points from all sources (if tracked in kid point_stats)
+    point_stats = kid_info.get(const.DATA_KID_POINT_STATS, {})
+    total_points_all_sources = point_stats.get(
+        const.DATA_KID_POINT_STATS_EARNED_TODAY, total_points_chores
     )
 
     return (
