@@ -74,6 +74,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         self._entry_options = {}
         self._action = None
         self._entity_type = None
+        self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         """Display the main menu for the Options Flow.
