@@ -200,7 +200,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_abort(reason="invalid_action")
 
         entity_dict = self._get_entity_dict()
-        entity_names = [data["name"] for data in entity_dict.values()]
+        entity_names = [data["name"] for data in entity_dict.values() if 'name' in data]
 
         if user_input is not None:
             selected_name = _ensure_str(user_input["entity_name"])
