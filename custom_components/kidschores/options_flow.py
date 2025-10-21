@@ -728,6 +728,8 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         rewards_dict = self._entry_options.setdefault(const.CONF_REWARDS, {})
         achievements_dict = self._entry_options.setdefault(const.CONF_ACHIEVEMENTS, {})
         challenges_dict = self._entry_options.setdefault(const.CONF_CHALLENGES, {})
+        bonuses_dict = self._entry_options.setdefault(const.CONF_BONUSES, {})
+        penalties_dict = self._entry_options.setdefault(const.CONF_PENALTIES, {})
 
         errors: Dict[str, str] = {}
 
@@ -751,6 +753,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 user_input=user_input,
                 internal_id=internal_id,
                 existing_badges=badges_dict,
+                rewards_dict=rewards_dict,
+                bonuses_dict=bonuses_dict,
+                penalties_dict=penalties_dict,
                 badge_type=badge_type,
             )
 
@@ -787,6 +792,8 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             rewards_dict=rewards_dict,
             achievements_dict=achievements_dict,
             challenges_dict=challenges_dict,
+            bonuses_dict=bonuses_dict,
+            penalties_dict=penalties_dict,
             badge_type=badge_type,
         )
         data_schema = vol.Schema(schema_fields)
