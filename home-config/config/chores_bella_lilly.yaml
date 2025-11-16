@@ -1,0 +1,337 @@
+# KidsChores Bulk Import Configuration
+# For Bella & Lilly's household chore system
+#
+# Usage:
+#   python3 ../scripts/import_kidschores.py chores_bella_lilly.yaml /config/.storage/kidschores_data
+
+kids:
+  - name: Bella
+  - name: Lilly
+
+chores:
+  # ========================================================================
+  # DAILY CHORES
+  # ========================================================================
+
+  - name: "Open Blinds (Morning)"
+    assigned_kids: ["Bella", "Lilly"]
+    points: 1
+    frequency: daily
+    due_time: "09:00"
+    description: "Open all blinds in common areas"
+    icon: "mdi:blinds-open"
+    labels: ["Required", "Daily"]
+
+  - name: "Close Blinds (Evening)"
+    assigned_kids: ["Bella", "Lilly"]
+    points: 1
+    frequency: daily
+    due_time: "18:00"
+    description: "Close all blinds after 5pm"
+    icon: "mdi:blinds"
+    labels: ["Required", "Daily"]
+
+  - name: "Plant Lights - On"
+    assigned_kids: ["Bella", "Lilly"]
+    points: 1
+    frequency: daily
+    due_time: "09:00"
+    description: "Turn on grow lights in morning"
+    icon: "mdi:lightbulb-on"
+    labels: ["Required", "Daily", "Plants"]
+
+  - name: "Plant Lights - Off"
+    assigned_kids: ["Bella", "Lilly"]
+    points: 1
+    frequency: daily
+    due_time: "18:00"
+    description: "Turn off grow lights in evening"
+    icon: "mdi:lightbulb-off"
+    labels: ["Required", "Daily", "Plants"]
+
+  - name: "Scoop Litter - Bella"
+    assigned_kids: ["Bella"]
+    points: 3
+    frequency: daily
+    due_time: "17:00"
+    description: "Scoop cat litter box"
+    icon: "mdi:cat"
+    labels: ["Required", "Daily", "Pets"]
+    applicable_days: ["mon", "wed", "fri", "sun"]
+
+  - name: "Scoop Litter - Lilly"
+    assigned_kids: ["Lilly"]
+    points: 3
+    frequency: daily
+    due_time: "17:00"
+    description: "Scoop cat litter box"
+    icon: "mdi:cat"
+    labels: ["Required", "Daily", "Pets"]
+    applicable_days: ["tue", "thu", "sat"]
+
+  - name: "Dog Out After School - Bella"
+    assigned_kids: ["Bella"]
+    points: 2
+    frequency: daily
+    due_time: "16:00"
+    description: "Let dog out when home from school"
+    icon: "mdi:dog"
+    labels: ["Required", "Daily", "Pets"]
+    applicable_days: ["mon", "tue", "thu", "fri"]  # Not Wed when Bella is gone
+
+  - name: "Dog Out After School - Lilly"
+    assigned_kids: ["Lilly"]
+    points: 2
+    frequency: daily
+    due_time: "16:00"
+    description: "Let dog out when home from school"
+    icon: "mdi:dog"
+    labels: ["Required", "Daily", "Pets"]
+    applicable_days: ["mon", "tue", "thu", "fri"]
+
+  # ========================================================================
+  # WEEKLY CHORES
+  # ========================================================================
+
+  - name: "Laundry - Bella"
+    assigned_kids: ["Bella"]
+    points: 4
+    frequency: weekly
+    due_time: "18:00"
+    applicable_days: ["sun"]
+    description: "Wash, dry, fold, and put away laundry"
+    icon: "mdi:washing-machine"
+    labels: ["Required", "Weekly", "Laundry"]
+
+  - name: "Laundry - Lilly"
+    assigned_kids: ["Lilly"]
+    points: 4
+    frequency: weekly
+    due_time: "18:00"
+    applicable_days: ["tue"]
+    description: "Wash, dry, fold, and put away laundry (when home)"
+    icon: "mdi:washing-machine"
+    labels: ["Required", "Weekly", "Laundry"]
+
+  - name: "Towels - Lilly"
+    assigned_kids: ["Lilly"]
+    points: 3
+    frequency: weekly
+    due_time: "18:00"
+    applicable_days: ["wed"]
+    description: "Wash bathroom towels and bathmat"
+    icon: "mdi:towel"
+    labels: ["Required", "Weekly", "Laundry"]
+
+  - name: "Delicates - Bella"
+    assigned_kids: ["Bella"]
+    points: 3
+    frequency: weekly
+    due_time: "18:00"
+    applicable_days: ["thu"]
+    description: "Wash delicate items"
+    icon: "mdi:hanger"
+    labels: ["Required", "Weekly", "Laundry"]
+
+  - name: "Room Reset - Bella"
+    assigned_kids: ["Bella"]
+    points: 5
+    frequency: weekly
+    due_time: "20:00"
+    applicable_days: ["wed"]
+    description: "Full room clean - floor clear, trash out, surfaces clean"
+    icon: "mdi:home-floor-1"
+    labels: ["Required", "Weekly", "Bedroom"]
+
+  - name: "Room Reset - Lilly"
+    assigned_kids: ["Lilly"]
+    points: 5
+    frequency: weekly
+    due_time: "20:00"
+    applicable_days: ["wed"]
+    description: "Full room clean - floor clear, trash out, surfaces clean"
+    icon: "mdi:home-floor-1"
+    labels: ["Required", "Weekly", "Bedroom"]
+
+  - name: "Bathroom Trash"
+    assigned_kids: ["Bella"]  # Will rotate via automation
+    points: 2
+    frequency: weekly
+    due_time: "18:00"
+    applicable_days: ["thu"]
+    description: "Empty bathroom trash can"
+    icon: "mdi:delete-empty"
+    labels: ["Required", "Weekly", "Bathroom"]
+
+  - name: "Sweep Kitchen"
+    assigned_kids: ["Bella", "Lilly"]
+    points: 3
+    frequency: weekly
+    due_time: "18:00"
+    applicable_days: ["mon", "wed", "fri"]
+    description: "Sweep kitchen and entry areas"
+    icon: "mdi:broom"
+    labels: ["Bonus", "Weekly", "Floors"]
+
+  - name: "Pip Feeding - Lilly"
+    assigned_kids: ["Lilly"]
+    points: 3
+    frequency: weekly
+    due_time: "17:00"
+    applicable_days: ["wed"]
+    description: "Feed Pip worms and handle for exercise"
+    icon: "mdi:snake"
+    labels: ["Required", "Weekly", "Pets", "Pip"]
+
+  - name: "Room Trash Check - Bella"
+    assigned_kids: ["Bella"]
+    points: 2
+    frequency: weekly
+    due_time: "18:00"
+    applicable_days: ["sun", "thu"]
+    description: "Quick check - desk, floor, obvious trash"
+    icon: "mdi:delete-sweep"
+    labels: ["Required", "Weekly", "Bedroom"]
+
+  - name: "Room Trash Check - Lilly"
+    assigned_kids: ["Lilly"]
+    points: 2
+    frequency: weekly
+    due_time: "18:00"
+    applicable_days: ["sun", "thu"]
+    description: "Quick check - desk, floor, obvious trash"
+    icon: "mdi:delete-sweep"
+    labels: ["Required", "Weekly", "Bedroom"]
+
+  # ========================================================================
+  # BI-WEEKLY CHORES (will set manual rotation via automations)
+  # ========================================================================
+
+  - name: "Bathroom Sink Clean"
+    assigned_kids: ["Bella"]  # Alternates with Lilly via automation
+    points: 3
+    frequency: biweekly
+    due_time: "18:00"
+    applicable_days: ["thu"]
+    description: "Clean faucet, handles, and sink bowl"
+    icon: "mdi:faucet"
+    labels: ["Required", "Bathroom"]
+
+  - name: "Toilet Scrub"
+    assigned_kids: ["Bella"]  # Alternates with Lilly via automation
+    points: 4
+    frequency: biweekly
+    due_time: "18:00"
+    applicable_days: ["thu"]
+    description: "Scrub toilet bowl and seat"
+    icon: "mdi:toilet"
+    labels: ["Required", "Bathroom"]
+
+  # ========================================================================
+  # MONTHLY CHORES (will rotate via automations)
+  # ========================================================================
+
+  - name: "Bathroom Floor Mop"
+    assigned_kids: ["Bella"]  # Rotates monthly
+    points: 4
+    frequency: monthly
+    due_time: "14:00"
+    description: "Mop bathroom floor"
+    icon: "mdi:water"
+    labels: ["Required", "Monthly", "Bathroom"]
+
+  - name: "Bathroom Tub/Shower Scrub"
+    assigned_kids: ["Bella"]  # Rotates monthly
+    points: 5
+    frequency: monthly
+    due_time: "14:00"
+    description: "Scrub tub/shower walls and floor"
+    icon: "mdi:shower"
+    labels: ["Required", "Monthly", "Bathroom"]
+
+  - name: "Bathroom Mirror Clean"
+    assigned_kids: ["Bella"]  # Rotates monthly
+    points: 2
+    frequency: monthly
+    due_time: "14:00"
+    description: "Clean bathroom mirror and glass surfaces"
+    icon: "mdi:mirror"
+    labels: ["Required", "Monthly", "Bathroom"]
+
+  - name: "Bathroom Ceiling Dust"
+    assigned_kids: ["Bella"]  # Rotates monthly
+    points: 3
+    frequency: monthly
+    due_time: "14:00"
+    description: "Dust ceiling, corners, light fixtures"
+    icon: "mdi:spider-web"
+    labels: ["Required", "Monthly", "Bathroom"]
+
+  - name: "Bathroom Baseboards"
+    assigned_kids: ["Bella"]  # Rotates monthly
+    points: 3
+    frequency: monthly
+    due_time: "14:00"
+    description: "Wipe down baseboards and trim"
+    icon: "mdi:border-all"
+    labels: ["Required", "Monthly", "Bathroom"]
+
+  - name: "Bathroom Countertop Deep Clean"
+    assigned_kids: ["Bella"]  # Rotates monthly
+    points: 3
+    frequency: monthly
+    due_time: "14:00"
+    description: "Clean countertop, backsplash, and edges"
+    icon: "mdi:counter"
+    labels: ["Required", "Monthly", "Bathroom"]
+
+  - name: "Pip Habitat Spot Clean"
+    assigned_kids: ["Bella"]  # Alternates with Lilly monthly
+    points: 4
+    frequency: monthly
+    due_time: "14:00"
+    description: "Spot-clean substrate and habitat surfaces"
+    icon: "mdi:snake"
+    labels: ["Required", "Monthly", "Pets", "Pip"]
+
+  - name: "Bed Sheets Change - Bella"
+    assigned_kids: ["Bella"]
+    points: 4
+    frequency: monthly
+    due_time: "18:00"
+    description: "Change bed sheets and pillowcases"
+    icon: "mdi:bed"
+    labels: ["Required", "Monthly", "Bedroom", "Laundry"]
+
+  - name: "Bed Sheets Change - Lilly"
+    assigned_kids: ["Lilly"]
+    points: 4
+    frequency: monthly
+    due_time: "18:00"
+    description: "Change bed sheets and pillowcases"
+    icon: "mdi:bed"
+    labels: ["Required", "Monthly", "Bedroom", "Laundry"]
+
+  # ========================================================================
+  # SEASONAL CHORES (enable/disable via automations)
+  # ========================================================================
+
+  - name: "Water Outdoor Plants"
+    assigned_kids: ["Bella", "Lilly"]
+    points: 3
+    frequency: weekly
+    due_time: "18:00"
+    applicable_days: ["tue", "fri"]
+    description: "Water outdoor plants and garden (summer only)"
+    icon: "mdi:watering-can"
+    labels: ["Seasonal", "Garden"]
+
+  - name: "Harvest Vegetables"
+    assigned_kids: ["Bella", "Lilly"]
+    points: 3
+    frequency: weekly
+    due_time: "18:00"
+    applicable_days: ["sat"]
+    description: "Check and harvest ready vegetables"
+    icon: "mdi:carrot"
+    labels: ["Seasonal", "Garden"]
