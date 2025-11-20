@@ -1694,22 +1694,23 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
 
         # If chore is recurring, set due_date to creation date if not set
-        freq = chore_data.get(
-            const.DATA_CHORE_RECURRING_FREQUENCY, const.FREQUENCY_NONE
-        )
-        if freq != const.FREQUENCY_NONE and not chore_data.get(
-            const.DATA_CHORE_DUE_DATE
-        ):
-            now_local = kh.get_now_local_time()
-            # Force the time to 23:59:00 (and zero microseconds)
-            default_due = now_local.replace(**const.DEFAULT_DUE_TIME)
-            chore_data[const.DATA_CHORE_DUE_DATE] = default_due.isoformat()
-            const.LOGGER.debug(
-                "DEBUG: Chore '%s' has frequency set to '%s' but no due date. Defaulting to 23:59 local time: %s",
-                chore_data.get(const.DATA_CHORE_NAME, chore_id),
-                freq,
-                chore_data[const.DATA_CHORE_DUE_DATE],
-            )
+        # CLS 20251110 Due date no longer required for recurring
+        # freq = chore_data.get(
+        #    const.DATA_CHORE_RECURRING_FREQUENCY, const.FREQUENCY_NONE
+        # )
+        # if freq != const.FREQUENCY_NONE and not chore_data.get(
+        #    const.DATA_CHORE_DUE_DATE
+        # ):
+        #    now_local = kh.get_now_local_time()
+        # Force the time to 23:59:00 (and zero microseconds)
+        #    default_due = now_local.replace(**const.DEFAULT_DUE_TIME)
+        #    chore_data[const.DATA_CHORE_DUE_DATE] = default_due.isoformat()
+        #    const.LOGGER.debug(
+        #        "DEBUG: Chore '%s' has frequency set to '%s' but no due date. Defaulting to 23:59 local time: %s",
+        #        chore_data.get(const.DATA_CHORE_NAME, chore_id),
+        #        freq,
+        #        chore_data[const.DATA_CHORE_DUE_DATE],
+        #    )
 
         self._data[const.DATA_CHORES][chore_id] = {
             const.DATA_CHORE_NAME: chore_data.get(

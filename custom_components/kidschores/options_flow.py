@@ -474,24 +474,30 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
             chore_name = user_input[const.CFOF_CHORES_INPUT_NAME].strip()
+            raw_due = user_input[const.CFOF_CHORES_INPUT_DUE_DATE]
             internal_id = user_input.get(
                 const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
             )
 
-            if user_input.get(const.CFOF_CHORES_INPUT_DUE_DATE):
-                raw_due = user_input[const.CFOF_CHORES_INPUT_DUE_DATE]
+            if raw_due:
                 try:
-                    due_date_str = fh.ensure_utc_datetime(self.hass, raw_due)
-                    due_dt = dt_util.parse_datetime(due_date_str)
-                    if due_dt and due_dt < dt_util.utcnow():
+                    if isinstance(raw_due, datetime.datetime):
+                        parsed_due = raw_due
+                    else:
+                        parsed_due = dt_util.parse_datetime(
+                            raw_due
+                        ) or datetime.datetime.fromisoformat(raw_due)
+                    due_utc = dt_util.as_utc(parsed_due)
+                    if due_utc < dt_util.utcnow():
                         errors[const.CFOP_ERROR_DUE_DATE] = (
                             const.TRANS_KEY_CFOF_DUE_DATE_IN_PAST
                         )
-                except ValueError:
+                    else:
+                        due_date_str = due_utc.isoformat()
+                except Exception:
                     errors[const.CFOP_ERROR_DUE_DATE] = (
                         const.TRANS_KEY_CFOF_INVALID_DUE_DATE
                     )
-                    due_date_str = None
             else:
                 due_date_str = None
 
