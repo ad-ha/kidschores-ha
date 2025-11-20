@@ -934,6 +934,17 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
 
         attributes[const.ATTR_KIDS_EARNED] = kids_earned
 
+        # Per-kid assigned stats
+        kids_assigned_ids = badge_info.get(const.DATA_BADGE_ASSIGNED_TO, [])
+        kids_assigned = []
+        for kid_id in kids_assigned_ids:
+            kid_info = self.coordinator.kids_data.get(kid_id)
+            if not kid_info:
+                continue
+            kids_assigned.append(kid_info.get(const.DATA_KID_NAME, kid_id))
+
+        attributes[const.ATTR_KIDS_ASSIGNED] = kids_assigned
+
         attributes[const.ATTR_TARGET] = badge_info.get(const.DATA_BADGE_TARGET, None)
         attributes[const.ATTR_ASSOCIATED_ACHIEVEMENT] = badge_info.get(
             const.DATA_BADGE_ASSOCIATED_ACHIEVEMENT, None
