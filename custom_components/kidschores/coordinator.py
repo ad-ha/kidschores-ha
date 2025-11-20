@@ -4487,7 +4487,9 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             kid_id,
             kid_name,
         )
-        badge_info.setdefault(const.DATA_BADGE_EARNED_BY, []).append(kid_id)
+        earned_by_list = badge_info.setdefault(const.DATA_BADGE_EARNED_BY, [])
+        if kid_id not in earned_by_list:
+            earned_by_list.append(kid_id)
         self._update_badges_earned_for_kid(kid_id, badge_id)
 
         # --- Unified Award Items Logic ---
