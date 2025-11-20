@@ -1299,21 +1299,28 @@ def build_badge_common_schema(
         if is_cumulative:
             schema_fields.update(
                 {
-                    vol.Required(
+                    vol.Optional(
                         const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER,
                         default=default.get(
                             const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER,
                             default.get(const.DATA_BADGE_AWARDS, {}).get(
                                 const.DATA_BADGE_AWARDS_POINT_MULTIPLIER,
-                                const.DEFAULT_POINTS_MULTIPLIER,
+                                None,
                             ),
                         ),
-                    ): selector.NumberSelector(
-                        selector.NumberSelectorConfig(
-                            mode=selector.NumberSelectorMode.BOX,
-                            step=0.1,
-                            min=0.1,
-                        )
+                    ): vol.Any(
+                        None,
+                        vol.All(
+                            selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    mode=selector.NumberSelectorMode.BOX,
+                                    step=0.1,
+                                    min=0.1,
+                                )
+                            ),
+                            vol.Coerce(float),
+                            vol.Range(min=0.1),
+                        ),
                     ),
                 }
             )
