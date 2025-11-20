@@ -1220,7 +1220,8 @@ def get_next_applicable_day(
         const.LOGGER.debug(
             "DEBUG: HELPER Get Next Applicable Day - Final result: %s", final_result
         )
-        return final_result
+
+    return final_result
 
 
 def cleanup_period_data(self, periods_data: dict, period_keys: dict):
