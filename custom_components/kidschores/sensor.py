@@ -157,6 +157,21 @@ async def async_setup_entry(
                 )
             )
 
+        # KidBadgeSensor for each non-cumulative badge
+        badge_progress_data = kid_info.get(const.DATA_KID_BADGE_PROGRESS, {})
+        for badge_id, progress_info in badge_progress_data.items():
+            badge_type = progress_info.get(const.DATA_KID_BADGE_PROGRESS_TYPE)
+            if badge_type != const.BADGE_TYPE_CUMULATIVE:
+                badge_name = progress_info.get(
+                    const.DATA_KID_BADGE_PROGRESS_NAME,
+                    f"{const.TRANS_KEY_LABEL_BADGE} {badge_id}",
+                )
+                entities.append(
+                    KidBadgeSensor(
+                        coordinator, entry, kid_id, kid_name, badge_id, badge_name
+                    )
+                )
+
         # Achivement Progress per Kid
         for achievement_id, achievement in coordinator.achievements_data.items():
             if kid_id in achievement.get(const.DATA_ACHIEVEMENT_ASSIGNED_KIDS, []):
@@ -873,6 +888,111 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
 
 
 # ------------------------------------------------------------------------------------------
+class KidBadgeSensor(CoordinatorEntity, SensorEntity):
+    """Sensor for a kid's progress on a specific non-cumulative badge."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "kid_badge_sensor"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = PERCENTAGE
+
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+        badge_id: str,
+        badge_name: str,
+    ):
+        """Initialize the KidBadgeSensor."""
+        super().__init__(coordinator)
+        self._entry = entry
+        self._kid_id = kid_id
+        self._kid_name = kid_name
+        self._badge_id = badge_id
+        self._badge_name = badge_name
+        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_{badge_id}_badge_progress"
+        self._attr_translation_placeholders = {
+            "kid_name": kid_name,
+            "badge_name": badge_name,
+        }
+        self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}_badge_status_{badge_name}"
+
+    @property
+    def native_value(self) -> float:
+        """Return the badge's overall progress as a percentage."""
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        badge_progress = kid_info.get(const.DATA_KID_BADGE_PROGRESS, {}).get(
+            self._badge_id, {}
+        )
+        progress = badge_progress.get(
+            const.DATA_KID_BADGE_PROGRESS_OVERALL_PROGRESS, 0.0
+        )
+        return round(progress * 100, 1)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return the badge progress details as attributes."""
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        badge_progress = kid_info.get(const.DATA_KID_BADGE_PROGRESS, {}).get(
+            self._badge_id, {}
+        )
+
+        # Build a dictionary with only the requested fields
+        attributes = {
+            const.DATA_KID_BADGE_PROGRESS_NAME: badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_NAME
+            ),
+            const.DATA_KID_BADGE_PROGRESS_TYPE: badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_TYPE
+            ),
+            const.DATA_KID_BADGE_PROGRESS_STATUS: badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_STATUS
+            ),
+            const.DATA_KID_BADGE_PROGRESS_TARGET_TYPE: badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_TARGET_TYPE
+            ),
+            const.DATA_KID_BADGE_PROGRESS_TARGET_THRESHOLD_VALUE: badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_TARGET_THRESHOLD_VALUE
+            ),
+            const.DATA_KID_BADGE_PROGRESS_RECURRING_FREQUENCY: badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_RECURRING_FREQUENCY
+            ),
+            const.DATA_KID_BADGE_PROGRESS_LAST_UPDATE_DAY: badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_LAST_UPDATE_DAY
+            ),
+            const.DATA_KID_BADGE_PROGRESS_OVERALL_PROGRESS: badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_OVERALL_PROGRESS
+            ),
+            const.DATA_KID_BADGE_PROGRESS_CRITERIA_MET: badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_CRITERIA_MET
+            ),
+        }
+
+        # Convert tracked chore IDs to friendly names and add to attributes
+        tracked_chore_ids = attributes.get(
+            const.DATA_KID_BADGE_PROGRESS_TRACKED_CHORES, []
+        )
+        if tracked_chore_ids:
+            chore_names = [
+                self.coordinator.chores_data.get(chore_id, {}).get(
+                    const.DATA_CHORE_NAME, chore_id
+                )
+                for chore_id in tracked_chore_ids
+            ]
+            attributes[const.DATA_KID_BADGE_PROGRESS_TRACKED_CHORES] = chore_names
+
+        return attributes
+
+    @property
+    def icon(self) -> str:
+        """Return the icon for the badge."""
+        badge_info = self.coordinator.badges_data.get(self._badge_id, {})
+        return badge_info.get(const.DATA_BADGE_ICON, const.DEFAULT_BADGE_ICON)
+
+
+# ------------------------------------------------------------------------------------------
 class BadgeSensor(CoordinatorEntity, SensorEntity):
     """Sensor representing a single badge in KidsChores."""
 
@@ -963,9 +1083,40 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
         ]
 
         # Awards info
-        attributes[const.ATTR_BADGE_AWARDS] = badge_info.get(
-            const.DATA_BADGE_AWARDS, {}
-        )
+        awards_data = badge_info.get(const.DATA_BADGE_AWARDS, {})
+
+        # Add friendly names for award items
+        award_items = awards_data.get(const.DATA_BADGE_AWARDS_AWARD_ITEMS, [])
+        friendly_award_names = []
+        for item in award_items:
+            if item.startswith(const.AWARD_ITEMS_PREFIX_REWARD):
+                reward_id = item.split(":", 1)[1]
+                reward_info = self.coordinator.rewards_data.get(reward_id, {})
+                friendly_name = reward_info.get(
+                    const.DATA_REWARD_NAME, f"Reward: {reward_id}"
+                )
+                friendly_award_names.append(
+                    f"{const.AWARD_ITEMS_PREFIX_REWARD}{friendly_name}"
+                )
+            elif item.startswith(const.AWARD_ITEMS_PREFIX_BONUS):
+                bonus_id = item.split(":", 1)[1]
+                bonus_info = self.coordinator.bonuses_data.get(bonus_id, {})
+                friendly_name = bonus_info.get(
+                    const.DATA_BONUS_NAME, f"Bonus: {bonus_id}"
+                )
+                friendly_award_names.append(
+                    f"{const.AWARD_ITEMS_PREFIX_BONUS}{friendly_name}"
+                )
+            elif item.startswith(const.AWARD_ITEMS_PREFIX_PENALTY):
+                penalty_id = item.split(":", 1)[1]
+                penalty_info = self.coordinator.penalties_data.get(penalty_id, {})
+                friendly_name = penalty_info.get(
+                    const.DATA_PENALTY_NAME, f"Penalty: {penalty_id}"
+                )
+                friendly_award_names.append(
+                    f"{const.AWARD_ITEMS_PREFIX_PENALTY}{friendly_name}"
+                )
+        attributes[const.ATTR_BADGE_AWARDS] = friendly_award_names
 
         attributes[const.ATTR_RESET_SCHEDULE] = badge_info.get(
             const.DATA_BADGE_RESET_SCHEDULE, None
