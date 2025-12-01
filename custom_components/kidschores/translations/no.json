@@ -1,0 +1,1638 @@
+{
+  "title": "KidsChores",
+  "config": {
+    "step": {
+      "intro": {
+        "title": "Velkommen til KidsChores",
+        "description": "Denne veiviseren vil veilede deg gjennom oppsettet av KidsChores."
+      },
+      "points_label": {
+        "title": "Etikett for Poeng",
+        "description": "Velg en etikett og et ikon for poeng.",
+        "data": {
+          "points_label": "Etikett for Poeng",
+          "points_icon": "Ikon for Poeng"
+        }
+      },
+      "kid_count": {
+        "title": "Antall Barn",
+        "description": "Hvor mange barn vil du administrere?",
+        "data": {
+          "kid_count": "Antall Barn"
+        }
+      },
+      "kids": {
+        "title": "Definer Barn",
+        "description": "Skriv inn navnet for hvert barn.",
+        "data": {
+          "kid_name": "Barnets Navn",
+          "internal_id": "Internal ID",
+          "ha_user": "Home Assistant Bruker",
+          "enable_mobile_notifications": "Aktiver Mobilvarsler",
+          "mobile_notify_service": "Notify Service",
+          "enable_persistent_notifications": "Aktiver Vedvarende Varsler"
+        }
+      },
+      "parent_count": {
+        "title": "Antall Foreldre",
+        "description": "Hvor mange foreldre vil du definere i utgangspunktet?",
+        "data": {
+          "parent_count": "Antall Foreldre"
+        }
+      },
+      "parents": {
+        "title": "Definer Forelder",
+        "description": "Skriv inn detaljer for hver forelder.",
+        "data": {
+          "parent_name": "Forelderens Navn",
+          "ha_user_id": "Home Assistant Bruker",
+          "associated_kids": "Tilknyttede Barn",
+          "enable_mobile_notifications": "Aktiver Mobilvarsler",
+          "mobile_notify_service": "Notify Service",
+          "enable_persistent_notifications": "Aktiver Vedvarende Varsler",
+          "internal_id": "Internal ID"
+        }
+      },
+      "chore_count": {
+        "title": "Antall Oppgaver",
+        "description": "Hvor mange oppgaver vil du definere?",
+        "data": {
+          "chore_count": "Antall Oppgaver"
+        }
+      },
+      "chores": {
+        "title": "Definer Oppgave",
+        "description": "Skriv inn detaljer for hver oppgave.",
+        "data": {
+          "chore_name": "Oppgavens Navn",
+          "internal_id": "Internal ID",
+          "default_points": "Standard Poeng",
+          "allow_multiple_claims_per_day": "Tillat flere krav per dag?",
+          "partial_allowed": "Tillat Delvise Poeng?",
+          "shared_chore": "Delt Oppgave?",
+          "assigned_kids": "Tildelte Barn",
+          "chore_description": "Beskrivelse (valgfritt)",
+          "chore_labels": "Oppgaveetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "recurring_frequency": "Gjentakende Frekvens",
+          "custom_interval": "Egendefinert Gjentakende Frekvens Intervall (kun hvis Egendefinert Gjentakende Frekvens er satt)",
+          "custom_interval_unit": "Egendefinert Gjentakende Frekvens Periode",
+          "applicable_days": "Gjeldende Dager",
+          "due_date": "Frist",
+          "notify_on_claim": "Varsle ved Krav",
+          "notify_on_approval": "Varsle ved Godkjenning",
+          "notify_on_disapproval": "Varsle ved Avvisning"
+        }
+      },
+      "badge_count": {
+        "title": "Antall Merker",
+        "description": "Hvor mange merker vil du definere?",
+        "data": {
+          "badge_count": "Antall Merker"
+        }
+      },
+      "badges": {
+        "title": "Definer Merke",
+        "description": "Skriv inn detaljer for hvert merke.",
+        "data": {
+          "badge_name": "Merkets Navn",
+          "internal_id": "Internal ID",
+          "threshold_type": "Terskeltype",
+          "threshold_value": "Terskelverdi",
+          "points_multiplier": "Poengmultiplikator",
+          "icon": "Ikon (mdi:xxx)",
+          "badge_description": "Beskrivelse (valgfritt)",
+          "badge_labels": "Merkeetiketter"
+        }
+      },
+      "reward_count": {
+        "title": "Antall Belønninger",
+        "description": "Hvor mange belønninger vil du definere?",
+        "data": {
+          "reward_count": "Antall Belønninger"
+        }
+      },
+      "rewards": {
+        "title": "Definer Belønning",
+        "description": "Skriv inn detaljer for hver belønning.",
+        "data": {
+          "reward_name": "Belønningens Navn",
+          "internal_id": "Internal ID",
+          "reward_cost": "Belønningens Kostnad",
+          "reward_description": "Beskrivelse (valgfritt)",
+          "reward_labels": "Belønningseitiketter",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "penalty_count": {
+        "title": "Antall Straffer/Bøter",
+        "description": "Hvor mange straffer/bøter vil du definere?",
+        "data": {
+          "penalty_count": "Antall Straffer/Bøter"
+        }
+      },
+      "penalties": {
+        "title": "Definer Straff/Bot",
+        "description": "Skriv inn detaljer for hver straff/bot.",
+        "data": {
+          "penalty_name": "Straffens Navn",
+          "penalty_description": "Beskrivelse (valgfritt)",
+          "penalty_labels": "Straffeetiketter",
+          "internal_id": "Internal ID",
+          "penalty_points": "Straffepoeng (negativt)",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "bonus_count": {
+        "title": "Antall Bonuser",
+        "description": "Hvor mange bonuser vil du definere?",
+        "data": {
+          "bonus_count": "Antall Bonuser"
+        }
+      },
+      "bonuses": {
+        "title": "Definer Bonus",
+        "description": "Skriv inn detaljer for hver bonus.",
+        "data": {
+          "bonus_name": "Bonusens Navn",
+          "bonus_description": "Beskrivelse (valgfritt)",
+          "bonus_labels": "Bonusetiketter",
+          "internal_id": "Internal ID",
+          "bonus_points": "Bonuspoeng",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "achievement_count": {
+        "title": "Antall Prestasjoner",
+        "description": "Hvor mange prestasjoner vil du definere?",
+        "data": {
+          "achievement_count": "Antall Prestasjoner"
+        }
+      },
+      "achievements": {
+        "title": "Definer Prestasjon",
+        "description": "Skriv inn detaljer for hver prestasjon.",
+        "data": {
+          "name": "Prestasjonens Navn",
+          "description": "Beskrivelse (valgfritt)",
+          "achievement_labels": "Prestasjonsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte Barn",
+          "type": "Prestasjonstype",
+          "selected_chore_id": "Velg Tilknyttet Oppgave",
+          "criteria": "Kriterier (valgfritt)",
+          "target_value": "Prestasjon Mål",
+          "reward_points": "Ekstra Poeng for Fullført Prestasjon",
+          "internal_id": "Internal ID"
+        }
+      },
+      "challenge_count": {
+        "title": "Antall Utfordringer",
+        "description": "Hvor mange utfordringer vil du definere?",
+        "data": {
+          "challenge_count": "Antall Utfordringer"
+        }
+      },
+      "challenges": {
+        "title": "Definer Utfordring",
+        "description": "Skriv inn detaljer for hver utfordring.",
+        "data": {
+          "name": "Utfordringens Navn",
+          "description": "Beskrivelse (valgfritt)",
+          "challenge_labels": "Utfordringsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte Barn",
+          "type": "Utfordringstype",
+          "selected_chore_id": "Velg Oppgave Tilknyttet Utfordring (Valgfritt)",
+          "criteria": "Kriterier (valgfritt)",
+          "target_value": "Utfordring Mål",
+          "reward_points": "Ekstra Poeng for Fullført Utfordring",
+          "start_date": "Startdato",
+          "end_date": "Sluttdato",
+          "internal_id": "Internal ID"
+        }
+      },
+      "finish": {
+        "title": "Gjennomgå & Fullfør",
+        "description": "Gjennomgå oppsettet:\n{summary}\nKlikk Send for å fullføre."
+      }
+    },
+    "error": {
+      "a_chore_must_be_selected": "En oppgave må velges",
+      "duplicate_achievement": "En prestasjon med dette navnet eksisterer allerede",
+      "duplicate_badge": "Et merke med dette navnet eksisterer allerede",
+      "duplicate_challenge": "En utfordring med dette navnet eksisterer allerede",
+      "duplicate_chore": "En oppgave med dette navnet eksisterer allerede",
+      "duplicate_kid": "Et barn med dette navnet eksisterer allerede",
+      "duplicate_parent": "En forelder med dette navnet eksisterer allerede",
+      "duplicate_penalty": "En straff/bot med dette navnet eksisterer allerede",
+      "duplicate_reward": "En belønning med dette navnet eksisterer allerede",
+      "duplicate_bonus": "En bonus med dette navnet eksisterer allerede",
+      "due_date_in_past": "Frist må være i fremtiden.",
+      "end_date_in_past": "Sluttdato må være i fremtiden.",
+      "end_date_not_after_start_date": "Sluttdato må være senere enn startdato",
+      "invalid_achievement_count": "Ugyldig antall prestasjoner",
+      "invalid_achievement_name": "Ugyldig navn på prestasjon",
+      "invalid_badge": "Ugyldig merke",
+      "invalid_badge_count": "Ugyldig antall merker",
+      "invalid_badge_name": "Ugyldig navn på merke",
+      "invalid_challenge_count": "Ugyldig antall utfordringer",
+      "invalid_challenge_name": "Ugyldig navn på utfordring",
+      "invalid_chore": "Ugyldig oppgave",
+      "invalid_chore_count": "Ugyldig antall oppgaver",
+      "invalid_chore_name": "Ugyldig navn på oppgave",
+      "invalid_due_date": "Ugyldig frist",
+      "invalid_end_date": "Ugyldig sluttdato.",
+      "invalid_kid_count": "Ugyldig antall barn",
+      "invalid_kid_name": "Ugyldig navn på barn",
+      "invalid_parent_count": "Ugyldig antall foreldre",
+      "invalid_parent_name": "Ugyldig navn på forelder",
+      "invalid_penalty": "Ugyldig straff/bot",
+      "invalid_penalty_count": "Ugyldig antall straffer/bøter",
+      "invalid_penalty_name": "Ugyldig navn på straff/bot",
+      "invalid_reward": "Ugyldig belønning",
+      "invalid_reward_count": "Ugyldig antall belønninger",
+      "invalid_reward_name": "Ugyldig navn på belønning",
+      "invalid_bonus": "Ugyldig bonus",
+      "invalid_bonus_count": "Ugyldig antall bonuser",
+      "invalid_bonus_name": "Ugyldig navn på bonus",
+      "invalid_start_date": "Ugyldig startdato.",
+      "start_date_in_past": "Startdato må være i fremtiden."
+    },
+    "abort": {
+      "single_instance_allowed": "Kun én enkelt KidsChores-instans kan konfigureres."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "KidsChores Innstillinger",
+        "description": "Administrer barn, oppgaver, merker, belønninger, straffer/bøter, bonuser, eller fullfør.",
+        "data": {
+          "menu_selection": "Velg et Alternativ"
+        }
+      },
+      "manage_entity": {
+        "title": "Velg Handling",
+        "description": "Legg til, rediger eller slett alternativer.",
+        "data": {
+          "manage_action": "Velg en Handling"
+        }
+      },
+      "select_entity": {
+        "title": "Velg {entity_type}",
+        "description": "Velg {entity_type} du ønsker å {action}.",
+        "data": {
+          "entity_name": "Navn"
+        }
+      },
+      "manage_points": {
+        "title": "Rediger Poengetikett & Ikon",
+        "description": "Endre etiketten og ikonet som brukes til å representere poeng.",
+        "data": {
+          "points_label": "Etikett for Poeng",
+          "points_icon": "Ikon for Poeng"
+        }
+      },
+      "add_kid": {
+        "title": "Legg til Barn",
+        "description": "Oppgi detaljer for det nye barnet.",
+        "data": {
+          "kid_name": "Barnets Navn",
+          "ha_user": "Home Assistant Bruker",
+          "enable_mobile_notifications": "Aktiver Mobilvarsler",
+          "mobile_notify_service": "Notify Service",
+          "enable_persistent_notifications": "Aktiver Vedvarende Varsler",
+          "internal_id": "Internal ID"
+        }
+      },
+      "add_parent": {
+        "title": "Legg til Forelder",
+        "description": "Oppgi detaljer for den nye forelderen.",
+        "data": {
+          "parent_name": "Forelderens Navn",
+          "ha_user_id": "Home Assistant Bruker",
+          "associated_kids": "Tilknyttede Barn",
+          "enable_mobile_notifications": "Aktiver Mobilvarsler",
+          "mobile_notify_service": "Notify Service",
+          "enable_persistent_notifications": "Aktiver Vedvarende Varsler",
+          "internal_id": "Internal ID"
+        }
+      },
+      "add_chore": {
+        "title": "Legg til Oppgave",
+        "description": "Oppgi detaljer for den nye oppgaven.",
+        "data": {
+          "chore_name": "Oppgavens Navn",
+          "internal_id": "Internal ID",
+          "default_points": "Standard Poeng",
+          "allow_multiple_claims_per_day": "Tillat flere krav per dag?",
+          "partial_allowed": "Tillat Delvise Poeng?",
+          "shared_chore": "Delt Oppgave?",
+          "assigned_kids": "Tildelte Barn",
+          "chore_description": "Beskrivelse (valgfritt)",
+          "chore_labels": "Oppgaveetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "recurring_frequency": "Gjentakende Frekvens",
+          "custom_interval": "Egendefinert Gjentakende Frekvens Intervall (kun hvis Egendefinert Gjentakende Frekvens er satt)",
+          "custom_interval_unit": "Egendefinert Gjentakende Frekvens Periode",
+          "applicable_days": "Gjeldende Dager",
+          "due_date": "Frist",
+          "notify_on_claim": "Varsle ved Krav",
+          "notify_on_approval": "Varsle ved Godkjenning",
+          "notify_on_disapproval": "Varsle ved Avvisning"
+        }
+      },
+      "add_badge": {
+        "title": "Legg til Merke",
+        "description": "Oppgi detaljer for det nye merket.",
+        "data": {
+          "badge_name": "Merkets Navn",
+          "internal_id": "Internal ID",
+          "threshold_type": "Terskeltype",
+          "threshold_value": "Terskelverdi",
+          "points_multiplier": "Poengmultiplikator",
+          "icon": "Ikon (mdi:xxx)",
+          "badge_description": "Beskrivelse (valgfritt)",
+          "badge_labels": "Merkeetiketter"
+        }
+      },
+      "add_reward": {
+        "title": "Legg til Belønning",
+        "description": "Oppgi detaljer for den nye belønningen.",
+        "data": {
+          "reward_name": "Belønningens Navn",
+          "internal_id": "Internal ID",
+          "reward_cost": "Belønningens Kostnad",
+          "reward_description": "Beskrivelse (valgfritt)",
+          "reward_labels": "Belønningseitiketter",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "add_penalty": {
+        "title": "Legg til Straff/Bot",
+        "description": "Oppgi detaljer for den nye straffen/boten.",
+        "data": {
+          "penalty_name": "Straffens Navn",
+          "penalty_description": "Beskrivelse (valgfritt)",
+          "penalty_labels": "Straffeetiketter",
+          "internal_id": "Internal ID",
+          "penalty_points": "Straffepoeng (negativt)",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "add_bonus": {
+        "title": "Legg til Bonus",
+        "description": "Oppgi detaljer for den nye bonusen.",
+        "data": {
+          "bonus_name": "Bonusens Navn",
+          "bonus_description": "Beskrivelse (valgfritt)",
+          "bonus_labels": "Bonusetiketter",
+          "internal_id": "Internal ID",
+          "bonus_points": "Bonuspoeng",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "add_achievement": {
+        "title": "Definer Prestasjon",
+        "description": "Skriv inn detaljer for hver prestasjon.",
+        "data": {
+          "name": "Prestasjonens Navn",
+          "description": "Beskrivelse (valgfritt)",
+          "achievement_labels": "Prestasjonsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte Barn",
+          "type": "Prestasjonstype",
+          "selected_chore_id": "Velg Tilknyttet Oppgave",
+          "criteria": "Kriterier (valgfritt)",
+          "target_value": "Prestasjon Mål",
+          "reward_points": "Ekstra Poeng for Fullført Prestasjon",
+          "internal_id": "Internal ID"
+        }
+      },
+      "add_challenge": {
+        "title": "Definer Utfordring",
+        "description": "Skriv inn detaljer for hver utfordring.",
+        "data": {
+          "name": "Utfordringens Navn",
+          "description": "Beskrivelse (valgfritt)",
+          "challenge_labels": "Utfordringsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte Barn",
+          "type": "Utfordringstype",
+          "selected_chore_id": "Velg Oppgave Tilknyttet Utfordring (Valgfritt)",
+          "criteria": "Kriterier (valgfritt)",
+          "target_value": "Utfordring Mål",
+          "reward_points": "Ekstra Poeng for Fullført Utfordring",
+          "start_date": "Startdato",
+          "end_date": "Sluttdato",
+          "internal_id": "Internal ID"
+        }
+      },
+      "edit_kid": {
+        "title": "Rediger Barn",
+        "description": "Endre detaljene for det valgte barnet.",
+        "data": {
+          "kid_name": "Barnets Navn",
+          "ha_user": "Home Assistant Bruker",
+          "enable_mobile_notifications": "Aktiver Mobilvarsler",
+          "mobile_notify_service": "Notify Service",
+          "enable_persistent_notifications": "Aktiver Vedvarende Varsler",
+          "internal_id": "Internal ID"
+        }
+      },
+      "edit_parent": {
+        "title": "Rediger Forelder",
+        "description": "Endre detaljene for den valgte forelderen.",
+        "data": {
+          "parent_name": "Forelderens Navn",
+          "ha_user_id": "Home Assistant Bruker",
+          "associated_kids": "Tilknyttede Barn",
+          "enable_mobile_notifications": "Aktiver Mobilvarsler",
+          "mobile_notify_service": "Notify Service",
+          "enable_persistent_notifications": "Aktiver Vedvarende Varsler",
+          "internal_id": "Internal ID"
+        }
+      },
+      "edit_chore": {
+        "title": "Rediger Oppgave",
+        "description": "Endre detaljene for den valgte oppgaven.",
+        "data": {
+          "chore_name": "Oppgavens Navn",
+          "internal_id": "Internal ID",
+          "default_points": "Standard Poeng",
+          "allow_multiple_claims_per_day": "Tillat flere krav per dag?",
+          "partial_allowed": "Tillat Delvise Poeng?",
+          "shared_chore": "Delt Oppgave?",
+          "assigned_kids": "Tildelte Barn",
+          "chore_description": "Beskrivelse (valgfritt)",
+          "chore_labels": "Oppgaveetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "recurring_frequency": "Gjentakende Frekvens",
+          "custom_interval": "Egendefinert Gjentakende Frekvens Intervall (kun hvis Egendefinert Gjentakende Frekvens er satt)",
+          "custom_interval_unit": "Egendefinert Gjentakende Frekvens Periode",
+          "applicable_days": "Gjeldende Dager",
+          "due_date": "Frist",
+          "notify_on_claim": "Varsle ved Krav",
+          "notify_on_approval": "Varsle ved Godkjenning",
+          "notify_on_disapproval": "Varsle ved Avvisning"
+        }
+      },
+      "edit_badge": {
+        "title": "Rediger Merke",
+        "description": "Endre detaljene for det valgte merket.",
+        "data": {
+          "badge_name": "Merkets Navn",
+          "internal_id": "Internal ID",
+          "threshold_type": "Terskeltype",
+          "threshold_value": "Terskelverdi",
+          "points_multiplier": "Poengmultiplikator",
+          "icon": "Ikon (mdi:xxx)",
+          "badge_description": "Beskrivelse (valgfritt)",
+          "badge_labels": "Merkeetiketter"
+        }
+      },
+      "edit_reward": {
+        "title": "Rediger Belønning",
+        "description": "Endre detaljene for den valgte belønningen.",
+        "data": {
+          "reward_name": "Belønningens Navn",
+          "internal_id": "Internal ID",
+          "reward_cost": "Belønningens Kostnad",
+          "reward_description": "Beskrivelse (valgfritt)",
+          "reward_labels": "Belønningseitiketter",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "edit_penalty": {
+        "title": "Rediger Straff/Bot",
+        "description": "Endre detaljene for den valgte straffen/boten.",
+        "data": {
+          "penalty_name": "Straffens Navn",
+          "penalty_description": "Beskrivelse (valgfritt)",
+          "penalty_labels": "Straffeetiketter",
+          "internal_id": "Internal ID",
+          "penalty_points": "Straffepoeng (negativt)",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "edit_bonus": {
+        "title": "Rediger Bonus",
+        "description": "Endre detaljene for den valgte bonusen.",
+        "data": {
+          "bonus_name": "Bonusens Navn",
+          "bonus_description": "Beskrivelse (valgfritt)",
+          "bonus_labels": "Bonusetiketter",
+          "internal_id": "Internal ID",
+          "bonus_points": "Bonuspoeng",
+          "icon": "Ikon (mdi:xxx)"
+        }
+      },
+      "edit_achievement": {
+        "title": "Definer Prestasjon",
+        "description": "Skriv inn detaljer for hver prestasjon.",
+        "data": {
+          "name": "Prestasjonens Navn",
+          "description": "Beskrivelse (valgfritt)",
+          "achievement_labels": "Prestasjonsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte Barn",
+          "type": "Prestasjonstype",
+          "selected_chore_id": "Velg Tilknyttet Oppgave",
+          "criteria": "Kriterier (valgfritt)",
+          "target_value": "Prestasjon Mål",
+          "reward_points": "Ekstra Poeng for Fullført Prestasjon",
+          "internal_id": "Internal ID"
+        }
+      },
+      "edit_challenge": {
+        "title": "Definer Utfordring",
+        "description": "Skriv inn detaljer for hver utfordring.",
+        "data": {
+          "name": "Utfordringens Navn",
+          "description": "Beskrivelse (valgfritt)",
+          "challenge_labels": "Utfordringsetiketter",
+          "icon": "Ikon (mdi:xxx)",
+          "assigned_kids": "Tildelte Barn",
+          "type": "Utfordringstype",
+          "selected_chore_id": "Velg Oppgave Tilknyttet Utfordring (Valgfritt)",
+          "criteria": "Kriterier (valgfritt)",
+          "target_value": "Utfordring Mål",
+          "reward_points": "Ekstra Poeng for Fullført Utfordring",
+          "start_date": "Startdato",
+          "end_date": "Sluttdato",
+          "internal_id": "Internal ID"
+        }
+      },
+      "delete_kid": {
+        "title": "Slett Barn",
+        "description": "Er du sikker på at du vil slette barnet {kid_name}?",
+        "data": {}
+      },
+      "delete_parent": {
+        "title": "Slett Forelder",
+        "description": "Er du sikker på at du vil slette forelderen {parent_name}?",
+        "data": {}
+      },
+      "delete_chore": {
+        "title": "Slett Oppgave",
+        "description": "Er du sikker på at du vil slette oppgaven {chore_name}?",
+        "data": {}
+      },
+      "delete_badge": {
+        "title": "Slett Merke",
+        "description": "Er du sikker på at du vil slette merket {badge_name}?",
+        "data": {}
+      },
+      "delete_reward": {
+        "title": "Slett Belønning",
+        "description": "Er du sikker på at du vil slette belønningen {reward_name}?",
+        "data": {}
+      },
+      "delete_penalty": {
+        "title": "Slett Straff/Bot",
+        "description": "Er du sikker på at du vil slette straffen/boten {penalty_name}?",
+        "data": {}
+      },
+      "delete_bonus": {
+        "title": "Slett Bonus",
+        "description": "Er du sikker på at du vil slette bonusen {bonus_name}?",
+        "data": {}
+      },
+      "delete_achievement": {
+        "title": "Slett Prestasjon",
+        "description": "Er du sikker på at du vil slette prestasjonen {achievement_name}?",
+        "data": {}
+      },
+      "delete_challenge": {
+        "title": "Slett Utfordring",
+        "description": "Er du sikker på at du vil slette utfordringen {challenge_name}?",
+        "data": {}
+      }
+    },
+    "error": {
+      "a_chore_must_be_selected": "En oppgave må velges",
+      "duplicate_achievement": "En prestasjon med dette navnet eksisterer allerede",
+      "duplicate_badge": "Et merke med dette navnet eksisterer allerede",
+      "duplicate_challenge": "En utfordring med dette navnet eksisterer allerede",
+      "duplicate_chore": "En oppgave med dette navnet eksisterer allerede",
+      "duplicate_kid": "Et barn med dette navnet eksisterer allerede",
+      "duplicate_parent": "En forelder med dette navnet eksisterer allerede",
+      "duplicate_penalty": "En straff/bot med dette navnet eksisterer allerede",
+      "duplicate_reward": "En belønning med dette navnet eksisterer allerede",
+      "duplicate_bonus": "En bonus med dette navnet eksisterer allerede",
+      "due_date_in_past": "Frist må være i fremtiden.",
+      "end_date_in_past": "Sluttdato må være i fremtiden.",
+      "end_date_not_after_start_date": "Sluttdato må være senere enn startdato",
+      "invalid_badge": "Ugyldig merke",
+      "invalid_badge_count": "Ugyldig antall merker",
+      "invalid_chore": "Ugyldig oppgave",
+      "invalid_chore_count": "Ugyldig antall oppgaver",
+      "invalid_due_date": "Ugyldig frist",
+      "invalid_end_date": "Ugyldig sluttdato.",
+      "invalid_kid_count": "Ugyldig antall barn",
+      "invalid_kid_name": "Ugyldig navn på barn",
+      "invalid_penalty": "Ugyldig straff/bot",
+      "invalid_penalty_count": "Ugyldig antall straffer/bøter",
+      "invalid_bonus": "Ugyldig bonus",
+      "invalid_bonus_count": "Ugyldig antall bonuser",
+      "invalid_reward": "Ugyldig belønning",
+      "invalid_reward_count": "Ugyldig antall belønninger",
+      "invalid_start_date": "Ugyldig startdato.",
+      "start_date_in_past": "Startdato må være i fremtiden."
+    },
+    "abort": {
+      "invalid_action": "Ugyldig Handling",
+      "invalid_achievement": "Ugyldig Prestasjon",
+      "invalid_badge": "Ugyldig Merke",
+      "invalid_challenge": "Ugyldig Utfordring",
+      "invalid_chore": "Ugyldig Oppgave",
+      "invalid_entity": "Ugyldig Enhet",
+      "invalid_kid": "Ugyldig Barn",
+      "invalid_parent": "Ugyldig Forelder",
+      "invalid_penalty": "Ugyldig Straff/Bot",
+      "invalid_reward": "Ugyldig Belønning",
+      "invalid_bonus": "Ugyldig Bonus",
+      "no_kid": "Ingen barn er satt opp for redigering. Legg til en oppføring først.",
+      "no_parent": "Ingen foreldre er satt opp for redigering. Legg til en oppføring først.",
+      "no_chore": "Ingen oppgaver er satt opp for redigering. Legg til en oppføring først.",
+      "no_badge": "Ingen merker er satt opp for redigering. Legg til en oppføring først.",
+      "no_reward": "Ingen belønninger er satt opp for redigering. Legg til en oppføring først.",
+      "no_penalty": "Ingen straffer/bøter er satt opp for redigering. Legg til en oppføring først.",
+      "no_bonus": "Ingen bonuser er satt opp for redigering. Legg til en oppføring først.",
+      "no_achievement": "Ingen prestasjoner er satt opp for redigering. Legg til en oppføring først.",
+      "no_challenge": "Ingen utfordringer er satt opp for redigering. Legg til en oppføring først.",
+      "setup_complete": "Oppsett Fullført"
+    }
+  },
+  "selector": {
+    "main_menu": {
+      "options": {
+        "manage_points": "Administrer Poeng",
+        "manage_kid": "Administrer Barn",
+        "manage_parent": "Administrer Forelder",
+        "manage_chore": "Administrer Oppgave",
+        "manage_badge": "Administrer Merke",
+        "manage_reward": "Administrer Belønning",
+        "manage_penalty": "Administrer Straff/Bot",
+        "manage_bonus": "Administrer Bonus",
+        "manage_achievement": "Administrer Prestasjon",
+        "manage_challenge": "Administrer Utfordring",
+        "done": "Fullfør Oppsett"
+      }
+    },
+    "manage_actions": {
+      "options": {
+        "add": "Legg til",
+        "edit": "Rediger",
+        "delete": "Slett",
+        "back": "Tilbake til Hovedmeny"
+      }
+    },
+    "recurring_frequency": {
+      "options": {
+        "none": "Ingen",
+        "daily": "Daglig",
+        "weekly": "Ukentlig",
+        "biweekly": "Annenhver Uke",
+        "monthly": "Månedlig",
+        "custom": "Egendefinert"
+      }
+    },
+    "custom_interval_unit": {
+      "options": {
+        "days": "Dager",
+        "weeks": "Uker",
+        "months": "Måneder"
+      }
+    },
+    "applicable_days": {
+      "options": {
+        "mon": "Mandag",
+        "tue": "Tirsdag",
+        "wed": "Onsdag",
+        "thu": "Torsdag",
+        "fri": "Fredag",
+        "sat": "Lørdag",
+        "sun": "Søndag"
+      }
+    },
+    "threshold_type": {
+      "options": {
+        "points": "Poeng",
+        "chore_count": "Antall Oppgaver"
+      }
+    }
+  },
+  "services": {
+    "claim_chore": {
+      "name": "Krev Oppgave",
+      "description": "Et barn krever en oppgave, og markerer den som 'krevd' for foreldregodkjenning.",
+      "fields": {
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Navnet på barnet som krever oppgaven.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Oppgavens Navn",
+          "description": "Navnet på oppgaven som skal kreves.",
+          "example": "Vaske Opp"
+        }
+      }
+    },
+    "approve_chore": {
+      "name": "Godkjenn Oppgave",
+      "description": "Forelder godkjenner oppgaven, og tildeler poeng.",
+      "fields": {
+        "parent_name": {
+          "name": "Forelderens Navn",
+          "description": "Forelderen som godkjenner oppgaven.",
+          "example": "Mamma"
+        },
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Navnet på barnet som utførte oppgaven.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Oppgavens Navn",
+          "description": "Navnet på oppgaven som godkjennes.",
+          "example": "Vaske Opp"
+        },
+        "points_awarded": {
+          "name": "Tildelte Poeng",
+          "description": "Poeng som skal tildeles (valgfritt; standard er oppgavens poeng).",
+          "example": 3
+        }
+      }
+    },
+    "disapprove_chore": {
+      "name": "Avvis Oppgave",
+      "description": "Forelder avviser en oppgave for et barn, og tilbakestiller statusen.",
+      "fields": {
+        "parent_name": {
+          "name": "Forelderens Navn",
+          "description": "Forelderen som avviser oppgaven.",
+          "example": "Mamma"
+        },
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Navnet på barnet hvis oppgave avvises.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Oppgavens Navn",
+          "description": "Navnet på oppgaven som avvises.",
+          "example": "Rydde Rommet"
+        }
+      }
+    },
+    "redeem_reward": {
+      "name": "Løs inn Belønning",
+      "description": "En forelder løser inn en belønning for et barn, og trekker fra poeng.",
+      "fields": {
+        "parent_name": {
+          "name": "Forelderens Navn",
+          "description": "Forelderen som autoriserer innløsningen av belønningen.",
+          "example": "Mamma"
+        },
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Barnet som løser inn belønningen.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belønningens Navn",
+          "description": "Navnet på belønningen som skal løses inn.",
+          "example": "Ekstra Skjermtid"
+        }
+      }
+    },
+    "approve_reward": {
+      "name": "Godkjenn Belønning",
+      "description": "Forelder godkjenner en belønning krevd av et barn.",
+      "fields": {
+        "parent_name": {
+          "name": "Forelderens Navn",
+          "description": "Forelderen som godkjenner belønningen.",
+          "example": "Mamma"
+        },
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Barnet som løser inn belønningen.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belønningens Navn",
+          "description": "Navnet på belønningen som godkjennes.",
+          "example": "Ekstra Skjermtid"
+        }
+      }
+    },
+    "disapprove_reward": {
+      "name": "Avvis Belønning",
+      "description": "Forelder avviser en innløsning av belønning for et barn.",
+      "fields": {
+        "parent_name": {
+          "name": "Forelderens Navn",
+          "description": "Forelderen som avviser belønningen.",
+          "example": "Pappa"
+        },
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Barnet hvis innløsning av belønning avvises.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belønningens Navn",
+          "description": "Navnet på belønningen som avvises.",
+          "example": "Ekstra Skjermtid"
+        }
+      }
+    },
+    "apply_penalty": {
+      "name": "Gi Straff/Bot",
+      "description": "En forelder gir en straff/bot for å trekke fra poeng.",
+      "fields": {
+        "parent_name": {
+          "name": "Forelderens Navn",
+          "description": "Forelderen som gir straffen/boten.",
+          "example": "Pappa"
+        },
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Barnet som mottar straffen/boten.",
+          "example": "Alice"
+        },
+        "penalty_name": {
+          "name": "Straffens Navn",
+          "description": "Navnet på straffen/boten som skal gis.",
+          "example": "Skriking"
+        }
+      }
+    },
+    "apply_bonus": {
+      "name": "Gi Bonus",
+      "description": "En forelder gir en bonus til et barn, og tildeler poeng.",
+      "fields": {
+        "parent_name": {
+          "name": "Forelderens Navn",
+          "description": "Forelderen som gir bonusen.",
+          "example": "Mamma"
+        },
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Barnet som mottar bonusen.",
+          "example": "Alice"
+        },
+        "bonus_name": {
+          "name": "Bonusens Navn",
+          "description": "Navnet på bonusen som skal gis.",
+          "example": "Ekstra Hjelpsom"
+        }
+      }
+    },
+    "reset_all_data": {
+      "name": "Tilbakestill Alle Data",
+      "description": "Sletter all KidsChores-data fullstendig fra lagringen."
+    },
+    "reset_all_chores": {
+      "name": "Tilbakestill Alle Oppgaver",
+      "description": "Tilbakestill oppgaver manuelt til ventende status, og fjern krav og godkjenninger."
+    },
+    "reset_overdue_chores": {
+      "name": "Tilbakestill Forfalte Oppgaver",
+      "description": "Tilbakestill forfalne oppgave(r) tilbake til Ventende status og omplanlegg dem basert på deres gjentakende frekvens og forrige frist. Du kan eventuelt oppgi en chore_id (eller chore_name) for å tilbakestille en spesifikk oppgave og eventuelt en kid_name for å tilbakestille oppgaven kun for det barnet.",
+      "fields": {
+        "chore_id": {
+          "name": "Oppgave ID",
+          "description": "Den interne ID-en til oppgaven som skal tilbakestilles (valgfritt hvis chore_name er oppgitt).",
+          "example": "abc123"
+        },
+        "chore_name": {
+          "name": "Oppgavens Navn",
+          "description": "Navnet på oppgaven som skal tilbakestilles (valgfritt hvis chore_id er oppgitt).",
+          "example": "Vaske Opp"
+        },
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Barnet som mottar straffen/boten.",
+          "example": "Alice"
+        }
+      }
+    },
+    "set_chore_due_date": {
+      "name": "Sett/Tilbakestill Frist for Oppgave",
+      "description": "Sett (eller fjern) fristen for en oppgave. Oppgi oppgavens navn og, om ønskelig, en ny frist. Hvis ingen frist er oppgitt, vil den eksisterende fristen bli fjernet. Tjenesten vil avvise frister satt til en dato i fortiden.",
+      "fields": {
+        "chore_name": {
+          "name": "Oppgavens Navn",
+          "description": "Navnet på oppgaven som skal oppdateres",
+          "example": "Vaske Opp"
+        },
+        "due_date": {
+          "name": "Frist",
+          "description": "Den nye fristen for oppgaven. Bruk dato/tid-velgeren for å velge en gyldig dato og tid (i din lokale tidssone). La stå tom for å fjerne fristen.",
+          "example": "2025-03-01T23:59:00Z"
+        }
+      }
+    },
+    "skip_chore_due_date": {
+      "name": "Hopp over Frist for Oppgave",
+      "description": "Hopp over gjeldende frist for en gjentakende oppgave. Denne tjenesten omplanlegger umiddelbart oppgavens frist basert på dens gjentakende frekvens og tilbakestiller statusen til ventende. Eventuelle ventende krav eller godkjenninger vil bli fjernet.",
+      "fields": {
+        "chore_id": {
+          "name": "Oppgave ID",
+          "description": "Den interne ID-en til oppgaven som skal tilbakestilles (valgfritt hvis chore_name er oppgitt).",
+          "example": "abc123"
+        },
+        "chore_name": {
+          "name": "Oppgavens Navn",
+          "description": "Navnet på oppgaven som skal tilbakestilles (valgfritt hvis chore_id er oppgitt).",
+          "example": "Vaske Opp"
+        }
+      }
+    },
+    "reset_penalties": {
+      "name": "Tilbakestill Straffer/Bøter",
+      "description": "Tilbakestill alle gitte straffer/bøter for alle barn. Du kan eventuelt oppgi navnet på straffen/boten for å tilbakestille en spesifikk straff/bot på tvers av alle barn. Bruk barnets navn for å tilbakestille alle straffer/bøter for et spesifikt barn. Kombiner begge for å tilbakestille en spesifikk straff/bot for et spesifikt barn.",
+      "fields": {
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Barnet som straffene/bøtene skal tilbakestilles for.",
+          "example": "Alice"
+        },
+        "penalty_name": {
+          "name": "Straffens Navn",
+          "description": "Navnet på straffen/boten som skal tilbakestilles.",
+          "example": "Skriking"
+        }
+      }
+    },
+    "reset_bonuses": {
+      "name": "Tilbakestill Bonuser",
+      "description": "Tilbakestill alle gitte bonuser for alle barn. Du kan eventuelt oppgi navnet på bonusen for å tilbakestille en spesifikk bonus på tvers av alle barn. Bruk barnets navn for å tilbakestille alle bonuser for et spesifikt barn. Kombiner begge for å tilbakestille en spesifikk bonus for et spesifikt barn.",
+      "fields": {
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Barnet som bonusene skal tilbakestilles for.",
+          "example": "Alice"
+        },
+        "bonus_name": {
+          "name": "Bonusens Navn",
+          "description": "Navnet på bonusen som skal tilbakestilles.",
+          "example": "Hjelpsomhet"
+        }
+      }
+    },
+    "reset_rewards": {
+      "name": "Tilbakestill Belønninger",
+      "description": "Tilbakestill alle krav og godkjenninger for belønninger for alle barn. Du kan eventuelt oppgi navnet på belønningen for å tilbakestille antall for en spesifikk belønning på tvers av alle barn. Bruk barnets navn for å tilbakestille alle belønningsantall for et spesifikt barn. Kombiner begge for å tilbakestille en spesifikk belønning for et spesifikt barn.",
+      "fields": {
+        "kid_name": {
+          "name": "Barnets Navn",
+          "description": "Barnet som belønningsantall skal tilbakestilles for.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Belønningens Navn",
+          "description": "Navnet på belønningen som skal tilbakestilles.",
+          "example": "Iskrem"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "chore_status_sensor": {
+        "name": "{kid_name} - Status - {chore_name}",
+        "state": {
+          "pending": "Ventende",
+          "approved": "Godkjent",
+          "claimed": "Krevd",
+          "overdue": "Forfalt",
+          "unknown": "Ukjent",
+          "none": "Ingen",
+          "approved_in_part": "Godkjent (delvis)",
+          "claimed_in_part": "Krevd (delvis)"
+        },
+        "state_attributes": {
+          "kid_name": {
+            "name": "Barnets Navn"
+          },
+          "chore_name": {
+            "name": "Oppgavens Navn"
+          },
+          "shared_chore": {
+            "name": "Delt Oppgave",
+            "state": {
+              "true": "Ja",
+              "false": "Nei"
+            }
+          },
+          "recurring_frequency": {
+            "name": "Gjentakende Frekvens",
+            "state": {
+              "none": "Ingen",
+              "daily": "Daglig",
+              "weekly": "Ukentlig",
+              "biweekly": "Annenhver Uke",
+              "monthly": "Månedlig",
+              "custom": "Egendefinert"
+            }
+          },
+          "applicable_days": {
+            "name": "Gjeldende Dager",
+            "state": {
+              "mon": "Mandag",
+              "tue": "Tirsdag",
+              "wed": "Onsdag",
+              "thu": "Torsdag",
+              "fri": "Fredag",
+              "sat": "Lørdag",
+              "sun": "Søndag"
+            }
+          },
+          "due_date": {
+            "name": "Frist"
+          },
+          "default_points": {
+            "name": "Standard Poeng"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "chore_claims_count": {
+            "name": "Antall Krevde Oppgaver"
+          },
+          "chore_approvals_count": {
+            "name": "Antall Godkjente Oppgaver"
+          },
+          "chore_current_streak": {
+            "name": "Nåværende Oppgave-streak"
+          },
+          "chore_highest_streak": {
+            "name": "Høyeste Oppgave-streak"
+          },
+          "global_state": {
+            "name": "Global Status",
+            "state": {
+              "pending": "Ventende",
+              "approved": "Godkjent",
+              "claimed": "Krevd",
+              "overdue": "Forfalt",
+              "unknown": "Ukjent",
+              "none": "Ingen",
+              "approved_in_part": "Godkjent (delvis)",
+              "claimed_in_part": "Krevd (delvis)",
+              "independent": "Uavhengig"
+            }
+          },
+          "partial_allowed": {
+            "name": "Delvis Tillatt",
+            "state": {
+              "true": "Ja",
+              "false": "Nei"
+            }
+          },
+          "allow_multiple_claims_per_day": {
+            "name": "Tillat Flere Krav per Dag",
+            "state": {
+              "true": "Ja",
+              "false": "Nei"
+            }
+          },
+          "assigned_kids": {
+            "name": "Tildelte Barn"
+          },
+          "custom_frequency_interval": {
+            "name": "Egendefinert Frekvens"
+          },
+          "custom_frequency_unit": {
+            "name": "Egendefinert Frekvens Periode",
+            "state": {
+              "days": "Dager",
+              "weeks": "Uker",
+              "months": "Måneder"
+            }
+          },
+          "chore_approvals_today": {
+            "name": "Oppgavegodkjenninger I Dag"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "kid_points_sensor": {
+        "name": "{kid_name} - {points}"
+      },
+      "kid_max_points_ever_sensor": {
+        "name": "{kid_name} - Høyeste Poeng Noensinne"
+      },
+      "chores_completed_total_sensor": {
+        "name": "{kid_name} - Fullførte Oppgaver - Totalt"
+      },
+      "chores_completed_daily_sensor": {
+        "name": "{kid_name} - Fullførte Oppgaver - Daglig"
+      },
+      "chores_completed_weekly_sensor": {
+        "name": "{kid_name} - Fullførte Oppgaver - Ukentlig"
+      },
+      "chores_completed_monthly_sensor": {
+        "name": "{kid_name} - Fullførte Oppgaver - Månedlig"
+      },
+      "kid_badges_sensor": {
+        "name": "{kid_name} - Opptjente Merker"
+      },
+      "kids_highest_badge_sensor": {
+        "name": "{kid_name} - Merke",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Barnets Navn"
+          },
+          "all_earned_badges": {
+            "name": "Alle Opptjente Merker"
+          },
+          "highest_badge_threshold_value": {
+            "name": "Høyeste Merke Terskel"
+          },
+          "points_multiplier": {
+            "name": "Poengmultiplikator"
+          },
+          "points_to_next_badge": {
+            "name": "Poeng til Neste Merke"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "badge_sensor": {
+        "name": "Merke - {badge_name}",
+        "state_attributes": {
+          "threshold_type": {
+            "name": "Terskeltype",
+            "state": {
+              "points": "Poeng",
+              "chore_count": "Antall Oppgaver"
+            }
+          },
+          "points_multiplier": {
+            "name": "Poengmultiplikator"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "kids_earned": {
+            "name": "Opptjent av Barn"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "pending_chores_approvals_sensor": {
+        "name": "Ventende Godkjenninger av Oppgaver"
+      },
+      "pending_rewards_approvals_sensor": {
+        "name": "Ventende Godkjenninger av Belønninger"
+      },
+      "reward_claims_sensor": {
+        "name": "{kid_name} - Krav - {reward_name}"
+      },
+      "reward_approvals_sensor": {
+        "name": "{kid_name} - Godkjenninger - {reward_name}"
+      },
+      "shared_chore_global_status_sensor": {
+        "name": "{chore_name} - Global Status",
+        "state": {
+          "pending": "Ventende",
+          "approved": "Godkjent",
+          "claimed": "Krevd",
+          "overdue": "Forfalt",
+          "unknown": "Ukjent",
+          "none": "Ingen",
+          "approved_in_part": "Godkjent (delvis)",
+          "claimed_in_part": "Krevd (delvis)",
+          "independent": "Uavhengig"
+        },
+        "state_attributes": {
+          "chore_name": {
+            "name": "Oppgavens Navn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "recurring_frequency": {
+            "name": "Gjentakende Frekvens",
+            "state": {
+              "none": "Ingen",
+              "daily": "Daglig",
+              "weekly": "Ukentlig",
+              "biweekly": "Annenhver Uke",
+              "monthly": "Månedlig",
+              "custom": "Egendefinert"
+            }
+          },
+          "applicable_days": {
+            "name": "Gjeldende Dager",
+            "state": {
+              "mon": "Mandag",
+              "tue": "Tirsdag",
+              "wed": "Onsdag",
+              "thu": "Torsdag",
+              "fri": "Fredag",
+              "sat": "Lørdag",
+              "sun": "Søndag"
+            }
+          },
+          "due_date": {
+            "name": "Frist"
+          },
+          "default_points": {
+            "name": "Standard Poeng"
+          },
+          "partial_allowed": {
+            "name": "Delvis Tillatt",
+            "state": {
+              "true": "Ja",
+              "false": "Nei"
+            }
+          },
+          "allow_multiple_claims_per_day": {
+            "name": "Tillat Flere Krav per Dag",
+            "state": {
+              "true": "Ja",
+              "false": "Nei"
+            }
+          },
+          "assigned_kids": {
+            "name": "Tildelte Barn"
+          },
+          "chore_approvals_today": {
+            "name": "Oppgavegodkjenninger I Dag"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "reward_status_sensor": {
+        "name": "{kid_name} - Belønningsstatus - {reward_name}",
+        "state": {
+          "not_claimed": "Ikke Krevd",
+          "approved": "Godkjent",
+          "claimed": "Krevd",
+          "unknown": "Ukjent",
+          "none": "Ingen"
+        },
+        "state_attributes": {
+          "kid_name": {
+            "name": "Barnets Navn"
+          },
+          "reward_name": {
+            "name": "Belønningens Navn"
+          },
+          "reward_cost": {
+            "name": "Belønningens Kostnad"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "chore_claims_sensor": {
+        "name": "{kid_name} - Krav - {chore_name}"
+      },
+      "chore_approvals_sensor": {
+        "name": "{kid_name} - Godkjenninger - {chore_name}"
+      },
+      "penalty_applies_sensor": {
+        "name": "{kid_name} - Gitte Straffer/Bøter - {penalty_name}",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Barnets Navn"
+          },
+          "penalty_name": {
+            "name": "Straffens Navn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "penalty_points": {
+            "name": "Straffepoeng"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "bonus_applies_sensor": {
+        "name": "{kid_name} - Gitte Bonuser - {bonus_name}",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Barnets Navn"
+          },
+          "bonus_name": {
+            "name": "Bonusens Navn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "bonus_points": {
+            "name": "Bonuspoeng"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "kid_points_earned_daily_sensor": {
+        "name": "{kid_name} - Opptjente Poeng - Daglig"
+      },
+      "kid_points_earned_weekly_sensor": {
+        "name": "{kid_name} - Opptjente Poeng - Ukentlig"
+      },
+      "kid_points_earned_monthly_sensor": {
+        "name": "{kid_name} - Opptjente Poeng - Månedlig"
+      },
+      "achievement_state_sensor": {
+        "name": "Prestasjon - {achievement_name}",
+        "state_attributes": {
+          "achievement_name": {
+            "name": "Prestasjonens Navn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "assigned_kids": {
+            "name": "Tildelte Barn"
+          },
+          "type": {
+            "name": "Type",
+            "state": {
+              "chore_total": "Totalt Antall Oppgaver",
+              "chore_streak": "Oppgave-streak",
+              "daily_minimum": "Daglig Minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Tilknyttet Oppgave"
+          },
+          "critera": {
+            "name": "Kriterier"
+          },
+          "target_value": {
+            "name": "Mål"
+          },
+          "reward_points": {
+            "name": "Belønningspoeng"
+          },
+          "kids_earned": {
+            "name": "Opptjent av"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "challenge_state_sensor": {
+        "name": "Utfordring - {challenge_name}",
+        "state_attributes": {
+          "challenge_name": {
+            "name": "Utfordringens Navn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "assigned_kids": {
+            "name": "Tildelte Barn"
+          },
+          "type": {
+            "name": "Type",
+            "state": {
+              "total_within_window": "Totalt Innenfor Tidsrom",
+              "daily_minimum": "Daglig Minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Tilknyttet Oppgave"
+          },
+          "critera": {
+            "name": "Kriterier"
+          },
+          "target_value": {
+            "name": "Mål"
+          },
+          "reward_points": {
+            "name": "Belønningspoeng"
+          },
+          "start_date": {
+            "name": "Startdato"
+          },
+          "end_date": {
+            "name": "Sluttdato"
+          },
+          "kids_earned": {
+            "name": "Opptjent av"
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "achievement_progress_sensor": {
+        "name": "{kid_name} - Fremdrift - {achievement_name}",
+        "state_attributes": {
+          "achievement_name": {
+            "name": "Prestasjonens Navn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "assigned_kids": {
+            "name": "Tildelte Barn"
+          },
+          "type": {
+            "name": "Type",
+            "state": {
+              "chore_total": "Totalt Antall Oppgaver",
+              "chore_streak": "Oppgave-streak",
+              "daily_minimum": "Daglig Minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Tilknyttet Oppgave"
+          },
+          "critera": {
+            "name": "Kriterier"
+          },
+          "target_value": {
+            "name": "Mål"
+          },
+          "reward_points": {
+            "name": "Belønningspoeng"
+          },
+          "raw_progress": {
+            "name": "Fremdrift"
+          },
+          "awarded": {
+            "name": "Tildelt",
+            "state": {
+              "true": "Ja",
+              "false": "Nei"
+            }
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "challenge_progress_sensor": {
+        "name": "{kid_name} - Fremdrift - {challenge_name}",
+        "state_attributes": {
+          "challenge_name": {
+            "name": "Utfordringens Navn"
+          },
+          "description": {
+            "name": "Beskrivelse"
+          },
+          "assigned_kids": {
+            "name": "Tildelte Barn"
+          },
+          "type": {
+            "name": "Type",
+            "state": {
+              "total_within_window": "Totalt Innenfor Tidsrom",
+              "daily_minimum": "Daglig Minimum"
+            }
+          },
+          "associated_chore": {
+            "name": "Tilknyttet Oppgave"
+          },
+          "critera": {
+            "name": "Kriterier"
+          },
+          "target_value": {
+            "name": "Mål"
+          },
+          "reward_points": {
+            "name": "Belønningspoeng"
+          },
+          "start_date": {
+            "name": "Startdato"
+          },
+          "end_date": {
+            "name": "Sluttdato"
+          },
+          "raw_progress": {
+            "name": "Fremdrift"
+          },
+          "awarded": {
+            "name": "Tildelt",
+            "state": {
+              "true": "Ja",
+              "false": "Nei"
+            }
+          },
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "kid_highest_streak_sensor": {
+        "name": "{kid_name} - Høyeste Streak",
+        "state_attributes": {
+          "streaks_by_achievement": {
+            "name": "Streaks per Prestasjon"
+          }
+        }
+      },
+      "chore_streak_sensor": {
+        "name": "{kid_name} - Streak - {chore_name}",
+        "state_attributes": {
+          "last_date": {
+            "name": "Siste Dato"
+          },
+          "raw_streak": {
+            "name": "Nåværende Streak"
+          }
+        }
+      }
+    },
+    "button": {
+      "claim_chore_button": {
+        "name": "{kid_name} - Krev Oppgave - {chore_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "approve_chore_button": {
+        "name": "{kid_name} - Godkjenn Oppgave - {chore_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "disapprove_chore_button": {
+        "name": "{kid_name} - Avvis Oppgave - {chore_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "claim_reward_button": {
+        "name": "{kid_name} - Krev Belønning - {reward_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "approve_reward_button": {
+        "name": "{kid_name} - Godkjenn Belønning - {reward_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "disapprove_reward_button": {
+        "name": "{kid_name} - Avvis Belønning - {reward_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "penalty_button": {
+        "name": "{kid_name} - Gi Straff/Bot - {penalty_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "bonus_button": {
+        "name": "{kid_name} - Gi Bonus - {bonus_name}",
+        "state_attributes": {
+          "labels": {
+            "name": "Etiketter"
+          }
+        }
+      },
+      "manual_adjustment_button": {
+        "name": "{kid_name} {sign_label} {points_label}"
+      }
+    }
+  }
+}
