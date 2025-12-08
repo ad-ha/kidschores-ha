@@ -391,6 +391,8 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
         last_longest_streak_date = kid_chore_data.get(
             const.DATA_KID_CHORE_DATA_LAST_LONGEST_STREAK_ALL_TIME
         )
+        last_claimed = kid_chore_data.get(const.DATA_KID_CHORE_DATA_LAST_CLAIMED)
+        last_completed = kid_chore_data.get(const.DATA_KID_CHORE_DATA_LAST_APPROVED)
 
         stored_labels = chore_info.get(const.DATA_CHORE_LABELS, [])
         friendly_labels = [
@@ -422,6 +424,8 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
             const.ATTR_CHORE_CURRENT_STREAK: current_streak,
             const.ATTR_CHORE_HIGHEST_STREAK: highest_streak,
             const.ATTR_CHORE_LAST_LONGEST_STREAK_DATE: last_longest_streak_date,
+            const.ATTR_LAST_CLAIMED: last_claimed,
+            const.ATTR_LAST_COMPLETED: last_completed,
             const.ATTR_SHARED_CHORE: shared,
             const.ATTR_GLOBAL_STATE: global_state,
             const.ATTR_DUE_DATE: chore_info.get(
