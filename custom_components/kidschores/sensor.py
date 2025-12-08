@@ -13,20 +13,21 @@ Available Sensors:
 07. CompletedChoresMonthlySensor
 08. KidHighestBadgeSensor
 09. BadgeSensor
-10. PendingChoreApprovalsSensor
-11. PendingRewardApprovalsSensor
-12. SharedChoreGlobalStateSensor
-13. RewardStatusSensor
-14. PenaltyAppliesSensor
-15. KidPointsEarnedDailySensor
-16. KidPointsEarnedWeeklySensor
-17. KidPointsEarnedMonthlySensor
-18. AchievementSensor
-19. ChallengeSensor
-20. AchievementProgressSensor
-21. ChallengeProgressSensor
-22. KidHighestStreakSensor
-23. BonusAppliesSensor
+10. BadgeProgressSensor
+11. PendingChoreApprovalsSensor
+12. PendingRewardApprovalsSensor
+13. SharedChoreGlobalStateSensor
+14. RewardStatusSensor
+15. PenaltyAppliesSensor
+16. KidPointsEarnedDailySensor
+17. KidPointsEarnedWeeklySensor
+18. KidPointsEarnedMonthlySensor
+19. AchievementSensor
+20. ChallengeSensor
+21. AchievementProgressSensor
+22. ChallengeProgressSensor
+23. KidHighestStreakSensor
+24. BonusAppliesSensor
 """
 
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
@@ -157,7 +158,7 @@ async def async_setup_entry(
                 )
             )
 
-        # KidBadgeSensor for each non-cumulative badge
+        # BadgeProgressSensor Progress per Kid for each non-cumulative badge
         badge_progress_data = kid_info.get(const.DATA_KID_BADGE_PROGRESS, {})
         for badge_id, progress_info in badge_progress_data.items():
             badge_type = progress_info.get(const.DATA_KID_BADGE_PROGRESS_TYPE)
@@ -167,7 +168,7 @@ async def async_setup_entry(
                     f"{const.TRANS_KEY_LABEL_BADGE} {badge_id}",
                 )
                 entities.append(
-                    KidBadgeSensor(
+                    BadgeProgressSensor(
                         coordinator, entry, kid_id, kid_name, badge_id, badge_name
                     )
                 )
@@ -888,11 +889,11 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
 
 
 # ------------------------------------------------------------------------------------------
-class KidBadgeSensor(CoordinatorEntity, SensorEntity):
-    """Sensor for a kid's progress on a specific non-cumulative badge."""
+class BadgeProgressSensor(CoordinatorEntity, SensorEntity):
+    """Badge Progress Sensor for a kid's progress on a specific non-cumulative badge."""
 
     _attr_has_entity_name = True
-    _attr_translation_key = "kid_badge_sensor"
+    _attr_translation_key = "badge_progress_sensor"
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = PERCENTAGE
 
@@ -905,19 +906,19 @@ class KidBadgeSensor(CoordinatorEntity, SensorEntity):
         badge_id: str,
         badge_name: str,
     ):
-        """Initialize the KidBadgeSensor."""
+        """Initialize the BadgeProgressSensor."""
         super().__init__(coordinator)
         self._entry = entry
         self._kid_id = kid_id
         self._kid_name = kid_name
         self._badge_id = badge_id
         self._badge_name = badge_name
-        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_{badge_id}_badge_progress"
+        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_{badge_id}{const.SENSOR_KC_UID_SUFFIX_BADGE_PROGRESS_SENSOR}"
         self._attr_translation_placeholders = {
-            "kid_name": kid_name,
-            "badge_name": badge_name,
+            const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name,
+            const.TRANS_KEY_SENSOR_ATTR_BADGE_NAME: badge_name,
         }
-        self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}_badge_status_{badge_name}"
+        self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_BADGE_PROGRESS_SENSOR}{badge_name}"
 
     @property
     def native_value(self) -> float:
