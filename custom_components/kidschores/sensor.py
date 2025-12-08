@@ -943,6 +943,15 @@ class BadgeProgressSensor(CoordinatorEntity, SensorEntity):
         badge_progress = kid_info.get(const.DATA_KID_BADGE_PROGRESS, {}).get(
             self._badge_id, {}
         )
+        badge_earned = kid_info.get(const.DATA_KID_BADGES_EARNED, {}).get(
+            self._badge_id, {}
+        )
+        last_awarded_date = badge_earned.get(
+            const.DATA_KID_BADGES_EARNED_LAST_AWARDED, const.CONF_NONE
+        )
+        award_count = badge_earned.get(
+            const.DATA_KID_BADGES_EARNED_AWARD_COUNT, const.DEFAULT_ZERO
+        )
 
         # Build a dictionary with only the requested fields
         attributes = {
@@ -973,6 +982,8 @@ class BadgeProgressSensor(CoordinatorEntity, SensorEntity):
             const.DATA_KID_BADGE_PROGRESS_CRITERIA_MET: badge_progress.get(
                 const.DATA_KID_BADGE_PROGRESS_CRITERIA_MET
             ),
+            const.DATA_KID_BADGES_EARNED_LAST_AWARDED: last_awarded_date,
+            const.DATA_KID_BADGES_EARNED_AWARD_COUNT: award_count,
         }
 
         # Convert tracked chore IDs to friendly names and add to attributes
