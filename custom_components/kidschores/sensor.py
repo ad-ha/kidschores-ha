@@ -12,8 +12,8 @@ Available Sensors:
 06. CompletedChoresWeeklySensor
 07. CompletedChoresMonthlySensor
 08. KidHighestBadgeSensor
-09. BadgeSensor
-10. BadgeProgressSensor
+09. BadgeProgressSensor
+10. BadgeSensor
 11. PendingChoreApprovalsSensor
 12. PendingRewardApprovalsSensor
 13. SharedChoreGlobalStateSensor
