@@ -939,6 +939,7 @@ class BadgeProgressSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict:
         """Return the badge progress details as attributes."""
+        badge_info = self.coordinator.badges_data.get(self._badge_id, {})
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
         badge_progress = kid_info.get(const.DATA_KID_BADGE_PROGRESS, {}).get(
             self._badge_id, {}
@@ -991,6 +992,10 @@ class BadgeProgressSensor(CoordinatorEntity, SensorEntity):
             const.DATA_KID_BADGES_EARNED_LAST_AWARDED: last_awarded_date,
             const.DATA_KID_BADGES_EARNED_AWARD_COUNT: award_count,
         }
+
+        attributes[const.ATTR_DESCRIPTION] = badge_info.get(
+            const.DATA_BADGE_DESCRIPTION, const.CONF_EMPTY
+        )
 
         # Convert tracked chore IDs to friendly names and add to attributes
         tracked_chore_ids = attributes.get(
