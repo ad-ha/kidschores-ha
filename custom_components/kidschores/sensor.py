@@ -973,6 +973,12 @@ class BadgeProgressSensor(CoordinatorEntity, SensorEntity):
             const.DATA_KID_BADGE_PROGRESS_RECURRING_FREQUENCY: badge_progress.get(
                 const.DATA_KID_BADGE_PROGRESS_RECURRING_FREQUENCY
             ),
+            const.DATA_KID_BADGE_PROGRESS_START_DATE: badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_START_DATE
+            ),
+            const.DATA_KID_BADGE_PROGRESS_END_DATE: badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_END_DATE
+            ),
             const.DATA_KID_BADGE_PROGRESS_LAST_UPDATE_DAY: badge_progress.get(
                 const.DATA_KID_BADGE_PROGRESS_LAST_UPDATE_DAY
             ),
