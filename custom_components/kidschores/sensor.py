@@ -835,6 +835,17 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
+        # Get last awarded date and award count for the current badge (if earned)
+        badge_earned = kid_info.get(const.DATA_KID_BADGES_EARNED, {}).get(
+            current_badge_id, {}
+        )
+        last_awarded_date = badge_earned.get(
+            const.DATA_KID_BADGES_EARNED_LAST_AWARDED, const.CONF_NONE
+        )
+        award_count = badge_earned.get(
+            const.DATA_KID_BADGES_EARNED_AWARD_COUNT, const.DEFAULT_ZERO
+        )
+
         extra_attrs = {}
         # Add description if present
         description = current_badge_info.get(const.DATA_BADGE_DESCRIPTION, "")
@@ -888,6 +899,8 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
             const.ATTR_CURRENT_BADGE_ID: current_badge_id,
             const.ATTR_CURRENT_BADGE_NAME: current_badge_name,
             const.ATTR_BADGE_STATUS: badge_status,
+            const.DATA_KID_BADGES_EARNED_LAST_AWARDED: last_awarded_date,
+            const.DATA_KID_BADGES_EARNED_AWARD_COUNT: award_count,
             **extra_attrs,
         }
 
