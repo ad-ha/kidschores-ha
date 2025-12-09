@@ -1186,6 +1186,14 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
                 friendly_award_names.append(
                     f"{const.AWARD_ITEMS_PREFIX_PENALTY}{friendly_name}"
                 )
+            elif item == const.AWARD_ITEMS_KEY_POINTS:
+                award_points = awards_data.get(const.DATA_BADGE_AWARDS_AWARD_POINTS, 0)
+                friendly_award_names.append(f"Points: {award_points}")
+            elif item == const.AWARD_ITEMS_KEY_POINTS_MULTIPLIER:
+                points_multiplier = awards_data.get(
+                    const.DATA_BADGE_AWARDS_POINT_MULTIPLIER, 1.0
+                )
+                friendly_award_names.append(f"Multiplier: {points_multiplier}")
         attributes[const.ATTR_BADGE_AWARDS] = friendly_award_names
 
         attributes[const.ATTR_RESET_SCHEDULE] = badge_info.get(
