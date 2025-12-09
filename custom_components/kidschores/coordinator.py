@@ -5073,7 +5073,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
                 raise HomeAssistantError(f"Kid ID '{kid_id}' not found.")
             kid_name = kid_info.get(const.DATA_KID_NAME, "Unknown Kid")
-            for badge_id, badge_info in self.badges_data.values():
+            for badge_id, badge_info in self.badges_data.items():
                 badge_name = badge_info.get(const.DATA_BADGE_NAME)
                 earned_by_list = badge_info.get(const.DATA_BADGE_EARNED_BY, [])
                 badges_earned = kid_info.setdefault(const.DATA_KID_BADGES_EARNED, {})
