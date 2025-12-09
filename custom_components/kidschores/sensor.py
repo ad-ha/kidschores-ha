@@ -803,6 +803,30 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_CURRENT_BADGE_NAME,
             const.CONF_NONE_TEXT,
         )
+        highest_earned_badge_id = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_HIGHEST_EARNED_BADGE_ID,
+            const.CONF_NONE_TEXT,
+        )
+        highest_earned_badge_name = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_HIGHEST_EARNED_BADGE_NAME,
+            const.CONF_NONE_TEXT,
+        )
+        next_higher_badge_id = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_BADGE_ID,
+            const.CONF_NONE_TEXT,
+        )
+        next_higher_badge_name = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_HIGHER_BADGE_NAME,
+            const.CONF_NONE_TEXT,
+        )
+        next_lower_badge_id = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_LOWER_BADGE_ID,
+            const.CONF_NONE_TEXT,
+        )
+        next_lower_badge_name = cumulative_badge_progress_info.get(
+            const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_NEXT_LOWER_BADGE_NAME,
+            const.CONF_NONE_TEXT,
+        )
         badge_status = cumulative_badge_progress_info.get(
             const.DATA_KID_CUMULATIVE_BADGE_PROGRESS_STATUS,
             const.CONF_NONE_TEXT,
@@ -898,6 +922,12 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
             const.ATTR_POINTS_TO_NEXT_BADGE: points_to_next_badge,
             const.ATTR_CURRENT_BADGE_ID: current_badge_id,
             const.ATTR_CURRENT_BADGE_NAME: current_badge_name,
+            const.ATTR_HIGHEST_EARNED_BADGE_ID: highest_earned_badge_id,
+            const.ATTR_HIGHEST_EARNED_BADGE_NAME: highest_earned_badge_name,
+            const.ATTR_NEXT_HIGHER_BADGE_ID: next_higher_badge_id,
+            const.ATTR_NEXT_HIGHER_BADGE_NAME: next_higher_badge_name,
+            const.ATTR_NEXT_LOWER_BADGE_ID: next_lower_badge_id,
+            const.ATTR_NEXT_LOWER_BADGE_NAME: next_lower_badge_name,
             const.ATTR_BADGE_STATUS: badge_status,
             const.DATA_KID_BADGES_EARNED_LAST_AWARDED: last_awarded_date,
             const.DATA_KID_BADGES_EARNED_AWARD_COUNT: award_count,
