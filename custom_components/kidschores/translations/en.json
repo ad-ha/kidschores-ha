@@ -1046,12 +1046,20 @@
         "data": {
           "points_adjust_values": "Manual Points Adjustment Button Values",
           "update_interval": "Update Interval",
-          "calendar_show_period": "Number of Days to Show in Calendar"
+          "calendar_show_period": "Number of Days to Show in Calendar",
+          "retention_daily": "Daily Data Retention (Days)",
+          "retention_weekly": "Weekly Data Retention (Weeks)",
+          "retention_monthly": "Monthly Data Retention (Months)",
+          "retention_yearly": "Yearly Data Retention (Years)"
         },
         "data_description": {
           "points_adjust_values": "List of values for the manual points adjustment buttons. Each value separate by '|'.",
           "update_interval": "Interval in minutes for updating the internal state of KidsChores.",
-          "calendar_show_period": "Number of days in the future to show scheduled chores and challenges in the calendar."
+          "calendar_show_period": "Number of days in the future to show scheduled chores and challenges in the calendar.",
+          "retention_daily": "Number of days of daily historical data to retain before cleanup. Minimum 1, maximum 90.",
+          "retention_weekly": "Number of weeks of weekly historical data to retain before cleanup. Minimum 1, maximum 52.",
+          "retention_monthly": "Number of months of monthly historical data to retain before cleanup. Minimum 1, maximum 24.",
+          "retention_yearly": "Number of years of yearly historical data to retain before cleanup. Minimum 1, maximum 10."
         }
       }
     },
@@ -1256,7 +1264,7 @@
         "points_awarded": {
           "name": "Points Awarded",
           "description": "Points to award (optional; defaults to the chore's points).",
-          "example": 3
+          "example": "3"
         }
       }
     },

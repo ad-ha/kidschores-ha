@@ -707,12 +707,12 @@ def adjust_datetime_by_interval(  # pyright: ignore[reportReturnType]
     elif interval_unit in {const.CONF_MONTHS, const.CONF_QUARTERS}:
         multiplier = 1 if interval_unit == const.CONF_MONTHS else 3
         total_months = base_dt.month - 1 + (delta * multiplier)
-        year = base_dt.year + total_months // 12
-        month = total_months % 12 + 1
+        year = int(base_dt.year + total_months // 12)
+        month = int(total_months % 12 + 1)
         day = min(base_dt.day, monthrange(year, month)[1])
         result = base_dt.replace(year=year, month=month, day=day)
     elif interval_unit == const.CONF_YEARS:
-        year = base_dt.year + delta
+        year = int(base_dt.year + delta)
         day = min(base_dt.day, monthrange(year, base_dt.month)[1])
         result = base_dt.replace(year=year, day=day)
     else:
@@ -1222,7 +1222,15 @@ def get_next_applicable_day(
     return final_result
 
 
-def cleanup_period_data(self, periods_data: dict, period_keys: dict):
+def cleanup_period_data(
+    self,
+    periods_data: dict,
+    period_keys: dict,
+    retention_daily: int = None,
+    retention_weekly: int = None,
+    retention_monthly: int = None,
+    retention_yearly: int = None,
+):
     """
     Remove old period data to keep storage manageable for any period-based data (chore, point, etc).
 
@@ -1235,19 +1243,40 @@ def cleanup_period_data(self, periods_data: dict, period_keys: dict):
                 "monthly": const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY,
                 "yearly": const.DATA_KID_CHORE_DATA_PERIODS_YEARLY,
             }
-    Retains:
-        - 7 days of daily data
-        - 5 weeks of weekly data
-        - 3 months of monthly data
-        - 3 years of yearly data
+        retention_daily: Number of days to retain (default: const.DEFAULT_RETENTION_DAILY)
+        retention_weekly: Number of weeks to retain (default: const.DEFAULT_RETENTION_WEEKLY)
+        retention_monthly: Number of months to retain (default: const.DEFAULT_RETENTION_MONTHLY)
+        retention_yearly: Number of years to retain (default: const.DEFAULT_RETENTION_YEARLY)
     """
     today_local = get_today_local_date()
 
-    # Daily: keep 7 days
+    # Use provided values or fall back to defaults
+    retention_daily = (
+        retention_daily
+        if retention_daily is not None
+        else const.DEFAULT_RETENTION_DAILY
+    )
+    retention_weekly = (
+        retention_weekly
+        if retention_weekly is not None
+        else const.DEFAULT_RETENTION_WEEKLY
+    )
+    retention_monthly = (
+        retention_monthly
+        if retention_monthly is not None
+        else const.DEFAULT_RETENTION_MONTHLY
+    )
+    retention_yearly = (
+        retention_yearly
+        if retention_yearly is not None
+        else const.DEFAULT_RETENTION_YEARLY
+    )
+
+    # Daily: keep configured days
     cutoff_daily = adjust_datetime_by_interval(
         today_local.isoformat(),
         interval_unit=const.CONF_DAYS,
-        delta=-7,
+        delta=-retention_daily,
         require_future=False,
         return_type=const.HELPER_RETURN_ISO_DATE,
     )
@@ -1256,11 +1285,11 @@ def cleanup_period_data(self, periods_data: dict, period_keys: dict):
         if day < cutoff_daily:
             del daily_data[day]
 
-    # Weekly: keep 5 weeks
+    # Weekly: keep configured weeks
     cutoff_date = adjust_datetime_by_interval(
         today_local.isoformat(),
         interval_unit=const.CONF_WEEKS,
-        delta=-5,
+        delta=-retention_weekly,
         require_future=False,
         return_type=const.HELPER_RETURN_DATETIME,
     )
@@ -1270,11 +1299,11 @@ def cleanup_period_data(self, periods_data: dict, period_keys: dict):
         if week < cutoff_weekly:
             del weekly_data[week]
 
-    # Monthly: keep 3 months
+    # Monthly: keep configured months
     cutoff_date = adjust_datetime_by_interval(
         today_local.isoformat(),
         interval_unit=const.CONF_MONTHS,
-        delta=-3,
+        delta=-retention_monthly,
         require_future=False,
         return_type=const.HELPER_RETURN_DATETIME,
     )
@@ -1284,8 +1313,8 @@ def cleanup_period_data(self, periods_data: dict, period_keys: dict):
         if month < cutoff_monthly:
             del monthly_data[month]
 
-    # Yearly: keep 3 years
-    cutoff_yearly = str(int(today_local.strftime("%Y")) - 3)
+    # Yearly: keep configured years
+    cutoff_yearly = str(int(today_local.strftime("%Y")) - retention_yearly)
     yearly_data = periods_data.get(period_keys["yearly"], {})
     for year in list(yearly_data.keys()):
         if year < cutoff_yearly:

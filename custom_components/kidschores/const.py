@@ -46,6 +46,7 @@ COORDINATOR_SUFFIX = "_coordinator"
 # Storage and Versioning
 STORAGE_MANAGER = "storage_manager"
 STORAGE_KEY = "kidschores_data"
+STORAGE_KEY_LINKED_USERS = "linked_users"
 STORAGE_VERSION = 1
 
 # Default timezone: initially None, to be set once hass is available.
@@ -522,6 +523,10 @@ CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW = "total_within_window"
 # General Options
 CONF_POINTS_ADJUST_VALUES = "points_adjust_values"
 CONF_UPDATE_INTERVAL = "update_interval"
+CONF_RETENTION_DAILY = "retention_daily"
+CONF_RETENTION_WEEKLY = "retention_weekly"
+CONF_RETENTION_MONTHLY = "retention_monthly"
+CONF_RETENTION_YEARLY = "retention_yearly"
 
 
 # ------------------------------------------------------------------------------------------------
@@ -1152,6 +1157,10 @@ DEFAULT_BADGE_THRESHOLD_TYPE_UNUSED = "points"
 DEFAULT_BONUS_POINTS = 1
 DEFAULT_CALENDAR_SHOW_PERIOD = 90
 DEFAULT_CHALLENGE_REWARD_POINTS = 0
+DEFAULT_RETENTION_DAILY = 7
+DEFAULT_RETENTION_WEEKLY = 5
+DEFAULT_RETENTION_MONTHLY = 3
+DEFAULT_RETENTION_YEARLY = 3
 DEFAULT_CHALLENGE_TARGET = 1
 DEFAULT_CHORES_UNIT = "Chores"
 DEFAULT_DAILY_RESET_TIME = {"hour": 0, "minute": 0, "second": 0}
@@ -1568,6 +1577,45 @@ ERROR_REWARD_NOT_FOUND = "Reward not found."
 ERROR_REWARD_NOT_FOUND_FMT = "Reward '{}' not found"
 ERROR_UNNAMED_ACHIEVEMENT = "Unnamed Achievement"
 ERROR_USER_NOT_AUTHORIZED = "User is not authorized to perform this action."
+
+# Authorization Error Messages
+ERROR_NOT_AUTHORIZED_APPROVE_CHORES = (
+    "You are not authorized to approve chores for this kid."
+)
+ERROR_NOT_AUTHORIZED_DISAPPROVE_CHORES = (
+    "You are not authorized to disapprove chores for this kid."
+)
+ERROR_NOT_AUTHORIZED_REDEEM_REWARDS = (
+    "You are not authorized to redeem rewards for this kid."
+)
+ERROR_NOT_AUTHORIZED_APPROVE_REWARDS = (
+    "You are not authorized to approve rewards for this kid."
+)
+ERROR_NOT_AUTHORIZED_DISAPPROVE_REWARDS = (
+    "You are not authorized to disapprove rewards for this kid."
+)
+ERROR_NOT_AUTHORIZED_APPLY_PENALTIES = (
+    "You are not authorized to apply penalties for this kid."
+)
+ERROR_NOT_AUTHORIZED_APPLY_BONUSES = (
+    "You are not authorized to apply bonuses for this kid."
+)
+ERROR_NOT_AUTHORIZED_RESET_PENALTIES = "You are not authorized to reset penalties."
+ERROR_NOT_AUTHORIZED_RESET_BONUSES = "You are not authorized to reset bonuses."
+ERROR_NOT_AUTHORIZED_RESET_REWARDS = "You are not authorized to reset rewards."
+ERROR_NOT_AUTHORIZED_REMOVE_BADGES = "You are not authorized to remove awarded badges."
+
+# Calendar Error Messages
+ERROR_CALENDAR_CREATE_NOT_SUPPORTED = (
+    "Creating events is not supported for this calendar"
+)
+ERROR_CALENDAR_DELETE_NOT_SUPPORTED = (
+    "Deleting events is not supported for this calendar"
+)
+ERROR_CALENDAR_UPDATE_NOT_SUPPORTED = (
+    "Updating events is not supported for this calendar"
+)
+
 MSG_NO_ENTRY_FOUND = "No KidsChores entry found"
 
 # Unknown States

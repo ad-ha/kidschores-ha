@@ -3144,6 +3144,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 const.CONF_MONTHLY: const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY,
                 const.CONF_YEARLY: const.DATA_KID_CHORE_DATA_PERIODS_YEARLY,
             },
+            retention_daily=self.config_entry.options.get(
+                const.CONF_RETENTION_DAILY, const.DEFAULT_RETENTION_DAILY
+            ),
+            retention_weekly=self.config_entry.options.get(
+                const.CONF_RETENTION_WEEKLY, const.DEFAULT_RETENTION_WEEKLY
+            ),
+            retention_monthly=self.config_entry.options.get(
+                const.CONF_RETENTION_MONTHLY, const.DEFAULT_RETENTION_MONTHLY
+            ),
+            retention_yearly=self.config_entry.options.get(
+                const.CONF_RETENTION_YEARLY, const.DEFAULT_RETENTION_YEARLY
+            ),
         )
 
         # --- Update kid_chore_stats after all per-chore updates ---
@@ -3591,6 +3603,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 "monthly": const.DATA_KID_POINT_DATA_PERIODS_MONTHLY,
                 "yearly": const.DATA_KID_POINT_DATA_PERIODS_YEARLY,
             },
+            retention_daily=self.config_entry.options.get(
+                const.CONF_RETENTION_DAILY, const.DEFAULT_RETENTION_DAILY
+            ),
+            retention_weekly=self.config_entry.options.get(
+                const.CONF_RETENTION_WEEKLY, const.DEFAULT_RETENTION_WEEKLY
+            ),
+            retention_monthly=self.config_entry.options.get(
+                const.CONF_RETENTION_MONTHLY, const.DEFAULT_RETENTION_MONTHLY
+            ),
+            retention_yearly=self.config_entry.options.get(
+                const.CONF_RETENTION_YEARLY, const.DEFAULT_RETENTION_YEARLY
+            ),
         )
         self._check_badges_for_kid(kid_id)
         self._check_achievements_for_kid(kid_id)
@@ -4820,6 +4844,18 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                     "monthly": const.DATA_KID_BADGES_EARNED_PERIODS_MONTHLY,
                     "yearly": const.DATA_KID_BADGES_EARNED_PERIODS_YEARLY,
                 },
+                retention_daily=self.config_entry.options.get(
+                    const.CONF_RETENTION_DAILY, const.DEFAULT_RETENTION_DAILY
+                ),
+                retention_weekly=self.config_entry.options.get(
+                    const.CONF_RETENTION_WEEKLY, const.DEFAULT_RETENTION_WEEKLY
+                ),
+                retention_monthly=self.config_entry.options.get(
+                    const.CONF_RETENTION_MONTHLY, const.DEFAULT_RETENTION_MONTHLY
+                ),
+                retention_yearly=self.config_entry.options.get(
+                    const.CONF_RETENTION_YEARLY, const.DEFAULT_RETENTION_YEARLY
+                ),
             )
 
         self._persist()

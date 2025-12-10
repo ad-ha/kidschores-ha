@@ -2390,11 +2390,29 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             self._entry_options[const.CONF_CALENDAR_SHOW_PERIOD] = user_input.get(
                 const.CONF_CALENDAR_SHOW_PERIOD
             )
+            # Update retention periods
+            self._entry_options[const.CONF_RETENTION_DAILY] = user_input.get(
+                const.CONF_RETENTION_DAILY
+            )
+            self._entry_options[const.CONF_RETENTION_WEEKLY] = user_input.get(
+                const.CONF_RETENTION_WEEKLY
+            )
+            self._entry_options[const.CONF_RETENTION_MONTHLY] = user_input.get(
+                const.CONF_RETENTION_MONTHLY
+            )
+            self._entry_options[const.CONF_RETENTION_YEARLY] = user_input.get(
+                const.CONF_RETENTION_YEARLY
+            )
             const.LOGGER.debug(
-                "DEBUG: General Options Updated: Points Adjust Values=%s, Update Interval=%s, Calendar Period to Show=%s",
+                "DEBUG: General Options Updated: Points Adjust Values=%s, Update Interval=%s, Calendar Period to Show=%s, "
+                "Retention Daily=%s, Retention Weekly=%s, Retention Monthly=%s, Retention Yearly=%s",
                 self._entry_options.get(const.CONF_POINTS_ADJUST_VALUES),
                 self._entry_options.get(const.CONF_UPDATE_INTERVAL),
                 self._entry_options.get(const.CONF_CALENDAR_SHOW_PERIOD),
+                self._entry_options.get(const.CONF_RETENTION_DAILY),
+                self._entry_options.get(const.CONF_RETENTION_WEEKLY),
+                self._entry_options.get(const.CONF_RETENTION_MONTHLY),
+                self._entry_options.get(const.CONF_RETENTION_YEARLY),
             )
             await self._update_and_reload()
             return await self.async_step_init()

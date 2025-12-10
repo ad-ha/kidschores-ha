@@ -966,7 +966,7 @@
         "points_awarded": {
           "name": "Puntos Otorgados",
           "description": "Puntos a otorgar (opcional; por defecto se usan los puntos de la tarea).",
-          "example": 3
+          "example": "3"
         }
       }
     },

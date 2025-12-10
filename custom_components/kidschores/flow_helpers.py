@@ -1853,6 +1853,18 @@ def build_general_options_schema(default: Optional[dict] = None) -> vol.Schema:
     default_calendar_period = default.get(
         const.CONF_CALENDAR_SHOW_PERIOD, const.DEFAULT_CALENDAR_SHOW_PERIOD
     )
+    default_retention_daily = default.get(
+        const.CONF_RETENTION_DAILY, const.DEFAULT_RETENTION_DAILY
+    )
+    default_retention_weekly = default.get(
+        const.CONF_RETENTION_WEEKLY, const.DEFAULT_RETENTION_WEEKLY
+    )
+    default_retention_monthly = default.get(
+        const.CONF_RETENTION_MONTHLY, const.DEFAULT_RETENTION_MONTHLY
+    )
+    default_retention_yearly = default.get(
+        const.CONF_RETENTION_YEARLY, const.DEFAULT_RETENTION_YEARLY
+    )
 
     return vol.Schema(
         {
@@ -1878,6 +1890,46 @@ def build_general_options_schema(default: Optional[dict] = None) -> vol.Schema:
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
                     min=1,
+                    step=1,
+                )
+            ),
+            vol.Required(
+                const.CONF_RETENTION_DAILY, default=default_retention_daily
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=1,
+                    max=90,
+                    step=1,
+                )
+            ),
+            vol.Required(
+                const.CONF_RETENTION_WEEKLY, default=default_retention_weekly
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=1,
+                    max=52,
+                    step=1,
+                )
+            ),
+            vol.Required(
+                const.CONF_RETENTION_MONTHLY, default=default_retention_monthly
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=1,
+                    max=24,
+                    step=1,
+                )
+            ),
+            vol.Required(
+                const.CONF_RETENTION_YEARLY, default=default_retention_yearly
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=1,
+                    max=10,
                     step=1,
                 )
             ),

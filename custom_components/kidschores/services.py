@@ -229,9 +229,7 @@ def async_setup_services(hass: HomeAssistant):
             hass, user_id, const.SERVICE_APPROVE_CHORE
         ):
             const.LOGGER.warning("WARNING: Approve Chore: User not authorized")
-            raise HomeAssistantError(
-                "You are not authorized to approve chores for this kid."
-            )
+            raise HomeAssistantError(const.ERROR_NOT_AUTHORIZED_APPROVE_CHORES)
 
         # Approve chore and assign points
         try:
@@ -300,9 +298,7 @@ def async_setup_services(hass: HomeAssistant):
             hass, user_id, const.SERVICE_DISAPPROVE_CHORE
         ):
             const.LOGGER.warning("WARNING: Disapprove Chore: User not authorized")
-            raise HomeAssistantError(
-                "You are not authorized to disapprove chores for this kid."
-            )
+            raise HomeAssistantError(const.ERROR_NOT_AUTHORIZED_DISAPPROVE_CHORES)
 
         # Disapprove the chore
         coordinator.disapprove_chore(
@@ -349,9 +345,7 @@ def async_setup_services(hass: HomeAssistant):
         user_id = call.context.user_id
         if user_id and not await kh.is_user_authorized_for_kid(hass, user_id, kid_id):
             const.LOGGER.warning("WARNING: Redeem Reward: User not authorized")
-            raise HomeAssistantError(
-                "You are not authorized to redeem rewards for this kid."
-            )
+            raise HomeAssistantError(const.ERROR_NOT_AUTHORIZED_REDEEM_REWARDS)
 
         # Check if kid has enough points
         kid_info = coordinator.kids_data.get(kid_id)
@@ -435,9 +429,7 @@ def async_setup_services(hass: HomeAssistant):
             hass, user_id, const.SERVICE_APPROVE_REWARD
         ):
             const.LOGGER.warning("WARNING: Approve Reward: User not authorized")
-            raise HomeAssistantError(
-                "You are not authorized to approve rewards for this kid."
-            )
+            raise HomeAssistantError(const.ERROR_NOT_AUTHORIZED_APPROVE_REWARDS)
 
         # Approve reward redemption and deduct points
         try:
@@ -502,9 +494,7 @@ def async_setup_services(hass: HomeAssistant):
             hass, user_id, const.SERVICE_DISAPPROVE_REWARD
         ):
             const.LOGGER.warning("WARNING: Disapprove Reward: User not authorized")
-            raise HomeAssistantError(
-                "You are not authorized to disapprove rewards for this kid."
-            )
+            raise HomeAssistantError(const.ERROR_NOT_AUTHORIZED_DISAPPROVE_REWARDS)
 
         # Disapprove the reward
         coordinator.disapprove_reward(
@@ -553,9 +543,7 @@ def async_setup_services(hass: HomeAssistant):
             hass, user_id, const.SERVICE_APPLY_PENALTY
         ):
             const.LOGGER.warning("WARNING: Apply Penalty: User not authorized")
-            raise HomeAssistantError(
-                "You are not authorized to apply penalties for this kid."
-            )
+            raise HomeAssistantError(const.ERROR_NOT_AUTHORIZED_APPLY_PENALTIES)
 
         # Apply penalty
         try:
@@ -624,7 +612,7 @@ def async_setup_services(hass: HomeAssistant):
             hass, user_id, const.SERVICE_RESET_PENALTIES
         ):
             const.LOGGER.warning("WARNING: Reset Penalties: User not authorized.")
-            raise HomeAssistantError("You are not authorized to reset penalties.")
+            raise HomeAssistantError(const.ERROR_NOT_AUTHORIZED_RESET_PENALTIES)
 
         # Log action based on parameters provided
         if kid_id is None and penalty_id is None:
@@ -681,7 +669,7 @@ def async_setup_services(hass: HomeAssistant):
             hass, user_id, const.SERVICE_RESET_BONUSES
         ):
             const.LOGGER.warning("WARNING: Reset Bonuses: User not authorized.")
-            raise HomeAssistantError("You are not authorized to reset bonuses.")
+            raise HomeAssistantError(const.ERROR_NOT_AUTHORIZED_RESET_BONUSES)
 
         # Log action based on parameters provided
         if kid_id is None and bonus_id is None:
@@ -736,7 +724,7 @@ def async_setup_services(hass: HomeAssistant):
             hass, user_id, const.SERVICE_RESET_REWARDS
         ):
             const.LOGGER.warning("WARNING: Reset Rewards: User not authorized.")
-            raise HomeAssistantError("You are not authorized to reset rewards.")
+            raise HomeAssistantError(const.ERROR_NOT_AUTHORIZED_RESET_REWARDS)
 
         # Log action based on parameters provided
         if kid_id is None and reward_id is None:
@@ -776,7 +764,7 @@ def async_setup_services(hass: HomeAssistant):
             hass, user_id, const.SERVICE_REMOVE_AWARDED_BADGES
         ):
             const.LOGGER.warning("WARNING: Remove Awarded Badges: User not authorized.")
-            raise HomeAssistantError("You are not authorized to remove awarded badges.")
+            raise HomeAssistantError(const.ERROR_NOT_AUTHORIZED_REMOVE_BADGES)
 
         # Log action based on parameters provided
         if kid_name is None and badge_name is None:
@@ -827,9 +815,7 @@ def async_setup_services(hass: HomeAssistant):
             hass, user_id, const.SERVICE_APPLY_BONUS
         ):
             const.LOGGER.warning("WARNING: Apply Bonus: User not authorized")
-            raise HomeAssistantError(
-                "You are not authorized to apply bonuses for this kid."
-            )
+            raise HomeAssistantError(const.ERROR_NOT_AUTHORIZED_APPLY_BONUSES)
 
         # Apply bonus
         try:
