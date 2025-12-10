@@ -28,6 +28,7 @@ Available Sensors:
 22. ChallengeProgressSensor
 23. KidHighestStreakSensor
 24. BonusAppliesSensor
+25. DashboardHelperSensor
 """
 
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
@@ -125,15 +126,6 @@ async def async_setup_entry(
             )
         )
 
-        # Chore Claims and Approvals
-        for chore_id, chore_info in coordinator.chores_data.items():
-            if kid_id not in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
-                continue
-            chore_name = chore_info.get(
-                const.DATA_CHORE_NAME,
-                f"{const.TRANS_KEY_LABEL_CHORE} {chore_id}",
-            )
-
         # Penalty Applies
         for penalty_id, penalty_info in coordinator.penalties_data.items():
             penalty_name = penalty_info.get(
@@ -211,6 +203,11 @@ async def async_setup_entry(
 
         # Highest Streak Sensor per Kid
         entities.append(KidHighestStreakSensor(coordinator, entry, kid_id, kid_name))
+
+        # Dashboard helper sensor: aggregates key kid data (chores, rewards, etc.)
+        entities.append(
+            DashboardHelperSensor(coordinator, entry, kid_id, kid_name, points_label)
+        )
 
     # For each chore assigned to each kid, add a ChoreStatusSensor
     for chore_id, chore_info in coordinator.chores_data.items():
@@ -1599,6 +1596,7 @@ class PenaltyAppliesSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, entry, kid_id, kid_name, penalty_id, penalty_name):
         """Initialize the sensor."""
         super().__init__(coordinator)
+        self._entry = entry
         self._kid_id = kid_id
         self._kid_name = kid_name
         self._penalty_id = penalty_id
@@ -1628,6 +1626,18 @@ class PenaltyAppliesSensor(CoordinatorEntity, SensorEntity):
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
+        # Get the PenaltyButton entity_id
+        penalty_button_eid = None
+        try:
+            entity_registry = async_get(self.hass)
+            unique_id = f"{self._entry.entry_id}_{const.BUTTON_PENALTY_PREFIX}{self._kid_id}_{self._penalty_id}"
+            for entity in entity_registry.entities.values():
+                if entity.unique_id == unique_id:
+                    penalty_button_eid = entity.entity_id
+                    break
+        except Exception:
+            pass
+
         return {
             const.ATTR_KID_NAME: self._kid_name,
             const.ATTR_PENALTY_NAME: self._penalty_name,
@@ -1638,6 +1648,7 @@ class PenaltyAppliesSensor(CoordinatorEntity, SensorEntity):
                 const.DATA_PENALTY_POINTS, const.DEFAULT_PENALTY_POINTS
             ),
             const.ATTR_LABELS: friendly_labels,
+            const.ATTR_PENALTY_BUTTON_EID: penalty_button_eid,
         }
 
     @property
@@ -2531,6 +2542,7 @@ class BonusAppliesSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, entry, kid_id, kid_name, bonus_id, bonus_name):
         """Initialize the sensor."""
         super().__init__(coordinator)
+        self._entry = entry
         self._kid_id = kid_id
         self._kid_name = kid_name
         self._bonus_id = bonus_id
@@ -2560,6 +2572,18 @@ class BonusAppliesSensor(CoordinatorEntity, SensorEntity):
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
+        # Get the BonusButton entity_id
+        bonus_button_eid = None
+        try:
+            entity_registry = async_get(self.hass)
+            unique_id = f"{self._entry.entry_id}_{const.BUTTON_BONUS_PREFIX}{self._kid_id}_{self._bonus_id}"
+            for entity in entity_registry.entities.values():
+                if entity.unique_id == unique_id:
+                    bonus_button_eid = entity.entity_id
+                    break
+        except Exception:
+            pass
+
         return {
             const.ATTR_KID_NAME: self._kid_name,
             const.ATTR_BONUS_NAME: self._bonus_name,
@@ -2570,6 +2594,7 @@ class BonusAppliesSensor(CoordinatorEntity, SensorEntity):
                 const.DATA_BONUS_POINTS, const.DEFAULT_BONUS_POINTS
             ),
             const.ATTR_LABELS: friendly_labels,
+            const.ATTR_BONUS_BUTTON_EID: bonus_button_eid,
         }
 
     @property
@@ -2577,3 +2602,330 @@ class BonusAppliesSensor(CoordinatorEntity, SensorEntity):
         """Return the bonus's custom icon if set, else fallback."""
         bonus_info = self.coordinator.bonuses_data.get(self._bonus_id, {})
         return bonus_info.get(const.DATA_BONUS_ICON, const.DEFAULT_BONUS_ICON)
+
+
+# ------------------------------------------------------------------------------------------
+class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
+    """Aggregated dashboard helper sensor for a kid.
+
+    Provides a consolidated view of all kid-related entities including chores,
+    rewards, badges, bonuses, penalties, achievements, challenges, and point buttons.
+    """
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "dashboard_helper_sensor"
+
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+        points_label: str,
+    ):
+        super().__init__(coordinator)
+        self._entry = entry
+        self._kid_id = kid_id
+        self._kid_name = kid_name
+        self._points_label = points_label
+        self._attr_unique_id = f"{entry.entry_id}_{kid_id}_ui_dashboard_helper"
+        self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}_ui_dashboard_helper"
+        self._attr_translation_placeholders = {
+            const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name
+        }
+
+    @property
+    def native_value(self):
+        """Return an overall summary string. Primary consumers should use attributes."""
+        # Provide a short human-readable summary
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        # Count chores by status using existing chore data
+        chores = []
+        for chore_id, chore_info in self.coordinator.chores_data.items():
+            if self._kid_id not in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
+                continue
+            chore_name = chore_info.get(
+                const.DATA_CHORE_NAME, f"{const.TRANS_KEY_LABEL_CHORE} {chore_id}"
+            )
+            # Determine kid-specific status
+            status = const.CHORE_STATE_PENDING
+            if chore_id in kid_info.get(const.DATA_KID_APPROVED_CHORES, []):
+                status = const.CHORE_STATE_APPROVED
+            elif chore_id in kid_info.get(const.DATA_KID_CLAIMED_CHORES, []):
+                status = const.CHORE_STATE_CLAIMED
+            elif chore_id in kid_info.get(const.DATA_KID_OVERDUE_CHORES, []):
+                status = const.CHORE_STATE_OVERDUE
+            chores.append({"id": chore_id, "name": chore_name, "status": status})
+
+        # Rewards: list name and cost
+        rewards = []
+        for reward_id, reward_info in self.coordinator.rewards_data.items():
+            reward_name = reward_info.get(
+                const.DATA_REWARD_NAME, f"{const.TRANS_KEY_LABEL_REWARD} {reward_id}"
+            )
+            cost = reward_info.get(const.DATA_REWARD_COST, const.DEFAULT_REWARD_COST)
+            rewards.append({"id": reward_id, "name": reward_name, "cost": cost})
+
+        # Count badges, bonuses, penalties for this kid
+        # Badge applies if: no kids assigned (applies to all) OR kid is in assigned list
+        badges_count = len(
+            [
+                b
+                for b in self.coordinator.badges_data.values()
+                if not b.get(const.DATA_BADGE_ASSIGNED_TO, [])
+                or self._kid_id in b.get(const.DATA_BADGE_ASSIGNED_TO, [])
+            ]
+        )
+        bonuses_count = len(self.coordinator.bonuses_data)
+        penalties_count = len(self.coordinator.penalties_data)
+
+        # Count achievements and challenges assigned to this kid
+        achievements_count = len(
+            [
+                a
+                for a in self.coordinator.achievements_data.values()
+                if self._kid_id in a.get(const.DATA_ACHIEVEMENT_ASSIGNED_KIDS, [])
+            ]
+        )
+        challenges_count = len(
+            [
+                c
+                for c in self.coordinator.challenges_data.values()
+                if self._kid_id in c.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, [])
+            ]
+        )
+
+        # Minimal native value summarizing counts
+        return f"chores:{len(chores)} rewards:{len(rewards)} badges:{badges_count} bonuses:{bonuses_count} penalties:{penalties_count} achievements:{achievements_count} challenges:{challenges_count}"
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return detailed aggregated structure as attributes.
+
+        Format:
+        {
+          "chores": [
+            {"eid": "sensor.kid_a_chore_1", "name": "Take out Trash", "status": "overdue"},
+            ...
+          ],
+          "rewards": [
+            {"eid": "sensor.kid_a_reward_1", "name": "Ice Cream", "cost": "10 Points"},
+            ...
+          ],
+        }
+        """
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        chores_attr = []
+
+        try:
+            entity_registry = async_get(self.hass)
+        except Exception:
+            entity_registry = None
+
+        for chore_id, chore_info in self.coordinator.chores_data.items():
+            if self._kid_id not in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
+                continue
+            chore_name = chore_info.get(
+                const.DATA_CHORE_NAME, f"{const.TRANS_KEY_LABEL_CHORE} {chore_id}"
+            )
+            if chore_id in kid_info.get(const.DATA_KID_APPROVED_CHORES, []):
+                status = const.CHORE_STATE_APPROVED
+            elif chore_id in kid_info.get(const.DATA_KID_CLAIMED_CHORES, []):
+                status = const.CHORE_STATE_CLAIMED
+            elif chore_id in kid_info.get(const.DATA_KID_OVERDUE_CHORES, []):
+                status = const.CHORE_STATE_OVERDUE
+            else:
+                status = const.CHORE_STATE_PENDING
+
+            # Get the ChoreStatusSensor entity_id
+            chore_eid = None
+            if entity_registry:
+                unique_id = f"{self._entry.entry_id}_{self._kid_id}_{chore_id}{const.SENSOR_KC_UID_SUFFIX_CHORE_STATUS_SENSOR}"
+                for entity in entity_registry.entities.values():
+                    if entity.unique_id == unique_id:
+                        chore_eid = entity.entity_id
+                        break
+
+            chores_attr.append({"eid": chore_eid, "name": chore_name, "status": status})
+
+        rewards_attr = []
+        for reward_id, reward_info in self.coordinator.rewards_data.items():
+            reward_name = reward_info.get(
+                const.DATA_REWARD_NAME, f"{const.TRANS_KEY_LABEL_REWARD} {reward_id}"
+            )
+
+            # Get the RewardStatusSensor entity_id
+            reward_eid = None
+            if entity_registry:
+                unique_id = f"{self._entry.entry_id}_{self._kid_id}_{reward_id}{const.SENSOR_KC_UID_SUFFIX_REWARD_STATUS_SENSOR}"
+                for entity in entity_registry.entities.values():
+                    if entity.unique_id == unique_id:
+                        reward_eid = entity.entity_id
+                        break
+
+            rewards_attr.append(
+                {
+                    "eid": reward_eid,
+                    "name": reward_name,
+                }
+            )
+
+        # Badges assigned to this kid
+        # Badge applies if: no kids assigned (applies to all) OR kid is in assigned list
+        # Exclude cumulative badges as they are a special case
+        badges_attr = []
+        for badge_id, badge_info in self.coordinator.badges_data.items():
+            assigned_to = badge_info.get(const.DATA_BADGE_ASSIGNED_TO, [])
+            if assigned_to and self._kid_id not in assigned_to:
+                continue
+            badge_type = badge_info.get(const.DATA_BADGE_TYPE, const.CONF_EMPTY)
+            # Skip cumulative badges (special case)
+            if badge_type == const.BADGE_TYPE_CUMULATIVE:
+                continue
+            badge_name = badge_info.get(
+                const.DATA_BADGE_NAME, f"{const.TRANS_KEY_LABEL_BADGE} {badge_id}"
+            )
+            # Get BadgeProgressSensor entity_id
+            badge_eid = None
+            if entity_registry:
+                unique_id = f"{self._entry.entry_id}_{self._kid_id}_{badge_id}{const.SENSOR_KC_UID_SUFFIX_BADGE_PROGRESS_SENSOR}"
+                for entity in entity_registry.entities.values():
+                    if entity.unique_id == unique_id:
+                        badge_eid = entity.entity_id
+                        break
+            badges_attr.append(
+                {
+                    "eid": badge_eid,
+                    "name": badge_name,
+                    const.ATTR_BADGE_TYPE: badge_type,
+                }
+            )
+
+        # Bonuses for this kid
+        bonuses_attr = []
+        for bonus_id, bonus_info in self.coordinator.bonuses_data.items():
+            bonus_name = bonus_info.get(
+                const.DATA_BONUS_NAME, f"{const.TRANS_KEY_LABEL_BONUS} {bonus_id}"
+            )
+            # Get BonusAppliesSensor entity_id
+            bonus_eid = None
+            if entity_registry:
+                unique_id = f"{self._entry.entry_id}_{self._kid_id}_{bonus_id}{const.SENSOR_KC_UID_SUFFIX_BONUS_APPLIES_SENSOR}"
+                for entity in entity_registry.entities.values():
+                    if entity.unique_id == unique_id:
+                        bonus_eid = entity.entity_id
+                        break
+            bonuses_attr.append({"eid": bonus_eid, "name": bonus_name})
+
+        # Penalties for this kid
+        penalties_attr = []
+        for penalty_id, penalty_info in self.coordinator.penalties_data.items():
+            penalty_name = penalty_info.get(
+                const.DATA_PENALTY_NAME, f"{const.TRANS_KEY_LABEL_PENALTY} {penalty_id}"
+            )
+            # Get PenaltyAppliesSensor entity_id
+            penalty_eid = None
+            if entity_registry:
+                unique_id = f"{self._entry.entry_id}_{self._kid_id}_{penalty_id}{const.SENSOR_KC_UID_SUFFIX_PENALTY_APPLIES_SENSOR}"
+                for entity in entity_registry.entities.values():
+                    if entity.unique_id == unique_id:
+                        penalty_eid = entity.entity_id
+                        break
+            penalties_attr.append({"eid": penalty_eid, "name": penalty_name})
+
+        # Achievements assigned to this kid
+        achievements_attr = []
+        for (
+            achievement_id,
+            achievement_info,
+        ) in self.coordinator.achievements_data.items():
+            if self._kid_id not in achievement_info.get(
+                const.DATA_ACHIEVEMENT_ASSIGNED_KIDS, []
+            ):
+                continue
+            achievement_name = achievement_info.get(
+                const.DATA_ACHIEVEMENT_NAME,
+                f"{const.TRANS_KEY_LABEL_ACHIEVEMENT} {achievement_id}",
+            )
+            # Get AchievementProgressSensor entity_id
+            achievement_eid = None
+            if entity_registry:
+                unique_id = f"{self._entry.entry_id}_{self._kid_id}_{achievement_id}{const.SENSOR_KC_UID_SUFFIX_ACHIEVEMENT_PROGRESS_SENSOR}"
+                for entity in entity_registry.entities.values():
+                    if entity.unique_id == unique_id:
+                        achievement_eid = entity.entity_id
+                        break
+            achievements_attr.append({"eid": achievement_eid, "name": achievement_name})
+
+        # Challenges assigned to this kid
+        challenges_attr = []
+        for challenge_id, challenge_info in self.coordinator.challenges_data.items():
+            if self._kid_id not in challenge_info.get(
+                const.DATA_CHALLENGE_ASSIGNED_KIDS, []
+            ):
+                continue
+            challenge_name = challenge_info.get(
+                const.DATA_CHALLENGE_NAME,
+                f"{const.TRANS_KEY_LABEL_CHALLENGE} {challenge_id}",
+            )
+            # Get ChallengeProgressSensor entity_id
+            challenge_eid = None
+            if entity_registry:
+                unique_id = f"{self._entry.entry_id}_{self._kid_id}_{challenge_id}{const.SENSOR_KC_UID_SUFFIX_CHALLENGE_PROGRESS_SENSOR}"
+                for entity in entity_registry.entities.values():
+                    if entity.unique_id == unique_id:
+                        challenge_eid = entity.entity_id
+                        break
+            challenges_attr.append({"eid": challenge_eid, "name": challenge_name})
+
+        # Point adjustment buttons for this kid
+        points_buttons_attr = []
+        if entity_registry:
+            # Find all point adjustment buttons for this kid
+            # They follow pattern: {entry_id}_{kid_id}_adjust_points_{delta}
+            temp_buttons = []
+            for entity in entity_registry.entities.values():
+                if (
+                    entity.unique_id.startswith(
+                        f"{self._entry.entry_id}_{self._kid_id}{const.BUTTON_KC_UID_MIDFIX_ADJUST_POINTS}"
+                    )
+                    and entity.domain == "button"
+                ):
+                    # Extract delta from unique_id
+                    delta_part = entity.unique_id.split(
+                        const.BUTTON_KC_UID_MIDFIX_ADJUST_POINTS
+                    )[1]
+                    try:
+                        delta_value = float(delta_part)
+                    except ValueError:
+                        delta_value = 0
+                    temp_buttons.append(
+                        {
+                            "eid": entity.entity_id,
+                            "name": f"Points {delta_part}",
+                            "delta": delta_value,
+                        }
+                    )
+            # Sort by delta value (negatives first, then positives, all ascending)
+            temp_buttons.sort(key=lambda x: x["delta"])
+            # Remove the delta key used for sorting
+            points_buttons_attr = [
+                {"eid": btn["eid"], "name": btn["name"]} for btn in temp_buttons
+            ]
+
+        return {
+            "chores": chores_attr,
+            "rewards": rewards_attr,
+            "badges": badges_attr,
+            "bonuses": bonuses_attr,
+            "penalties": penalties_attr,
+            "achievements": achievements_attr,
+            "challenges": challenges_attr,
+            "points_buttons": points_buttons_attr,
+            const.ATTR_KID_NAME: self._kid_name,
+        }
+
+    @property
+    def icon(self) -> str:
+        """Return a dashboard icon."""
+        return "mdi:view-dashboard"
