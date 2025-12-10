@@ -60,34 +60,50 @@ class KidsChoresCalendarEntity(CalendarEntity):
         self.entity_id = f"{const.CALENDAR_KC_PREFIX}{kid_name}"
 
     async def async_get_events(
-        self, hass: HomeAssistant, start: datetime.datetime, end: datetime.datetime
+        self, hass: HomeAssistant, start_date: datetime.datetime, end_date: datetime.datetime
     ) -> list[CalendarEvent]:
         """
         Return CalendarEvent objects for:
          - chores assigned to this kid
          - challenges assigned to this kid
-        overlapping [start, end].
+        overlapping [start_date, end_date].
         """
         local_tz = dt_util.get_time_zone(self.hass.config.time_zone)
-        if start.tzinfo is None:
-            start = start.replace(tzinfo=local_tz)
-        if end.tzinfo is None:
-            end = end.replace(tzinfo=local_tz)
+        if start_date.tzinfo is None:
+            start_date = start_date.replace(tzinfo=local_tz)
+        if end_date.tzinfo is None:
+            end_date = end_date.replace(tzinfo=local_tz)
 
         events: list[CalendarEvent] = []
 
         # 1) Generate chore events
         for chore in self.coordinator.chores_data.values():
             if self._kid_id in chore.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
-                events.extend(self._generate_events_for_chore(chore, start, end))
+                events.extend(self._generate_events_for_chore(chore, start_date, end_date))
 
         # 2) Generate challenge events
         for challenge in self.coordinator.challenges_data.values():
             if self._kid_id in challenge.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, []):
-                evs = self._generate_events_for_challenge(challenge, start, end)
+                evs = self._generate_events_for_challenge(challenge, start_date, end_date)
                 events.extend(evs)
 
         return events
+
+    async def async_create_event(self, **kwargs) -> None:
+        """Create a new event - not supported for read-only calendar."""
+        raise NotImplementedError("Creating events is not supported for this calendar")
+
+    async def async_delete_event(
+        self, uid: str, recurrence_id: str | None = None, recurrence_range: str | None = None
+    ) -> None:
+        """Delete an event - not supported for read-only calendar."""
+        raise NotImplementedError("Deleting events is not supported for this calendar")
+
+    async def async_update_event(
+        self, uid: str, event: dict, recurrence_id: str | None = None, recurrence_range: str | None = None
+    ) -> None:
+        """Update an event - not supported for read-only calendar."""
+        raise NotImplementedError("Updating events is not supported for this calendar")
 
     def _generate_events_for_chore(
         self,
