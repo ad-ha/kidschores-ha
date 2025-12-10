@@ -1219,6 +1219,7 @@ class PendingChoreApprovalsSensor(CoordinatorEntity, SensorEntity):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
+        self._entry = entry
         self._attr_unique_id = f"{entry.entry_id}{const.SENSOR_KC_UID_SUFFIX_PENDING_CHORE_APPROVALS_SENSOR}"
         self._attr_icon = const.DEFAULT_PENDING_CHORE_APPROVALS_SENSOR_ICON
         self._attr_native_unit_of_measurement = const.DEFAULT_PENDING_CHORES_UNIT
@@ -1236,17 +1237,43 @@ class PendingChoreApprovalsSensor(CoordinatorEntity, SensorEntity):
         approvals = self.coordinator._data.get(const.DATA_PENDING_CHORE_APPROVALS, [])
         grouped_by_kid = {}
 
+        try:
+            entity_registry = async_get(self.hass)
+        except Exception:
+            entity_registry = None
+
         for approval in approvals:
+            kid_id = approval[const.DATA_KID_ID]
+            chore_id = approval[const.DATA_CHORE_ID]
             kid_name = (
-                kh.get_kid_name_by_id(self.coordinator, approval[const.DATA_KID_ID])
-                or const.UNKNOWN_KID
+                kh.get_kid_name_by_id(self.coordinator, kid_id) or const.UNKNOWN_KID
             )
-            chore_info = self.coordinator.chores_data.get(
-                approval[const.DATA_CHORE_ID], {}
-            )
+            chore_info = self.coordinator.chores_data.get(chore_id, {})
             chore_name = chore_info.get(const.DATA_CHORE_NAME, const.UNKNOWN_CHORE)
 
             timestamp = approval[const.DATA_CHORE_TIMESTAMP]
+
+            # Get approve and disapprove button entity IDs
+            approve_button_eid = None
+            disapprove_button_eid = None
+            if entity_registry:
+                try:
+                    for suffix, attr_name in [
+                        (const.BUTTON_KC_UID_SUFFIX_APPROVE, "approve"),
+                        (const.BUTTON_KC_UID_SUFFIX_DISAPPROVE, "disapprove"),
+                    ]:
+                        unique_id = (
+                            f"{self._entry.entry_id}_{kid_id}_{chore_id}{suffix}"
+                        )
+                        for entity in entity_registry.entities.values():
+                            if entity.unique_id == unique_id:
+                                if attr_name == "approve":
+                                    approve_button_eid = entity.entity_id
+                                else:
+                                    disapprove_button_eid = entity.entity_id
+                                break
+                except Exception:
+                    pass
 
             if kid_name not in grouped_by_kid:
                 grouped_by_kid[kid_name] = []
@@ -1255,6 +1282,8 @@ class PendingChoreApprovalsSensor(CoordinatorEntity, SensorEntity):
                 {
                     const.ATTR_CHORE_NAME: chore_name,
                     const.ATTR_CLAIMED_ON: timestamp,
+                    const.ATTR_CHORE_APPROVE_BUTTON_ENTITY_ID: approve_button_eid,
+                    const.ATTR_CHORE_DISAPPROVE_BUTTON_ENTITY_ID: disapprove_button_eid,
                 }
             )
 
@@ -1272,6 +1301,7 @@ class PendingRewardApprovalsSensor(CoordinatorEntity, SensorEntity):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
+        self._entry = entry
         self._attr_unique_id = f"{entry.entry_id}{const.SENSOR_KC_UID_SUFFIX_PENDING_REWARD_APPROVALS_SENSOR}"
         self._attr_icon = const.DEFAULT_PENDING_REWARD_APPROVALS_SENSOR_ICON
         self._attr_native_unit_of_measurement = const.DEFAULT_PENDING_REWARDS_UNIT
@@ -1289,17 +1319,43 @@ class PendingRewardApprovalsSensor(CoordinatorEntity, SensorEntity):
         approvals = self.coordinator._data.get(const.DATA_PENDING_REWARD_APPROVALS, [])
         grouped_by_kid = {}
 
+        try:
+            entity_registry = async_get(self.hass)
+        except Exception:
+            entity_registry = None
+
         for approval in approvals:
+            kid_id = approval[const.DATA_KID_ID]
+            reward_id = approval[const.DATA_REWARD_ID]
             kid_name = (
-                kh.get_kid_name_by_id(self.coordinator, approval[const.DATA_KID_ID])
-                or const.UNKNOWN_KID
+                kh.get_kid_name_by_id(self.coordinator, kid_id) or const.UNKNOWN_KID
             )
-            reward_info = self.coordinator.rewards_data.get(
-                approval[const.DATA_REWARD_ID], {}
-            )
+            reward_info = self.coordinator.rewards_data.get(reward_id, {})
             reward_name = reward_info.get(const.DATA_REWARD_NAME, const.UNKNOWN_REWARD)
 
             timestamp = approval[const.DATA_REWARD_TIMESTAMP]
+
+            # Get approve and disapprove button entity IDs
+            approve_button_eid = None
+            disapprove_button_eid = None
+            if entity_registry:
+                try:
+                    for suffix, attr_name in [
+                        (const.BUTTON_KC_UID_SUFFIX_APPROVE_REWARD, "approve"),
+                        (const.BUTTON_KC_UID_SUFFIX_DISAPPROVE_REWARD, "disapprove"),
+                    ]:
+                        unique_id = (
+                            f"{self._entry.entry_id}_{kid_id}_{reward_id}{suffix}"
+                        )
+                        for entity in entity_registry.entities.values():
+                            if entity.unique_id == unique_id:
+                                if attr_name == "approve":
+                                    approve_button_eid = entity.entity_id
+                                else:
+                                    disapprove_button_eid = entity.entity_id
+                                break
+                except Exception:
+                    pass
 
             if kid_name not in grouped_by_kid:
                 grouped_by_kid[kid_name] = []
@@ -1308,6 +1364,8 @@ class PendingRewardApprovalsSensor(CoordinatorEntity, SensorEntity):
                 {
                     const.ATTR_REWARD_NAME: reward_name,
                     const.ATTR_REDEEMED_ON: timestamp,
+                    const.ATTR_REWARD_APPROVE_BUTTON_ENTITY_ID: approve_button_eid,
+                    const.ATTR_REWARD_DISAPPROVE_BUTTON_ENTITY_ID: disapprove_button_eid,
                 }
             )
 
@@ -1468,6 +1526,39 @@ class RewardStatusSensor(CoordinatorEntity, SensorEntity):
             kh.get_friendly_label(self.hass, label) for label in stored_labels
         ]
 
+        # Get claim, approve, and disapprove button entity IDs
+        claim_button_eid = None
+        approve_button_eid = None
+        disapprove_button_eid = None
+        try:
+            entity_registry = async_get(self.hass)
+            # Claim button uses BUTTON_REWARD_PREFIX instead of a UID suffix
+            claim_unique_id = f"{self._entry.entry_id}_{const.BUTTON_REWARD_PREFIX}{self._kid_id}_{self._reward_id}"
+            for entity in entity_registry.entities.values():
+                if entity.unique_id == claim_unique_id:
+                    claim_button_eid = entity.entity_id
+                    break
+
+            # Approve and disapprove buttons use UID suffixes
+            for suffix, button_type in [
+                (const.BUTTON_KC_UID_SUFFIX_APPROVE_REWARD, "approve"),
+                (const.BUTTON_KC_UID_SUFFIX_DISAPPROVE_REWARD, "disapprove"),
+            ]:
+                unique_id = (
+                    f"{self._entry.entry_id}_{self._kid_id}_{self._reward_id}{suffix}"
+                )
+                entity_id = None
+                for entity in entity_registry.entities.values():
+                    if entity.unique_id == unique_id:
+                        entity_id = entity.entity_id
+                        break
+                if button_type == "approve":
+                    approve_button_eid = entity_id
+                elif button_type == "disapprove":
+                    disapprove_button_eid = entity_id
+        except Exception:
+            pass
+
         attributes = {
             const.ATTR_KID_NAME: self._kid_name,
             const.ATTR_REWARD_NAME: self._reward_name,
@@ -1484,6 +1575,9 @@ class RewardStatusSensor(CoordinatorEntity, SensorEntity):
                 const.DATA_KID_REWARD_APPROVALS, {}
             ).get(self._reward_id, const.DEFAULT_ZERO),
             const.ATTR_LABELS: friendly_labels,
+            const.ATTR_REWARD_CLAIM_BUTTON_ENTITY_ID: claim_button_eid,
+            const.ATTR_REWARD_APPROVE_BUTTON_ENTITY_ID: approve_button_eid,
+            const.ATTR_REWARD_DISAPPROVE_BUTTON_ENTITY_ID: disapprove_button_eid,
         }
 
         return attributes
