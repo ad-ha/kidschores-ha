@@ -159,14 +159,14 @@ def async_setup_services(hass: HomeAssistant):
         kid_id = kh.get_kid_id_by_name(coordinator, kid_name)
         if not kid_id:
             const.LOGGER.warning(
-                "WARNING: Claim Chore: " + const.ERROR_KID_NOT_FOUND_FMT, kid_name
+                "WARNING: Claim Chore: %s", const.ERROR_KID_NOT_FOUND_FMT % kid_name
             )
             raise HomeAssistantError(const.ERROR_KID_NOT_FOUND_FMT.format(kid_name))
 
         chore_id = kh.get_chore_id_by_name(coordinator, chore_name)
         if not chore_id:
             const.LOGGER.warning(
-                "WARNING: Claim Chore: " + const.ERROR_CHORE_NOT_FOUND_FMT, chore_name
+                "WARNING: Claim Chore: %s", const.ERROR_CHORE_NOT_FOUND_FMT % chore_name
             )
             raise HomeAssistantError(const.ERROR_CHORE_NOT_FOUND_FMT.format(chore_name))
 
@@ -226,7 +226,7 @@ def async_setup_services(hass: HomeAssistant):
 
         # Check if user is authorized
         if user_id and not await kh.is_user_authorized_for_global_action(
-            hass, user_id, kid_id
+            hass, user_id, const.SERVICE_APPROVE_CHORE
         ):
             const.LOGGER.warning("WARNING: Approve Chore: User not authorized")
             raise HomeAssistantError(
@@ -261,7 +261,7 @@ def async_setup_services(hass: HomeAssistant):
             )
             raise HomeAssistantError(
                 f"Failed to approve chore '{chore_name}' for kid '{kid_name}'."
-            )
+            ) from e
 
     async def handle_disapprove_chore(call: ServiceCall):
         """Handle disapproving a chore."""
@@ -297,7 +297,7 @@ def async_setup_services(hass: HomeAssistant):
         # Check if user is authorized
         user_id = call.context.user_id
         if user_id and not await kh.is_user_authorized_for_global_action(
-            hass, user_id, kid_id
+            hass, user_id, const.SERVICE_DISAPPROVE_CHORE
         ):
             const.LOGGER.warning("WARNING: Disapprove Chore: User not authorized")
             raise HomeAssistantError(
@@ -396,7 +396,7 @@ def async_setup_services(hass: HomeAssistant):
             )
             raise HomeAssistantError(
                 f"Failed to claim reward '{reward_name}' for kid '{kid_name}'."
-            )
+            ) from e
 
     async def handle_approve_reward(call: ServiceCall):
         """Handle approving a reward claimed by a kid."""
@@ -432,7 +432,7 @@ def async_setup_services(hass: HomeAssistant):
 
         # Check if user is authorized
         if user_id and not await kh.is_user_authorized_for_global_action(
-            hass, user_id, kid_id
+            hass, user_id, const.SERVICE_APPROVE_REWARD
         ):
             const.LOGGER.warning("WARNING: Approve Reward: User not authorized")
             raise HomeAssistantError(
@@ -463,7 +463,7 @@ def async_setup_services(hass: HomeAssistant):
             )
             raise HomeAssistantError(
                 f"Failed to approve reward '{reward_name}' for kid '{kid_name}'."
-            )
+            ) from e
 
     async def handle_disapprove_reward(call: ServiceCall):
         """Handle disapproving a reward."""
@@ -499,7 +499,7 @@ def async_setup_services(hass: HomeAssistant):
         # Check if user is authorized
         user_id = call.context.user_id
         if user_id and not await kh.is_user_authorized_for_global_action(
-            hass, user_id, kid_id
+            hass, user_id, const.SERVICE_DISAPPROVE_REWARD
         ):
             const.LOGGER.warning("WARNING: Disapprove Reward: User not authorized")
             raise HomeAssistantError(
@@ -550,7 +550,7 @@ def async_setup_services(hass: HomeAssistant):
         # Check if user is authorized
         user_id = call.context.user_id
         if user_id and not await kh.is_user_authorized_for_global_action(
-            hass, user_id, kid_id
+            hass, user_id, const.SERVICE_APPLY_PENALTY
         ):
             const.LOGGER.warning("WARNING: Apply Penalty: User not authorized")
             raise HomeAssistantError(
@@ -581,7 +581,7 @@ def async_setup_services(hass: HomeAssistant):
             )
             raise HomeAssistantError(
                 f"Failed to apply penalty '{penalty_name}' for kid '{kid_name}'."
-            )
+            ) from e
 
     async def handle_reset_penalties(call: ServiceCall):
         """Handle resetting penalties."""
@@ -621,7 +621,7 @@ def async_setup_services(hass: HomeAssistant):
         # Check if user is authorized
         user_id = call.context.user_id
         if user_id and not await kh.is_user_authorized_for_global_action(
-            hass, user_id, kid_id
+            hass, user_id, const.SERVICE_RESET_PENALTIES
         ):
             const.LOGGER.warning("WARNING: Reset Penalties: User not authorized.")
             raise HomeAssistantError("You are not authorized to reset penalties.")
@@ -678,7 +678,7 @@ def async_setup_services(hass: HomeAssistant):
         # Check if user is authorized
         user_id = call.context.user_id
         if user_id and not await kh.is_user_authorized_for_global_action(
-            hass, user_id, kid_id
+            hass, user_id, const.SERVICE_RESET_BONUSES
         ):
             const.LOGGER.warning("WARNING: Reset Bonuses: User not authorized.")
             raise HomeAssistantError("You are not authorized to reset bonuses.")
@@ -733,7 +733,7 @@ def async_setup_services(hass: HomeAssistant):
         # Check if user is authorized
         user_id = call.context.user_id
         if user_id and not await kh.is_user_authorized_for_global_action(
-            hass, user_id, kid_id
+            hass, user_id, const.SERVICE_RESET_REWARDS
         ):
             const.LOGGER.warning("WARNING: Reset Rewards: User not authorized.")
             raise HomeAssistantError("You are not authorized to reset rewards.")
@@ -773,7 +773,7 @@ def async_setup_services(hass: HomeAssistant):
         # Check if user is authorized
         user_id = call.context.user_id
         if user_id and not await kh.is_user_authorized_for_global_action(
-            hass, user_id, kid_name
+            hass, user_id, const.SERVICE_REMOVE_AWARDED_BADGES
         ):
             const.LOGGER.warning("WARNING: Remove Awarded Badges: User not authorized.")
             raise HomeAssistantError("You are not authorized to remove awarded badges.")
@@ -824,7 +824,7 @@ def async_setup_services(hass: HomeAssistant):
         # Check if user is authorized
         user_id = call.context.user_id
         if user_id and not await kh.is_user_authorized_for_global_action(
-            hass, user_id, kid_id
+            hass, user_id, const.SERVICE_APPLY_BONUS
         ):
             const.LOGGER.warning("WARNING: Apply Bonus: User not authorized")
             raise HomeAssistantError(
@@ -855,9 +855,9 @@ def async_setup_services(hass: HomeAssistant):
             )
             raise HomeAssistantError(
                 f"Failed to apply bonus '{bonus_name}' for kid '{kid_name}'."
-            )
+            ) from e
 
-    async def handle_reset_all_data(call: ServiceCall):
+    async def handle_reset_all_data(_call: ServiceCall):
         """Handle manually resetting ALL data in KidsChores."""
         entry_id = kh.get_first_kidschores_entry(hass)
         if not entry_id:
@@ -877,12 +877,12 @@ def async_setup_services(hass: HomeAssistant):
         # Re-init the coordinator with reload config entry
         await hass.config_entries.async_reload(entry_id)
 
-        coordinator.async_set_updated_data(coordinator._data)
+        coordinator.async_set_updated_data(coordinator.data)
         const.LOGGER.info(
             "INFO: Manually reset all KidsChores data. Integration is now cleared"
         )
 
-    async def handle_reset_all_chores(call: ServiceCall):
+    async def handle_reset_all_chores(_call: ServiceCall):
         """Handle manually resetting all chores to pending, clearing claims/approvals."""
 
         entry_id = kh.get_first_kidschores_entry(hass)
@@ -898,22 +898,22 @@ def async_setup_services(hass: HomeAssistant):
         coordinator: KidsChoresDataCoordinator = data[const.COORDINATOR]
 
         # Loop over all chores, reset them to pending
-        for chore_id, chore_info in coordinator.chores_data.items():
+        for chore_info in coordinator.chores_data.values():
             chore_info[const.DATA_CHORE_STATE] = const.CHORE_STATE_PENDING
 
         # Remove all chore approvals/claims for each kid
-        for kid_id, kid_info in coordinator.kids_data.items():
+        for kid_info in coordinator.kids_data.values():
             kid_info[const.DATA_KID_CLAIMED_CHORES] = []
             kid_info[const.DATA_KID_APPROVED_CHORES] = []
             kid_info[const.DATA_KID_OVERDUE_CHORES] = []
             kid_info[const.DATA_KID_OVERDUE_NOTIFICATIONS] = {}
 
         # Clear the pending approvals queue
-        coordinator._data[const.DATA_PENDING_CHORE_APPROVALS] = []
+        coordinator.data[const.DATA_PENDING_CHORE_APPROVALS] = []
 
         # Persist & notify
-        coordinator._persist()
-        coordinator.async_set_updated_data(coordinator._data)
+        await coordinator.storage_manager.async_save_data()  # type: ignore[attr-defined]
+        coordinator.async_set_updated_data(coordinator.data)
         const.LOGGER.info(
             "INFO: Manually reset all chores to pending, removed claims/approvals"
         )
@@ -965,7 +965,6 @@ def async_setup_services(hass: HomeAssistant):
         )
 
         await coordinator.async_request_refresh()
-        await coordinator._check_overdue_chores()
 
     async def handle_set_chore_due_date(call: ServiceCall):
         """Handle setting (or clearing) the due date of a chore."""
@@ -1004,7 +1003,7 @@ def async_setup_services(hass: HomeAssistant):
                     due_date_input,
                     err,
                 )
-                raise HomeAssistantError("Invalid due date provided.")
+                raise HomeAssistantError("Invalid due date provided.") from err
 
             # Update the chore’s due_date:
             coordinator.set_chore_due_date(chore_id, due_dt)

@@ -9,6 +9,7 @@ user wishes to select a chore/reward/penalty dynamically.
 from __future__ import annotations
 
 from typing import Optional
+
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -55,6 +56,16 @@ class KidsChoresSelectBase(CoordinatorEntity, SelectEntity):
         self._selected_option: Optional[str] = None
 
     @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return the coordinator with proper typing."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set the coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    @property
     def current_option(self) -> Optional[str]:
         """Return the currently selected option (chore/reward/penalty name)."""
         return self._selected_option
@@ -63,6 +74,12 @@ class KidsChoresSelectBase(CoordinatorEntity, SelectEntity):
         """When the user selects an option from the dropdown, store it."""
         self._selected_option = option
         self.async_write_ha_state()
+
+    def select_option(self, option: str) -> None:
+        """Select an option (synchronous wrapper for abstract method)."""
+        # This method is required by the SelectEntity abstract class
+        # but Home Assistant will call async_select_option instead
+        self._selected_option = option
 
 
 class ChoresSelect(KidsChoresSelectBase):

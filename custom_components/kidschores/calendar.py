@@ -1,9 +1,10 @@
 # File: calendar.py
 
 import datetime
+
+from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.util import dt as dt_util
 
 from . import const

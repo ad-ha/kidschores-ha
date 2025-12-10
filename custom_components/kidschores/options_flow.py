@@ -32,7 +32,7 @@ def _ensure_str(value):
 class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
     """Options Flow for adding/editing/deleting configuration elements."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry):
+    def __init__(self, _config_entry: config_entries.ConfigEntry):
         """Initialize the options flow."""
         self._entry_options = {}
         self._action = None
@@ -173,7 +173,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     )
                 }
             ),
-            description_placeholders={
+            description_placeholders={  # type: ignore[arg-type]
                 const.OPTIONS_FLOW_PLACEHOLDER_ENTITY_TYPE: self._entity_type
             },
         )
@@ -211,7 +211,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 return self.async_abort(reason=const.TRANS_KEY_CFOF_INVALID_ENTITY)
 
             # Store internal_id in context for later use
-            self.context[const.OPTIONS_FLOW_INPUT_INTERNAL_ID] = internal_id
+            self.context[const.OPTIONS_FLOW_INPUT_INTERNAL_ID] = internal_id  # type: ignore[typeddict-unknown-key]
 
             # Route based on action
             if self._action == const.OPTIONS_FLOW_ACTIONS_EDIT:
@@ -288,7 +288,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     )
                 }
             ),
-            description_placeholders={
+            description_placeholders={  # type: ignore[arg-type]
                 const.OPTIONS_FLOW_PLACEHOLDER_ENTITY_TYPE: self._entity_type,
                 const.OPTIONS_FLOW_PLACEHOLDER_ACTION: self._action,
             },
@@ -307,7 +307,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             const.OPTIONS_FLOW_DIC_ACHIEVEMENT: const.CONF_ACHIEVEMENTS,
             const.OPTIONS_FLOW_DIC_CHALLENGE: const.CONF_CHALLENGES,
         }
-        key = entity_type_to_conf.get(self._entity_type)
+        key = entity_type_to_conf.get(self._entity_type)  # type: ignore[assignment]
         if key is None:
             const.LOGGER.error(
                 "ERROR: Unknown entity type '%s'. Cannot retrieve entity dictionary",
@@ -494,7 +494,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         )
                     else:
                         due_date_str = due_utc.isoformat()
-                except Exception:
+                except (ValueError, TypeError, AttributeError):
                     errors[const.CFOP_ERROR_DUE_DATE] = (
                         const.TRANS_KEY_CFOF_INVALID_DUE_DATE
                     )
@@ -610,7 +610,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         """Entry point to add a new badge."""
         if user_input is not None:
             badge_type = user_input[const.CFOF_BADGES_INPUT_TYPE]
-            self.context[const.CFOF_BADGES_INPUT_TYPE] = badge_type
+            self.context[const.CFOF_BADGES_INPUT_TYPE] = badge_type  # type: ignore[typeddict-unknown-key]
 
             # Redirect to the appropriate step based on badge type
             if badge_type == const.BADGE_TYPE_CUMULATIVE:
@@ -748,10 +748,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         else:
             # Generate a new internal_id for adding a badge
             internal_id = str(uuid.uuid4())
-            self.context[const.CFOF_GLOBAL_INPUT_INTERNAL_ID] = internal_id
-
-        # Use default_data for editing or initialize an empty dictionary for adding
-        badge_data = default_data or {}
+            self.context[const.CFOF_GLOBAL_INPUT_INTERNAL_ID] = internal_id  # type: ignore[typeddict-unknown-key]
 
         if user_input is not None:
             # --- Validate Inputs ---
@@ -1110,7 +1107,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                             errors[const.CFOP_ERROR_START_DATE] = (
                                 const.TRANS_KEY_CFOF_START_DATE_IN_PAST
                             )
-                    except Exception:
+                    except (ValueError, TypeError, AttributeError):
                         errors[const.CFOP_ERROR_START_DATE] = (
                             const.TRANS_KEY_CFOF_INVALID_START_DATE
                         )
@@ -1132,7 +1129,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                                 errors[const.CFOP_ERROR_END_DATE] = (
                                     const.TRANS_KEY_CFOF_END_DATE_NOT_AFTER_START_DATE
                                 )
-                    except Exception:
+                    except (ValueError, TypeError, AttributeError):
                         errors[const.CFOP_ERROR_END_DATE] = (
                             const.TRANS_KEY_CFOF_INVALID_END_DATE
                         )
@@ -1457,7 +1454,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                             )
                         else:
                             chore_data[const.DATA_CHORE_DUE_DATE] = due_utc.isoformat()
-                    except Exception:
+                    except (ValueError, TypeError, AttributeError):
                         errors[const.CFOP_ERROR_DUE_DATE] = (
                             const.TRANS_KEY_CFOF_INVALID_DUE_DATE
                         )
@@ -1919,7 +1916,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     const.DATA_CHALLENGE_START_DATE
                 )
                 and dt_util.as_local(
-                    dt_util.parse_datetime(
+                    dt_util.parse_datetime(  # type: ignore[arg-type]
                         challenge_data[const.DATA_CHALLENGE_START_DATE]
                     )
                 ).strftime("%Y-%m-%d %H:%M:%S"),
@@ -1927,7 +1924,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     const.DATA_CHALLENGE_END_DATE
                 )
                 and dt_util.as_local(
-                    dt_util.parse_datetime(
+                    dt_util.parse_datetime(  # type: ignore[arg-type]
                         challenge_data[const.DATA_CHALLENGE_END_DATE]
                     )
                 ).strftime("%Y-%m-%d %H:%M:%S"),
@@ -1950,7 +1947,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     errors[const.CFOP_ERROR_START_DATE] = (
                         const.TRANS_KEY_CFOF_START_DATE_IN_PAST
                     )
-            except Exception:
+            except (ValueError, TypeError, AttributeError):
                 errors[const.CFOP_ERROR_START_DATE] = (
                     const.TRANS_KEY_CFOF_INVALID_START_DATE
                 )
@@ -1975,7 +1972,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                         errors[const.CFOP_ERROR_END_DATE] = (
                             const.TRANS_KEY_CFOF_END_DATE_NOT_AFTER_START_DATE
                         )
-            except Exception:
+            except (ValueError, TypeError, AttributeError):
                 errors[const.CFOP_ERROR_END_DATE] = (
                     const.TRANS_KEY_CFOF_INVALID_END_DATE
                 )

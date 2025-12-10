@@ -1,7 +1,7 @@
 # File: notification_action_handler.py
 """Handle notification actions from HA companion notifications."""
 
-from homeassistant.core import HomeAssistant, Event
+from homeassistant.core import Event, HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
 from . import const
@@ -61,6 +61,16 @@ async def async_handle_notification_action(hass: HomeAssistant, event: Event) ->
         )
         return
 
+    # Additional validation for chore/reward actions
+    if base_action in (const.ACTION_APPROVE_CHORE, const.ACTION_DISAPPROVE_CHORE):
+        if not chore_id:
+            const.LOGGER.error("ERROR: Chore action missing chore_id: %s", event.data)
+            return
+    elif base_action in (const.ACTION_APPROVE_REWARD, const.ACTION_DISAPPROVE_REWARD):
+        if not reward_id:
+            const.LOGGER.error("ERROR: Reward action missing reward_id: %s", event.data)
+            return
+
     # Retrieve the coordinator.
     domain_data = hass.data.get(const.DOMAIN, {})
     if not domain_data:
@@ -76,29 +86,33 @@ async def async_handle_notification_action(hass: HomeAssistant, event: Event) ->
 
     try:
         if base_action == const.ACTION_APPROVE_CHORE:
-            await coordinator.approve_chore(
+            # chore_id is guaranteed to be str by validation above
+            coordinator.approve_chore(
                 parent_name=parent_name,
                 kid_id=kid_id,
-                chore_id=chore_id,
+                chore_id=chore_id,  # type: ignore[arg-type]
             )
         elif base_action == const.ACTION_DISAPPROVE_CHORE:
-            await coordinator.disapprove_chore(
+            # chore_id is guaranteed to be str by validation above
+            coordinator.disapprove_chore(
                 parent_name=parent_name,
                 kid_id=kid_id,
-                chore_id=chore_id,
+                chore_id=chore_id,  # type: ignore[arg-type]
             )
         elif base_action == const.ACTION_APPROVE_REWARD:
-            await coordinator.approve_reward(
+            # reward_id is guaranteed to be str by validation above
+            coordinator.approve_reward(
                 parent_name=parent_name,
                 kid_id=kid_id,
-                reward_id=reward_id,
+                reward_id=reward_id,  # type: ignore[arg-type]
                 notif_id=notif_id,
             )
         elif base_action == const.ACTION_DISAPPROVE_REWARD:
-            await coordinator.disapprove_reward(
+            # reward_id is guaranteed to be str by validation above
+            coordinator.disapprove_reward(
                 parent_name=parent_name,
                 kid_id=kid_id,
-                reward_id=reward_id,
+                reward_id=reward_id,  # type: ignore[arg-type]
             )
         elif base_action == const.ACTION_REMIND_30:
             await coordinator.remind_in_minutes(

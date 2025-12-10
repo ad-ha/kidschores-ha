@@ -35,7 +35,6 @@ from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PERCENTAGE, UnitOfTime
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_registry import async_get
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
@@ -291,7 +290,15 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_CHORE_STATUS_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name, chore_id, chore_name):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+        chore_id: str,
+        chore_name: str,
+    ):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -306,6 +313,16 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name,
             const.TRANS_KEY_SENSOR_ATTR_CHORE_NAME: chore_name,
         }
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -481,7 +498,7 @@ class ChoreStatusSensor(CoordinatorEntity, SensorEntity):
                         entity_id = entity.entity_id
                         break
                 button_entity_ids[attr_name] = entity_id
-        except Exception:
+        except (KeyError, ValueError, AttributeError):
             for _, attr_name in button_types:
                 button_entity_ids[attr_name] = None
 
@@ -504,7 +521,15 @@ class KidPointsSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_KID_POINTS_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name, points_label, points_icon):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+        points_label: str,
+        points_icon: str,
+    ):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -521,6 +546,16 @@ class KidPointsSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_POINTS: self._points_label,
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_SUFFIX_KID_POINTS_SENSOR}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -559,7 +594,15 @@ class KidMaxPointsEverSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_KID_MAX_POINTS_EVER_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name, points_label, points_icon):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+        points_label: str,
+        points_icon: str,
+    ):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -573,6 +616,16 @@ class KidMaxPointsEverSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_SUFFIX_KID_MAX_POINTS_EARNED_SENSOR}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -601,7 +654,13 @@ class CompletedChoresTotalSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_CHORES_COMPLETED_TOTAL_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+    ):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -614,6 +673,16 @@ class CompletedChoresTotalSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_CHORES_COMPLETED_TOTAL_SENSOR}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -645,7 +714,13 @@ class CompletedChoresDailySensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_CHORES_COMPLETED_DAILY_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+    ):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -658,6 +733,16 @@ class CompletedChoresDailySensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_CHORES_COMPLETED_DAILY_SENSOR}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -674,7 +759,13 @@ class CompletedChoresWeeklySensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_CHORES_COMPLETED_WEEKLY_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+    ):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -687,6 +778,16 @@ class CompletedChoresWeeklySensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_CHORES_COMPLETED_WEEKLY_SENSOR}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -703,7 +804,13 @@ class CompletedChoresMonthlySensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_CHORES_COMPLETED_MONTHLY_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+    ):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -716,6 +823,16 @@ class CompletedChoresMonthlySensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_CHORES_COMPLETED_MONTHLY_SENSOR}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -734,7 +851,13 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_KIDS_HIGHEST_BADGE_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+    ):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -746,6 +869,16 @@ class KidHighestBadgeSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_KID_HIGHEST_BADGE_SENSOR}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self) -> str:
@@ -965,6 +1098,16 @@ class BadgeProgressSensor(CoordinatorEntity, SensorEntity):
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_BADGE_PROGRESS_SENSOR}{badge_name}"
 
     @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    @property
     def native_value(self) -> float:
         """Return the badge's overall progress as a percentage."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
@@ -1084,6 +1227,16 @@ class BadgeSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_BADGE_NAME: badge_name
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{badge_name}{const.SENSOR_KC_EID_SUFFIX_BADGE_SENSOR}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self) -> int:
@@ -1212,7 +1365,7 @@ class PendingChoreApprovalsSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_PENDING_CHORES_APPROVALS_SENSOR
 
-    def __init__(self, coordinator, entry):
+    def __init__(self, coordinator: KidsChoresDataCoordinator, entry: ConfigEntry):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -1223,20 +1376,30 @@ class PendingChoreApprovalsSensor(CoordinatorEntity, SensorEntity):
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{const.SENSOR_KC_EID_SUFFIX_PENDING_CHORE_APPROVALS_SENSOR}"
 
     @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    @property
     def native_value(self):
         """Return a summary of pending chore approvals."""
-        approvals = self.coordinator._data.get(const.DATA_PENDING_CHORE_APPROVALS, [])
+        approvals = self.coordinator.pending_chore_approvals
         return f"{len(approvals)}"
 
     @property
     def extra_state_attributes(self):
         """Return detailed pending chores."""
-        approvals = self.coordinator._data.get(const.DATA_PENDING_CHORE_APPROVALS, [])
+        approvals = self.coordinator.pending_chore_approvals
         grouped_by_kid = {}
 
         try:
             entity_registry = async_get(self.hass)
-        except Exception:
+        except (KeyError, ValueError, AttributeError):
             entity_registry = None
 
         for approval in approvals:
@@ -1269,7 +1432,7 @@ class PendingChoreApprovalsSensor(CoordinatorEntity, SensorEntity):
                                 else:
                                     disapprove_button_eid = entity.entity_id
                                 break
-                except Exception:
+                except (KeyError, ValueError, AttributeError):
                     pass
 
             if kid_name not in grouped_by_kid:
@@ -1294,7 +1457,7 @@ class PendingRewardApprovalsSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_PENDING_REWARDS_APPROVALS_SENSOR
 
-    def __init__(self, coordinator, entry):
+    def __init__(self, coordinator: KidsChoresDataCoordinator, entry: ConfigEntry):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -1305,20 +1468,30 @@ class PendingRewardApprovalsSensor(CoordinatorEntity, SensorEntity):
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{const.SENSOR_KC_EID_SUFFIX_PENDING_REWARD_APPROVALS_SENSOR}"
 
     @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    @property
     def native_value(self):
         """Return a summary of pending reward approvals."""
-        approvals = self.coordinator._data.get(const.DATA_PENDING_REWARD_APPROVALS, [])
+        approvals = self.coordinator.pending_reward_approvals
         return f"{len(approvals)}"
 
     @property
     def extra_state_attributes(self):
         """Return detailed pending rewards."""
-        approvals = self.coordinator._data.get(const.DATA_PENDING_REWARD_APPROVALS, [])
+        approvals = self.coordinator.pending_reward_approvals
         grouped_by_kid = {}
 
         try:
             entity_registry = async_get(self.hass)
-        except Exception:
+        except (KeyError, ValueError, AttributeError):
             entity_registry = None
 
         for approval in approvals:
@@ -1351,7 +1524,7 @@ class PendingRewardApprovalsSensor(CoordinatorEntity, SensorEntity):
                                 else:
                                     disapprove_button_eid = entity.entity_id
                                 break
-                except Exception:
+                except (KeyError, ValueError, AttributeError):
                     pass
 
             if kid_name not in grouped_by_kid:
@@ -1393,6 +1566,16 @@ class SharedChoreGlobalStateSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_CHORE_NAME: chore_name,
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{const.SENSOR_KC_EID_MIDFIX_SHARED_CHORE_GLOBAL_STATUS_SENSOR}{chore_name}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self) -> str:
@@ -1503,6 +1686,16 @@ class RewardStatusSensor(CoordinatorEntity, SensorEntity):
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_REWARD_STATUS_SENSOR}{reward_name}"
 
     @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    @property
     def native_value(self) -> str:
         """Return the current reward status: 'Not Claimed', 'Claimed', or 'Approved'."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
@@ -1553,7 +1746,7 @@ class RewardStatusSensor(CoordinatorEntity, SensorEntity):
                     approve_button_eid = entity_id
                 elif button_type == "disapprove":
                     disapprove_button_eid = entity_id
-        except Exception:
+        except (KeyError, ValueError, AttributeError):
             pass
 
         attributes = {
@@ -1593,7 +1786,15 @@ class PenaltyAppliesSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_PENALTY_APPLIES_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name, penalty_id, penalty_name):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+        penalty_id: str,
+        penalty_name: str,
+    ):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._entry = entry
@@ -1607,6 +1808,16 @@ class PenaltyAppliesSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_PENALTY_NAME: penalty_name,
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_PENALTY_APPLIES_SENSOR}{penalty_name}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -1635,7 +1846,7 @@ class PenaltyAppliesSensor(CoordinatorEntity, SensorEntity):
                 if entity.unique_id == unique_id:
                     penalty_button_eid = entity.entity_id
                     break
-        except Exception:
+        except (KeyError, ValueError, AttributeError):
             pass
 
         return {
@@ -1665,7 +1876,15 @@ class KidPointsEarnedDailySensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_KID_POINTS_EARNED_DAILY_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name, points_label, points_icon):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+        points_label: str,
+        points_icon: str,
+    ):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._kid_id = kid_id
@@ -1677,6 +1896,16 @@ class KidPointsEarnedDailySensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name,
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_SUFFIX_KID_POINTS_EARNED_DAILY_SENSOR}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -1703,7 +1932,15 @@ class KidPointsEarnedWeeklySensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_KID_POINTS_EARNED_WEEKLY_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name, points_label, points_icon):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+        points_label: str,
+        points_icon: str,
+    ):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -1716,6 +1953,16 @@ class KidPointsEarnedWeeklySensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name,
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_SUFFIX_KID_POINTS_EARNED_WEEKLY_SENSOR}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -1742,7 +1989,15 @@ class KidPointsEarnedMonthlySensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_KID_POINTS_EARNED_MONTHLY_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name, points_label, points_icon):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+        points_label: str,
+        points_icon: str,
+    ):
         """Initialize the sensor."""
 
         super().__init__(coordinator)
@@ -1755,6 +2010,16 @@ class KidPointsEarnedMonthlySensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name,
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_SUFFIX_KID_POINTS_EARNED_MONTHLY_SENSOR}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -1781,7 +2046,13 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_ACHIEVEMENT_STATE_SENSOR
 
-    def __init__(self, coordinator, entry, achievement_id, achievement_name):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        achievement_id: str,
+        achievement_name: str,
+    ):
         """Initialize the AchievementSensor."""
         super().__init__(coordinator)
         self._entry = entry
@@ -1793,6 +2064,16 @@ class AchievementSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_ACHIEVEMENT_NAME: achievement_name,
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{const.SENSOR_KC_EID_MIDFIX_ACHIEVEMENT_SENSOR}{achievement_name}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -1973,7 +2254,13 @@ class ChallengeSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_CHALLENGE_STATE_SENSOR
 
-    def __init__(self, coordinator, entry, challenge_id, challenge_name):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        challenge_id: str,
+        challenge_name: str,
+    ):
         """Initialize the ChallengeSensor."""
         super().__init__(coordinator)
         self._entry = entry
@@ -1985,6 +2272,16 @@ class ChallengeSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_CHALLENGE_NAME: challenge_name,
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{const.SENSOR_KC_EID_MIDFIX_CHALLENGE_SENSOR}{challenge_name}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -2145,6 +2442,16 @@ class AchievementProgressSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_ACHIEVEMENT_NAME: achievement_name,
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_ACHIEVEMENT_PROGRESS_SENSOR}{achievement_name}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self) -> float:
@@ -2336,6 +2643,16 @@ class ChallengeProgressSensor(CoordinatorEntity, SensorEntity):
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_CHALLENGE_PROGRESS_SENSOR}{challenge_name}"
 
     @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    @property
     def native_value(self) -> float:
         """Return the challenge progress percentage."""
         challenge = self.coordinator.challenges_data.get(self._challenge_id, {})
@@ -2492,6 +2809,16 @@ class KidHighestStreakSensor(CoordinatorEntity, SensorEntity):
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_KID_HIGHEST_STREAK_SENSOR}"
 
     @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    @property
     def native_value(self) -> int:
         """Return the highest current streak among all streak achievements for the kid."""
         kid_info = self.coordinator.kids_data.get(self._kid_id, {})
@@ -2539,7 +2866,15 @@ class BonusAppliesSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
     _attr_translation_key = const.TRANS_KEY_SENSOR_BONUS_APPLIES_SENSOR
 
-    def __init__(self, coordinator, entry, kid_id, kid_name, bonus_id, bonus_name):
+    def __init__(
+        self,
+        coordinator: KidsChoresDataCoordinator,
+        entry: ConfigEntry,
+        kid_id: str,
+        kid_name: str,
+        bonus_id: str,
+        bonus_name: str,
+    ):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._entry = entry
@@ -2553,6 +2888,16 @@ class BonusAppliesSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_BONUS_NAME: bonus_name,
         }
         self.entity_id = f"{const.SENSOR_KC_PREFIX}{kid_name}{const.SENSOR_KC_EID_MIDFIX_BONUS_APPLIES_SENSOR}{bonus_name}"
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -2581,7 +2926,7 @@ class BonusAppliesSensor(CoordinatorEntity, SensorEntity):
                 if entity.unique_id == unique_id:
                     bonus_button_eid = entity.entity_id
                     break
-        except Exception:
+        except (KeyError, ValueError, AttributeError):
             pass
 
         return {
@@ -2633,6 +2978,16 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
         self._attr_translation_placeholders = {
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name
         }
+
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
 
     @property
     def native_value(self):
@@ -2719,7 +3074,7 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
 
         try:
             entity_registry = async_get(self.hass)
-        except Exception:
+        except (KeyError, ValueError, AttributeError):
             entity_registry = None
 
         for chore_id, chore_info in self.coordinator.chores_data.items():

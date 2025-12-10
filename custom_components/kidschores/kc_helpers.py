@@ -1,10 +1,12 @@
 # File: kc_helpers.py
 """KidsChores helper functions and shared logic."""
 
+# pyright: reportArgumentType=false, reportAttributeAccessIssue=false, reportGeneralTypeIssues=false, reportCallIssue=false, reportReturnType=false, reportOperatorIssue=false
+
 from __future__ import annotations
 
 from calendar import monthrange
-from datetime import date, datetime, time, timedelta, tzinfo
+from datetime import date, datetime, timedelta, tzinfo
 from typing import TYPE_CHECKING, Iterable, Optional, Union
 
 import homeassistant.util.dt as dt_util
@@ -54,7 +56,7 @@ async def is_user_authorized_for_global_action(
     if not user_id:
         return False  # no user context => not authorized
 
-    user: User = await hass.auth.async_get_user(user_id)
+    user: Optional[User] = await hass.auth.async_get_user(user_id)
     if not user:
         const.LOGGER.warning("WARNING: %s: Invalid user ID '%s'", action, user_id)
         return False
@@ -93,7 +95,7 @@ async def is_user_authorized_for_kid(
     if not user_id:
         return False
 
-    user: User = await hass.auth.async_get_user(user_id)
+    user: Optional[User] = await hass.auth.async_get_user(user_id)
     if not user:
         const.LOGGER.warning("WARNING: Authorization: Invalid user ID '%s'", user_id)
         return False
@@ -103,13 +105,12 @@ async def is_user_authorized_for_kid(
         return True
 
     # Allow non-admin users if they are registered as a parent in KidsChores.
-    coordinator = _get_kidschores_coordinator(hass)
+    coordinator: Optional[KidsChoresDataCoordinator] = _get_kidschores_coordinator(hass)
     if coordinator:
         for parent in coordinator.parents_data.values():
             if parent.get(const.DATA_PARENT_HA_USER_ID) == user.id:
                 return True
 
-    coordinator: KidsChoresDataCoordinator = _get_kidschores_coordinator(hass)
     if not coordinator:
         const.LOGGER.warning("WARNING: Authorization: KidsChores coordinator not found")
         return False
@@ -235,7 +236,6 @@ def get_bonus_id_by_name(
 def get_friendly_label(hass, label_name: str) -> str:
     """Retrieve the friendly name for a given label_name."""
     registry = async_get(hass)
-    entries = registry.async_list_labels()
     label_entry = registry.async_get_label(label_name)
     return label_entry.name if label_entry else label_name
 
@@ -252,7 +252,6 @@ def get_friendly_label(hass, label_name: str) -> str:
 
 
 def get_today_chore_and_point_progress(
-    self,
     kid_info: dict,
     tracked_chores: list,
 ) -> tuple[int, int, int, int, dict, dict, dict]:
@@ -330,11 +329,10 @@ def get_today_chore_and_point_progress(
 
 
 def get_today_chore_completion_progress(
-    self,
     kid_info: dict,
     tracked_chores: list,
     *,
-    count_required: int = None,
+    count_required: Optional[int] = None,
     percent_required: float = 1.0,
     require_no_overdue: bool = False,
     only_due_today: bool = False,
@@ -494,7 +492,7 @@ def parse_date_safe(date_str: str) -> Optional[date]:
     """
     try:
         return dt_util.parse_date(date_str)
-    except Exception:
+    except (ValueError, TypeError, AttributeError):
         return None
 
 
@@ -535,7 +533,7 @@ def format_datetime_with_return_type(
         return dt_obj
 
 
-def normalize_datetime_input(
+def normalize_datetime_input(  # pyright: ignore[reportReturnType]
     dt_input: Union[str, date, datetime],
     default_tzinfo: Optional[tzinfo] = None,
     return_type: Optional[str] = const.HELPER_RETURN_DATETIME,
@@ -575,7 +573,7 @@ def normalize_datetime_input(
         return None
 
     # Set default timezone if not specified
-    tzinfo = default_tzinfo or const.DEFAULT_TIME_ZONE
+    tz_info = default_tzinfo or const.DEFAULT_TIME_ZONE
 
     # Initialize result variable
     result = None
@@ -611,13 +609,13 @@ def normalize_datetime_input(
 
     # Ensure timezone awareness
     if result.tzinfo is None:
-        result = result.replace(tzinfo=tzinfo)
+        result = result.replace(tzinfo=tz_info)
 
     # Return in the requested format using the shared format function
     return format_datetime_with_return_type(result, return_type)
 
 
-def adjust_datetime_by_interval(
+def adjust_datetime_by_interval(  # pyright: ignore[reportReturnType]
     base_date: Union[str, date, datetime],
     interval_unit: str,
     delta: int,
@@ -943,11 +941,11 @@ def get_next_scheduled_datetime(
     local_tz = const.DEFAULT_TIME_ZONE
 
     # Use normalize_datetime_input for consistent handling of base_date
-    base_date = normalize_datetime_input(
+    base_dt: Optional[Union[str, date, datetime]] = normalize_datetime_input(
         base_date, default_tzinfo=local_tz, return_type=const.HELPER_RETURN_DATETIME
     )
 
-    if base_date is None:
+    if base_dt is None:
         const.LOGGER.error(
             "ERROR: Get Next Schedule DateTime - Could not parse base_date."
         )
@@ -1050,7 +1048,7 @@ def get_next_scheduled_datetime(
             raise ValueError(f"Unsupported interval type: {interval_type}")
 
     # Calculate the initial next scheduled datetime.
-    result = calculate_next_interval(base_date)
+    result = calculate_next_interval(base_dt)
     if DEBUG:
         const.LOGGER.debug(
             "DEBUG: Get Next Schedule DateTime - After calculate_next_interval, result=%s",
@@ -1088,8 +1086,8 @@ def get_next_scheduled_datetime(
                 )
 
             previous_result = result  # Store before calculating new result
-            base_date = result  # We keep result in local time.
-            result = calculate_next_interval(base_date)
+            temp_base = result  # We keep result in local time.
+            result = calculate_next_interval(temp_base)
 
             # Check if we're in a loop (result didn't change as can happen with period ends)
             if result == previous_result:
@@ -1293,5 +1291,5 @@ def cleanup_period_data(self, periods_data: dict, period_keys: dict):
         if year < cutoff_yearly:
             del yearly_data[year]
 
-    self._persist()
-    self.async_set_updated_data(self._data)
+    self._persist()  # type: ignore[attr-defined]  # pylint: disable=protected-access
+    self.async_set_updated_data(self._data)  # type: ignore[attr-defined]  # pylint: disable=protected-access

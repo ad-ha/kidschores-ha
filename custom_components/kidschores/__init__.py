@@ -12,8 +12,6 @@ Key Features:
 
 from __future__ import annotations
 
-import asyncio
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -21,8 +19,8 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from . import const
 from .coordinator import KidsChoresDataCoordinator
 from .notification_action_handler import async_handle_notification_action
-from .storage_manager import KidsChoresStorageManager
 from .services import async_setup_services, async_unload_services
+from .storage_manager import KidsChoresStorageManager
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -57,12 +55,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.config_entries.async_forward_entry_setups(entry, const.PLATFORMS)
 
     # Listen for notification actions from the companion app.
-    hass.bus.async_listen(
-        const.NOTIFICATION_EVENT,
-        lambda event: asyncio.run_coroutine_threadsafe(
-            async_handle_notification_action(hass, event), hass.loop
-        ),
-    )
+    async def handle_notification_event(event):
+        """Handle notification action events."""
+        await async_handle_notification_action(hass, event)
+
+    hass.bus.async_listen(const.NOTIFICATION_EVENT, handle_notification_event)
 
     # Set the home assistant configured timezone for date/time operations
     const.set_default_timezone(hass)

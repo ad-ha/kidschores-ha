@@ -15,7 +15,7 @@ from homeassistant.const import Platform
 
 def set_default_timezone(hass):
     """Set the default timezone based on the Home Assistant configuration."""
-    global DEFAULT_TIME_ZONE
+    global DEFAULT_TIME_ZONE  # pylint: disable=global-statement
     DEFAULT_TIME_ZONE = dt_util.get_time_zone(hass.config.time_zone)
 
 
