@@ -3268,6 +3268,51 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
                 {"eid": btn["eid"], "name": btn["name"]} for btn in temp_buttons
             ]
 
+        # Collect all entity IDs for this kid
+        activity_monitor_entities = []
+        if entity_registry:
+            # Limited set of kid-specific sensors to include:
+            # - Points sensor (main one with all stats)
+            # - Completed chores total
+            # - Highest badge
+            kid_sensor_patterns = [
+                f"{self._entry.entry_id}_{self._kid_id}{const.SENSOR_KC_UID_SUFFIX_KID_POINTS_SENSOR}",
+                f"{self._entry.entry_id}_{self._kid_id}{const.SENSOR_KC_UID_SUFFIX_COMPLETED_TOTAL_SENSOR}",
+                f"{self._entry.entry_id}_{self._kid_id}{const.SENSOR_KC_UID_SUFFIX_KID_HIGHEST_BADGE_SENSOR}",
+            ]
+
+            for entity in entity_registry.entities.values():
+                # Check for exact matches (limited kid-specific sensors)
+                if entity.unique_id in kid_sensor_patterns:
+                    activity_monitor_entities.append(entity.entity_id)
+                    continue
+
+                # Check for kid-specific prefixes for status and applies sensors, plus buttons
+                if entity.unique_id.startswith(
+                    f"{self._entry.entry_id}_{self._kid_id}_"
+                ):
+                    # Include status/progress/applies sensors
+                    if entity.domain == "sensor" and (
+                        const.SENSOR_KC_UID_SUFFIX_CHORE_STATUS_SENSOR
+                        in entity.unique_id
+                        or const.SENSOR_KC_UID_SUFFIX_REWARD_STATUS_SENSOR
+                        in entity.unique_id
+                        or const.SENSOR_KC_UID_SUFFIX_BONUS_APPLIES_SENSOR
+                        in entity.unique_id
+                        or const.SENSOR_KC_UID_SUFFIX_PENALTY_APPLIES_SENSOR
+                        in entity.unique_id
+                        or const.SENSOR_KC_UID_SUFFIX_BADGE_PROGRESS_SENSOR
+                        in entity.unique_id
+                        or const.SENSOR_KC_UID_SUFFIX_ACHIEVEMENT_PROGRESS_SENSOR
+                        in entity.unique_id
+                        or const.SENSOR_KC_UID_SUFFIX_CHALLENGE_PROGRESS_SENSOR
+                        in entity.unique_id
+                    ):
+                        activity_monitor_entities.append(entity.entity_id)
+                    # Include all buttons for this kid
+                    elif entity.domain == "button":
+                        activity_monitor_entities.append(entity.entity_id)
+
         return {
             "chores": chores_attr,
             "rewards": rewards_attr,
@@ -3277,6 +3322,7 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
             "achievements": achievements_attr,
             "challenges": challenges_attr,
             "points_buttons": points_buttons_attr,
+            "activity_monitor_entities": activity_monitor_entities,
             const.ATTR_KID_NAME: self._kid_name,
         }
 
