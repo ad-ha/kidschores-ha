@@ -9,6 +9,7 @@ badges, rewards, penalties, and their statuses.
 import os
 
 from homeassistant.helpers.storage import Store
+
 from . import const
 
 
@@ -141,7 +142,7 @@ class KidsChoresStorageManager:
         """Save the current data structure to storage asynchronously."""
         try:
             await self._store.async_save(self._data)
-            const.LOGGER.info("INFO: Data saved successfully to storage")
+            const.LOGGER.debug("DEBUG: Data saved successfully to storage")
         except Exception as e:
             const.LOGGER.error("ERROR: Failed to save data to storage: %s", e)
 
