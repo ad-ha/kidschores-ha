@@ -27,6 +27,8 @@
   "chore_detail": "Detail Úlohy",
   "chores": "Úlohy",
   "chores_completed": "Úlohy Dokončené",
+  "chores_details": "Detaily Úloh",
+  "chores_per_day": "Úlohy / Deň",
   "claimed": "Nárokované",
   "claims": "Nároky",
   "clear_date": "Vymazať Dátum",
@@ -59,9 +61,11 @@
   "last_awarded": "Naposledy Udelené",
   "last_earned": "Naposledy Získané",
   "locked": "Zamknuté",
+  "longest_streak": "Najdlhšia Séria",
   "maintenance": "Údržba",
   "month": "Mesiac",
   "more": "Viac",
+  "most_completions": "Najčastejšie Dokončené",
   "multiplier": "Násobiteľ",
   "need": "Potrebuješ",
   "no": "Nie",
@@ -83,6 +87,8 @@
   "per_day_goal": "Cieľ za Deň",
   "plus_1_day": "+1 Deň",
   "plus_1_week": "+1 Týždeň",
+  "points_details": "Detaily Bodov",
+  "points_per_day": "Body / Deň",
   "plus_next_due": "+Ďalší Termín",
   "pluses_and_minuses": "Plusy a Mínusy",
   "progress": "Pokrok",
@@ -120,5 +126,7 @@
   "week": "Týždeň",
   "weekly": "Týždenne",
   "weekly_completed": "Dokončené Tento Týždeň",
-  "welcome": "Vitaj"
+  "weekly_performance": "Týždenný Výkon",
+  "welcome": "Vitaj",
+  "went_overdue": "Bola Po Termíne"
 }

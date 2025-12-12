@@ -27,6 +27,8 @@
   "chore_detail": "Taak Detail",
   "chores": "Taken",
   "chores_completed": "Taken Voltooid",
+  "chores_details": "Taak Details",
+  "chores_per_day": "Taken / Dag",
   "claimed": "Geclaimd",
   "claims": "Claims",
   "clear_date": "Datum Wissen",
@@ -59,9 +61,11 @@
   "last_awarded": "Laatst Toegekend",
   "last_earned": "Laatst Verdiend",
   "locked": "Vergrendeld",
+  "longest_streak": "Langste Serie",
   "maintenance": "Onderhoud",
   "month": "Maand",
   "more": "Meer",
+  "most_completions": "Meeste Voltooide",
   "multiplier": "Vermenigvuldiger",
   "need": "Nodig",
   "no": "Nee",
@@ -83,6 +87,8 @@
   "per_day_goal": "Doel per Dag",
   "plus_1_day": "+1 Dag",
   "plus_1_week": "+1 Week",
+  "points_details": "Punten Details",
+  "points_per_day": "Punten / Dag",
   "plus_next_due": "+Volgende Vervaldag",
   "pluses_and_minuses": "Plussen en Minnen",
   "progress": "Voortgang",
@@ -120,5 +126,7 @@
   "week": "Week",
   "weekly": "Wekelijks",
   "weekly_completed": "Deze Week Voltooid",
-  "welcome": "Welkom"
+  "weekly_performance": "Wekelijkse Prestaties",
+  "welcome": "Welkom",
+  "went_overdue": "Is Achterstallig Geworden"
 }

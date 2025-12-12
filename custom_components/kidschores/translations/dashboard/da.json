@@ -27,6 +27,8 @@
   "chore_detail": "Opgave Detalje",
   "chores": "Opgaver",
   "chores_completed": "Opgaver Fuldførte",
+  "chores_details": "Opgave Detaljer",
+  "chores_per_day": "Opgaver / Dag",
   "claimed": "Krævet",
   "claims": "Krav",
   "clear_date": "Ryd Dato",
@@ -59,9 +61,11 @@
   "last_awarded": "Sidst Tildelt",
   "last_earned": "Sidst Optjent",
   "locked": "Låst",
+  "longest_streak": "Længste Stribe",
   "maintenance": "Vedligeholdelse",
   "month": "Måned",
   "more": "Mere",
+  "most_completions": "Flest Fuldføringer",
   "multiplier": "Multiplikator",
   "need": "Skal Bruge",
   "no": "Nej",
@@ -83,6 +87,8 @@
   "per_day_goal": "Per Dag Mål",
   "plus_1_day": "+1 Dag",
   "plus_1_week": "+1 Uge",
+  "points_details": "Punkt Detaljer",
+  "points_per_day": "Punkter / Dag",
   "plus_next_due": "+Næste Forfald",
   "pluses_and_minuses": "Plusser og Minusser",
   "progress": "Fremskridt",
@@ -120,5 +126,7 @@
   "week": "Uge",
   "weekly": "Ugentlig",
   "weekly_completed": "Fuldførte Ugentlig",
-  "welcome": "Velkommen"
+  "weekly_performance": "Ugentlig Ydeevne",
+  "welcome": "Velkommen",
+  "went_overdue": "Blev Forfalden"
 }

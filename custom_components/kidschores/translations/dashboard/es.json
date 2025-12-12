@@ -27,6 +27,8 @@
   "chore_detail": "Detalle de Tarea",
   "chores": "Tareas",
   "chores_completed": "Tareas Completadas",
+  "chores_details": "Detalles de Tareas",
+  "chores_per_day": "Tareas / Día",
   "claimed": "Reclamada",
   "claims": "Reclamaciones",
   "clear_date": "Borrar Fecha",
@@ -62,6 +64,7 @@
   "maintenance": "Mantenimiento",
   "month": "Mes",
   "more": "Más",
+  "most_completions": "Más Completada",
   "multiplier": "Multiplicador",
   "need": "Necesitas",
   "no": "No",
@@ -119,6 +122,8 @@
   "value": "Valor",
   "week": "Semana",
   "weekly": "Semanal",
-  "weekly_completed": "Completadas Semanales",
-  "welcome": "Bienvenido"
+  "weekly_completed": "Completada Semanalmente",
+  "weekly_performance": "Rendimiento Semanal",
+  "welcome": "Bienvenido",
+  "went_overdue": "Vencida"
 }

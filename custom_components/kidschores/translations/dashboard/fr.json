@@ -27,6 +27,8 @@
   "chore_detail": "Détail de la Tâche",
   "chores": "Tâches",
   "chores_completed": "Tâches Complétées",
+  "chores_details": "Détails des Tâches",
+  "chores_per_day": "Tâches / Jour",
   "claimed": "Réclamée",
   "claims": "Réclamations",
   "clear_date": "Effacer la Date",
@@ -59,9 +61,11 @@
   "last_awarded": "Dernière Attribution",
   "last_earned": "Dernier Gagné",
   "locked": "Verrouillé",
+  "longest_streak": "Série la Plus Longue",
   "maintenance": "Maintenance",
   "month": "Mois",
   "more": "De Plus",
+  "most_completions": "Plus Complétées",
   "multiplier": "Multiplicateur",
   "need": "Besoin",
   "no": "Non",
@@ -83,6 +87,8 @@
   "per_day_goal": "Objectif par Jour",
   "plus_1_day": "+1 Jour",
   "plus_1_week": "+1 Semaine",
+  "points_details": "Détails des Points",
+  "points_per_day": "Points / Jour",
   "plus_next_due": "+Prochaine Échéance",
   "pluses_and_minuses": "Plus et Moins",
   "progress": "Progrès",
@@ -120,5 +126,7 @@
   "week": "Semaine",
   "weekly": "Hebdomadaire",
   "weekly_completed": "Complétées Cette Semaine",
-  "welcome": "Bienvenue"
+  "weekly_performance": "Performance Hebdomadaire",
+  "welcome": "Bienvenue",
+  "went_overdue": "Est Devenue Retard"
 }

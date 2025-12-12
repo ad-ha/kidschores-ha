@@ -27,6 +27,8 @@
   "chore_detail": "Aufgabendetail",
   "chores": "Aufgaben",
   "chores_completed": "Aufgaben Abgeschlossen",
+  "chores_details": "Aufgabendetails",
+  "chores_per_day": "Aufgaben / Tag",
   "claimed": "Beansprucht",
   "claims": "Ansprüche",
   "clear_date": "Datum Löschen",
@@ -59,9 +61,11 @@
   "last_awarded": "Zuletzt Vergeben",
   "last_earned": "Zuletzt Verdient",
   "locked": "Gesperrt",
+  "longest_streak": "Längste Serie",
   "maintenance": "Wartung",
   "month": "Monat",
   "more": "Mehr",
+  "most_completions": "Die Meisten Abschlüsse",
   "multiplier": "Multiplikator",
   "need": "Benötigt",
   "no": "Nein",
@@ -80,6 +84,8 @@
   "penalties_applied": "Strafen Angewendet",
   "penalty": "Strafe",
   "pending": "Ausstehend",
+  "points_details": "Punkte Details",
+  "points_per_day": "Punkte / Tag",
   "per_day_goal": "Ziel Pro Tag",
   "plus_1_day": "+1 Tag",
   "plus_1_week": "+1 Woche",
@@ -120,5 +126,7 @@
   "week": "Woche",
   "weekly": "Wöchentlich",
   "weekly_completed": "Wöchentlich Abgeschlossen",
-  "welcome": "Willkommen"
+  "weekly_performance": "Wöchentliche Leistung",
+  "welcome": "Willkommen",
+  "went_overdue": "Wurde Überfällig"
 }

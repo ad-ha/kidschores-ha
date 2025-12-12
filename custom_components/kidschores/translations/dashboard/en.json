@@ -27,6 +27,8 @@
   "chore_detail": "Chore Detail",
   "chores": "Chores",
   "chores_completed": "Chores Completed",
+  "chores_details": "Chores Details",
+  "chores_per_day": "Chores / Day",
   "claimed": "Claimed",
   "claims": "Claims",
   "clear_date": "Clear Date",
@@ -59,9 +61,11 @@
   "last_awarded": "Last Awarded",
   "last_earned": "Last Earned",
   "locked": "Locked",
+  "longest_streak": "Longest Streak",
   "maintenance": "Maintenance",
   "month": "Month",
   "more": "More",
+  "most_completions": "Most Completions",
   "multiplier": "Multiplier",
   "need": "Need",
   "no": "No",
@@ -80,6 +84,8 @@
   "penalties_applied": "Penalties Applied",
   "penalty": "Penalty",
   "pending": "Pending",
+  "points_details": "Points Details",
+  "points_per_day": "Points / Day",
   "per_day_goal": "Per Day Goal",
   "plus_1_day": "+1 Day",
   "plus_1_week": "+1 Week",
@@ -120,5 +126,7 @@
   "week": "Week",
   "weekly": "Weekly",
   "weekly_completed": "Weekly Completed",
-  "welcome": "Welcome"
+  "weekly_performance": "Weekly Performance",
+  "welcome": "Welcome",
+  "went_overdue": "Went Overdue"
 }

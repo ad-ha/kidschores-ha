@@ -27,6 +27,8 @@
   "chore_detail": "Detall de la Tasca",
   "chores": "Tasques",
   "chores_completed": "Tasques Completades",
+  "chores_details": "Detalls de Tasques",
+  "chores_per_day": "Tasques / Dia",
   "claimed": "Reclamada",
   "claims": "Reclamacions",
   "clear_date": "Esborrar Data",
@@ -59,9 +61,11 @@
   "last_awarded": "Últim Premi",
   "last_earned": "Última Aconseguida",
   "locked": "Bloquejada",
+  "longest_streak": "Ratxa Més Llarga",
   "maintenance": "Manteniment",
   "month": "Mes",
   "more": "Més",
+  "most_completions": "Més Completades",
   "multiplier": "Multiplicador",
   "need": "Necessites",
   "no": "No",
@@ -83,6 +87,8 @@
   "per_day_goal": "Objectiu per Dia",
   "plus_1_day": "+1 Dia",
   "plus_1_week": "+1 Setmana",
+  "points_details": "Detalls de Punts",
+  "points_per_day": "Punts / Dia",
   "plus_next_due": "+Proper Venciment",
   "pluses_and_minuses": "Més i Menys",
   "progress": "Progrés",
@@ -120,5 +126,7 @@
   "week": "Setmana",
   "weekly": "Setmanal",
   "weekly_completed": "Completades Setmanals",
-  "welcome": "Benvingut"
+  "weekly_performance": "Rendiment Setmanal",
+  "welcome": "Benvingut",
+  "went_overdue": "Va Passar al Venciment"
 }
