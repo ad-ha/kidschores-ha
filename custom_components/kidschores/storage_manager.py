@@ -121,22 +121,22 @@ class KidsChoresStorageManager:
     async def link_user_to_kid(self, user_id, kid_id):
         """Link a Home Assistant user ID to a specific kid by internal_id."""
 
-        if "linked_users" not in self._data:
-            self._data["linked_users"] = {}
-        self._data["linked_users"][user_id] = kid_id
+        if const.STORAGE_KEY_LINKED_USERS not in self._data:
+            self._data[const.STORAGE_KEY_LINKED_USERS] = {}
+        self._data[const.STORAGE_KEY_LINKED_USERS][user_id] = kid_id
         await self.async_save()
 
     async def unlink_user(self, user_id):
         """Unlink a Home Assistant user ID from any kid."""
 
-        if "linked_users" in self._data and user_id in self._data["linked_users"]:
-            del self._data["linked_users"][user_id]
+        if const.STORAGE_KEY_LINKED_USERS in self._data and user_id in self._data[const.STORAGE_KEY_LINKED_USERS]:
+            del self._data[const.STORAGE_KEY_LINKED_USERS][user_id]
             await self.async_save()
 
     async def get_linked_kids(self):
         """Get all linked users and their associated kids."""
 
-        return self._data.get("linked_users", {})
+        return self._data.get(const.STORAGE_KEY_LINKED_USERS, {})
 
     async def async_save(self):
         """Save the current data structure to storage asynchronously."""

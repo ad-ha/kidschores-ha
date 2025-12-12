@@ -10,11 +10,18 @@ from typing import Any, Dict, Optional
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
-from homeassistant.helpers import config_validation as cv
 from homeassistant.util import dt as dt_util
 
 from . import const
 from . import flow_helpers as fh
+from .options_flow import KidsChoresOptionsFlowHandler
+
+# Pylint disable for valid config flow architectural patterns:
+# - too-many-lines: Config flows legitimately need many steps
+# - too-many-instance-attributes: Config flows track state across multiple steps
+# - too-many-public-methods: Each config step requires its own method
+# - abstract-method: is_matching is not required for config flows in current HA versions
+# pylint: disable=too-many-lines,too-many-instance-attributes,too-many-public-methods,abstract-method
 
 
 class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
@@ -178,7 +185,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         # Retrieve HA users for linking
         users = await self.hass.auth.async_get_users()
-        kid_schema = fh.build_kid_schema(
+        kid_schema = await fh.build_kid_schema(
             self.hass,
             users=users,
             default_kid_name=const.CONF_EMPTY,
@@ -526,9 +533,6 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
     ):
         """Handle adding a badge in the config flow."""
         errors: Dict[str, str] = {}
-
-        # Use default_data for editing or initialize an empty dictionary for adding
-        badge_data = default_data or {}
 
         if user_input is not None:
             # --- Validate Inputs ---
@@ -1012,6 +1016,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             errors=errors,
         )
 
+    # pylint: disable=too-many-locals,too-many-branches,too-many-statements,too-many-nested-blocks
     async def async_step_challenges(self, user_input=None):
         """Collect each challenge's details using internal_id as the key."""
         errors = {}
@@ -1058,7 +1063,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                             errors[const.CFOP_ERROR_START_DATE] = (
                                 const.TRANS_KEY_CFOF_START_DATE_IN_PAST
                             )
-                    except Exception:
+                    except (KeyError, ValueError, AttributeError, TypeError):
                         errors[const.CFOP_ERROR_START_DATE] = (
                             const.TRANS_KEY_CFOF_INVALID_START_DATE
                         )
@@ -1080,7 +1085,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                                 errors[const.CFOP_ERROR_END_DATE] = (
                                     const.TRANS_KEY_CFOF_END_DATE_NOT_AFTER_START_DATE
                                 )
-                    except Exception:
+                    except (KeyError, ValueError, AttributeError, TypeError):
                         errors[const.CFOP_ERROR_END_DATE] = (
                             const.TRANS_KEY_CFOF_INVALID_END_DATE
                         )
@@ -1174,16 +1179,73 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             else:
                 parents_summary.append(parent[const.DATA_PARENT_NAME])
 
+        kids_names = (
+            ", ".join(
+                kid_data[const.DATA_KID_NAME] for kid_data in self._kids_temp.values()
+            )
+            or const.CONF_NONE_TEXT
+        )
+        parents_names = ", ".join(parents_summary) or const.CONF_NONE_TEXT
+        chores_names = (
+            ", ".join(
+                chore_data[const.DATA_CHORE_NAME]
+                for chore_data in self._chores_temp.values()
+            )
+            or const.CONF_NONE_TEXT
+        )
+        badges_names = (
+            ", ".join(
+                badge_data[const.DATA_BADGE_NAME]
+                for badge_data in self._badges_temp.values()
+            )
+            or const.CONF_NONE_TEXT
+        )
+        rewards_names = (
+            ", ".join(
+                reward_data[const.DATA_REWARD_NAME]
+                for reward_data in self._rewards_temp.values()
+            )
+            or const.CONF_NONE_TEXT
+        )
+        penalties_names = (
+            ", ".join(
+                penalty_data[const.DATA_PENALTY_NAME]
+                for penalty_data in self._penalties_temp.values()
+            )
+            or const.CONF_NONE_TEXT
+        )
+        bonuses_names = (
+            ", ".join(
+                bonus_data[const.DATA_BONUS_NAME]
+                for bonus_data in self._bonuses_temp.values()
+            )
+            or const.CONF_NONE_TEXT
+        )
+        achievements_names = (
+            ", ".join(
+                achievement_data[const.DATA_ACHIEVEMENT_NAME]
+                for achievement_data in self._achievements_temp.values()
+            )
+            or const.CONF_NONE_TEXT
+        )
+        challenges_names = (
+            ", ".join(
+                challenge_data[const.DATA_CHALLENGE_NAME]
+                for challenge_data in self._challenges_temp.values()
+            )
+            or const.CONF_NONE_TEXT
+        )
+
         summary = (
-            f"{const.TRANS_KEY_CFOF_SUMMARY_KIDS}{', '.join(kid_data[const.DATA_KID_NAME] for kid_data in self._kids_temp.values()) or const.CONF_NONE_TEXT}\n\n"
-            f"{const.TRANS_KEY_CFOF_SUMMARY_PARENTS}{', '.join(parents_summary) or const.CONF_NONE_TEXT}\n\n"
-            f"{const.TRANS_KEY_CFOF_SUMMARY_CHORES}{', '.join(chore_data[const.DATA_CHORE_NAME] for chore_data in self._chores_temp.values()) or const.CONF_NONE_TEXT}\n\n"
-            f"{const.TRANS_KEY_CFOF_SUMMARY_BADGES}{', '.join(badge_data[const.DATA_BADGE_NAME] for badge_data in self._badges_temp.values()) or const.CONF_NONE_TEXT}\n\n"
-            f"{const.TRANS_KEY_CFOF_SUMMARY_REWARDS}{', '.join(reward_data[const.DATA_REWARD_NAME] for reward_data in self._rewards_temp.values()) or const.CONF_NONE_TEXT}\n\n"
-            f"{const.TRANS_KEY_CFOF_SUMMARY_PENALTIES}{', '.join(penalty_data[const.DATA_PENALTY_NAME] for penalty_data in self._penalties_temp.values()) or const.CONF_NONE_TEXT}\n\n"
-            f"{const.TRANS_KEY_CFOF_SUMMARY_BONUSES}{', '.join(bonus_data[const.DATA_BONUS_NAME] for bonus_data in self._bonuses_temp.values()) or const.CONF_NONE_TEXT}\n\n"
-            f"{const.TRANS_KEY_CFOF_SUMMARY_ACHIEVEMENTS}{', '.join(achievement_data[const.DATA_ACHIEVEMENT_NAME] for achievement_data in self._achievements_temp.values()) or const.CONF_NONE_TEXT}\n\n"
-            f"{const.TRANS_KEY_CFOF_SUMMARY_CHALLENGES}{', '.join(challenge_data[const.DATA_CHALLENGE_NAME] for challenge_data in self._challenges_temp.values()) or const.CONF_NONE_TEXT}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_KIDS}{kids_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_PARENTS}{parents_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_CHORES}{chores_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_BADGES}{badges_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_REWARDS}{rewards_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_PENALTIES}{penalties_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_BONUSES}{bonuses_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_ACHIEVEMENTS}{achievements_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_CHALLENGES}{challenges_names}\n\n"
         )
         return self.async_show_form(
             step_id=const.CONFIG_FLOW_STEP_FINISH,
@@ -1225,6 +1287,4 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Return the Options Flow."""
-        from .options_flow import KidsChoresOptionsFlowHandler
-
         return KidsChoresOptionsFlowHandler(config_entry)

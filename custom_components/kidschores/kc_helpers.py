@@ -1,10 +1,14 @@
 # File: kc_helpers.py
 """KidsChores helper functions and shared logic."""
 
+# pyright: reportArgumentType=false, reportAttributeAccessIssue=false, reportGeneralTypeIssues=false, reportCallIssue=false, reportReturnType=false, reportOperatorIssue=false
+
 from __future__ import annotations
 
+import json
+import os
 from calendar import monthrange
-from datetime import date, datetime, time, timedelta, tzinfo
+from datetime import date, datetime, timedelta, tzinfo
 from typing import TYPE_CHECKING, Iterable, Optional, Union
 
 import homeassistant.util.dt as dt_util
@@ -54,7 +58,7 @@ async def is_user_authorized_for_global_action(
     if not user_id:
         return False  # no user context => not authorized
 
-    user: User = await hass.auth.async_get_user(user_id)
+    user: Optional[User] = await hass.auth.async_get_user(user_id)
     if not user:
         const.LOGGER.warning("WARNING: %s: Invalid user ID '%s'", action, user_id)
         return False
@@ -93,7 +97,7 @@ async def is_user_authorized_for_kid(
     if not user_id:
         return False
 
-    user: User = await hass.auth.async_get_user(user_id)
+    user: Optional[User] = await hass.auth.async_get_user(user_id)
     if not user:
         const.LOGGER.warning("WARNING: Authorization: Invalid user ID '%s'", user_id)
         return False
@@ -103,13 +107,12 @@ async def is_user_authorized_for_kid(
         return True
 
     # Allow non-admin users if they are registered as a parent in KidsChores.
-    coordinator = _get_kidschores_coordinator(hass)
+    coordinator: Optional[KidsChoresDataCoordinator] = _get_kidschores_coordinator(hass)
     if coordinator:
         for parent in coordinator.parents_data.values():
             if parent.get(const.DATA_PARENT_HA_USER_ID) == user.id:
                 return True
 
-    coordinator: KidsChoresDataCoordinator = _get_kidschores_coordinator(hass)
     if not coordinator:
         const.LOGGER.warning("WARNING: Authorization: KidsChores coordinator not found")
         return False
@@ -235,7 +238,6 @@ def get_bonus_id_by_name(
 def get_friendly_label(hass, label_name: str) -> str:
     """Retrieve the friendly name for a given label_name."""
     registry = async_get(hass)
-    entries = registry.async_list_labels()
     label_entry = registry.async_get_label(label_name)
     return label_entry.name if label_entry else label_name
 
@@ -252,7 +254,6 @@ def get_friendly_label(hass, label_name: str) -> str:
 
 
 def get_today_chore_and_point_progress(
-    self,
     kid_info: dict,
     tracked_chores: list,
 ) -> tuple[int, int, int, int, dict, dict, dict]:
@@ -330,11 +331,10 @@ def get_today_chore_and_point_progress(
 
 
 def get_today_chore_completion_progress(
-    self,
     kid_info: dict,
     tracked_chores: list,
     *,
-    count_required: int = None,
+    count_required: Optional[int] = None,
     percent_required: float = 1.0,
     require_no_overdue: bool = False,
     only_due_today: bool = False,
@@ -494,7 +494,7 @@ def parse_date_safe(date_str: str) -> Optional[date]:
     """
     try:
         return dt_util.parse_date(date_str)
-    except Exception:
+    except (ValueError, TypeError, AttributeError):
         return None
 
 
@@ -535,7 +535,7 @@ def format_datetime_with_return_type(
         return dt_obj
 
 
-def normalize_datetime_input(
+def normalize_datetime_input(  # pyright: ignore[reportReturnType]
     dt_input: Union[str, date, datetime],
     default_tzinfo: Optional[tzinfo] = None,
     return_type: Optional[str] = const.HELPER_RETURN_DATETIME,
@@ -575,7 +575,7 @@ def normalize_datetime_input(
         return None
 
     # Set default timezone if not specified
-    tzinfo = default_tzinfo or const.DEFAULT_TIME_ZONE
+    tz_info = default_tzinfo or const.DEFAULT_TIME_ZONE
 
     # Initialize result variable
     result = None
@@ -611,13 +611,13 @@ def normalize_datetime_input(
 
     # Ensure timezone awareness
     if result.tzinfo is None:
-        result = result.replace(tzinfo=tzinfo)
+        result = result.replace(tzinfo=tz_info)
 
     # Return in the requested format using the shared format function
     return format_datetime_with_return_type(result, return_type)
 
 
-def adjust_datetime_by_interval(
+def adjust_datetime_by_interval(  # pyright: ignore[reportReturnType]
     base_date: Union[str, date, datetime],
     interval_unit: str,
     delta: int,
@@ -709,12 +709,12 @@ def adjust_datetime_by_interval(
     elif interval_unit in {const.CONF_MONTHS, const.CONF_QUARTERS}:
         multiplier = 1 if interval_unit == const.CONF_MONTHS else 3
         total_months = base_dt.month - 1 + (delta * multiplier)
-        year = base_dt.year + total_months // 12
-        month = total_months % 12 + 1
+        year = int(base_dt.year + total_months // 12)
+        month = int(total_months % 12 + 1)
         day = min(base_dt.day, monthrange(year, month)[1])
         result = base_dt.replace(year=year, month=month, day=day)
     elif interval_unit == const.CONF_YEARS:
-        year = base_dt.year + delta
+        year = int(base_dt.year + delta)
         day = min(base_dt.day, monthrange(year, base_dt.month)[1])
         result = base_dt.replace(year=year, day=day)
     else:
@@ -943,11 +943,11 @@ def get_next_scheduled_datetime(
     local_tz = const.DEFAULT_TIME_ZONE
 
     # Use normalize_datetime_input for consistent handling of base_date
-    base_date = normalize_datetime_input(
+    base_dt: Optional[Union[str, date, datetime]] = normalize_datetime_input(
         base_date, default_tzinfo=local_tz, return_type=const.HELPER_RETURN_DATETIME
     )
 
-    if base_date is None:
+    if base_dt is None:
         const.LOGGER.error(
             "ERROR: Get Next Schedule DateTime - Could not parse base_date."
         )
@@ -1050,7 +1050,7 @@ def get_next_scheduled_datetime(
             raise ValueError(f"Unsupported interval type: {interval_type}")
 
     # Calculate the initial next scheduled datetime.
-    result = calculate_next_interval(base_date)
+    result = calculate_next_interval(base_dt)
     if DEBUG:
         const.LOGGER.debug(
             "DEBUG: Get Next Schedule DateTime - After calculate_next_interval, result=%s",
@@ -1088,8 +1088,8 @@ def get_next_scheduled_datetime(
                 )
 
             previous_result = result  # Store before calculating new result
-            base_date = result  # We keep result in local time.
-            result = calculate_next_interval(base_date)
+            temp_base = result  # We keep result in local time.
+            result = calculate_next_interval(temp_base)
 
             # Check if we're in a loop (result didn't change as can happen with period ends)
             if result == previous_result:
@@ -1224,7 +1224,15 @@ def get_next_applicable_day(
     return final_result
 
 
-def cleanup_period_data(self, periods_data: dict, period_keys: dict):
+def cleanup_period_data(
+    self,
+    periods_data: dict,
+    period_keys: dict,
+    retention_daily: int = None,
+    retention_weekly: int = None,
+    retention_monthly: int = None,
+    retention_yearly: int = None,
+):
     """
     Remove old period data to keep storage manageable for any period-based data (chore, point, etc).
 
@@ -1237,19 +1245,40 @@ def cleanup_period_data(self, periods_data: dict, period_keys: dict):
                 "monthly": const.DATA_KID_CHORE_DATA_PERIODS_MONTHLY,
                 "yearly": const.DATA_KID_CHORE_DATA_PERIODS_YEARLY,
             }
-    Retains:
-        - 7 days of daily data
-        - 5 weeks of weekly data
-        - 3 months of monthly data
-        - 3 years of yearly data
+        retention_daily: Number of days to retain (default: const.DEFAULT_RETENTION_DAILY)
+        retention_weekly: Number of weeks to retain (default: const.DEFAULT_RETENTION_WEEKLY)
+        retention_monthly: Number of months to retain (default: const.DEFAULT_RETENTION_MONTHLY)
+        retention_yearly: Number of years to retain (default: const.DEFAULT_RETENTION_YEARLY)
     """
     today_local = get_today_local_date()
 
-    # Daily: keep 7 days
+    # Use provided values or fall back to defaults
+    retention_daily = (
+        retention_daily
+        if retention_daily is not None
+        else const.DEFAULT_RETENTION_DAILY
+    )
+    retention_weekly = (
+        retention_weekly
+        if retention_weekly is not None
+        else const.DEFAULT_RETENTION_WEEKLY
+    )
+    retention_monthly = (
+        retention_monthly
+        if retention_monthly is not None
+        else const.DEFAULT_RETENTION_MONTHLY
+    )
+    retention_yearly = (
+        retention_yearly
+        if retention_yearly is not None
+        else const.DEFAULT_RETENTION_YEARLY
+    )
+
+    # Daily: keep configured days
     cutoff_daily = adjust_datetime_by_interval(
         today_local.isoformat(),
         interval_unit=const.CONF_DAYS,
-        delta=-7,
+        delta=-retention_daily,
         require_future=False,
         return_type=const.HELPER_RETURN_ISO_DATE,
     )
@@ -1258,11 +1287,11 @@ def cleanup_period_data(self, periods_data: dict, period_keys: dict):
         if day < cutoff_daily:
             del daily_data[day]
 
-    # Weekly: keep 5 weeks
+    # Weekly: keep configured weeks
     cutoff_date = adjust_datetime_by_interval(
         today_local.isoformat(),
         interval_unit=const.CONF_WEEKS,
-        delta=-5,
+        delta=-retention_weekly,
         require_future=False,
         return_type=const.HELPER_RETURN_DATETIME,
     )
@@ -1272,11 +1301,11 @@ def cleanup_period_data(self, periods_data: dict, period_keys: dict):
         if week < cutoff_weekly:
             del weekly_data[week]
 
-    # Monthly: keep 3 months
+    # Monthly: keep configured months
     cutoff_date = adjust_datetime_by_interval(
         today_local.isoformat(),
         interval_unit=const.CONF_MONTHS,
-        delta=-3,
+        delta=-retention_monthly,
         require_future=False,
         return_type=const.HELPER_RETURN_DATETIME,
     )
@@ -1286,12 +1315,137 @@ def cleanup_period_data(self, periods_data: dict, period_keys: dict):
         if month < cutoff_monthly:
             del monthly_data[month]
 
-    # Yearly: keep 3 years
-    cutoff_yearly = str(int(today_local.strftime("%Y")) - 3)
+    # Yearly: keep configured years
+    cutoff_yearly = str(int(today_local.strftime("%Y")) - retention_yearly)
     yearly_data = periods_data.get(period_keys["yearly"], {})
     for year in list(yearly_data.keys()):
         if year < cutoff_yearly:
             del yearly_data[year]
 
-    self._persist()
-    self.async_set_updated_data(self._data)
+    self._persist()  # type: ignore[attr-defined]  # pylint: disable=protected-access
+    self.async_set_updated_data(self._data)  # type: ignore[attr-defined]  # pylint: disable=protected-access
+
+
+# -------- Dashboard Translation Loaders --------
+def _read_json_file(file_path: str) -> dict:
+    """Read and parse a JSON file. Synchronous helper for executor."""
+    with open(file_path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+async def get_available_dashboard_languages(
+    hass: HomeAssistant,
+) -> list[dict[str, str]]:
+    """Get list of available dashboard languages.
+
+    Scans the translations directory and reads metadata from each JSON file.
+    Returns list of dicts with 'value' (language code) and 'label' (name).
+    """
+    translations_path = os.path.join(
+        os.path.dirname(__file__), const.DASHBOARD_TRANSLATIONS_DIR
+    )
+
+    available_languages = []
+
+    if not await hass.async_add_executor_job(os.path.exists, translations_path):
+        const.LOGGER.warning(
+            "Dashboard translations directory not found: %s", translations_path
+        )
+        return [{"value": "en", "label": "English"}]
+
+    try:
+        filenames = await hass.async_add_executor_job(os.listdir, translations_path)
+        for filename in filenames:
+            if not filename.endswith(".json"):
+                continue
+
+            file_path = os.path.join(translations_path, filename)
+
+            try:
+                data = await hass.async_add_executor_job(_read_json_file, file_path)
+                metadata = data.get("_metadata", {})
+
+                # Get language code and name from metadata
+                lang_code = metadata.get("language_code", filename[:-5])
+                lang_name = metadata.get("language_name", lang_code.upper())
+
+                available_languages.append({"value": lang_code, "label": lang_name})
+
+            except (OSError, json.JSONDecodeError) as err:
+                const.LOGGER.warning(
+                    "Error reading metadata from %s: %s", filename, err
+                )
+                # Fallback to filename-based language code
+                lang_code = filename[:-5]
+                available_languages.append(
+                    {"value": lang_code, "label": lang_code.upper()}
+                )
+
+        # Sort by label
+        available_languages.sort(key=lambda x: x["label"])
+
+    except OSError as err:
+        const.LOGGER.error("Error reading dashboard translations directory: %s", err)
+        return [{"value": "en", "label": "English"}]
+
+    return (
+        available_languages
+        if available_languages
+        else [{"value": "en", "label": "English"}]
+    )
+
+
+async def load_dashboard_translation(
+    hass: HomeAssistant,
+    language: str = "en",
+) -> dict[str, str]:
+    """Load a specific dashboard translation file with English fallback.
+
+    Args:
+        hass: Home Assistant instance
+        language: Language code to load (e.g., 'en', 'es', 'de')
+
+    Returns:
+        A dict with translation keys and values.
+        If the requested language is not found, returns English translations.
+        Metadata (_metadata key) is excluded from the returned translations.
+    """
+    translations_path = os.path.join(
+        os.path.dirname(__file__), const.DASHBOARD_TRANSLATIONS_DIR
+    )
+
+    if not await hass.async_add_executor_job(os.path.exists, translations_path):
+        const.LOGGER.error(
+            "Dashboard translations directory not found: %s", translations_path
+        )
+        return {}
+
+    # Try to load the requested language
+    lang_path = os.path.join(translations_path, f"{language}.json")
+    if await hass.async_add_executor_job(os.path.exists, lang_path):
+        try:
+            data = await hass.async_add_executor_job(_read_json_file, lang_path)
+            # Exclude _metadata from translations
+            translations = {k: v for k, v in data.items() if k != "_metadata"}
+            const.LOGGER.debug("Loaded %s dashboard translations", language)
+            return translations
+        except (OSError, json.JSONDecodeError) as err:
+            const.LOGGER.error("Error loading %s translations: %s", language, err)
+
+    # Fall back to English if requested language not found or errored
+    if language != "en":
+        const.LOGGER.warning(
+            "Language '%s' not found, falling back to English", language
+        )
+        en_path = os.path.join(translations_path, "en.json")
+        if await hass.async_add_executor_job(os.path.exists, en_path):
+            try:
+                data = await hass.async_add_executor_job(_read_json_file, en_path)
+                # Exclude _metadata from translations
+                translations = {k: v for k, v in data.items() if k != "_metadata"}
+                const.LOGGER.debug("Loaded English dashboard translations as fallback")
+                return translations
+            except (OSError, json.JSONDecodeError) as err:
+                const.LOGGER.error("Error loading English translations: %s", err)
+
+    return {}

@@ -15,7 +15,7 @@ from homeassistant.const import Platform
 
 def set_default_timezone(hass):
     """Set the default timezone based on the Home Assistant configuration."""
-    global DEFAULT_TIME_ZONE
+    global DEFAULT_TIME_ZONE  # pylint: disable=global-statement
     DEFAULT_TIME_ZONE = dt_util.get_time_zone(hass.config.time_zone)
 
 
@@ -46,6 +46,7 @@ COORDINATOR_SUFFIX = "_coordinator"
 # Storage and Versioning
 STORAGE_MANAGER = "storage_manager"
 STORAGE_KEY = "kidschores_data"
+STORAGE_KEY_LINKED_USERS = "linked_users"
 STORAGE_VERSION = 1
 
 # Default timezone: initially None, to be set once hass is available.
@@ -183,6 +184,7 @@ OPTIONS_FLOW_STEP_DELETE_REWARD = "delete_reward"
 CFOF_GLOBAL_INPUT_INTERNAL_ID = "internal_id"
 
 # KIDS
+CFOF_KIDS_INPUT_DASHBOARD_LANGUAGE = "dashboard_language"
 CFOF_KIDS_INPUT_ENABLE_MOBILE_NOTIFICATIONS = "enable_mobile_notifications"
 CFOF_KIDS_INPUT_ENABLE_PERSISTENT_NOTIFICATIONS = "enable_persistent_notifications"
 CFOF_KIDS_INPUT_HA_USER = "ha_user"
@@ -401,6 +403,7 @@ CONF_POINTS_LABEL = "points_label"
 
 # Kids configuration keys
 CONF_HA_USER = "ha_user"
+CONF_DASHBOARD_LANGUAGE = "dashboard_language"
 
 # Parents configuration keys
 CONF_HA_USER_ID = "ha_user_id"
@@ -522,6 +525,10 @@ CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW = "total_within_window"
 # General Options
 CONF_POINTS_ADJUST_VALUES = "points_adjust_values"
 CONF_UPDATE_INTERVAL = "update_interval"
+CONF_RETENTION_DAILY = "retention_daily"
+CONF_RETENTION_WEEKLY = "retention_weekly"
+CONF_RETENTION_MONTHLY = "retention_monthly"
+CONF_RETENTION_YEARLY = "retention_yearly"
 
 
 # ------------------------------------------------------------------------------------------------
@@ -777,6 +784,13 @@ DATA_KID_REWARD_APPROVALS = "reward_approvals"
 DATA_KID_REWARD_CLAIMS = "reward_claims"
 DATA_KID_TODAY_CHORE_APPROVALS = "today_chore_approvals"
 DATA_KID_USE_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
+DATA_KID_DASHBOARD_LANGUAGE = "dashboard_language"
+
+# ——————————————————————————————————————————————
+# Dashboard Translation Settings
+# ——————————————————————————————————————————————
+DEFAULT_DASHBOARD_LANGUAGE = "en"
+DASHBOARD_TRANSLATIONS_DIR = "translations/dashboard"
 
 # ——————————————————————————————————————————————
 # Kid Point History Data Structure
@@ -1152,6 +1166,10 @@ DEFAULT_BADGE_THRESHOLD_TYPE_UNUSED = "points"
 DEFAULT_BONUS_POINTS = 1
 DEFAULT_CALENDAR_SHOW_PERIOD = 90
 DEFAULT_CHALLENGE_REWARD_POINTS = 0
+DEFAULT_RETENTION_DAILY = 7
+DEFAULT_RETENTION_WEEKLY = 5
+DEFAULT_RETENTION_MONTHLY = 3
+DEFAULT_RETENTION_YEARLY = 3
 DEFAULT_CHALLENGE_TARGET = 1
 DEFAULT_CHORES_UNIT = "Chores"
 DEFAULT_DAILY_RESET_TIME = {"hour": 0, "minute": 0, "second": 0}
@@ -1365,6 +1383,27 @@ ATTR_THRESHOLD_VALUE = "threshold_value"
 ATTR_TRIGGER_INFO = "trigger_info"
 ATTR_TYPE = "type"
 
+# Dashboard Helper Sensor Attributes
+ATTR_CHORES_BY_LABEL = "chores_by_label"
+ATTR_CHORE_DUE_DATE = "due_date"
+ATTR_CHORE_IS_TODAY_AM = "is_today_am"
+ATTR_CHORE_LABELS = "labels"
+ATTR_CHORE_PRIMARY_GROUP = "primary_group"
+
+# Common attributes for chores and rewards in dashboard helper
+ATTR_EID = "eid"
+ATTR_NAME = "name"
+ATTR_STATUS = "status"
+ATTR_CLAIMS = "claims"
+ATTR_APPROVALS = "approvals"
+ATTR_POINTS = "points"
+ATTR_APPLIED = "applied"
+
+# Primary Group Values
+PRIMARY_GROUP_TODAY = "today"
+PRIMARY_GROUP_THIS_WEEK = "this_week"
+PRIMARY_GROUP_OTHER = "other"
+
 
 # ------------------------------------------------------------------------------------------------
 # Sensors
@@ -1568,6 +1607,45 @@ ERROR_REWARD_NOT_FOUND = "Reward not found."
 ERROR_REWARD_NOT_FOUND_FMT = "Reward '{}' not found"
 ERROR_UNNAMED_ACHIEVEMENT = "Unnamed Achievement"
 ERROR_USER_NOT_AUTHORIZED = "User is not authorized to perform this action."
+
+# Authorization Error Messages
+ERROR_NOT_AUTHORIZED_APPROVE_CHORES = (
+    "You are not authorized to approve chores for this kid."
+)
+ERROR_NOT_AUTHORIZED_DISAPPROVE_CHORES = (
+    "You are not authorized to disapprove chores for this kid."
+)
+ERROR_NOT_AUTHORIZED_REDEEM_REWARDS = (
+    "You are not authorized to redeem rewards for this kid."
+)
+ERROR_NOT_AUTHORIZED_APPROVE_REWARDS = (
+    "You are not authorized to approve rewards for this kid."
+)
+ERROR_NOT_AUTHORIZED_DISAPPROVE_REWARDS = (
+    "You are not authorized to disapprove rewards for this kid."
+)
+ERROR_NOT_AUTHORIZED_APPLY_PENALTIES = (
+    "You are not authorized to apply penalties for this kid."
+)
+ERROR_NOT_AUTHORIZED_APPLY_BONUSES = (
+    "You are not authorized to apply bonuses for this kid."
+)
+ERROR_NOT_AUTHORIZED_RESET_PENALTIES = "You are not authorized to reset penalties."
+ERROR_NOT_AUTHORIZED_RESET_BONUSES = "You are not authorized to reset bonuses."
+ERROR_NOT_AUTHORIZED_RESET_REWARDS = "You are not authorized to reset rewards."
+ERROR_NOT_AUTHORIZED_REMOVE_BADGES = "You are not authorized to remove awarded badges."
+
+# Calendar Error Messages
+ERROR_CALENDAR_CREATE_NOT_SUPPORTED = (
+    "Creating events is not supported for this calendar"
+)
+ERROR_CALENDAR_DELETE_NOT_SUPPORTED = (
+    "Deleting events is not supported for this calendar"
+)
+ERROR_CALENDAR_UPDATE_NOT_SUPPORTED = (
+    "Updating events is not supported for this calendar"
+)
+
 MSG_NO_ENTRY_FOUND = "No KidsChores entry found"
 
 # Unknown States

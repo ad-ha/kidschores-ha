@@ -966,7 +966,7 @@
         "points_awarded": {
           "name": "Vergebene Punkte",
           "description": "Punkte, die vergeben werden sollen (optional; standardmäßig die Hausarbeitspunkte).",
-          "example": 3
+          "example": "3"
         }
       }
     },

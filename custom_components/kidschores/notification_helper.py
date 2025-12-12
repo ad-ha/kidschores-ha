@@ -9,10 +9,12 @@ All texts and labels are referenced from constants.
 """
 
 from __future__ import annotations
-from typing import Optional
+
+from typing import Any, Optional
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+
 from . import const
 
 
@@ -23,17 +25,18 @@ async def async_send_notification(
     message: str,
     actions: Optional[list[dict[str, str]]] = None,
     extra_data: Optional[dict[str, str]] = None,
-    use_persistent: bool = False,
 ) -> None:
     """Send a notification using the specified notify service."""
 
-    payload = {const.NOTIFY_TITLE: title, const.NOTIFY_MESSAGE: message}
+    payload: dict[str, Any] = {const.NOTIFY_TITLE: title, const.NOTIFY_MESSAGE: message}
 
     if actions:
-        payload.setdefault(const.NOTIFY_DATA, {})[const.NOTIFY_ACTIONS] = actions
+        data = payload.setdefault(const.NOTIFY_DATA, {})
+        data[const.NOTIFY_ACTIONS] = actions  # type: ignore[index]
 
     if extra_data:
-        payload.setdefault(const.NOTIFY_DATA, {}).update(extra_data)
+        data = payload.setdefault(const.NOTIFY_DATA, {})
+        data.update(extra_data)  # type: ignore[attr-defined]
 
     try:
         if const.CONF_DOT not in notify_service:

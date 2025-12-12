@@ -291,6 +291,19 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
         }
         self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_CHORE_CLAIM}{chore_name}"
 
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    def press(self) -> None:
+        """Synchronous press - not used, Home Assistant calls async_press."""
+
     async def async_press(self):
         """Handle the button press event."""
         try:
@@ -305,7 +318,7 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            user_name = user_obj.name if user_obj else const.CONF_UNKNOWN
+            user_name = (user_obj.name if user_obj else None) or const.CONF_UNKNOWN
 
             self.coordinator.claim_chore(
                 kid_id=self._kid_id,
@@ -327,7 +340,7 @@ class ClaimChoreButton(CoordinatorEntity, ButtonEntity):
                 self._kid_name,
                 e,
             )
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             const.LOGGER.error(
                 "ERROR: Failed to Claim Chore '%s' for Kid '%s': %s",
                 self._chore_name,
@@ -385,6 +398,19 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
         }
         self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_CHORE_APPROVAL}{chore_name}"
 
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    def press(self) -> None:
+        """Synchronous press - not used, Home Assistant calls async_press."""
+
     async def async_press(self):
         """Handle the button press event."""
         try:
@@ -399,7 +425,7 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
+            parent_name = (user_obj.name if user_obj else None) or const.CONF_UNKNOWN
 
             self.coordinator.approve_chore(
                 parent_name=parent_name,
@@ -420,7 +446,7 @@ class ApproveChoreButton(CoordinatorEntity, ButtonEntity):
                 self._kid_name,
                 e,
             )
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             const.LOGGER.error(
                 "ERROR: Failed to approve Chore '%s' for Kid '%s': %s",
                 self._chore_name,
@@ -475,13 +501,24 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
         }
         self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_CHORE_DISAPPROVAL}{chore_name}"
 
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    def press(self) -> None:
+        """Synchronous press - not used, Home Assistant calls async_press."""
+
     async def async_press(self):
         """Handle the button press event."""
         try:
             # Check if there's a pending approval for this kid and chore.
-            pending_approvals = self.coordinator._data.get(
-                const.DATA_PENDING_CHORE_APPROVALS, []
-            )
+            pending_approvals = self.coordinator.pending_chore_approvals
             if not any(
                 approval[const.DATA_KID_ID] == self._kid_id
                 and approval[const.DATA_CHORE_ID] == self._chore_id
@@ -502,7 +539,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
+            parent_name = (user_obj.name if user_obj else None) or const.CONF_UNKNOWN
 
             self.coordinator.disapprove_chore(
                 parent_name=parent_name,
@@ -524,7 +561,7 @@ class DisapproveChoreButton(CoordinatorEntity, ButtonEntity):
                 self._kid_name,
                 e,
             )
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             const.LOGGER.error(
                 "ERROR: Failed to Disapprove Chore '%s' for Kid '%s': %s",
                 self._chore_name,
@@ -582,6 +619,19 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
         }
         self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_REWARD_CLAIM}{reward_name}"
 
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    def press(self) -> None:
+        """Synchronous press - not used, Home Assistant calls async_press."""
+
     async def async_press(self):
         """Handle the button press event."""
         try:
@@ -596,7 +646,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
+            parent_name = (user_obj.name if user_obj else None) or const.CONF_UNKNOWN
 
             self.coordinator.redeem_reward(
                 parent_name=parent_name,
@@ -618,7 +668,7 @@ class RewardButton(CoordinatorEntity, ButtonEntity):
                 self._kid_name,
                 e,
             )
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             const.LOGGER.error(
                 "ERROR: Failed to Redeem Reward '%s' for Kid '%s': %s",
                 self._reward_name,
@@ -674,6 +724,19 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
         }
         self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_REWARD_APPROVAL}{reward_name}"
 
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    def press(self) -> None:
+        """Synchronous press - not used, Home Assistant calls async_press."""
+
     async def async_press(self):
         """Handle the button press event."""
         try:
@@ -688,7 +751,7 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
+            parent_name = (user_obj.name if user_obj else None) or const.CONF_UNKNOWN
 
             # Approve the reward
             self.coordinator.approve_reward(
@@ -712,7 +775,7 @@ class ApproveRewardButton(CoordinatorEntity, ButtonEntity):
                 self._kid_name,
                 e,
             )
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             const.LOGGER.error(
                 "ERROR: Failed to Approve Reward '%s' for Kid '%s': %s",
                 self._reward_name,
@@ -767,13 +830,24 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
         }
         self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_REWARD_DISAPPROVAL}{reward_name}"
 
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    def press(self) -> None:
+        """Synchronous press - not used, Home Assistant calls async_press."""
+
     async def async_press(self):
         """Handle the button press event."""
         try:
             # Check if there's a pending approval for this kid and reward.
-            pending_approvals = self.coordinator._data.get(
-                const.DATA_PENDING_REWARD_APPROVALS, []
-            )
+            pending_approvals = self.coordinator.pending_reward_approvals
             if not any(
                 approval[const.DATA_KID_ID] == self._kid_id
                 and approval[const.DATA_REWARD_ID] == self._reward_id
@@ -794,7 +868,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
+            parent_name = (user_obj.name if user_obj else None) or const.CONF_UNKNOWN
 
             self.coordinator.disapprove_reward(
                 parent_name=parent_name,
@@ -816,7 +890,7 @@ class DisapproveRewardButton(CoordinatorEntity, ButtonEntity):
                 self._kid_name,
                 e,
             )
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             const.LOGGER.error(
                 "ERROR: Failed to Disapprove Reward '%s' for Kid '%s': %s",
                 self._reward_name,
@@ -875,6 +949,19 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
         }
         self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_PENALTY}{penalty_name}"
 
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    def press(self) -> None:
+        """Synchronous press - not used, Home Assistant calls async_press."""
+
     async def async_press(self):
         """Handle the button press event."""
         try:
@@ -889,7 +976,7 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
+            parent_name = (user_obj.name if user_obj else None) or const.CONF_UNKNOWN
 
             self.coordinator.apply_penalty(
                 parent_name=parent_name,
@@ -911,7 +998,7 @@ class PenaltyButton(CoordinatorEntity, ButtonEntity):
                 self._kid_name,
                 e,
             )
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             const.LOGGER.error(
                 "ERROR: Failed to Apply Penalty '%s' for Kid '%s': %s",
                 self._penalty_name,
@@ -948,7 +1035,7 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
         entry: ConfigEntry,
         kid_id: str,
         kid_name: str,
-        delta: int,
+        delta: int | float,
         points_label: str,
     ):
         """Initialize the points adjust buttons."""
@@ -990,6 +1077,19 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
         else:
             self._attr_icon = const.DEFAULT_POINTS_ADJUST_PLUS_ICON
 
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    def press(self) -> None:
+        """Synchronous press - not used, Home Assistant calls async_press."""
+
     async def async_press(self):
         """Handle the button press event."""
         try:
@@ -1022,7 +1122,7 @@ class PointsAdjustButton(CoordinatorEntity, ButtonEntity):
                 self._delta,
                 e,
             )
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             const.LOGGER.error(
                 "ERROR: Failed to adjust points for Kid '%s' by %d: %s",
                 self._kid_name,
@@ -1064,6 +1164,19 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
         }
         self.entity_id = f"{const.BUTTON_KC_PREFIX}{kid_name}{const.BUTTON_KC_EID_MIDFIX_BONUS}{bonus_name}"
 
+    @property
+    def coordinator(self) -> KidsChoresDataCoordinator:
+        """Return typed coordinator."""
+        return object.__getattribute__(self, "_coordinator")
+
+    @coordinator.setter
+    def coordinator(self, value: KidsChoresDataCoordinator) -> None:
+        """Set coordinator."""
+        object.__setattr__(self, "_coordinator", value)
+
+    def press(self) -> None:
+        """Synchronous press - not used, Home Assistant calls async_press."""
+
     async def async_press(self):
         """Handle the button press event."""
         try:
@@ -1078,7 +1191,7 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
                 )
 
             user_obj = await self.hass.auth.async_get_user(user_id) if user_id else None
-            parent_name = user_obj.name if user_obj else const.CONF_UNKNOWN
+            parent_name = (user_obj.name if user_obj else None) or const.CONF_UNKNOWN
 
             self.coordinator.apply_bonus(
                 parent_name=parent_name,
@@ -1100,7 +1213,7 @@ class BonusButton(CoordinatorEntity, ButtonEntity):
                 self._kid_name,
                 e,
             )
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             const.LOGGER.error(
                 "ERROR: Failed to Apply bBonus '%s' for Kid '%s': %s",
                 self._bonus_name,

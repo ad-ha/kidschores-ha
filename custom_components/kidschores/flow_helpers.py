@@ -4,9 +4,11 @@
 Provides schema builders and input-processing logic for internal_id-based management.
 """
 
+# pyright: reportArgumentType=false
+
 import datetime
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import voluptuous as vol
 from homeassistant.core import HomeAssistant
@@ -15,6 +17,7 @@ from homeassistant.helpers import selector
 from homeassistant.util import dt as dt_util
 
 from . import const
+from . import kc_helpers as kh
 
 # ----------------------------------------------------------------------------------
 # POINTS SCHEMA
@@ -40,7 +43,7 @@ def build_points_schema(
 # ----------------------------------------------------------------------------------
 
 
-def build_kid_schema(
+async def build_kid_schema(
     hass,
     users,
     default_kid_name=const.CONF_EMPTY,
@@ -49,6 +52,7 @@ def build_kid_schema(
     default_enable_mobile_notifications=False,
     default_mobile_notify_service=None,
     default_enable_persistent_notifications=False,
+    default_dashboard_language=None,
 ):
     """Build a Voluptuous schema for adding/editing a Kid, keyed by internal_id in the dict."""
     user_options = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}] + [
@@ -58,6 +62,9 @@ def build_kid_schema(
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
     ] + _get_notify_services(hass)
 
+    # Get available dashboard languages
+    language_options = await kh.get_available_dashboard_languages(hass)
+
     return vol.Schema(
         {
             vol.Required(const.CFOF_KIDS_INPUT_KID_NAME, default=default_kid_name): str,
@@ -66,6 +73,16 @@ def build_kid_schema(
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=user_options,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    multiple=False,
+                )
+            ),
+            vol.Optional(
+                const.CONF_DASHBOARD_LANGUAGE,
+                default=default_dashboard_language or const.DEFAULT_DASHBOARD_LANGUAGE,
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=language_options,
                     mode=selector.SelectSelectorMode.DROPDOWN,
                     multiple=False,
                 )
@@ -370,7 +387,6 @@ def build_badge_common_data(
                 threshold_value_input,
                 target_type,
             )
-            pass
 
         maintenance_rules = user_input.get(
             const.CFOF_BADGES_INPUT_MAINTENANCE_RULES,
@@ -442,7 +458,6 @@ def build_badge_common_data(
             const.LOGGER.warning(
                 "Could not parse award points value '%s'. Using default.", points_input
             )
-            pass  # Use default
         multiplier = user_input.get(
             const.CFOF_BADGES_INPUT_POINTS_MULTIPLIER, const.CONF_NONE
         )
@@ -515,7 +530,7 @@ def build_badge_common_data(
 
 def validate_badge_common_inputs(
     user_input: Dict[str, Any],
-    internal_id: str,
+    internal_id: Optional[str],
     existing_badges: Optional[Dict[str, Any]] = None,
     rewards_dict: Optional[Dict[str, Any]] = None,
     bonuses_dict: Optional[Dict[str, Any]] = None,
@@ -527,7 +542,7 @@ def validate_badge_common_inputs(
 
     Args:
         user_input: The dictionary containing user inputs from the form.
-        internal_id: The internal ID for the badge.
+        internal_id: The internal ID for the badge (None when adding a new badge).
         existing_badges: Dictionary of existing badge configurations for uniqueness checks.
         badge_type: The type of the badge (e.g., cumulative, daily, periodic). Default is cumulative.
 
@@ -603,9 +618,6 @@ def validate_badge_common_inputs(
                 )
         else:
             # Regular badge validation
-            target_type = user_input.get(
-                const.CFOF_BADGES_INPUT_TARGET_TYPE, const.DEFAULT_BADGE_TARGET_TYPE
-            )
             target_threshold = user_input.get(
                 const.CFOF_BADGES_INPUT_TARGET_THRESHOLD_VALUE
             )
@@ -1184,7 +1196,6 @@ def build_badge_common_schema(
         )
 
     # --- Awards Component Schema ---
-    award_items_valid_values = []
     if include_awards:
         # Logic from build_badge_awards_schema
 
@@ -1240,11 +1251,6 @@ def build_badge_common_schema(
                 const.DATA_BADGE_AWARDS_AWARD_ITEMS, []
             ),
         )
-
-        # Build options list to send to validation
-        award_items_valid_values = [
-            opt[const.CONF_VALUE] for opt in award_items_options
-        ]
 
         schema_fields.update(
             {
@@ -1845,7 +1851,7 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
 # ----------------------------------------------------------------------------------
 
 
-def build_general_options_schema(default: dict = None) -> vol.Schema:
+def build_general_options_schema(default: Optional[dict] = None) -> vol.Schema:
     """Build schema for general options including points adjust values and update interval."""
     default = default or {}
     current_values = default.get(const.CONF_POINTS_ADJUST_VALUES)
@@ -1861,6 +1867,18 @@ def build_general_options_schema(default: dict = None) -> vol.Schema:
     )
     default_calendar_period = default.get(
         const.CONF_CALENDAR_SHOW_PERIOD, const.DEFAULT_CALENDAR_SHOW_PERIOD
+    )
+    default_retention_daily = default.get(
+        const.CONF_RETENTION_DAILY, const.DEFAULT_RETENTION_DAILY
+    )
+    default_retention_weekly = default.get(
+        const.CONF_RETENTION_WEEKLY, const.DEFAULT_RETENTION_WEEKLY
+    )
+    default_retention_monthly = default.get(
+        const.CONF_RETENTION_MONTHLY, const.DEFAULT_RETENTION_MONTHLY
+    )
+    default_retention_yearly = default.get(
+        const.CONF_RETENTION_YEARLY, const.DEFAULT_RETENTION_YEARLY
     )
 
     return vol.Schema(
@@ -1887,6 +1905,46 @@ def build_general_options_schema(default: dict = None) -> vol.Schema:
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
                     min=1,
+                    step=1,
+                )
+            ),
+            vol.Required(
+                const.CONF_RETENTION_DAILY, default=default_retention_daily
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=1,
+                    max=90,
+                    step=1,
+                )
+            ),
+            vol.Required(
+                const.CONF_RETENTION_WEEKLY, default=default_retention_weekly
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=1,
+                    max=52,
+                    step=1,
+                )
+            ),
+            vol.Required(
+                const.CONF_RETENTION_MONTHLY, default=default_retention_monthly
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=1,
+                    max=24,
+                    step=1,
+                )
+            ),
+            vol.Required(
+                const.CONF_RETENTION_YEARLY, default=default_retention_yearly
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX,
+                    min=1,
+                    max=10,
                     step=1,
                 )
             ),
@@ -1920,7 +1978,7 @@ def _get_notify_services(hass: HomeAssistant) -> list[dict[str, str]]:
 
 
 # Ensure aware datetime objects
-def ensure_utc_datetime(hass: HomeAssistant, dt_value: any) -> str:
+def ensure_utc_datetime(hass: HomeAssistant, dt_value: Any) -> str:
     """Convert a datetime input (or datetime string) into an ISO timezone aware string(in UTC).
 
     If dt_value is naive, assume it is in the local timezone.
