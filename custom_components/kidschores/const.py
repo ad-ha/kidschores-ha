@@ -184,6 +184,7 @@ OPTIONS_FLOW_STEP_DELETE_REWARD = "delete_reward"
 CFOF_GLOBAL_INPUT_INTERNAL_ID = "internal_id"
 
 # KIDS
+CFOF_KIDS_INPUT_DASHBOARD_LANGUAGE = "dashboard_language"
 CFOF_KIDS_INPUT_ENABLE_MOBILE_NOTIFICATIONS = "enable_mobile_notifications"
 CFOF_KIDS_INPUT_ENABLE_PERSISTENT_NOTIFICATIONS = "enable_persistent_notifications"
 CFOF_KIDS_INPUT_HA_USER = "ha_user"
@@ -402,6 +403,7 @@ CONF_POINTS_LABEL = "points_label"
 
 # Kids configuration keys
 CONF_HA_USER = "ha_user"
+CONF_DASHBOARD_LANGUAGE = "dashboard_language"
 
 # Parents configuration keys
 CONF_HA_USER_ID = "ha_user_id"
@@ -782,6 +784,13 @@ DATA_KID_REWARD_APPROVALS = "reward_approvals"
 DATA_KID_REWARD_CLAIMS = "reward_claims"
 DATA_KID_TODAY_CHORE_APPROVALS = "today_chore_approvals"
 DATA_KID_USE_PERSISTENT_NOTIFICATIONS = "use_persistent_notifications"
+DATA_KID_DASHBOARD_LANGUAGE = "dashboard_language"
+
+# ——————————————————————————————————————————————
+# Dashboard Translation Settings
+# ——————————————————————————————————————————————
+DEFAULT_DASHBOARD_LANGUAGE = "en"
+DASHBOARD_TRANSLATIONS_DIR = "translations/dashboard"
 
 # ——————————————————————————————————————————————
 # Kid Point History Data Structure
@@ -1373,6 +1382,27 @@ ATTR_THRESHOLD_VALUE = "threshold_value"
 
 ATTR_TRIGGER_INFO = "trigger_info"
 ATTR_TYPE = "type"
+
+# Dashboard Helper Sensor Attributes
+ATTR_CHORES_BY_LABEL = "chores_by_label"
+ATTR_CHORE_DUE_DATE = "due_date"
+ATTR_CHORE_IS_TODAY_AM = "is_today_am"
+ATTR_CHORE_LABELS = "labels"
+ATTR_CHORE_PRIMARY_GROUP = "primary_group"
+
+# Common attributes for chores and rewards in dashboard helper
+ATTR_EID = "eid"
+ATTR_NAME = "name"
+ATTR_STATUS = "status"
+ATTR_CLAIMS = "claims"
+ATTR_APPROVALS = "approvals"
+ATTR_POINTS = "points"
+ATTR_APPLIED = "applied"
+
+# Primary Group Values
+PRIMARY_GROUP_TODAY = "today"
+PRIMARY_GROUP_THIS_WEEK = "this_week"
+PRIMARY_GROUP_OTHER = "other"
 
 
 # ------------------------------------------------------------------------------------------------

@@ -17,6 +17,7 @@ from homeassistant.helpers import selector
 from homeassistant.util import dt as dt_util
 
 from . import const
+from . import kc_helpers as kh
 
 # ----------------------------------------------------------------------------------
 # POINTS SCHEMA
@@ -42,7 +43,7 @@ def build_points_schema(
 # ----------------------------------------------------------------------------------
 
 
-def build_kid_schema(
+async def build_kid_schema(
     hass,
     users,
     default_kid_name=const.CONF_EMPTY,
@@ -51,6 +52,7 @@ def build_kid_schema(
     default_enable_mobile_notifications=False,
     default_mobile_notify_service=None,
     default_enable_persistent_notifications=False,
+    default_dashboard_language=None,
 ):
     """Build a Voluptuous schema for adding/editing a Kid, keyed by internal_id in the dict."""
     user_options = [{"value": const.CONF_EMPTY, "label": const.LABEL_NONE}] + [
@@ -60,6 +62,9 @@ def build_kid_schema(
         {"value": const.CONF_EMPTY, "label": const.LABEL_NONE}
     ] + _get_notify_services(hass)
 
+    # Get available dashboard languages
+    language_options = await kh.get_available_dashboard_languages(hass)
+
     return vol.Schema(
         {
             vol.Required(const.CFOF_KIDS_INPUT_KID_NAME, default=default_kid_name): str,
@@ -68,6 +73,16 @@ def build_kid_schema(
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=user_options,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    multiple=False,
+                )
+            ),
+            vol.Optional(
+                const.CONF_DASHBOARD_LANGUAGE,
+                default=default_dashboard_language or const.DEFAULT_DASHBOARD_LANGUAGE,
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=language_options,
                     mode=selector.SelectSelectorMode.DROPDOWN,
                     multiple=False,
                 )

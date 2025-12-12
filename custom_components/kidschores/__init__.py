@@ -27,6 +27,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the integration from a config entry."""
     const.LOGGER.info("INFO: Starting setup for KidsChores entry: %s", entry.entry_id)
 
+    # Set the home assistant configured timezone for date/time operations
+    # Must be done early before any components that use datetime helpers
+    const.set_default_timezone(hass)
+
     # Initialize the storage manager to handle persistent data.
     storage_manager = KidsChoresStorageManager(hass, const.STORAGE_KEY)
     # Initialize new file.
@@ -60,9 +64,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await async_handle_notification_action(hass, event)
 
     hass.bus.async_listen(const.NOTIFICATION_EVENT, handle_notification_event)
-
-    # Set the home assistant configured timezone for date/time operations
-    const.set_default_timezone(hass)
 
     const.LOGGER.info("INFO: KidsChores setup complete for entry: %s", entry.entry_id)
     return True

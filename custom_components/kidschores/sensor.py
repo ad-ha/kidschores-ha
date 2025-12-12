@@ -31,6 +31,9 @@ Available Sensors:
 25. DashboardHelperSensor
 """
 
+from datetime import datetime
+from typing import cast
+
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PERCENTAGE, UnitOfTime
@@ -2955,6 +2958,7 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
 
     Provides a consolidated view of all kid-related entities including chores,
     rewards, badges, bonuses, penalties, achievements, challenges, and point buttons.
+    Also serves dashboard translations for multilingual UI support.
     """
 
     _attr_has_entity_name = True
@@ -2979,6 +2983,52 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
             const.TRANS_KEY_SENSOR_ATTR_KID_NAME: kid_name
         }
 
+        # Translations cache - loaded async on entity add
+        self._ui_translations = {}
+        self._current_language = const.DEFAULT_DASHBOARD_LANGUAGE
+
+    async def async_added_to_hass(self) -> None:
+        """Load translations when entity is added to hass."""
+        await super().async_added_to_hass()
+
+        # Load translations for the current language
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        dashboard_language = kid_info.get(
+            const.DATA_KID_DASHBOARD_LANGUAGE, const.DEFAULT_DASHBOARD_LANGUAGE
+        )
+
+        self._ui_translations = await kh.load_dashboard_translation(
+            self.hass, dashboard_language
+        )
+        self._current_language = dashboard_language
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        # Check if language has changed
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        dashboard_language = kid_info.get(
+            const.DATA_KID_DASHBOARD_LANGUAGE, const.DEFAULT_DASHBOARD_LANGUAGE
+        )
+
+        # If language changed, schedule async translation reload
+        if dashboard_language != self._current_language:
+            self.hass.async_create_task(self._async_reload_translations())
+
+        super()._handle_coordinator_update()
+
+    async def _async_reload_translations(self) -> None:
+        """Reload translations asynchronously."""
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        dashboard_language = kid_info.get(
+            const.DATA_KID_DASHBOARD_LANGUAGE, const.DEFAULT_DASHBOARD_LANGUAGE
+        )
+
+        self._ui_translations = await kh.load_dashboard_translation(
+            self.hass, dashboard_language
+        )
+        self._current_language = dashboard_language
+        self.async_write_ha_state()
+
     @property
     def coordinator(self) -> KidsChoresDataCoordinator:
         """Return typed coordinator."""
@@ -2988,6 +3038,138 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
     def coordinator(self, value: KidsChoresDataCoordinator) -> None:
         """Set coordinator."""
         object.__setattr__(self, "_coordinator", value)
+
+    def _get_next_monday_7am_local(self) -> datetime:
+        """Calculate the next Monday at 7:00 AM local time.
+
+        Uses kc_helpers.get_next_applicable_day with local return type.
+        If currently Monday before 7am, returns today at 7am, otherwise next Monday.
+        """
+        now_local = kh.get_now_local_time()
+
+        # If today is Monday and before 7am, return today at 7am
+        if now_local.weekday() == 0 and now_local.hour < 7:
+            return now_local.replace(hour=7, minute=0, second=0, microsecond=0)
+
+        # Get next Monday in local time and set to 7am
+        next_monday = cast(
+            datetime,
+            kh.get_next_applicable_day(
+                dt_util.utcnow(),
+                applicable_days=[0],
+                return_type=const.HELPER_RETURN_DATETIME_LOCAL,
+            ),
+        )
+        return next_monday.replace(hour=7, minute=0, second=0, microsecond=0)
+
+    def _calculate_chore_attributes(
+        self, chore_id: str, chore_info: dict, kid_info: dict, chore_eid
+    ) -> dict:
+        """Calculate all attributes for a single chore.
+
+        Returns a dictionary with chore attributes including:
+        - eid: entity_id
+        - name: chore name
+        - status: pending/claimed/approved/overdue
+        - labels: list of label strings
+        - due_date: UTC ISO 8601 string
+        - is_today_am: boolean or None
+        - primary_group: today/this_week/other
+        """
+        chore_name = chore_info.get(
+            const.DATA_CHORE_NAME, f"{const.TRANS_KEY_LABEL_CHORE} {chore_id}"
+        )
+
+        # Determine status
+        if chore_id in kid_info.get(const.DATA_KID_APPROVED_CHORES, []):
+            status = const.CHORE_STATE_APPROVED
+        elif chore_id in kid_info.get(const.DATA_KID_CLAIMED_CHORES, []):
+            status = const.CHORE_STATE_CLAIMED
+        elif chore_id in kid_info.get(const.DATA_KID_OVERDUE_CHORES, []):
+            status = const.CHORE_STATE_OVERDUE
+        else:
+            status = const.CHORE_STATE_PENDING
+
+        # Get chore labels (always a list, even if empty)
+        chore_labels = chore_info.get(const.DATA_CHORE_LABELS, [])
+        if not isinstance(chore_labels, list):
+            chore_labels = []
+
+        # Parse due date using helper function
+        due_date_str = chore_info.get(const.DATA_CHORE_DUE_DATE)
+        due_date_utc_iso = None
+        due_date_local_dt = None
+
+        if due_date_str:
+            due_date_utc = kh.parse_datetime_to_utc(due_date_str)
+            if due_date_utc:
+                due_date_utc_iso = kh.format_datetime_with_return_type(
+                    due_date_utc, const.HELPER_RETURN_ISO_DATETIME
+                )
+                # Get datetime object for local calculations
+                due_date_local_dt = kh.format_datetime_with_return_type(
+                    due_date_utc, const.HELPER_RETURN_DATETIME_LOCAL
+                )
+
+        # Calculate is_today_am (only if due date exists and is today)
+        is_today_am = None
+        if due_date_local_dt and isinstance(due_date_local_dt, datetime):
+            today_local = kh.get_today_local_date()
+            if due_date_local_dt.date() == today_local and due_date_local_dt.hour < 12:
+                is_today_am = True
+            elif due_date_local_dt.date() == today_local:
+                is_today_am = False
+
+        # Calculate primary_group
+        recurring_frequency = chore_info.get(const.DATA_CHORE_RECURRING_FREQUENCY) or ""
+        primary_group = self._calculate_primary_group(
+            status, due_date_local_dt, recurring_frequency
+        )
+
+        return {
+            const.ATTR_EID: chore_eid,
+            const.ATTR_NAME: chore_name,
+            const.ATTR_STATUS: status,
+            const.ATTR_CHORE_LABELS: chore_labels,
+            const.ATTR_CHORE_DUE_DATE: due_date_utc_iso,
+            const.ATTR_CHORE_IS_TODAY_AM: is_today_am,
+            const.ATTR_CHORE_PRIMARY_GROUP: primary_group,
+        }
+
+    def _calculate_primary_group(
+        self, status: str, due_date_local, recurring_frequency: str
+    ) -> str:
+        """Calculate the primary group for a chore.
+
+        Returns: "today", "this_week", or "other"
+        """
+        # Overdue chores always go to today group
+        if status == const.CHORE_STATE_OVERDUE:
+            return const.PRIMARY_GROUP_TODAY
+
+        # Check due date if available
+        if due_date_local and isinstance(due_date_local, datetime):
+            today_local = kh.get_today_local_date()
+
+            # Due today -> today group
+            if due_date_local.date() == today_local:
+                return const.PRIMARY_GROUP_TODAY
+
+            # Due before next Monday 7am -> this_week group
+            next_monday_7am = self._get_next_monday_7am_local()
+            if due_date_local < next_monday_7am:
+                return const.PRIMARY_GROUP_THIS_WEEK
+
+            # Due later -> other group
+            return const.PRIMARY_GROUP_OTHER
+
+        # No due date - check recurring frequency
+        if recurring_frequency == const.FREQUENCY_DAILY:
+            return const.PRIMARY_GROUP_TODAY
+        if recurring_frequency == const.FREQUENCY_WEEKLY:
+            return const.PRIMARY_GROUP_THIS_WEEK
+
+        return const.PRIMARY_GROUP_OTHER
 
     @property
     def native_value(self):
@@ -3080,17 +3262,6 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
         for chore_id, chore_info in self.coordinator.chores_data.items():
             if self._kid_id not in chore_info.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
                 continue
-            chore_name = chore_info.get(
-                const.DATA_CHORE_NAME, f"{const.TRANS_KEY_LABEL_CHORE} {chore_id}"
-            )
-            if chore_id in kid_info.get(const.DATA_KID_APPROVED_CHORES, []):
-                status = const.CHORE_STATE_APPROVED
-            elif chore_id in kid_info.get(const.DATA_KID_CLAIMED_CHORES, []):
-                status = const.CHORE_STATE_CLAIMED
-            elif chore_id in kid_info.get(const.DATA_KID_OVERDUE_CHORES, []):
-                status = const.CHORE_STATE_OVERDUE
-            else:
-                status = const.CHORE_STATE_PENDING
 
             # Get the ChoreStatusSensor entity_id
             chore_eid = None
@@ -3101,7 +3272,23 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
                         chore_eid = entity.entity_id
                         break
 
-            chores_attr.append({"eid": chore_eid, "name": chore_name, "status": status})
+            # Use helper method to calculate all chore attributes
+            chore_attrs = self._calculate_chore_attributes(
+                chore_id, chore_info, kid_info, chore_eid
+            )
+            chores_attr.append(chore_attrs)
+
+        # Sort chores by due date (ascending, earliest first)
+        # Chores without due dates are placed at the end, sorted by entity_id
+        chores_attr.sort(
+            key=lambda c: (
+                c.get(const.ATTR_CHORE_DUE_DATE) is None,  # None values go last
+                c.get(const.ATTR_CHORE_DUE_DATE)
+                or "",  # Sort by due_date (ISO format sorts correctly)
+                c.get(const.ATTR_EID)
+                or "",  # Then by entity_id for chores without due dates
+            )
+        )
 
         rewards_attr = []
         for reward_id, reward_info in self.coordinator.rewards_data.items():
@@ -3118,12 +3305,35 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
                         reward_eid = entity.entity_id
                         break
 
+            # Get reward labels (always a list, even if empty)
+            reward_labels = reward_info.get(const.DATA_REWARD_LABELS, [])
+            if not isinstance(reward_labels, list):
+                reward_labels = []
+
+            # Get reward cost
+            reward_cost = reward_info.get(const.DATA_REWARD_COST, 0)
+
+            # Get claims and approvals counts for this reward for this kid
+            # These are stored as dicts with reward_id keys and count values
+            reward_claims = kid_info.get(const.DATA_KID_REWARD_CLAIMS, {})
+            reward_approvals = kid_info.get(const.DATA_KID_REWARD_APPROVALS, {})
+
+            claims_count = reward_claims.get(reward_id, 0)
+            approvals_count = reward_approvals.get(reward_id, 0)
+
             rewards_attr.append(
                 {
-                    "eid": reward_eid,
-                    "name": reward_name,
+                    const.ATTR_EID: reward_eid,
+                    const.ATTR_NAME: reward_name,
+                    const.ATTR_LABELS: reward_labels,
+                    const.ATTR_COST: reward_cost,
+                    const.ATTR_CLAIMS: claims_count,
+                    const.ATTR_APPROVALS: approvals_count,
                 }
             )
+
+        # Sort rewards by name (alphabetically)
+        rewards_attr.sort(key=lambda r: r.get(const.ATTR_NAME, "").lower())
 
         # Badges assigned to this kid
         # Badge applies if: no kids assigned (applies to all) OR kid is in assigned list
@@ -3148,13 +3358,26 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
                     if entity.unique_id == unique_id:
                         badge_eid = entity.entity_id
                         break
+
+            # Get badge status from kid's badge progress
+            badge_progress = kid_info.get(const.DATA_KID_BADGE_PROGRESS, {}).get(
+                badge_id, {}
+            )
+            badge_status = badge_progress.get(
+                const.DATA_KID_BADGE_PROGRESS_STATUS, const.CONF_NONE
+            )
+
             badges_attr.append(
                 {
-                    "eid": badge_eid,
-                    "name": badge_name,
+                    const.ATTR_EID: badge_eid,
+                    const.ATTR_NAME: badge_name,
                     const.ATTR_BADGE_TYPE: badge_type,
+                    const.ATTR_STATUS: badge_status,
                 }
             )
+
+        # Sort badges by name (alphabetically)
+        badges_attr.sort(key=lambda b: b.get(const.ATTR_NAME, "").lower())
 
         # Bonuses for this kid
         bonuses_attr = []
@@ -3170,7 +3393,25 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
                     if entity.unique_id == unique_id:
                         bonus_eid = entity.entity_id
                         break
-            bonuses_attr.append({"eid": bonus_eid, "name": bonus_name})
+
+            # Get bonus points
+            bonus_points = bonus_info.get(const.DATA_BONUS_POINTS, 0)
+
+            # Get applied count for this bonus for this kid
+            bonus_applies = kid_info.get(const.DATA_KID_BONUS_APPLIES, {})
+            applied_count = bonus_applies.get(bonus_id, 0)
+
+            bonuses_attr.append(
+                {
+                    const.ATTR_EID: bonus_eid,
+                    const.ATTR_NAME: bonus_name,
+                    const.ATTR_POINTS: bonus_points,
+                    const.ATTR_APPLIED: applied_count,
+                }
+            )
+
+        # Sort bonuses by name (alphabetically)
+        bonuses_attr.sort(key=lambda b: b.get(const.ATTR_NAME, "").lower())
 
         # Penalties for this kid
         penalties_attr = []
@@ -3186,7 +3427,25 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
                     if entity.unique_id == unique_id:
                         penalty_eid = entity.entity_id
                         break
-            penalties_attr.append({"eid": penalty_eid, "name": penalty_name})
+
+            # Get penalty points (stored as positive, represents points removed)
+            penalty_points = penalty_info.get(const.DATA_PENALTY_POINTS, 0)
+
+            # Get applied count for this penalty for this kid
+            penalty_applies = kid_info.get(const.DATA_KID_PENALTY_APPLIES, {})
+            applied_count = penalty_applies.get(penalty_id, 0)
+
+            penalties_attr.append(
+                {
+                    const.ATTR_EID: penalty_eid,
+                    const.ATTR_NAME: penalty_name,
+                    const.ATTR_POINTS: penalty_points,
+                    const.ATTR_APPLIED: applied_count,
+                }
+            )
+
+        # Sort penalties by name (alphabetically)
+        penalties_attr.sort(key=lambda p: p.get(const.ATTR_NAME, "").lower())
 
         # Achievements assigned to this kid
         achievements_attr = []
@@ -3210,7 +3469,15 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
                     if entity.unique_id == unique_id:
                         achievement_eid = entity.entity_id
                         break
-            achievements_attr.append({"eid": achievement_eid, "name": achievement_name})
+            achievements_attr.append(
+                {
+                    const.ATTR_EID: achievement_eid,
+                    const.ATTR_NAME: achievement_name,
+                }
+            )
+
+        # Sort achievements by name (alphabetically)
+        achievements_attr.sort(key=lambda a: a.get(const.ATTR_NAME, "").lower())
 
         # Challenges assigned to this kid
         challenges_attr = []
@@ -3231,7 +3498,15 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
                     if entity.unique_id == unique_id:
                         challenge_eid = entity.entity_id
                         break
-            challenges_attr.append({"eid": challenge_eid, "name": challenge_name})
+            challenges_attr.append(
+                {
+                    const.ATTR_EID: challenge_eid,
+                    const.ATTR_NAME: challenge_name,
+                }
+            )
+
+        # Sort challenges by name (alphabetically)
+        challenges_attr.sort(key=lambda c: c.get(const.ATTR_NAME, "").lower())
 
         # Point adjustment buttons for this kid
         points_buttons_attr = []
@@ -3313,8 +3588,50 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
                     elif entity.domain == "button":
                         activity_monitor_entities.append(entity.entity_id)
 
+        # Get kid's preferred dashboard language (default to English)
+        kid_info = self.coordinator.kids_data.get(self._kid_id, {})
+        dashboard_language = kid_info.get(
+            const.DATA_KID_DASHBOARD_LANGUAGE, const.DEFAULT_DASHBOARD_LANGUAGE
+        )
+
+        # Build chores_by_label dictionary
+        # Group chores by label, with entity IDs sorted by due date
+        chores_by_label = {}
+        for chore in chores_attr:
+            labels = chore.get(const.ATTR_CHORE_LABELS, [])
+            chore_eid = chore.get(const.ATTR_EID)
+
+            # Skip chores without entity IDs
+            if not chore_eid:
+                continue
+
+            # Add this chore to each label group it belongs to
+            for label in labels:
+                if label not in chores_by_label:
+                    chores_by_label[label] = []
+                chores_by_label[label].append(chore)
+
+        # Sort chores within each label by due date (ascending, earliest first)
+        # Chores without due dates are placed at the end, sorted by entity_id
+        for label, chore_list in chores_by_label.items():
+            chore_list.sort(
+                key=lambda c: (
+                    c.get(const.ATTR_CHORE_DUE_DATE) is None,  # None values go last
+                    c.get(const.ATTR_CHORE_DUE_DATE)
+                    or "",  # Sort by due_date (ISO format sorts correctly)
+                    c.get(const.ATTR_EID)
+                    or "",  # Then by entity_id for chores without due dates
+                )
+            )
+            # Convert to list of entity IDs only
+            chores_by_label[label] = [c[const.ATTR_EID] for c in chore_list]
+
+        # Sort labels alphabetically for consistent ordering
+        chores_by_label = dict(sorted(chores_by_label.items()))
+
         return {
             "chores": chores_attr,
+            const.ATTR_CHORES_BY_LABEL: chores_by_label,
             "rewards": rewards_attr,
             "badges": badges_attr,
             "bonuses": bonuses_attr,
@@ -3324,6 +3641,8 @@ class DashboardHelperSensor(CoordinatorEntity, SensorEntity):
             "points_buttons": points_buttons_attr,
             "activity_monitor_entities": activity_monitor_entities,
             const.ATTR_KID_NAME: self._kid_name,
+            "ui_translations": self._ui_translations,
+            "language": dashboard_language,
         }
 
     @property

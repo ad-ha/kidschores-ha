@@ -185,7 +185,7 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
         # Retrieve HA users for linking
         users = await self.hass.auth.async_get_users()
-        kid_schema = fh.build_kid_schema(
+        kid_schema = await fh.build_kid_schema(
             self.hass,
             users=users,
             default_kid_name=const.CONF_EMPTY,

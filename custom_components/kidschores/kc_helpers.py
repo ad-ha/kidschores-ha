@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import json
+import os
 from calendar import monthrange
 from datetime import date, datetime, timedelta, tzinfo
 from typing import TYPE_CHECKING, Iterable, Optional, Union
@@ -1322,3 +1324,128 @@ def cleanup_period_data(
 
     self._persist()  # type: ignore[attr-defined]  # pylint: disable=protected-access
     self.async_set_updated_data(self._data)  # type: ignore[attr-defined]  # pylint: disable=protected-access
+
+
+# -------- Dashboard Translation Loaders --------
+def _read_json_file(file_path: str) -> dict:
+    """Read and parse a JSON file. Synchronous helper for executor."""
+    with open(file_path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+async def get_available_dashboard_languages(
+    hass: HomeAssistant,
+) -> list[dict[str, str]]:
+    """Get list of available dashboard languages.
+
+    Scans the translations directory and reads metadata from each JSON file.
+    Returns list of dicts with 'value' (language code) and 'label' (name).
+    """
+    translations_path = os.path.join(
+        os.path.dirname(__file__), const.DASHBOARD_TRANSLATIONS_DIR
+    )
+
+    available_languages = []
+
+    if not await hass.async_add_executor_job(os.path.exists, translations_path):
+        const.LOGGER.warning(
+            "Dashboard translations directory not found: %s", translations_path
+        )
+        return [{"value": "en", "label": "English"}]
+
+    try:
+        filenames = await hass.async_add_executor_job(os.listdir, translations_path)
+        for filename in filenames:
+            if not filename.endswith(".json"):
+                continue
+
+            file_path = os.path.join(translations_path, filename)
+
+            try:
+                data = await hass.async_add_executor_job(_read_json_file, file_path)
+                metadata = data.get("_metadata", {})
+
+                # Get language code and name from metadata
+                lang_code = metadata.get("language_code", filename[:-5])
+                lang_name = metadata.get("language_name", lang_code.upper())
+
+                available_languages.append({"value": lang_code, "label": lang_name})
+
+            except (OSError, json.JSONDecodeError) as err:
+                const.LOGGER.warning(
+                    "Error reading metadata from %s: %s", filename, err
+                )
+                # Fallback to filename-based language code
+                lang_code = filename[:-5]
+                available_languages.append(
+                    {"value": lang_code, "label": lang_code.upper()}
+                )
+
+        # Sort by label
+        available_languages.sort(key=lambda x: x["label"])
+
+    except OSError as err:
+        const.LOGGER.error("Error reading dashboard translations directory: %s", err)
+        return [{"value": "en", "label": "English"}]
+
+    return (
+        available_languages
+        if available_languages
+        else [{"value": "en", "label": "English"}]
+    )
+
+
+async def load_dashboard_translation(
+    hass: HomeAssistant,
+    language: str = "en",
+) -> dict[str, str]:
+    """Load a specific dashboard translation file with English fallback.
+
+    Args:
+        hass: Home Assistant instance
+        language: Language code to load (e.g., 'en', 'es', 'de')
+
+    Returns:
+        A dict with translation keys and values.
+        If the requested language is not found, returns English translations.
+        Metadata (_metadata key) is excluded from the returned translations.
+    """
+    translations_path = os.path.join(
+        os.path.dirname(__file__), const.DASHBOARD_TRANSLATIONS_DIR
+    )
+
+    if not await hass.async_add_executor_job(os.path.exists, translations_path):
+        const.LOGGER.error(
+            "Dashboard translations directory not found: %s", translations_path
+        )
+        return {}
+
+    # Try to load the requested language
+    lang_path = os.path.join(translations_path, f"{language}.json")
+    if await hass.async_add_executor_job(os.path.exists, lang_path):
+        try:
+            data = await hass.async_add_executor_job(_read_json_file, lang_path)
+            # Exclude _metadata from translations
+            translations = {k: v for k, v in data.items() if k != "_metadata"}
+            const.LOGGER.debug("Loaded %s dashboard translations", language)
+            return translations
+        except (OSError, json.JSONDecodeError) as err:
+            const.LOGGER.error("Error loading %s translations: %s", language, err)
+
+    # Fall back to English if requested language not found or errored
+    if language != "en":
+        const.LOGGER.warning(
+            "Language '%s' not found, falling back to English", language
+        )
+        en_path = os.path.join(translations_path, "en.json")
+        if await hass.async_add_executor_job(os.path.exists, en_path):
+            try:
+                data = await hass.async_add_executor_job(_read_json_file, en_path)
+                # Exclude _metadata from translations
+                translations = {k: v for k, v in data.items() if k != "_metadata"}
+                const.LOGGER.debug("Loaded English dashboard translations as fallback")
+                return translations
+            except (OSError, json.JSONDecodeError) as err:
+                const.LOGGER.error("Error loading English translations: %s", err)
+
+    return {}

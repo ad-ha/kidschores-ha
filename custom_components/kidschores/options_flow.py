@@ -373,7 +373,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         # Retrieve HA users for linking
         users = await self.hass.auth.async_get_users()
-        schema = fh.build_kid_schema(
+        schema = await fh.build_kid_schema(
             self.hass,
             users=users,
             default_kid_name=const.CONF_EMPTY,
@@ -1227,6 +1227,11 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 const.CFOF_KIDS_INPUT_ENABLE_PERSISTENT_NOTIFICATIONS, True
             )
 
+            dashboard_language = user_input.get(
+                const.CFOF_KIDS_INPUT_DASHBOARD_LANGUAGE,
+                const.DEFAULT_DASHBOARD_LANGUAGE,
+            )
+
             # Check for duplicate names excluding current kid
             if any(
                 data[const.DATA_KID_NAME] == new_name and eid != internal_id
@@ -1239,6 +1244,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 kid_data[const.DATA_KID_ENABLE_NOTIFICATIONS] = enable_notifications
                 kid_data[const.DATA_KID_MOBILE_NOTIFY_SERVICE] = mobile_notify_service
                 kid_data[const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS] = use_persistent
+                kid_data[const.DATA_KID_DASHBOARD_LANGUAGE] = dashboard_language
 
                 self._entry_options[const.CONF_KIDS] = kids_dict
 
@@ -1250,7 +1256,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
 
         # Retrieve HA users for linking
         users = await self.hass.auth.async_get_users()
-        schema = fh.build_kid_schema(
+        schema = await fh.build_kid_schema(
             self.hass,
             users=users,
             default_kid_name=kid_data[const.DATA_KID_NAME],
@@ -1263,6 +1269,9 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
             ),
             default_enable_persistent_notifications=kid_data.get(
                 const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS, True
+            ),
+            default_dashboard_language=kid_data.get(
+                const.DATA_KID_DASHBOARD_LANGUAGE, const.DEFAULT_DASHBOARD_LANGUAGE
             ),
             internal_id=internal_id,
         )
