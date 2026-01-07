@@ -3118,8 +3118,10 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         if not chore_info:
             return None
 
+        # Default to INDEPENDENT if completion_criteria not set (backward compatibility)
+        # This ensures pre-migration chores without completion_criteria are treated as INDEPENDENT
         completion_criteria = chore_info.get(
-            const.DATA_CHORE_COMPLETION_CRITERIA, const.SENTINEL_EMPTY
+            const.DATA_CHORE_COMPLETION_CRITERIA, const.COMPLETION_CRITERIA_INDEPENDENT
         )
 
         if completion_criteria == const.COMPLETION_CRITERIA_INDEPENDENT:

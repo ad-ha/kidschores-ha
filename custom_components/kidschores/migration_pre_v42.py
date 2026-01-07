@@ -100,6 +100,13 @@ class PreV42Migrator:
         # Fixes Python float arithmetic drift (e.g., 27.499999999999996 → 27.5)
         self._round_float_precision()
 
+        # Phase 7: Clean up orphaned/deprecated dynamic entities
+        # This is called unconditionally because _initialize_data_from_config() only
+        # calls this for KC 3.x config migrations, leaving storage-only users with
+        # orphaned entities from previous versions (e.g., integer-delta buttons).
+        self.coordinator.remove_deprecated_button_entities()
+        self.coordinator.remove_deprecated_sensor_entities()
+
         const.LOGGER.info("All pre-v42 migrations completed successfully")
 
     def _migrate_independent_chores(self) -> None:
