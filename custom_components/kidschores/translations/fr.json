@@ -1,0 +1,3295 @@
+{
+  "title": "KidsChores",
+  "config": {
+    "step": {
+      "intro": {
+        "title": "Bienvenue sur KidsChores",
+        "description": "Cet assistant vous guidera tout au long de la configuration de KidsChores."
+      },
+      "data_recovery": {
+        "title": "Options de récupération de données",
+        "description": "Données KidsChores existantes trouvées dans :\n{storage_path}\n\nFichiers de sauvegarde trouvés : {backup_count} .\n\nQue souhaitez-vous faire ?",
+        "data": {
+          "backup_selection": "Sélectionnez une option"
+        }
+      },
+      "points_label": {
+        "title": "Étiquette des points",
+        "description": "Choisissez une étiquette et une icône pour les points.",
+        "data": {
+          "points_label": "Étiquette des points",
+          "points_icon": "Icône des points"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurer les paramètres système",
+        "description": "Mettre à jour les paramètres système tels que l'étiquette et l'icône des points.",
+        "data": {
+          "points_label": "Étiquette des points",
+          "points_icon": "Icône des points"
+        }
+      },
+      "kid_count": {
+        "title": "Nombre d'enfants",
+        "description": "Combien d'enfants souhaitez-vous gérer ?",
+        "data": {
+          "kid_count": "Nombre d'enfants"
+        }
+      },
+      "kids": {
+        "title": "Définir Enfant",
+        "description": "Veuillez saisir le nom de chaque enfant.",
+        "data": {
+          "kid_name": "Nom de l'enfant",
+          "internal_id": "ID interne",
+          "ha_user": "Utilisateur de Home Assistant",
+          "enable_mobile_notifications": "Activer les notifications mobiles",
+          "mobile_notify_service": "Service de notification",
+          "enable_persistent_notifications": "Activer les notifications persistantes"
+        }
+      },
+      "parent_count": {
+        "title": "Nombre de parents",
+        "description": "Combien de parents souhaitez-vous définir initialement ?",
+        "data": {
+          "parent_count": "Nombre de parents"
+        }
+      },
+      "parents": {
+        "title": "Définir le parent",
+        "description": "Saisissez les informations concernant chaque parent.",
+        "data": {
+          "parent_name": "Nom du parent",
+          "ha_user_id": "Utilisateur de Home Assistant",
+          "associated_kids": "Enfants associés",
+          "enable_mobile_notifications": "Activer les notifications mobiles",
+          "mobile_notify_service": "Service de notification",
+          "enable_persistent_notifications": "Activer les notifications persistantes",
+          "internal_id": "ID interne"
+        }
+      },
+      "chore_count": {
+        "title": "Nombre de tâches ménagères",
+        "description": "Combien de tâches ménagères souhaitez-vous définir ?",
+        "data": {
+          "chore_count": "Nombre de tâches ménagères"
+        }
+      },
+      "chores": {
+        "title": "Ajouter une tâche",
+        "description": "Créez une nouvelle tâche avec des points, des affectations et une planification récurrente.",
+        "data": {
+          "chore_name": "📋 Nom de la tâche",
+          "chore_description": "📋 Description (facultatif)",
+          "icon": "📋 Icône (mdi:xxx)",
+          "chore_labels": "📋 Étiquettes (facultatif)",
+          "default_points": "💰 Points attribués",
+          "assigned_kids": "👥 Enfants assignés",
+          "completion_criteria": "👥 Type d'achèvement",
+          "approval_reset_type": "➡️ Nombre de complétions autorisées et réinitialisation du temps",
+          "approval_reset_pending_claim_action": "➡️ Réclamations en attente à la réinitialisation",
+          "overdue_handling_type": "⏰ En retard : Type de traitement",
+          "auto_approve": "✅ Approbation automatique des demandes ?",
+          "recurring_frequency": "🔄 Horaire : Fréquence",
+          "custom_interval": "🔄 Programmation : Intervalle personnalisé (pour une fréquence personnalisée)",
+          "custom_interval_unit": "🔄 Programme : Unité d’intervalle personnalisée",
+          "applicable_days": "📅 Calendrier : Jours concernés (facultatif)",
+          "due_date": "📅 Calendrier : Date d’échéance (facultatif)",
+          "show_on_calendar": "📅 Afficher dans le calendrier ?",
+          "chore_notifications": "🔔 Notifications d'événements (facultatif)"
+        },
+        "data_description": {
+          "chore_name": "Nom unique affiché dans tout le système.",
+          "chore_description": "Instructions ou détails facultatifs sur la manière d'accomplir cette tâche.",
+          "icon": "Icône Material Design (ex. : mdi:balai, mdi:lave-vaisselle).",
+          "chore_labels": "Étiquettes pour organiser les tâches ménagères (ex. : « cuisine », « extérieur »). Laisser vide si non nécessaire.",
+          "default_points": "Points obtenus une fois le projet terminé.",
+          "assigned_kids": "Les enfants qui peuvent voir et revendiquer cette tâche.",
+          "completion_criteria": "Fonctionnement des tâches partagées : Indépendantes (chaque enfant effectue les tâches séparément), Partagées par tous (l’approbation de tous est requise) ou Partagées en premier (la première approbation valide la tâche).",
+          "approval_reset_type": "Contrôle le moment où cette tâche se réinitialise et le nombre de fois où elle peut être effectuée pendant cette période.",
+          "approval_reset_pending_claim_action": "Lorsque cette tâche est réinitialisée (en fonction du délai de réinitialisation de l'achèvement ci-dessus), qu'advient-il des demandes qui attendent encore d'être approuvées ?",
+          "overdue_handling_type": "Actions à entreprendre après la date d'échéance : Masquer le statut de retard, maintenir le statut de retard jusqu'à ce que la demande soit réclamée, ou réinitialiser le statut à « en attente » lors du prochain cycle d'approbation.",
+          "auto_approve": "Une fois activées, les demandes sont approuvées instantanément sans validation parentale.",
+          "recurring_frequency": "Fréquence de répétition de la tâche : Quotidienne, Hebdomadaire, Mensuelle, Annuelle, Personnalisée ou Aucune.",
+          "custom_interval": "Nombre d'unités de temps entre les répétitions (ex. : 3 pour « toutes les 3 semaines »). Utilisé uniquement avec la fréquence personnalisée.",
+          "custom_interval_unit": "Unité de temps pour l'intervalle personnalisé (jours, semaines, mois). Utilisée uniquement avec la fréquence personnalisée.",
+          "applicable_days": "Limiter la tâche à certains jours de la semaine. Laisser vide pour tous les jours.",
+          "due_date": "Date limite facultative. Peut être combinée avec des planifications récurrentes.",
+          "show_on_calendar": "Afficher cette tâche dans le calendrier.",
+          "chore_notifications": "Quand envoyer les notifications : lors de la réclamation, lors de l’approbation, lors du rejet ou toute combinaison de ces éléments."
+        }
+      },
+      "badge_count": {
+        "title": "Nombre de badges",
+        "description": "Combien de badges souhaitez-vous définir ?",
+        "data": {
+          "badge_count": "Compteur de badges"
+        }
+      },
+      "badges": {
+        "title": "Ajouter un badge cumulatif",
+        "description": "Configurez les détails d'un badge cumulatif. Ces badges récompensent les enfants pour l'atteinte de certains paliers de points cumulés et permettent de mettre en place des cycles de suivi pour encourager la progression continue.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "target_type": "🎯 CIBLE : Type de cible",
+          "threshold_value": "🎯 CIBLE : Valeur seuil",
+          "maintenance_rules": "🎯 CIBLE : Points de maintenance (facultatif)",
+          "occasion_type": "🎉 Type d'occasion",
+          "associated_achievement": "🏆 Réalisation associée",
+          "associated_challenge": "🏁 Défi associé",
+          "selected_chores": "🧹 Suivi des tâches ménagères (facultatif)",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, Récompenses, Bonus, Multiplicateur (Optionnel)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)",
+          "points_multiplier": "🎁 RÉCOMPENSES : Multiplicateur de points (Par défaut 💎 1,0x)",
+          "recurring_frequency": "🔄 CYCLE D'ENTRETIEN : Fréquence",
+          "custom_interval": "🔄 CYCLE D'ENTRETIEN : Intervalle personnalisé (requis pour une fréquence personnalisée)",
+          "custom_interval_unit": "🔄 CYCLE DE MAINTENANCE : Unité d’intervalle personnalisée (requise pour une fréquence personnalisée)",
+          "start_date": "🔄 RÉINITIALISER LE CYCLE : Date de début (facultatif)",
+          "end_date": "🔄 CYCLE DE MAINTENANCE : Date de fin (facultatif)",
+          "grace_period_days": "🔄 CYCLE DE MAINTENANCE : Délai de grâce en jours (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "target_type": "Sélectionnez le type d'objectif pour ce badge (par exemple, points ou nombre de tâches ménagères).",
+          "threshold_value": "Définissez le nombre total de points requis pour obtenir ce badge.",
+          "maintenance_rules": "Spécifiez le nombre minimum de points requis pendant le cycle de maintenance pour conserver le badge et son multiplicateur actif (facultatif).",
+          "occasion_type": "Choisissez le type d'occasion pour ce badge (par exemple, vacances, anniversaire).",
+          "associated_achievement": "Associez ce badge à une réussite pour en assurer le suivi.",
+          "associated_challenge": "Associez ce badge à un défi pour le suivi.",
+          "selected_chores": "Sélectionnez les tâches qui permettent d'obtenir des points pour ce badge. Laissez ce champ vide si vous souhaitez suivre toutes les tâches assignées (facultatif).",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Choisissez un ou plusieurs éléments parmi les points, les récompenses, les bonus ou un multiplicateur de points. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif).",
+          "points_multiplier": "Si le multiplicateur est une récompense sélectionnée, définissez un multiplicateur pour les points gagnés pendant que ce badge est actif (par exemple, 1,5x).",
+          "recurring_frequency": "Activez le cycle de maintenance, exigeant que le nombre minimum de points spécifié soit atteint avant la fin de la période (par exemple, hebdomadaire, mensuel).",
+          "custom_interval": "Indiquez le NOMBRE de jours, de semaines, de mois, etc. pour la fréquence personnalisée (par exemple, 3 si vous définissez 3 semaines). Ceci s'applique uniquement à la fréquence personnalisée.",
+          "custom_interval_unit": "Sélectionnez l'unité de l'intervalle personnalisé (par exemple, jours, semaines). S'applique uniquement à la fréquence personnalisée.",
+          "start_date": "Définissez la date de début (facultatif).",
+          "end_date": "Sélectionnez la date de fin du cycle de maintenance. (facultatif).",
+          "grace_period_days": "Précisez le nombre de jours supplémentaires après la fin du cycle pour que les enfants atteignent le nombre de points requis avant la rétrogradation. (facultatif)."
+        }
+      },
+      "reward_count": {
+        "title": "Nombre de récompenses",
+        "description": "Combien de récompenses souhaitez-vous définir ?",
+        "data": {
+          "reward_count": "Nombre de récompenses"
+        }
+      },
+      "rewards": {
+        "title": "Définir la récompense",
+        "description": "Saisissez les détails de chaque récompense.",
+        "data": {
+          "reward_name": "Nom de la récompense",
+          "internal_id": "ID interne",
+          "reward_cost": "Coût de la récompense",
+          "reward_description": "Description (facultatif)",
+          "reward_labels": "Étiquettes de récompense",
+          "icon": "Icône (mdi:xxx)"
+        }
+      },
+      "penalty_count": {
+        "title": "Nombre de pénalités",
+        "description": "Combien de pénalités souhaitez-vous définir ?",
+        "data": {
+          "penalty_count": "Nombre de pénalités"
+        }
+      },
+      "penalties": {
+        "title": "Définir la pénalité",
+        "description": "Veuillez saisir les détails de chaque pénalité.",
+        "data": {
+          "penalty_name": "Nom de la pénalité",
+          "penalty_description": "Description (facultatif)",
+          "penalty_labels": "Étiquettes de pénalité",
+          "internal_id": "ID interne",
+          "penalty_points": "Points de pénalité (négatifs)",
+          "icon": "Icône (mdi:xxx)"
+        }
+      },
+      "bonus_count": {
+        "title": "Nombre de bonus",
+        "description": "Combien de bonus souhaitez-vous définir ?",
+        "data": {
+          "bonus_count": "Les bonus comptent"
+        }
+      },
+      "bonuses": {
+        "title": "Définir le bonus",
+        "description": "Saisissez les détails de chaque bonus.",
+        "data": {
+          "bonus_name": "Nom du bonus",
+          "bonus_description": "Description (facultatif)",
+          "bonus_labels": "Étiquettes bonus",
+          "internal_id": "ID interne",
+          "bonus_points": "Points bonus",
+          "icon": "Icône (mdi:xxx)"
+        }
+      },
+      "achievement_count": {
+        "title": "Nombre de réalisations",
+        "description": "Combien de réalisations souhaitez-vous définir ?",
+        "data": {
+          "achievement_count": "Nombre de réalisations"
+        }
+      },
+      "achievements": {
+        "title": "Définir la réussite",
+        "description": "Saisissez les détails de chaque réalisation.",
+        "data": {
+          "name": "Nom du succès",
+          "description": "Description (facultatif)",
+          "achievement_labels": "Étiquettes de réussite",
+          "icon": "Icône (mdi:xxx)",
+          "assigned_kids": "Enfants assignés",
+          "type": "Type de réalisation",
+          "selected_chore_id": "Sélectionner la tâche associée",
+          "criteria": "Critères (facultatif)",
+          "target_value": "Objectif de réalisation",
+          "reward_points": "Points bonus pour avoir accompli la mission",
+          "internal_id": "ID interne"
+        }
+      },
+      "challenge_count": {
+        "title": "Nombre de défis",
+        "description": "Combien de défis souhaitez-vous définir ?",
+        "data": {
+          "challenge_count": "Défi du nombre"
+        }
+      },
+      "challenges": {
+        "title": "Définir le défi",
+        "description": "Saisissez les détails de chaque défi.",
+        "data": {
+          "name": "Nom du défi",
+          "description": "Description (facultatif)",
+          "challenge_labels": "Étiquettes de défi",
+          "icon": "Icône (mdi:xxx)",
+          "assigned_kids": "Enfants assignés",
+          "type": "Type de défi",
+          "selected_chore_id": "Sélectionnez la tâche associée au défi (facultatif)",
+          "criteria": "Critères (facultatif)",
+          "target_value": "Défis Cible",
+          "reward_points": "Points bonus pour avoir relevé le défi",
+          "start_date": "Date de début",
+          "end_date": "Date de fin",
+          "internal_id": "ID interne"
+        }
+      },
+      "finish": {
+        "title": "Révision et finalisation",
+        "description": "Vérifiez la configuration :\n{summary}\nCliquez sur Soumettre pour finaliser."
+      }
+    },
+    "error": {
+      "a_chore_must_be_selected": "Une tâche doit être sélectionnée",
+      "badge_requires_assignment": "Au moins un enfant doit être associé à ce badge.",
+      "duplicate_achievement": "Un succès portant ce nom existe déjà.",
+      "duplicate_badge": "Un badge portant ce nom existe déjà.",
+      "duplicate_challenge": "Un défi portant ce nom existe déjà.",
+      "duplicate_chore": "Il existe déjà une tâche portant ce nom",
+      "duplicate_kid": "Un enfant portant ce nom existe déjà.",
+      "duplicate_parent": "Un parent portant ce nom existe déjà.",
+      "duplicate_penalty": "Une sanction portant ce nom existe déjà.",
+      "duplicate_reward": "Une récompense portant ce nom existe déjà.",
+      "duplicate_bonus": "Un bonus portant ce nom existe déjà.",
+      "due_date_in_past": "La date d'échéance doit être future.",
+      "end_date_in_past": "La date de fin doit être future.",
+      "end_date_not_after_start_date": "La date de fin doit être postérieure à la date de début.",
+      "invalid_achievement_count": "Nombre de succès invalide",
+      "invalid_achievement_name": "Nom de succès invalide",
+      "invalid_badge": "Badge invalide",
+      "invalid_badge_count": "Nombre de badges invalide",
+      "invalid_badge_name": "Nom de badge invalide",
+      "invalid_challenge_count": "Nombre de défis invalide",
+      "invalid_challenge_name": "Nom du défi invalide",
+      "invalid_chore": "Tâche invalide",
+      "invalid_chore_count": "Nombre de tâches invalide",
+      "invalid_chore_name": "Nom de tâche invalide",
+      "invalid_due_date": "Date d'échéance invalide",
+      "date_required_for_frequency": "Une date d'échéance est requise pour cette fréquence récurrente. L'option « Date d'échéance » ne fonctionne qu'avec les fréquences « Aucune », « Quotidienne » ou « Hebdomadaire ».",
+      "invalid_end_date": "Date de fin invalide.",
+      "invalid_kid_count": "Nombre d'enfants invalide",
+      "invalid_kid_name": "Nom d'enfant invalide",
+      "invalid_parent_count": "Nombre de parents invalide",
+      "invalid_parent_name": "Nom du parent invalide",
+      "no_kids_assigned": "Au moins un enfant doit être affecté à cette tâche.",
+      "invalid_penalty": "Pénalité non valable",
+      "invalid_penalty_count": "Nombre de pénalités invalide",
+      "invalid_penalty_name": "Nom de pénalité invalide",
+      "invalid_reward": "Récompense invalide",
+      "invalid_reward_count": "Nombre de récompenses invalide",
+      "invalid_reward_name": "Nom de récompense invalide",
+      "invalid_bonus": "Bonus invalide",
+      "invalid_bonus_count": "Nombre de bonus invalide",
+      "invalid_bonus_name": "Nom de bonus invalide",
+      "invalid_start_date": "Date de début invalide.",
+      "start_date_in_past": "La date de début doit être future.",
+      "points_label_required": "L'étiquette des points est requise.",
+      "corrupt_file": "Le fichier sélectionné contient un JSON invalide et ne peut pas être lu.",
+      "invalid_structure": "Le fichier sélectionné ne contient pas la structure de données requise.",
+      "file_not_found": "Le fichier sélectionné est introuvable.",
+      "invalid_selection": "Veuillez sélectionner une option valide.",
+      "invalid_input": "Les données saisies sont invalides. Veuillez vérifier vos saisies et réessayer.",
+      "duplicate_name": "Un objet portant ce nom existe déjà. Veuillez choisir un autre nom.",
+      "invalid_date_range": "La plage de dates est invalide. La date de fin doit être postérieure à la date de début.",
+      "missing_required": "Champ obligatoire manquant. Veuillez fournir toutes les informations requises.",
+      "invalid_format": "Le format est invalide. Veuillez vérifier votre saisie et réessayer.",
+      "invalid_update_interval": "Intervalle de mise à jour invalide. Doit être un entier positif.",
+      "invalid_calendar_show_period": "Période d'affichage du calendrier invalide. Doit être un entier positif.",
+      "invalid_retention_period": "Période de conservation invalide. Doit être un entier positif.",
+      "invalid_points_adjust_values": "Les points invalides ajustent les valeurs. Doit être une liste."
+    },
+    "abort": {
+      "single_instance_allowed": "Une seule instance de KidsChores peut être configurée.",
+      "already_configured": "Les données de KidsChores ont été restaurées avec succès. Vous pouvez maintenant recharger l'intégration.",
+      "file_not_found": "Le fichier de sauvegarde sélectionné est introuvable.",
+      "corrupt_file": "Le fichier sélectionné contient un JSON invalide et ne peut pas être lu.",
+      "invalid_structure": "Le fichier sélectionné ne contient pas la structure de données KidsChores requise.",
+      "reconfigure_failed": "La reconfiguration a échoué. Veuillez réessayer.",
+      "reconfigure_successful": "Paramètres système mis à jour avec succès."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options de tâches ménagères pour les enfants",
+        "description": "Gérer les enfants, les corvées, les badges, les récompenses, les pénalités, les bonus, ou terminer.",
+        "data": {
+          "menu_selection": "Sélectionnez une option"
+        }
+      },
+      "manage_entity": {
+        "title": "Sélectionner une action",
+        "description": "Ajouter, modifier ou supprimer des options.",
+        "data": {
+          "manage_action": "Sélectionnez une action"
+        }
+      },
+      "select_entity": {
+        "title": "Sélectionnez {entity_type}",
+        "description": "Sélectionnez le {entity_type} que vous souhaitez {action}.",
+        "data": {
+          "entity_name": "Nom"
+        }
+      },
+      "manage_points": {
+        "title": "Modifier l'étiquette et l'icône des points",
+        "description": "Modifiez l'étiquette et l'icône utilisées pour représenter les points.",
+        "data": {
+          "points_label": "Étiquette des points",
+          "points_icon": "Icône des points"
+        }
+      },
+      "add_kid": {
+        "title": "Ajouter un enfant",
+        "description": "Donnez les informations concernant le nouveau venu.",
+        "data": {
+          "kid_name": "Nom de l'enfant",
+          "ha_user": "Utilisateur de Home Assistant",
+          "enable_mobile_notifications": "Activer les notifications mobiles",
+          "mobile_notify_service": "Service de notification",
+          "enable_persistent_notifications": "Activer les notifications persistantes",
+          "internal_id": "ID interne"
+        }
+      },
+      "add_parent": {
+        "title": "Ajouter un parent",
+        "description": "Fournissez les coordonnées du nouveau parent.",
+        "data": {
+          "parent_name": "Nom du parent",
+          "ha_user_id": "Utilisateur de Home Assistant",
+          "associated_kids": "Enfants associés",
+          "enable_mobile_notifications": "Activer les notifications mobiles",
+          "mobile_notify_service": "Service de notification",
+          "enable_persistent_notifications": "Activer les notifications persistantes",
+          "internal_id": "ID interne"
+        }
+      },
+      "add_chore": {
+        "title": "Ajouter une tâche",
+        "description": "Créez une nouvelle tâche avec des points, des affectations et une planification récurrente.",
+        "data": {
+          "chore_name": "📋 Nom de la tâche",
+          "chore_description": "📋 Description (facultatif)",
+          "icon": "📋 Icône (mdi:xxx)",
+          "chore_labels": "📋 Étiquettes (facultatif)",
+          "default_points": "💰 Points attribués",
+          "assigned_kids": "👥 Enfants assignés",
+          "completion_criteria": "👥 Type d'achèvement",
+          "approval_reset_type": "➡️ Nombre de complétions autorisées et réinitialisation du temps",
+          "approval_reset_pending_claim_action": "➡️ Réclamations en attente à la réinitialisation",
+          "overdue_handling_type": "⏰ En retard : Type de traitement",
+          "auto_approve": "✅ Approbation automatique des demandes ?",
+          "recurring_frequency": "🔄 Horaire : Fréquence",
+          "custom_interval": "🔄 Programmation : Intervalle personnalisé (pour une fréquence personnalisée)",
+          "custom_interval_unit": "🔄 Programme : Unité d’intervalle personnalisée",
+          "applicable_days": "📅 Calendrier : Jours concernés (facultatif)",
+          "due_date": "📅 Calendrier : Date d’échéance (facultatif)",
+          "show_on_calendar": "📅 Afficher dans le calendrier ?",
+          "chore_notifications": "🔔 Notifications d'événements (facultatif)"
+        },
+        "data_description": {
+          "chore_name": "Nom unique affiché dans tout le système.",
+          "chore_description": "Instructions ou détails facultatifs sur la manière d'accomplir cette tâche.",
+          "icon": "Icône Material Design (ex. : mdi:balai, mdi:lave-vaisselle).",
+          "chore_labels": "Étiquettes pour organiser les tâches ménagères (ex. : « cuisine », « extérieur »). Laisser vide si non nécessaire.",
+          "default_points": "Points obtenus une fois le projet terminé.",
+          "assigned_kids": "Les enfants qui peuvent voir et revendiquer cette tâche.",
+          "completion_criteria": "Fonctionnement des tâches partagées : Indépendantes (chaque enfant effectue les tâches séparément), Partagées par tous (l’approbation de tous est requise) ou Partagées en premier (la première approbation valide la tâche).",
+          "approval_reset_type": "Contrôle le moment où cette tâche se réinitialise et le nombre de fois où elle peut être effectuée pendant cette période.",
+          "approval_reset_pending_claim_action": "Lorsque cette tâche est réinitialisée (en fonction du délai de réinitialisation de l'achèvement ci-dessus), qu'advient-il des demandes qui attendent encore d'être approuvées ?",
+          "overdue_handling_type": "Actions à entreprendre après la date d'échéance : Masquer le statut de retard, maintenir le statut de retard jusqu'à ce que la demande soit réclamée, ou réinitialiser le statut à « en attente » lors du prochain cycle d'approbation.",
+          "auto_approve": "Une fois activées, les demandes sont approuvées instantanément sans validation parentale.",
+          "recurring_frequency": "Fréquence de répétition de la tâche : Quotidienne, Hebdomadaire, Mensuelle, Annuelle, Personnalisée ou Aucune.",
+          "custom_interval": "Nombre d'unités de temps entre les répétitions (ex. : 3 pour « toutes les 3 semaines »). Utilisé uniquement avec la fréquence personnalisée.",
+          "custom_interval_unit": "Unité de temps pour l'intervalle personnalisé (jours, semaines, mois). Utilisée uniquement avec la fréquence personnalisée.",
+          "applicable_days": "Limiter la tâche à certains jours de la semaine. Laisser vide pour tous les jours.",
+          "due_date": "Date limite facultative. Peut être combinée avec des planifications récurrentes.",
+          "show_on_calendar": "Afficher cette tâche dans le calendrier.",
+          "chore_notifications": "Quand envoyer les notifications : lors de la réclamation, lors de l’approbation, lors du rejet ou toute combinaison de ces éléments."
+        }
+      },
+      "add_badge": {
+        "title": "Ajouter un badge",
+        "description": "Veuillez indiquer le type souhaité pour le nouveau badge.",
+        "data": {
+          "badge_type": "Type de badge"
+        }
+      },
+      "add_badge_cumulative": {
+        "title": "Ajouter un badge cumulatif",
+        "description": "Configurez les détails d'un badge cumulatif. Ces badges récompensent les enfants pour l'atteinte de certains paliers de points cumulés et permettent de mettre en place des cycles de suivi pour encourager la progression continue.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "target_type": "🎯 CIBLE : Type de cible",
+          "threshold_value": "🎯 CIBLE : Valeur seuil",
+          "maintenance_rules": "🎯 CIBLE : Points de maintenance (facultatif)",
+          "occasion_type": "🎉 Type d'occasion",
+          "associated_achievement": "🏆 Réalisation associée",
+          "associated_challenge": "🏁 Défi associé",
+          "selected_chores": "🧹 Suivi des tâches ménagères (facultatif)",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, Récompenses, Bonus, Multiplicateur (Optionnel)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)",
+          "points_multiplier": "🎁 RÉCOMPENSES : Multiplicateur de points (Par défaut 💎 1,0x)",
+          "recurring_frequency": "🔄 CYCLE D'ENTRETIEN : Fréquence",
+          "custom_interval": "🔄 CYCLE D'ENTRETIEN : Intervalle personnalisé (requis pour une fréquence personnalisée)",
+          "custom_interval_unit": "🔄 CYCLE DE MAINTENANCE : Unité d’intervalle personnalisée (requise pour une fréquence personnalisée)",
+          "start_date": "🔄 RÉINITIALISER LE CYCLE : Date de début (facultatif)",
+          "end_date": "🔄 CYCLE DE MAINTENANCE : Date de fin (facultatif)",
+          "grace_period_days": "🔄 CYCLE DE MAINTENANCE : Délai de grâce en jours (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "target_type": "Sélectionnez le type d'objectif pour ce badge (par exemple, points ou nombre de tâches ménagères).",
+          "threshold_value": "Définissez le nombre total de points requis pour obtenir ce badge.",
+          "maintenance_rules": "Spécifiez le nombre minimum de points requis pendant le cycle de maintenance pour conserver le badge et son multiplicateur actif (facultatif).",
+          "occasion_type": "Choisissez le type d'occasion pour ce badge (par exemple, vacances, anniversaire).",
+          "associated_achievement": "Associez ce badge à une réussite pour en assurer le suivi.",
+          "associated_challenge": "Associez ce badge à un défi pour le suivi.",
+          "selected_chores": "Sélectionnez les tâches qui permettent d'obtenir des points pour ce badge. Laissez ce champ vide si vous souhaitez suivre toutes les tâches assignées (facultatif).",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Choisissez un ou plusieurs éléments parmi les points, les récompenses, les bonus ou un multiplicateur de points. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif).",
+          "points_multiplier": "Si le multiplicateur est une récompense sélectionnée, définissez un multiplicateur pour les points gagnés pendant que ce badge est actif (par exemple, 1,5x).",
+          "recurring_frequency": "Activez le cycle de maintenance, exigeant que le nombre minimum de points spécifié soit atteint avant la fin de la période (par exemple, hebdomadaire, mensuel).",
+          "custom_interval": "Indiquez le NOMBRE de jours, de semaines, de mois, etc. pour la fréquence personnalisée (par exemple, 3 si vous définissez 3 semaines). Ceci s'applique uniquement à la fréquence personnalisée.",
+          "custom_interval_unit": "Sélectionnez l'unité de l'intervalle personnalisé (par exemple, jours, semaines). S'applique uniquement à la fréquence personnalisée.",
+          "start_date": "Définissez la date de début (facultatif).",
+          "end_date": "Sélectionnez la date de fin du cycle de maintenance. (facultatif).",
+          "grace_period_days": "Précisez le nombre de jours supplémentaires après la fin du cycle pour que les enfants atteignent le nombre de points requis avant la rétrogradation. (facultatif)."
+        }
+      },
+      "add_badge_daily": {
+        "title": "Ajouter un badge quotidien",
+        "description": "Configurez les détails d'un badge quotidien. Ces badges récompensent les enfants pour avoir accompli des tâches quotidiennes ou atteint des objectifs journaliers.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "target_type": "🎯 OBJECTIF QUOTIDIEN : Type de cible",
+          "threshold_value": "🎯 OBJECTIF QUOTIDIEN : Valeur seuil",
+          "selected_chores": "🧹 Suivi des tâches ménagères (facultatif)",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, récompenses, bonus, pénalités (facultatif)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "target_type": "Sélectionnez le type d'objectif quotidien pour ce badge (par exemple, points, nombre de tâches ménagères ou jours).",
+          "threshold_value": "Définissez le nombre de points quotidiens, le nombre de tâches à accomplir ou le nombre de jours nécessaires pour obtenir ce badge. Pour les objectifs de type « Jours », saisissez 1, car le badge est évalué quotidiennement (par exemple, 1 point pour avoir accompli toutes les tâches sélectionnées en une seule journée).",
+          "selected_chores": "Sélectionnez les tâches qui permettent d'obtenir des points pour ce badge. Laissez ce champ vide si vous souhaitez suivre toutes les tâches assignées (facultatif).",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Sélectionnez un ou plusieurs éléments parmi les points, récompenses, bonus ou pénalités. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. Les pénalités ne seront appliquées que si le badge n'est pas obtenu avant la date limite ou la date de réinitialisation. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif)."
+        }
+      },
+      "add_badge_periodic": {
+        "title": "Ajouter un badge périodique",
+        "description": "Configurez les détails d'un badge périodique. Ces badges récompensent les enfants qui atteignent des objectifs dans un délai défini et permettent une réinitialisation pour un suivi continu de leurs performances.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "target_type": "🎯 CIBLE : Type de cible",
+          "threshold_value": "🎯 CIBLE : Valeur seuil",
+          "maintenance_rules": "🎯 CIBLE : Points de maintenance (facultatif)",
+          "occasion_type": "🎉 Type d'occasion",
+          "associated_achievement": "🏆 Réalisation associée",
+          "associated_challenge": "🏁 Défi associé",
+          "selected_chores": "🧹 Suivi des tâches ménagères (facultatif)",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, récompenses, bonus, pénalités (facultatif)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)",
+          "recurring_frequency": "🔄 CYCLE DE RÉINITIALISATION : Fréquence",
+          "custom_interval": "🔄 CYCLE DE RÉINITIALISATION : Intervalle personnalisé (requis pour une fréquence personnalisée)",
+          "custom_interval_unit": "🔄 CYCLE DE RÉINITIALISATION : Unité d’intervalle personnalisée (requise pour une fréquence personnalisée)",
+          "start_date": "🔄 RÉINITIALISER LE CYCLE : Date de début (facultatif)",
+          "end_date": "🔄 RÉINITIALISATION DU CYCLE : Date de fin (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "target_type": "Sélectionnez le type d'objectif pour ce badge (par exemple, points, nombre de tâches ménagères, jours ou série).",
+          "threshold_value": "Définissez le nombre total de points, le nombre de tâches à accomplir ou le nombre de jours (par exemple, pour les séries de tâches à accomplir) requis pour obtenir ce badge dans le délai imparti.",
+          "maintenance_rules": "Spécifiez le nombre minimum de points requis pendant le cycle de réinitialisation pour conserver le badge et son multiplicateur actif (facultatif).",
+          "occasion_type": "Choisissez le type d'occasion pour ce badge (par exemple, vacances, anniversaire).",
+          "associated_achievement": "Associez ce badge à une réussite pour en assurer le suivi.",
+          "associated_challenge": "Associez ce badge à un défi pour le suivi.",
+          "selected_chores": "Sélectionnez les tâches qui permettent d'obtenir des points pour ce badge. Laissez ce champ vide si vous souhaitez suivre toutes les tâches assignées (facultatif).",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Sélectionnez un ou plusieurs éléments parmi les points, récompenses, bonus ou pénalités. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. Les pénalités ne seront appliquées que si le badge n'est pas obtenu avant la date limite ou la date de réinitialisation. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif).",
+          "recurring_frequency": "Définissez la fréquence de réinitialisation de ce badge (par exemple, hebdomadaire, mensuelle).",
+          "custom_interval": "Spécifiez le NOMBRE de jours, de semaines, de mois, etc. pour la fréquence personnalisée (par exemple, 3 si vous définissez 3 semaines).",
+          "custom_interval_unit": "Sélectionnez l'unité de l'intervalle personnalisé (par exemple, jours, semaines).",
+          "start_date": "Définissez la date de début du cycle de réinitialisation (facultatif).",
+          "end_date": "Définissez la date de fin du cycle de réinitialisation (facultatif)."
+        }
+      },
+      "add_badge_achievement": {
+        "title": "Ajouter un badge lié à une réussite",
+        "description": "Configurez les détails d'un badge associé à une réussite. Ces badges récompensent les enfants pour la réalisation de certains objectifs.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "associated_achievement": "🏆 Réalisation associée",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, récompenses, bonus au choix (facultatif)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "associated_achievement": "Associez ce badge à une réalisation spécifique pour en assurer le suivi.",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Choisissez un ou plusieurs éléments parmi les points, les récompenses ou les bonus. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. Des pénalités ne seront appliquées que si le badge n'est pas obtenu avant la date limite ou la date de réinitialisation. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif)."
+        }
+      },
+      "add_badge_challenge": {
+        "title": "Ajouter un badge lié au défi",
+        "description": "Configurez les détails d'un badge associé à un défi. Ces badges récompensent les enfants pour la réussite de défis spécifiques.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "associated_challenge": "🏁 Défi associé",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, récompenses, bonus au choix (facultatif)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "associated_challenge": "Associez ce badge à un défi spécifique pour le suivi.",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Choisissez un ou plusieurs éléments parmi les points, les récompenses ou les bonus. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. Des pénalités ne seront appliquées que si le badge n'est pas obtenu avant la date limite ou la date de réinitialisation. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif)."
+        }
+      },
+      "add_badge_special": {
+        "title": "Ajouter un badge pour occasion spéciale",
+        "description": "Configurez les détails d'un badge créé pour les occasions spéciales. Ces badges récompensent les enfants pour des événements comme les anniversaires ou les fêtes.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "occasion_type": "🎉 Type d'occasion",
+          "end_date": "🎉 Date de l'occasion",
+          "recurring_frequency": "🔄 RÉCURRENCE : Fréquence",
+          "custom_interval": "🔄 RÉCURRENCE : Intervalle personnalisé (requis pour une fréquence personnalisée)",
+          "custom_interval_unit": "🔄 RÉCURRENCE : Unité d’intervalle personnalisée (requise pour une fréquence personnalisée)",
+          "start_date": "🔄 RÉCURRENCE : Date de début (facultatif)",
+          "grace_period_days": "🔄 RÉCURRENCE : Délai de grâce en jours (facultatif)",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, récompenses, bonus au choix (facultatif)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "occasion_type": "Sélectionnez le type d'occasion pour ce badge (par exemple, vacances, anniversaire).",
+          "end_date": "Fixez la date de l'événement.",
+          "recurring_frequency": "Définissez la fréquence de réinitialisation de ce badge (par exemple, hebdomadaire, mensuelle).",
+          "custom_interval": "Spécifiez le NOMBRE de jours, de semaines, de mois, etc. pour la fréquence personnalisée (par exemple, 3 si vous définissez 3 semaines).",
+          "custom_interval_unit": "Sélectionnez l'unité de l'intervalle personnalisé (par exemple, jours, semaines).",
+          "start_date": "Définissez la date de début du cycle de réinitialisation (facultatif).",
+          "grace_period_days": "Précisez le nombre de jours supplémentaires après la fin du cycle pour que les enfants atteignent le nombre de points requis avant la rétrogradation (facultatif).",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Choisissez un ou plusieurs éléments parmi les points, les récompenses ou les bonus. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. Des pénalités ne seront appliquées que si le badge n'est pas obtenu avant la date limite ou la date de réinitialisation. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif)."
+        }
+      },
+      "add_reward": {
+        "title": "Ajouter une récompense",
+        "description": "Veuillez fournir les détails concernant la nouvelle récompense.",
+        "data": {
+          "reward_name": "Nom de la récompense",
+          "internal_id": "ID interne",
+          "reward_cost": "Coût de la récompense",
+          "reward_description": "Description (facultatif)",
+          "reward_labels": "Étiquettes de récompense",
+          "icon": "Icône (mdi:xxx)"
+        }
+      },
+      "add_penalty": {
+        "title": "Ajouter une pénalité",
+        "description": "Veuillez fournir les détails de la nouvelle sanction.",
+        "data": {
+          "penalty_name": "Nom de la pénalité",
+          "penalty_description": "Description (facultatif)",
+          "penalty_labels": "Étiquettes de pénalité",
+          "internal_id": "ID interne",
+          "penalty_points": "Points de pénalité (négatifs)",
+          "icon": "Icône (mdi:xxx)"
+        }
+      },
+      "add_bonus": {
+        "title": "Ajouter un bonus",
+        "description": "Veuillez fournir les détails concernant la nouvelle prime.",
+        "data": {
+          "bonus_name": "Nom du bonus",
+          "bonus_description": "Description (facultatif)",
+          "bonus_labels": "Étiquettes bonus",
+          "internal_id": "ID interne",
+          "bonus_points": "Points bonus",
+          "icon": "Icône (mdi:xxx)"
+        }
+      },
+      "add_achievement": {
+        "title": "Définir la réussite",
+        "description": "Saisissez les détails de chaque réalisation.",
+        "data": {
+          "name": "Nom du succès",
+          "description": "Description (facultatif)",
+          "achievement_labels": "Étiquettes de réussite",
+          "icon": "Icône (mdi:xxx)",
+          "assigned_kids": "Enfants assignés",
+          "type": "Type de réalisation",
+          "selected_chore_id": "Sélectionner la tâche associée",
+          "criteria": "Critères (facultatif)",
+          "target_value": "Objectif de réalisation",
+          "reward_points": "Points bonus pour avoir accompli la mission",
+          "internal_id": "ID interne"
+        }
+      },
+      "add_challenge": {
+        "title": "Définir le défi",
+        "description": "Saisissez les détails de chaque défi.",
+        "data": {
+          "name": "Nom du défi",
+          "description": "Description (facultatif)",
+          "challenge_labels": "Étiquettes de défi",
+          "icon": "Icône (mdi:xxx)",
+          "assigned_kids": "Enfants assignés",
+          "type": "Type de défi",
+          "selected_chore_id": "Sélectionnez la tâche associée au défi (facultatif)",
+          "criteria": "Critères (facultatif)",
+          "target_value": "Défis Cible",
+          "reward_points": "Points bonus pour avoir relevé le défi",
+          "start_date": "Date de début",
+          "end_date": "Date de fin",
+          "internal_id": "ID interne"
+        }
+      },
+      "edit_kid": {
+        "title": "Modifier Kid",
+        "description": "Modifier les informations concernant l'enfant sélectionné.",
+        "data": {
+          "kid_name": "Nom de l'enfant",
+          "ha_user": "Utilisateur de Home Assistant",
+          "enable_mobile_notifications": "Activer les notifications mobiles",
+          "mobile_notify_service": "Service de notification",
+          "enable_persistent_notifications": "Activer les notifications persistantes",
+          "internal_id": "ID interne"
+        }
+      },
+      "edit_parent": {
+        "title": "Modifier le parent",
+        "description": "Modifier les détails du parent sélectionné.",
+        "data": {
+          "parent_name": "Nom du parent",
+          "ha_user_id": "Utilisateur de Home Assistant",
+          "associated_kids": "Enfants associés",
+          "enable_mobile_notifications": "Activer les notifications mobiles",
+          "mobile_notify_service": "Service de notification",
+          "enable_persistent_notifications": "Activer les notifications persistantes",
+          "internal_id": "ID interne"
+        }
+      },
+      "edit_chore": {
+        "title": "Modifier la tâche",
+        "description": "Modifier les détails de la tâche sélectionnée.",
+        "data": {
+          "chore_name": "📋 Nom de la tâche",
+          "chore_description": "📋 Description (facultatif)",
+          "icon": "📋 Icône (mdi:xxx)",
+          "chore_labels": "📋 Étiquettes (facultatif)",
+          "internal_id": "ID interne",
+          "default_points": "💰 Points attribués",
+          "assigned_kids": "👥 Enfants assignés",
+          "completion_criteria": "👥 Type d'achèvement",
+          "approval_reset_type": "➡️ Nombre de complétions autorisées et réinitialisation du temps",
+          "approval_reset_pending_claim_action": "➡️ Réclamations en attente à la réinitialisation",
+          "overdue_handling_type": "⏰ En retard : Type de traitement",
+          "auto_approve": "✅ Approbation automatique des demandes ?",
+          "recurring_frequency": "🔄 Horaire : Fréquence",
+          "custom_interval": "🔄 Programmation : Intervalle personnalisé (pour une fréquence personnalisée)",
+          "custom_interval_unit": "🔄 Programme : Unité d’intervalle personnalisée",
+          "applicable_days": "📅 Calendrier : Jours concernés (facultatif)",
+          "due_date": "📅 Calendrier : Date d’échéance (facultatif)",
+          "show_on_calendar": "📅 Afficher dans le calendrier ?",
+          "chore_notifications": "🔔 Notifications d'événements (facultatif)"
+        },
+        "data_description": {
+          "chore_name": "Nom unique affiché dans tout le système.",
+          "chore_description": "Instructions ou détails facultatifs sur la manière d'accomplir cette tâche.",
+          "icon": "Icône Material Design (ex. : mdi:balai, mdi:lave-vaisselle).",
+          "chore_labels": "Étiquettes pour organiser les tâches ménagères (ex. : « cuisine », « extérieur »). Laisser vide si non nécessaire.",
+          "default_points": "Points obtenus une fois le projet terminé.",
+          "assigned_kids": "Les enfants qui peuvent voir et revendiquer cette tâche.",
+          "completion_criteria": "Fonctionnement des tâches partagées : Indépendantes (chaque enfant effectue les tâches séparément), Partagées par tous (l’approbation de tous est requise) ou Partagées en premier (la première approbation valide la tâche).",
+          "approval_reset_type": "Contrôle le moment où cette tâche se réinitialise et le nombre de fois où elle peut être effectuée pendant cette période.",
+          "approval_reset_pending_claim_action": "Lorsque cette tâche est réinitialisée (en fonction du délai de réinitialisation de l'achèvement ci-dessus), qu'advient-il des demandes qui attendent encore d'être approuvées ?",
+          "overdue_handling_type": "Actions à entreprendre après la date d'échéance : Masquer le statut de retard, maintenir le statut de retard jusqu'à ce que la demande soit réclamée, ou réinitialiser le statut à « en attente » lors du prochain cycle d'approbation.",
+          "auto_approve": "Une fois activées, les demandes sont approuvées instantanément sans validation parentale.",
+          "recurring_frequency": "Fréquence de répétition de la tâche : Quotidienne, Hebdomadaire, Mensuelle, Annuelle, Personnalisée ou Aucune.",
+          "custom_interval": "Nombre d'unités de temps entre les répétitions (ex. : 3 pour « toutes les 3 semaines »). Utilisé uniquement avec la fréquence personnalisée.",
+          "custom_interval_unit": "Unité de temps pour l'intervalle personnalisé (jours, semaines, mois). Utilisée uniquement avec la fréquence personnalisée.",
+          "applicable_days": "Limiter la tâche à certains jours de la semaine. Laisser vide pour tous les jours.",
+          "due_date": "Date limite facultative. Peut être combinée avec des calendriers récurrents. Pour les tâches ménagères INDIVIDUELLES, ceci sert de modèle ; un écran supplémentaire apparaîtra permettant de définir des dates individuelles pour chaque enfant.",
+          "show_on_calendar": "Afficher cette tâche dans le calendrier.",
+          "chore_notifications": "Quand envoyer les notifications : lors de la réclamation, lors de l’approbation, lors du rejet ou toute combinaison de ces éléments."
+        }
+      },
+      "edit_chore_per_kid_dates": {
+        "title": "Modifier les dates d'échéance par enfant : {chore_name}",
+        "description": "Définissez des dates d'échéance individuelles pour chaque enfant. Le champ « Date » du formulaire principal sert de **modèle** pour plus de simplicité : cochez la case ci-dessous pour appliquer rapidement la même date à tous les enfants, ou laissez-le vide et définissez les dates individuellement ici.\n\nLes champs sont affichés pour : {kid_names}. Laissez vide pour aucune date limite.{template_date}",
+        "data": {
+          "apply_template_to_all": "Appliquer le modèle de date à tous les enfants"
+        },
+        "data_description": {
+          "apply_template_to_all": "Cochez cette case pour appliquer la date définie sur la page principale de modification des tâches à tous les enfants assignés, en remplaçant leurs dates individuelles."
+        }
+      },
+      "edit_badge_cumulative": {
+        "title": "Modifier le badge cumulatif",
+        "description": "Configurez les détails d'un badge cumulatif. Ces badges récompensent les enfants pour l'atteinte de certains paliers de points cumulés et permettent de mettre en place des cycles de suivi pour encourager la progression continue.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "target_type": "🎯 CIBLE : Type de cible",
+          "threshold_value": "🎯 CIBLE : Valeur seuil",
+          "maintenance_rules": "🎯 CIBLE : Points de maintenance (facultatif)",
+          "occasion_type": "🎉 Type d'occasion",
+          "associated_achievement": "🏆 Réalisation associée",
+          "associated_challenge": "🏁 Défi associé",
+          "selected_chores": "🧹 Suivi des tâches ménagères (facultatif)",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, Récompenses, Bonus, Multiplicateur (Optionnel)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)",
+          "points_multiplier": "🎁 RÉCOMPENSES : Multiplicateur de points (Par défaut 💎 1,0x)",
+          "recurring_frequency": "🔄 CYCLE D'ENTRETIEN : Fréquence",
+          "custom_interval": "🔄 CYCLE D'ENTRETIEN : Intervalle personnalisé (requis pour une fréquence personnalisée)",
+          "custom_interval_unit": "🔄 CYCLE DE MAINTENANCE : Unité d’intervalle personnalisée (requise pour une fréquence personnalisée)",
+          "start_date": "🔄 RÉINITIALISER LE CYCLE : Date de début (facultatif)",
+          "end_date": "🔄 CYCLE DE MAINTENANCE : Date de fin (facultatif)",
+          "grace_period_days": "🔄 CYCLE DE MAINTENANCE : Délai de grâce en jours (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "target_type": "Sélectionnez le type d'objectif pour ce badge (par exemple, points ou nombre de tâches ménagères).",
+          "threshold_value": "Définissez le nombre total de points requis pour obtenir ce badge.",
+          "maintenance_rules": "Spécifiez le nombre minimum de points requis pendant le cycle de maintenance pour conserver le badge et son multiplicateur actif (facultatif).",
+          "occasion_type": "Choisissez le type d'occasion pour ce badge (par exemple, vacances, anniversaire).",
+          "associated_achievement": "Associez ce badge à une réussite pour en assurer le suivi.",
+          "associated_challenge": "Associez ce badge à un défi pour le suivi.",
+          "selected_chores": "Sélectionnez les tâches qui permettent d'obtenir des points pour ce badge. Laissez ce champ vide si vous souhaitez suivre toutes les tâches assignées (facultatif).",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Choisissez un ou plusieurs éléments parmi les points, les récompenses, les bonus ou un multiplicateur de points. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif).",
+          "points_multiplier": "Si le multiplicateur est une récompense sélectionnée, définissez un multiplicateur pour les points gagnés pendant que ce badge est actif (par exemple, 1,5x).",
+          "recurring_frequency": "Activez le cycle de maintenance, exigeant que le nombre minimum de points spécifié soit atteint avant la fin de la période (par exemple, hebdomadaire, mensuel).",
+          "custom_interval": "Indiquez le NOMBRE de jours, de semaines, de mois, etc. pour la fréquence personnalisée (par exemple, 3 si vous définissez 3 semaines). Ceci s'applique uniquement à la fréquence personnalisée.",
+          "custom_interval_unit": "Sélectionnez l'unité de l'intervalle personnalisé (par exemple, jours, semaines). S'applique uniquement à la fréquence personnalisée.",
+          "start_date": "Définissez la date de début (facultatif).",
+          "end_date": "Sélectionnez la date de fin du cycle de maintenance. (facultatif).",
+          "grace_period_days": "Précisez le nombre de jours supplémentaires après la fin du cycle pour que les enfants atteignent le nombre de points requis avant la rétrogradation. (facultatif)."
+        }
+      },
+      "edit_badge_daily": {
+        "title": "Modifier le badge quotidien",
+        "description": "Configurez les détails d'un badge quotidien. Ces badges récompensent les enfants pour avoir accompli des tâches quotidiennes ou atteint des objectifs journaliers.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "target_type": "🎯 OBJECTIF QUOTIDIEN : Type de cible",
+          "threshold_value": "🎯 OBJECTIF QUOTIDIEN : Valeur seuil",
+          "selected_chores": "🧹 Suivi des tâches ménagères (facultatif)",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, récompenses, bonus, pénalités (facultatif)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "target_type": "Sélectionnez le type d'objectif quotidien pour ce badge (par exemple, points, nombre de tâches ménagères ou jours).",
+          "threshold_value": "Définissez le nombre de points quotidiens, le nombre de tâches à accomplir ou le nombre de jours nécessaires pour obtenir ce badge. Pour les objectifs de type « Jours », saisissez 1, car le badge est évalué quotidiennement (par exemple, 1 point pour avoir accompli toutes les tâches sélectionnées en une seule journée).",
+          "selected_chores": "Sélectionnez les tâches qui permettent d'obtenir des points pour ce badge. Laissez ce champ vide si vous souhaitez suivre toutes les tâches assignées (facultatif).",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Sélectionnez un ou plusieurs éléments parmi les points, récompenses, bonus ou pénalités. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. Les pénalités ne seront appliquées que si le badge n'est pas obtenu avant la date limite ou la date de réinitialisation. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif)."
+        }
+      },
+      "edit_badge_periodic": {
+        "title": "Modifier le badge périodique",
+        "description": "Configurez les détails d'un badge périodique. Ces badges récompensent les enfants qui atteignent des objectifs dans un délai défini et permettent une réinitialisation pour un suivi continu de leurs performances.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "target_type": "🎯 CIBLE : Type de cible",
+          "threshold_value": "🎯 CIBLE : Valeur seuil",
+          "maintenance_rules": "🎯 CIBLE : Points de maintenance (facultatif)",
+          "occasion_type": "🎉 Type d'occasion",
+          "associated_achievement": "🏆 Réalisation associée",
+          "associated_challenge": "🏁 Défi associé",
+          "selected_chores": "🧹 Suivi des tâches ménagères (facultatif)",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, récompenses, bonus, pénalités (facultatif)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)",
+          "recurring_frequency": "🔄 CYCLE DE RÉINITIALISATION : Fréquence",
+          "custom_interval": "🔄 CYCLE DE RÉINITIALISATION : Intervalle personnalisé (requis pour une fréquence personnalisée)",
+          "custom_interval_unit": "🔄 CYCLE DE RÉINITIALISATION : Unité d’intervalle personnalisée (requise pour une fréquence personnalisée)",
+          "start_date": "🔄 RÉINITIALISER LE CYCLE : Date de début (facultatif)",
+          "end_date": "🔄 RÉINITIALISATION DU CYCLE : Date de fin (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "target_type": "Sélectionnez le type d'objectif pour ce badge (par exemple, points, nombre de tâches ménagères, jours ou série).",
+          "threshold_value": "Définissez le nombre total de points, le nombre de tâches à accomplir ou le nombre de jours (par exemple, pour les séries de tâches à accomplir) requis pour obtenir ce badge dans le délai imparti.",
+          "maintenance_rules": "Spécifiez le nombre minimum de points requis pendant le cycle de réinitialisation pour conserver le badge et son multiplicateur actif (facultatif).",
+          "occasion_type": "Choisissez le type d'occasion pour ce badge (par exemple, vacances, anniversaire).",
+          "associated_achievement": "Associez ce badge à une réussite pour en assurer le suivi.",
+          "associated_challenge": "Associez ce badge à un défi pour le suivi.",
+          "selected_chores": "Sélectionnez les tâches qui permettent d'obtenir des points pour ce badge. Laissez ce champ vide si vous souhaitez suivre toutes les tâches assignées (facultatif).",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Sélectionnez un ou plusieurs éléments parmi les points, récompenses, bonus ou pénalités. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. Les pénalités ne seront appliquées que si le badge n'est pas obtenu avant la date limite ou la date de réinitialisation. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif).",
+          "recurring_frequency": "Définissez la fréquence de réinitialisation de ce badge (par exemple, hebdomadaire, mensuelle).",
+          "custom_interval": "Spécifiez le NOMBRE de jours, de semaines, de mois, etc. pour la fréquence personnalisée (par exemple, 3 si vous définissez 3 semaines).",
+          "custom_interval_unit": "Sélectionnez l'unité de l'intervalle personnalisé (par exemple, jours, semaines).",
+          "start_date": "Définissez la date de début du cycle de réinitialisation (facultatif).",
+          "end_date": "Définissez la date de fin du cycle de réinitialisation (facultatif)."
+        }
+      },
+      "edit_badge_achievement": {
+        "title": "Modifier le badge lié à un succès",
+        "description": "Configurez les détails d'un badge associé à une réussite. Ces badges récompensent les enfants pour la réalisation de certains objectifs.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "associated_achievement": "🏆 Réalisation associée",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, récompenses, bonus au choix (facultatif)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "associated_achievement": "Associez ce badge à une réalisation spécifique pour en assurer le suivi.",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Choisissez un ou plusieurs éléments parmi les points, les récompenses ou les bonus. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. Des pénalités ne seront appliquées que si le badge n'est pas obtenu avant la date limite ou la date de réinitialisation. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif)."
+        }
+      },
+      "edit_badge_challenge": {
+        "title": "Modifier le badge lié au défi",
+        "description": "Configurez les détails d'un badge associé à un défi. Ces badges récompensent les enfants pour la réussite de défis spécifiques.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "associated_challenge": "🏁 Défi associé",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, récompenses, bonus au choix (facultatif)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "associated_challenge": "Associez ce badge à un défi spécifique pour le suivi.",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Choisissez un ou plusieurs éléments parmi les points, les récompenses ou les bonus. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. Des pénalités ne seront appliquées que si le badge n'est pas obtenu avant la date limite ou la date de réinitialisation. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif)."
+        }
+      },
+      "edit_badge_special": {
+        "title": "Modifier le badge pour occasion spéciale",
+        "description": "Configurez les détails d'un badge créé pour les occasions spéciales. Ces badges récompensent les enfants pour des événements comme les anniversaires ou les fêtes.",
+        "data": {
+          "badge_name": "Nom du badge",
+          "badge_description": "Description du badge (facultatif)",
+          "badge_labels": "Étiquettes (facultatif)",
+          "icon": "Icône de badge (mdi:xxx)",
+          "occasion_type": "🎉 Type d'occasion",
+          "end_date": "🎉 Date de l'occasion",
+          "recurring_frequency": "🔄 RÉCURRENCE : Fréquence",
+          "custom_interval": "🔄 RÉCURRENCE : Intervalle personnalisé (requis pour une fréquence personnalisée)",
+          "custom_interval_unit": "🔄 RÉCURRENCE : Unité d’intervalle personnalisée (requise pour une fréquence personnalisée)",
+          "start_date": "🔄 RÉCURRENCE : Date de début (facultatif)",
+          "grace_period_days": "🔄 RÉCURRENCE : Délai de grâce en jours (facultatif)",
+          "assigned_to": "🧒 Enfants assignés (facultatif)",
+          "award_items": "🎁 RÉCOMPENSES : Points, récompenses, bonus au choix (facultatif)",
+          "award_points": "🎁 RÉCOMPENSES : Points attribués (facultatif)"
+        },
+        "data_description": {
+          "badge_name": "Saisissez un nom unique pour le badge. Ce nom sera affiché dans le système.",
+          "badge_description": "Veuillez fournir une description de l'objectif ou des critères du badge (facultatif).",
+          "badge_labels": "Ajoutez des étiquettes pour catégoriser ou étiqueter le badge (facultatif).",
+          "icon": "Spécifiez une icône pour le badge en utilisant les icônes Material Design (par exemple, mdi:star).",
+          "occasion_type": "Sélectionnez le type d'occasion pour ce badge (par exemple, vacances, anniversaire).",
+          "end_date": "Fixez la date de l'événement.",
+          "recurring_frequency": "Définissez la fréquence de réinitialisation de ce badge (par exemple, hebdomadaire, mensuelle).",
+          "custom_interval": "Spécifiez le NOMBRE de jours, de semaines, de mois, etc. pour la fréquence personnalisée (par exemple, 3 si vous définissez 3 semaines).",
+          "custom_interval_unit": "Sélectionnez l'unité de l'intervalle personnalisé (par exemple, jours, semaines).",
+          "start_date": "Définissez la date de début du cycle de réinitialisation (facultatif).",
+          "grace_period_days": "Précisez le nombre de jours supplémentaires après la fin du cycle pour que les enfants atteignent le nombre de points requis avant la rétrogradation (facultatif).",
+          "assigned_to": "Attribuez ce badge à certains enfants à des fins de suivi.",
+          "award_items": "Choisissez un ou plusieurs éléments parmi les points, les récompenses ou les bonus. Tous les éléments sélectionnés seront attribués ou appliqués lors de l'obtention du badge. Des pénalités ne seront appliquées que si le badge n'est pas obtenu avant la date limite ou la date de réinitialisation. (facultatif)",
+          "award_points": "Si les points constituent une récompense sélectionnée, veuillez préciser le nombre de points à appliquer lors de l'obtention de ce badge. (facultatif)."
+        }
+      },
+      "edit_reward": {
+        "title": "Modifier la récompense",
+        "description": "Modifier les détails de la récompense sélectionnée.",
+        "data": {
+          "reward_name": "Nom de la récompense",
+          "internal_id": "ID interne",
+          "reward_cost": "Coût de la récompense",
+          "reward_description": "Description (facultatif)",
+          "reward_labels": "Étiquettes de récompense",
+          "icon": "Icône (mdi:xxx)"
+        }
+      },
+      "edit_penalty": {
+        "title": "Pénalité de modification",
+        "description": "Modifier les détails de la pénalité sélectionnée.",
+        "data": {
+          "penalty_name": "Nom de la pénalité",
+          "penalty_description": "Description (facultatif)",
+          "penalty_labels": "Étiquettes de pénalité",
+          "internal_id": "ID interne",
+          "penalty_points": "Points de pénalité (négatifs)",
+          "icon": "Icône (mdi:xxx)"
+        }
+      },
+      "edit_bonus": {
+        "title": "Bonus de modification",
+        "description": "Modifier les détails du bonus sélectionné.",
+        "data": {
+          "bonus_name": "Nom du bonus",
+          "bonus_description": "Description (facultatif)",
+          "bonus_labels": "Étiquettes bonus",
+          "internal_id": "ID interne",
+          "bonus_points": "Points bonus",
+          "icon": "Icône (mdi:xxx)"
+        }
+      },
+      "edit_achievement": {
+        "title": "Définir la réussite",
+        "description": "Saisissez les détails de chaque réalisation.",
+        "data": {
+          "name": "Nom du succès",
+          "description": "Description (facultatif)",
+          "achievement_labels": "Étiquettes de réussite",
+          "icon": "Icône (mdi:xxx)",
+          "assigned_kids": "Enfants assignés",
+          "type": "Type de réalisation",
+          "selected_chore_id": "Sélectionner la tâche associée",
+          "criteria": "Critères (facultatif)",
+          "target_value": "Objectif de réalisation",
+          "reward_points": "Points bonus pour avoir accompli la mission",
+          "internal_id": "ID interne"
+        }
+      },
+      "edit_challenge": {
+        "title": "Définir le défi",
+        "description": "Saisissez les détails de chaque défi.",
+        "data": {
+          "name": "Nom du défi",
+          "description": "Description (facultatif)",
+          "challenge_labels": "Étiquettes de défi",
+          "icon": "Icône (mdi:xxx)",
+          "assigned_kids": "Enfants assignés",
+          "type": "Type de défi",
+          "selected_chore_id": "Sélectionnez la tâche associée au défi (facultatif)",
+          "criteria": "Critères (facultatif)",
+          "target_value": "Défis Cible",
+          "reward_points": "Points bonus pour avoir relevé le défi",
+          "start_date": "Date de début",
+          "end_date": "Date de fin",
+          "internal_id": "ID interne"
+        }
+      },
+      "delete_kid": {
+        "title": "Supprimer Kid",
+        "description": "Êtes-vous sûr de vouloir supprimer l'enfant {kid_name}?",
+        "data": {}
+      },
+      "delete_parent": {
+        "title": "Supprimer le parent",
+        "description": "Êtes-vous sûr de vouloir supprimer le parent {parent_name}?",
+        "data": {}
+      },
+      "delete_chore": {
+        "title": "Supprimer la tâche",
+        "description": "Êtes-vous sûr de vouloir supprimer la tâche {chore_name}?",
+        "data": {}
+      },
+      "delete_badge": {
+        "title": "Supprimer le badge",
+        "description": "Êtes-vous sûr de vouloir supprimer le badge {badge_name}?",
+        "data": {}
+      },
+      "delete_reward": {
+        "title": "Supprimer la récompense",
+        "description": "Êtes-vous sûr de vouloir supprimer la récompense {reward_name}?",
+        "data": {}
+      },
+      "delete_penalty": {
+        "title": "Supprimer la pénalité",
+        "description": "Êtes-vous sûr de vouloir supprimer la pénalité {penalty_name}?",
+        "data": {}
+      },
+      "delete_bonus": {
+        "title": "Supprimer le bonus",
+        "description": "Êtes-vous sûr de vouloir supprimer le bonus {bonus_name}?",
+        "data": {}
+      },
+      "delete_achievement": {
+        "title": "Supprimer le succès",
+        "description": "Êtes-vous sûr de vouloir supprimer le succès {achievement_name}?",
+        "data": {}
+      },
+      "delete_challenge": {
+        "title": "Défi de suppression",
+        "description": "Êtes-vous sûr de vouloir supprimer le défi {challenge_name}?",
+        "data": {}
+      },
+      "manage_general_options": {
+        "title": "Options générales",
+        "description": "Gérer les paramètres généraux de l'intégration KidsChores.",
+        "data": {
+          "points_adjust_values": "Valeurs du bouton de réglage manuel des points",
+          "update_interval": "Intervalle de mise à jour",
+          "calendar_show_period": "Nombre de jours à afficher dans le calendrier",
+          "retention_periods": "Périodes de conservation des données (quotidienne, hebdomadaire, mensuelle, annuelle)",
+          "retention_daily": "Durée de conservation quotidienne des données (jours)",
+          "retention_weekly": "Conservation hebdomadaire des données (semaines)",
+          "retention_monthly": "Durée de conservation mensuelle des données (mois)",
+          "retention_yearly": "Durée annuelle de conservation des données (années)",
+          "show_legacy_entities": "Afficher les entités supplémentaires",
+          "backups_max_retained": "Nombre maximal de sauvegardes à conserver",
+          "backup_action_selection": "Actions de sauvegarde"
+        },
+        "data_description": {
+          "points_adjust_values": "Liste des valeurs des boutons de réglage manuel des points. Chaque valeur est séparée par '|'.",
+          "update_interval": "Intervalle en minutes pour la mise à jour de l'état interne de KidsChores.",
+          "calendar_show_period": "Nombre de jours à venir pour afficher les tâches et défis planifiés dans le calendrier.",
+          "retention_periods": "Périodes de conservation des données au format Quotidien|Hebdomadaire|Mensuel|Annuel (ex. : « 7|4|12|3 »). Chaque valeur doit être un entier positif.",
+          "retention_daily": "Nombre de jours de données historiques quotidiennes à conserver avant le nettoyage. Minimum 1, maximum 90.",
+          "retention_weekly": "Nombre de semaines de données historiques hebdomadaires à conserver avant le nettoyage. Minimum 1, maximum 52.",
+          "retention_monthly": "Nombre de mois de données historiques mensuelles à conserver avant le nettoyage. Minimum 1, maximum 24.",
+          "retention_yearly": "Nombre d'années de données historiques annuelles à conserver avant le nettoyage. Minimum 1, maximum 10.",
+          "show_legacy_entities": "Afficher les entités supplémentaires telles que les capteurs et les listes déroulantes, désormais intégrées au capteur d'assistance du tableau de bord. Ces entités sont facultatives pour assurer la compatibilité avec les automatisations existantes.",
+          "backups_max_retained": "Nombre maximal de fichiers de sauvegarde à conserver. Les sauvegardes les plus anciennes seront automatiquement supprimées. Indiquez 0 pour désactiver les sauvegardes automatiques.",
+          "backup_action_selection": "Choisissez une action de gestion des sauvegardes : créer une sauvegarde manuelle, supprimer une sauvegarde ou restaurer une sauvegarde."
+        }
+      },
+      "backup_actions": {
+        "title": "Gestion des sauvegardes",
+        "description": "Gérez vos sauvegardes de données KidsChores. État actuel : {backup_count} sauvegardes utilisant {storage_size} Mo.",
+        "data": {
+          "backup_action_selection": "Sélectionnez une action"
+        },
+        "data_description": {
+          "backup_action_selection": "Choisissez une action de gestion des sauvegardes."
+        }
+      },
+      "backup_actions_menu": {
+        "title": "Actions de sauvegarde",
+        "description": "Gérez vos sauvegardes de données KidsChores.",
+        "data": {
+          "backup_action_selection": "Sélectionnez une action"
+        },
+        "data_description": {
+          "backup_action_selection": "Choisissez une action de gestion de sauvegarde : créer, supprimer, restaurer ou retourner au menu."
+        }
+      },
+      "create_manual_backup": {
+        "title": "Créer une sauvegarde manuelle",
+        "description": "Créez une nouvelle sauvegarde de vos données KidsChores.\n\nSauvegardes actuelles : {backup_count}\nParamètre de conservation : {retention} sauvegardes",
+        "data": {
+          "confirm": "Confirmer la création de la sauvegarde"
+        }
+      },
+      "select_backup_to_delete": {
+        "title": "Sélectionnez Sauvegarder à supprimer",
+        "description": "Choisissez un fichier de sauvegarde à supprimer.\n\nSauvegardes disponibles : {backup_count}\n\n⚠️ Les sauvegardes protégées (pré-migration, manuelles) ne peuvent pas être supprimées."
+      },
+      "select_backup_to_restore": {
+        "title": "Sélectionnez Sauvegarde pour restaurer",
+        "description": "Choisissez un fichier de sauvegarde à restaurer.\n\nSauvegardes disponibles : {backup_count}\n\n⚠️ Ceci remplacera vos données actuelles !"
+      },
+      "create_backup_confirm": {
+        "title": "Créer une sauvegarde manuelle",
+        "description": "Créer une sauvegarde manuelle de vos données KidsChores actuelles ?",
+        "data": {
+          "confirm": "Confirmer"
+        }
+      },
+      "create_backup_success": {
+        "title": "Sauvegarde créée",
+        "description": "Sauvegarde manuelle créée avec succès : {backup_filename}",
+        "data": {
+          "continue": "Continuer"
+        }
+      },
+      "delete_backup_confirm": {
+        "title": "Confirmer la suppression de la sauvegarde",
+        "description": "⚠️ Vous êtes sur le point de supprimer définitivement cette sauvegarde :\n\n{backup_filename}\n\nCette action est irréversible.",
+        "data": {
+          "confirm": "Confirmer la suppression"
+        }
+      },
+      "restore_backup_confirm": {
+        "title": "Restaurer la sauvegarde",
+        "description": "Êtes-vous sûr de vouloir restaurer cette sauvegarde ?\n\nFichier : {backup_filename}\n\nVos données actuelles seront sauvegardées avant la restauration. L’intégration sera rechargée après la restauration.",
+        "data": {
+          "confirm": "Confirmer la restauration"
+        }
+      }
+    },
+    "error": {
+      "a_chore_must_be_selected": "Une tâche doit être sélectionnée",
+      "badge_requires_assignment": "Au moins un enfant doit être associé à ce badge.",
+      "duplicate_achievement": "Un succès portant ce nom existe déjà.",
+      "duplicate_badge": "Un badge portant ce nom existe déjà.",
+      "duplicate_challenge": "Un défi portant ce nom existe déjà.",
+      "duplicate_chore": "Il existe déjà une tâche portant ce nom",
+      "duplicate_kid": "Un enfant portant ce nom existe déjà.",
+      "duplicate_parent": "Un parent portant ce nom existe déjà.",
+      "duplicate_penalty": "Une sanction portant ce nom existe déjà.",
+      "duplicate_reward": "Une récompense portant ce nom existe déjà.",
+      "duplicate_bonus": "Un bonus portant ce nom existe déjà.",
+      "due_date_in_past": "La date d'échéance doit être future.",
+      "end_date_in_past": "La date de fin doit être future.",
+      "end_date_not_after_start_date": "La date de fin doit être postérieure à la date de début.",
+      "invalid_badge": "Badge invalide",
+      "invalid_badge_count": "Nombre de badges invalide",
+      "invalid_chore": "Tâche invalide",
+      "invalid_chore_count": "Nombre de tâches invalide",
+      "invalid_due_date": "Date d'échéance invalide",
+      "date_required_for_frequency": "Une date d'échéance est requise pour cette fréquence récurrente. L'option « Date d'échéance » ne fonctionne qu'avec les fréquences « Aucune », « Quotidienne » ou « Hebdomadaire ».",
+      "invalid_end_date": "Date de fin invalide.",
+      "invalid_kid_count": "Nombre d'enfants invalide",
+      "invalid_kid_name": "Nom d'enfant invalide",
+      "no_kids_assigned": "Au moins un enfant doit être affecté à cette tâche.",
+      "invalid_penalty": "Pénalité non valable",
+      "invalid_penalty_count": "Nombre de pénalités invalide",
+      "invalid_bonus": "Bonus invalide",
+      "invalid_bonus_count": "Nombre de bonus invalide",
+      "invalid_reward": "Récompense invalide",
+      "invalid_reward_count": "Nombre de récompenses invalide",
+      "invalid_start_date": "Date de début invalide.",
+      "start_date_in_past": "La date de début doit être future.",
+      "points_label_required": "L'étiquette des points est requise.",
+      "corrupt_file": "Le fichier sélectionné contient un JSON invalide et ne peut pas être lu.",
+      "invalid_structure": "Le fichier sélectionné ne contient pas la structure de données requise.",
+      "file_not_found": "Le fichier sélectionné est introuvable.",
+      "invalid_selection": "Veuillez sélectionner une option valide."
+    },
+    "abort": {
+      "invalid_action": "Action invalide",
+      "invalid_achievement": "Réalisation invalide",
+      "invalid_badge": "Badge invalide",
+      "invalid_challenge": "Défi invalide",
+      "invalid_chore": "Tâche invalide",
+      "invalid_entity": "Entité invalide",
+      "invalid_kid": "Enfant invalide",
+      "invalid_parent": "Parent invalide",
+      "invalid_penalty": "Pénalité invalide",
+      "invalid_reward": "Récompense invalide",
+      "invalid_bonus": "Bonus invalide",
+      "no_kid": "Aucun enfant n'est actuellement configuré pour la modification. Veuillez d'abord ajouter une entrée.",
+      "no_parent": "Aucun parent n'est configuré pour la modification. Veuillez d'abord ajouter une entrée.",
+      "no_chore": "Aucune tâche ménagère n'est modifiable pour le moment. Veuillez d'abord ajouter une entrée.",
+      "no_badge": "Aucun badge n'est configuré pour la modification. Veuillez d'abord ajouter une entrée.",
+      "no_reward": "Aucune récompense n'est actuellement modifiable. Veuillez d'abord ajouter une entrée.",
+      "no_penalty": "Aucune pénalité n'est prévue pour la modification. Veuillez d'abord ajouter une entrée.",
+      "no_bonus": "Aucun bonus n'est configuré pour la modification. Veuillez d'abord ajouter une entrée.",
+      "no_achievement": "Aucun succès n'est modifiable pour le moment. Veuillez d'abord ajouter une entrée.",
+      "no_challenge": "Aucun défi n'est configuré pour la modification. Veuillez d'abord ajouter une participation.",
+      "setup_complete": "Installation terminée",
+      "backup_restored": "La sauvegarde a été restaurée avec succès. L'intégration a été rechargée avec les données restaurées."
+    }
+  },
+  "selector": {
+    "main_menu": {
+      "options": {
+        "manage_points": "Gérer les points",
+        "manage_kid": "Gérer l'enfant",
+        "manage_parent": "Gérer les parents",
+        "manage_chore": "Gérer les tâches ménagères",
+        "manage_badge": "Gérer les badges",
+        "manage_reward": "Gérer les récompenses",
+        "manage_penalty": "Gérer les pénalités",
+        "manage_bonus": "Gérer les bonus",
+        "manage_achievement": "Gérer les réalisations",
+        "manage_challenge": "Gérer le défi",
+        "general_options": "Options générales",
+        "done": "Terminer la configuration"
+      }
+    },
+    "manage_actions": {
+      "options": {
+        "add": "Ajouter",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "back": "Retour au menu principal"
+      }
+    },
+    "backup_actions_menu": {
+      "options": {
+        "select_backup_action": "Sélectionnez une action de sauvegarde...",
+        "create_backup": "💾 Créez une sauvegarde maintenant",
+        "delete_backup": "🗑️ Supprimer une sauvegarde",
+        "restore_backup": "🔄 Restaurer à partir d'une sauvegarde",
+        "return_to_menu": "↩️ Retour au menu principal"
+      }
+    },
+    "select_backup_to_delete": {
+      "options": {
+        "cancel": "↩️ Annuler (retour au menu de sauvegarde)"
+      }
+    },
+    "select_backup_to_restore": {
+      "options": {
+        "cancel": "↩️ Annuler (retour au menu de sauvegarde)"
+      }
+    },
+    "badge_type": {
+      "options": {
+        "cumulative": "Cumulatif",
+        "daily": "Tous les jours",
+        "periodic": "Périodique",
+        "achievement_linked": "Réussite liée",
+        "challenge_linked": "Défi lié",
+        "special_occasion": "Occasion spéciale"
+      }
+    },
+    "target_type": {
+      "options": {
+        "points": "Points",
+        "points_chores": "Points obtenus grâce aux tâches ménagères",
+        "chore_count": "Compte des tâches",
+        "days_all_chores": "Jours Tâches sélectionnées terminées",
+        "days_80pct_chores": "Jours où 80 % des tâches sélectionnées sont terminées",
+        "days_all_chores_no_overdue": "Jours où les tâches sélectionnées ont été effectuées (aucune tâche en retard)",
+        "days_all_due_chores": "Jours sélectionnés Échéance Tâches terminées",
+        "days_80pct_due_chores": "Jours où 80 % des tâches ménagères sélectionnées sont terminées",
+        "days_all_due_chores_no_overdue": "Jours sélectionnés : Tâches effectuées (aucune en retard)",
+        "days_min_3_chores": "Jours Minimum 3 tâches ménagères effectuées",
+        "days_min_5_chores": "Jours Minimum 5 tâches ménagères effectuées",
+        "days_min_7_chores": "Jours minimum 7 tâches ménagères terminées",
+        "streak_all_chores": "Série : Tâches ménagères sélectionnées terminées",
+        "streak_80pct_chores": "Série : 80 % des tâches sélectionnées effectuées",
+        "streak_all_chores_no_overdue": "Série : Tâches ménagères sélectionnées terminées (aucune en retard)",
+        "streak_80pct_due_chores": "Série : 80 % des tâches ménagères sélectionnées effectuées",
+        "streak_all_due_chores_no_overdue": "Série : Tâches ménagères sélectionnées terminées (aucune en retard)"
+      }
+    },
+    "award_items": {
+      "options": {
+        "points": "Points",
+        "multiplier": "Multiplicateur de points"
+      }
+    },
+    "award_mode": {
+      "options": {
+        "award_none": "Aucun",
+        "award_points": "Points",
+        "award_reward": "Récompense",
+        "award_points_reward": "Points et récompenses"
+      }
+    },
+    "reset_type": {
+      "options": {
+        "year_end": "Fin d'année",
+        "quarter": "Trimestriel",
+        "monthly": "Mensuel",
+        "custom_1_year": "Personnalisation : Période d'un an",
+        "custom_1_month": "Personnalisé : Période d'un mois"
+      }
+    },
+    "completion_criteria": {
+      "options": {
+        "shared_all": "Partagé avec tous (Tous les enfants doivent le compléter ensemble)",
+        "independent": "Indépendant (Chaque enfant remplit le formulaire individuellement)",
+        "shared_first": "Partagé avec First (Première réalisation comptabilisée)"
+      }
+    },
+    "approval_reset_type": {
+      "options": {
+        "at_midnight_once": "Autoriser 1 exécution - réinitialisation à minuit",
+        "at_midnight_multi": "Autoriser plusieurs tentatives - réinitialisation à minuit",
+        "at_due_date_once": "Autoriser 1 réalisation - réinitialise à la date d'échéance",
+        "at_due_date_multi": "Autoriser plusieurs tentatives - réinitialisation à la date d'échéance",
+        "upon_completion": "Autoriser un nombre illimité de tentatives - réinitialisation après la fin"
+      }
+    },
+    "overdue_handling_type": {
+      "options": {
+        "at_due_date": "Afficher les retards après la date d'échéance (jusqu'à achèvement)",
+        "never_overdue": "Ne jamais afficher comme retard de paiement",
+        "at_due_date_then_reset": "Afficher les retards après la date d'échéance (jusqu'à la réinitialisation de l'approbation)"
+      }
+    },
+    "approval_reset_pending_claim_action": {
+      "options": {
+        "hold_pending": "Maintenir le statut de la demande (En attente d'approbation/de rejet)",
+        "clear_pending": "Effacer toutes les réclamations en cours",
+        "auto_approve_pending": "Approbation automatique de toutes les demandes en attente"
+      }
+    },
+    "chore_notifications": {
+      "options": {
+        "notify_on_claim": "Notification en cas de réclamation",
+        "notify_on_approval": "Notification d'approbation",
+        "notify_on_disapproval": "Notification de désapprobation"
+      }
+    },
+    "recurring_frequency": {
+      "options": {
+        "none": "Aucun",
+        "daily": "Tous les jours",
+        "weekly": "Hebdomadaire",
+        "biweekly": "Bihebdomadaire",
+        "monthly": "Mensuel",
+        "quarterly": "Trimestriel",
+        "yearly": "Annuel",
+        "custom": "Coutume",
+        "custom_1_week": "Délai de livraison : 1 semaine",
+        "custom_1_month": "Personnalisé : 1 mois",
+        "custom_1_quarter": "Personnalisé : 1 quart",
+        "custom_1_year": "Personnalisation : 1 an"
+      }
+    },
+    "occasion_type": {
+      "options": {
+        "birthday": "Anniversaire",
+        "holiday": "Vacances",
+        "custom": "Coutume"
+      }
+    },
+    "custom_interval_unit": {
+      "options": {
+        "days": "Jours",
+        "weeks": "Semaines",
+        "months": "Mois"
+      }
+    },
+    "applicable_days": {
+      "options": {
+        "mon": "Lundi",
+        "tue": "Mardi",
+        "wed": "Mercredi",
+        "thu": "Jeudi",
+        "fri": "Vendredi",
+        "sat": "Samedi",
+        "sun": "Dimanche"
+      }
+    },
+    "threshold_type": {
+      "options": {
+        "points": "Points",
+        "chore_count": "Compte des tâches"
+      }
+    },
+    "daily_threshold_type": {
+      "options": {
+        "points": "Points",
+        "chore_count": "Compte des tâches"
+      }
+    },
+    "data_recovery_selection": {
+      "options": {
+        "cancel": "↩️ Annuler (retour au menu de sauvegarde)",
+        "start_fresh": "🆕 Recommencer à zéro (crée une sauvegarde des données existantes)",
+        "current_active": "📂 Utiliser le fichier de données actif actuel",
+        "paste_json": "📋 Collez le JSON provenant d'un fichier de données ou de diagnostics"
+      }
+    }
+  },
+  "services": {
+    "claim_chore": {
+      "name": "Réclamation de tâches ménagères",
+      "description": "Un enfant s'approprie une corvée et la marque comme « prise en charge » pour approbation parentale.",
+      "fields": {
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "Le nom de l'enfant qui réclame la corvée.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Nom de la tâche",
+          "description": "Le nom de la tâche à accomplir.",
+          "example": "Faire la vaisselle"
+        }
+      }
+    },
+    "approve_chore": {
+      "name": "Approuver la tâche",
+      "description": "Le parent approuve la tâche et attribue des points.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom du parent",
+          "description": "Le parent qui approuve la tâche.",
+          "example": "Maman"
+        },
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "Le nom de l'enfant qui a effectué la tâche.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Nom de la tâche",
+          "description": "Le nom de la tâche approuvée.",
+          "example": "Faire la vaisselle"
+        },
+        "points_awarded": {
+          "name": "Points attribués",
+          "description": "Points à attribuer (facultatif ; par défaut, les points de la tâche).",
+          "example": "3"
+        }
+      }
+    },
+    "disapprove_chore": {
+      "name": "Désapprouver la corvée",
+      "description": "Un parent désapprouve une tâche ménagère confiée à son enfant, et en modifie le statut.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom du parent",
+          "description": "Le parent désapprouve la tâche.",
+          "example": "Maman"
+        },
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "Le nom de l'enfant dont la tâche est désapprouvée.",
+          "example": "Alice"
+        },
+        "chore_name": {
+          "name": "Nom de la tâche",
+          "description": "Le nom de la tâche désapprouvé.",
+          "example": "salle blanche"
+        }
+      }
+    },
+    "redeem_reward": {
+      "name": "Échanger une récompense",
+      "description": "Un parent utilise une récompense pour son enfant, en déduisant des points.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom du parent",
+          "description": "Le parent autorisant l'utilisation de la récompense.",
+          "example": "Maman"
+        },
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "L'enfant qui reçoit sa récompense.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Nom de la récompense",
+          "description": "Le nom de la récompense à obtenir.",
+          "example": "Temps d'écran supplémentaire"
+        }
+      }
+    },
+    "approve_reward": {
+      "name": "Approuver la récompense",
+      "description": "Un parent approuve une récompense demandée par un enfant.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom du parent",
+          "description": "Le parent qui approuve la récompense.",
+          "example": "Maman"
+        },
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "L'enfant qui reçoit la récompense.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Nom de la récompense",
+          "description": "Le nom de la récompense approuvée.",
+          "example": "Temps d'écran supplémentaire"
+        }
+      }
+    },
+    "disapprove_reward": {
+      "name": "Récompense désapprouvée",
+      "description": "Un parent désapprouve l'utilisation d'une récompense pour son enfant.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom du parent",
+          "description": "Le parent désapprouve la récompense.",
+          "example": "Papa"
+        },
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "L'enfant dont la récompense est refusée.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Nom de la récompense",
+          "description": "Le nom de la récompense a été désapprouvé.",
+          "example": "Temps d'écran supplémentaire"
+        }
+      }
+    },
+    "apply_penalty": {
+      "name": "Appliquer une pénalité",
+      "description": "Un parent applique une pénalité pour déduire des points.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom du parent",
+          "description": "Le parent qui applique la sanction.",
+          "example": "Papa"
+        },
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "L'enfant qui reçoit la pénalité.",
+          "example": "Alice"
+        },
+        "penalty_name": {
+          "name": "Nom de la pénalité",
+          "description": "Le nom de la sanction à appliquer.",
+          "example": "Cris"
+        }
+      }
+    },
+    "apply_bonus": {
+      "name": "Postuler à la prime",
+      "description": "Un parent attribue un bonus à son enfant, en lui octroyant des points.",
+      "fields": {
+        "parent_name": {
+          "name": "Nom du parent",
+          "description": "Le parent qui octroie la prime.",
+          "example": "Maman"
+        },
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "L'enfant qui reçoit la prime.",
+          "example": "Alice"
+        },
+        "bonus_name": {
+          "name": "Nom du bonus",
+          "description": "Le nom de la prime à appliquer.",
+          "example": "Très utile"
+        }
+      }
+    },
+    "reset_all_data": {
+      "name": "Réinitialiser toutes les données",
+      "description": "Efface complètement les données KidsChores de la mémoire."
+    },
+    "reset_all_chores": {
+      "name": "Réinitialiser toutes les tâches",
+      "description": "Réinitialisez manuellement les tâches à l'état « en attente », en supprimant les demandes et les approbations."
+    },
+    "reset_overdue_chores": {
+      "name": "Réinitialiser les tâches ménagères en retard",
+      "description": "Réinitialisez les tâches en retard à l'état « En attente » et reprogrammez-les en fonction de leur fréquence et de leur date d'échéance précédente. Vous pouvez indiquer un identifiant (ou un nom) pour réinitialiser une tâche spécifique et, si vous le souhaitez, le nom de l'enfant pour réinitialiser la tâche uniquement pour cet enfant.",
+      "fields": {
+        "chore_id": {
+          "name": "ID de tâche",
+          "description": "L'identifiant interne de la tâche à réinitialiser (facultatif si chore_name est fourni).",
+          "example": "abc123"
+        },
+        "chore_name": {
+          "name": "Nom de la tâche",
+          "description": "Le nom de la tâche à réinitialiser (facultatif si chore_id est fourni).",
+          "example": "Faire la vaisselle"
+        },
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "L'enfant qui reçoit la pénalité.",
+          "example": "Alice"
+        }
+      }
+    },
+    "set_chore_due_date": {
+      "name": "Définir/Réinitialiser la date d'échéance d'une tâche ménagère",
+      "description": "Définissez (ou supprimez) la date d'échéance d'une tâche. Indiquez le nom de la tâche et, si vous le souhaitez, une nouvelle date d'échéance. Si aucune date n'est précisée, la date d'échéance existante sera supprimée. Le service refusera les dates d'échéance passées. Pour les tâches individuelles, vous pouvez indiquer le nom de l'enfant afin de définir la date d'échéance uniquement pour cet enfant.",
+      "fields": {
+        "chore_name": {
+          "name": "Nom de la tâche",
+          "description": "Le nom de la tâche à mettre à jour",
+          "example": "Faire la vaisselle"
+        },
+        "due_date": {
+          "name": "Date d'échéance",
+          "description": "Nouvelle date d'échéance pour la tâche. Utilisez le sélecteur de date/heure pour choisir une date et une heure valides (dans votre fuseau horaire). Laissez vide pour supprimer la date d'échéance.",
+          "example": "2025-03-01T23:59:00Z"
+        },
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "Pour les tâches ménagères individuelles, précisez l'enfant pour lequel définir la date limite. Si vous ne précisez rien, la date limite sera définie pour tous les enfants concernés.",
+          "example": "Alice"
+        },
+        "kid_id": {
+          "name": "Kid ID",
+          "description": "L'identifiant interne de l'enfant. Réservé aux utilisateurs avancés : utilisez plutôt kid_name.",
+          "example": "abc123-def456"
+        }
+      }
+    },
+    "skip_chore_due_date": {
+      "name": "Rejeter la date limite des tâches ménagères",
+      "description": "Ignorez la date d'échéance actuelle d'une tâche récurrente. Ce service reprogramme immédiatement la date d'échéance de la tâche en fonction de sa fréquence et remet son statut à « En attente ». Toutes les demandes ou approbations en cours seront supprimées. Pour les tâches individuelles, vous pouvez indiquer le nom de l'enfant concerné afin d'ignorer uniquement la tâche pour cet enfant.",
+      "fields": {
+        "chore_id": {
+          "name": "ID de tâche",
+          "description": "L'identifiant interne de la tâche à réinitialiser (facultatif si chore_name est fourni).",
+          "example": "abc123"
+        },
+        "chore_name": {
+          "name": "Nom de la tâche",
+          "description": "Le nom de la tâche à réinitialiser (facultatif si chore_id est fourni).",
+          "example": "Faire la vaisselle"
+        },
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "Pour les tâches ménagères individuelles, précisez l'enfant pour lequel la date limite doit être reportée. Si vous omettez cette précision, la date limite sera reportée pour tous les enfants concernés.",
+          "example": "Alice"
+        },
+        "kid_id": {
+          "name": "Kid ID",
+          "description": "L'identifiant interne de l'enfant. Réservé aux utilisateurs avancés : utilisez plutôt kid_name.",
+          "example": "abc123-def456"
+        }
+      }
+    },
+    "reset_penalties": {
+      "name": "Réinitialiser les pénalités",
+      "description": "Réinitialiser toutes les sanctions appliquées à tous les enfants. Vous pouvez également indiquer le nom de la sanction pour la réinitialiser pour tous les enfants. Utilisez le nom de l'enfant pour réinitialiser toutes ses sanctions. Combinez les deux pour réinitialiser une sanction spécifique à un enfant en particulier.",
+      "fields": {
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "L'enfant dont les pénalités seront réinitialisées.",
+          "example": "Alice"
+        },
+        "penalty_name": {
+          "name": "Nom de la pénalité",
+          "description": "Le nom de la pénalité à réinitialiser.",
+          "example": "Cris"
+        }
+      }
+    },
+    "reset_bonuses": {
+      "name": "Réinitialiser les bonus",
+      "description": "Réinitialiser tous les bonus appliqués à tous les enfants. Vous pouvez également indiquer le nom du bonus pour réinitialiser un bonus spécifique pour tous les enfants. Utilisez le nom de l'enfant pour réinitialiser tous ses bonus. Combinez les deux pour réinitialiser un bonus spécifique pour un enfant en particulier.",
+      "fields": {
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "L'enfant dont les bonus seront réinitialisés.",
+          "example": "Alice"
+        },
+        "bonus_name": {
+          "name": "Nom du bonus",
+          "description": "Le nom du bonus à réinitialiser.",
+          "example": "Portion"
+        }
+      }
+    },
+    "reset_rewards": {
+      "name": "Réinitialiser les récompenses",
+      "description": "Réinitialiser le nombre de récompenses obtenues et approuvées pour tous les enfants. Vous pouvez également indiquer le nom de la récompense pour réinitialiser le nombre de récompenses d'un enfant en particulier. Utilisez le nom de l'enfant pour réinitialiser le nombre de récompenses d'un enfant en particulier. Combinez les deux pour réinitialiser le nombre de récompenses d'un enfant en particulier.",
+      "fields": {
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "L'enfant pour lequel la récompense est prise en compte sera réinitialisé.",
+          "example": "Alice"
+        },
+        "reward_name": {
+          "name": "Nom de la récompense",
+          "description": "Nom de la récompense à réinitialiser.",
+          "example": "Glace"
+        }
+      }
+    },
+    "remove_awarded_badges": {
+      "name": "Supprimer les badges décernés",
+      "description": "Supprimez tous les badges obtenus par tous les enfants. Vous pouvez également indiquer le nom du badge pour réinitialiser un badge spécifique pour tous les enfants. Utilisez le nom de l'enfant pour réinitialiser tous ses badges. Combinez les deux pour réinitialiser un badge spécifique pour un enfant en particulier.",
+      "fields": {
+        "kid_name": {
+          "name": "Nom de l'enfant",
+          "description": "L'enfant qui a reçu des badges sera retiré de la liste.",
+          "example": "Bob"
+        },
+        "badge_name": {
+          "name": "Nom du badge",
+          "description": "Le nom du badge à retirer.",
+          "example": "Maître des tâches"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "kid_chore_status_sensor": {
+        "name": "Statut des tâches - {chore_name}",
+        "state": {
+          "pending": "En attente",
+          "approved": "Approuvé",
+          "claimed": "Réclamé",
+          "overdue": "En retard",
+          "unknown": "Inconnu",
+          "none": "Aucun",
+          "approved_in_part": "Approuvé (en partie)",
+          "claimed_in_part": "Revendiqué (en partie)",
+          "completed_by_other": "Réalisé par d'autres"
+        },
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_chore_status": "États du cycle de vie des tâches spécifiques à chaque enfant, statistiques de performance et métadonnées de configuration"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "chore_name": {
+            "name": "Nom de la tâche"
+          },
+          "chore_icon": {
+            "name": "Icône de tâche"
+          },
+          "description": {
+            "name": "Description"
+          },
+          "assigned_kids": {
+            "name": "Enfants assignés"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          },
+          "default_points": {
+            "name": "Points par défaut"
+          },
+          "completion_criteria": {
+            "name": "Critères d'achèvement",
+            "state": {
+              "independent": "Indépendant",
+              "shared_first_only": "Partagé (Premier arrivé, premier servi)",
+              "shared_all_required": "Partagé (Tous requis)"
+            }
+          },
+          "approval_reset_type": {
+            "name": "Type de réinitialisation d'approbation",
+            "state": {
+              "at_midnight_once": "Une fois par jour",
+              "at_midnight_multi": "Plusieurs par jour",
+              "at_due_date_once": "Une fois par date d'échéance",
+              "at_due_date_multi": "Plusieurs par date d'échéance",
+              "upon_completion": "À l'achèvement"
+            }
+          },
+          "recurring_frequency": {
+            "name": "Fréquence récurrente",
+            "state": {
+              "none": "Aucun",
+              "daily": "Tous les jours",
+              "weekly": "Hebdomadaire",
+              "biweekly": "Bihebdomadaire",
+              "monthly": "Mensuel",
+              "custom": "Coutume"
+            }
+          },
+          "applicable_days": {
+            "name": "Jours applicables",
+            "state": {
+              "mon": "Lundi",
+              "tue": "Mardi",
+              "wed": "Mercredi",
+              "thu": "Jeudi",
+              "fri": "Vendredi",
+              "sat": "Samedi",
+              "sun": "Dimanche"
+            }
+          },
+          "due_date": {
+            "name": "Date d'échéance"
+          },
+          "custom_frequency_interval": {
+            "name": "Intervalle de fréquence personnalisé"
+          },
+          "custom_frequency_unit": {
+            "name": "Unité de fréquence personnalisée",
+            "state": {
+              "days": "Jours",
+              "weeks": "Semaines",
+              "months": "Mois"
+            }
+          },
+          "chore_points_earned": {
+            "name": "Points gagnés"
+          },
+          "chore_approvals_count": {
+            "name": "Approbations (Toutes périodes)"
+          },
+          "chore_claims_count": {
+            "name": "Réclamations (toutes périodes confondues)"
+          },
+          "chore_disapproved_count": {
+            "name": "Désapprobations (Tous temps)"
+          },
+          "chore_overdue_count": {
+            "name": "En retard (toutes périodes)"
+          },
+          "chore_approvals_today": {
+            "name": "Approbations aujourd'hui"
+          },
+          "chore_current_streak": {
+            "name": "Série actuelle"
+          },
+          "chore_highest_streak": {
+            "name": "Meilleure série"
+          },
+          "chore_last_longest_streak_date": {
+            "name": "Dernière date de la plus longue série"
+          },
+          "last_claimed": {
+            "name": "Dernière réclamation"
+          },
+          "last_approved": {
+            "name": "Dernière approbation"
+          },
+          "last_disapproved": {
+            "name": "Dernière désapprobation"
+          },
+          "last_overdue": {
+            "name": "Dernière échéance"
+          },
+          "global_state": {
+            "name": "État mondial",
+            "state": {
+              "pending": "En attente",
+              "approved": "Approuvé",
+              "claimed": "Réclamé",
+              "overdue": "En retard",
+              "unknown": "Inconnu",
+              "none": "Aucun",
+              "approved_in_part": "Approuvé (en partie)",
+              "claimed_in_part": "Revendiqué (en partie)",
+              "independent": "Indépendant"
+            }
+          },
+          "can_claim": {
+            "name": "Peut réclamer",
+            "state": {
+              "true": "Oui",
+              "false": "Non"
+            }
+          },
+          "can_approve": {
+            "name": "Peut approuver",
+            "state": {
+              "true": "Oui",
+              "false": "Non"
+            }
+          },
+          "approve_button_eid": {
+            "name": "ID de l'entité du bouton Approuver"
+          },
+          "disapprove_button_eid": {
+            "name": "ID de l'entité du bouton de désapprobation"
+          },
+          "claim_button_eid": {
+            "name": "ID d'entité du bouton de réclamation"
+          }
+        }
+      },
+      "kid_points_sensor": {
+        "name": "{points}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_points": "Solde de points actuel avec statistiques détaillées de gains et de dépenses"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "point_stat_points_earned_today": {
+            "name": "Gagné aujourd'hui"
+          },
+          "point_stat_points_earned_week": {
+            "name": "Gagné cette semaine"
+          },
+          "point_stat_points_earned_month": {
+            "name": "Revenus du mois"
+          },
+          "point_stat_points_earned_year": {
+            "name": "Gagné cette année"
+          },
+          "point_stat_points_earned_all_time": {
+            "name": "Gagné tout le temps"
+          },
+          "point_stat_points_by_source_today": {
+            "name": "Par Source Aujourd'hui"
+          },
+          "point_stat_points_by_source_week": {
+            "name": "Source : This Week"
+          },
+          "point_stat_points_by_source_month": {
+            "name": "Par Source Ce mois-ci"
+          },
+          "point_stat_points_by_source_year": {
+            "name": "Par source Cette année"
+          },
+          "point_stat_points_by_source_all_time": {
+            "name": "Par Source All Time"
+          },
+          "point_stat_points_spent_today": {
+            "name": "Dépensé aujourd'hui"
+          },
+          "point_stat_points_spent_week": {
+            "name": "Dépensé cette semaine"
+          },
+          "point_stat_points_spent_month": {
+            "name": "Dépenses du mois"
+          },
+          "point_stat_points_spent_year": {
+            "name": "Dépensé cette année"
+          },
+          "point_stat_points_spent_all_time": {
+            "name": "J'ai passé tout mon temps"
+          },
+          "point_stat_points_net_today": {
+            "name": "Net Today"
+          },
+          "point_stat_points_net_week": {
+            "name": "Net cette semaine"
+          },
+          "point_stat_points_net_month": {
+            "name": "Net ce mois-ci"
+          },
+          "point_stat_points_net_year": {
+            "name": "Net cette année"
+          },
+          "point_stat_points_net_all_time": {
+            "name": "Temps net total"
+          },
+          "point_stat_points_earning_streak_current": {
+            "name": "Série de gains actuelle"
+          },
+          "point_stat_points_earning_streak_longest": {
+            "name": "Plus longue période de gains"
+          },
+          "point_stat_avg_points_per_day_week": {
+            "name": "Moyenne par jour (semaine)"
+          },
+          "point_stat_avg_points_per_day_month": {
+            "name": "Moyenne par jour (mois)"
+          },
+          "point_stat_avg_points_per_chore": {
+            "name": "Moyenne par tâche"
+          },
+          "point_stat_highest_balance": {
+            "name": "Solde le plus élevé jamais enregistré"
+          }
+        }
+      },
+      "kid_points_max_ever_sensor": {
+        "name": "Maximum {points} Jamais"
+      },
+      "system_chore_approvals_sensor": {
+        "name": "Tâches accomplies - Total"
+      },
+      "system_chore_approvals_daily_sensor": {
+        "name": "Tâches ménagères accomplies - Quotidiennement"
+      },
+      "system_chore_approvals_weekly_sensor": {
+        "name": "Tâches ménagères terminées - Hebdomadaire"
+      },
+      "system_chore_approvals_monthly_sensor": {
+        "name": "Tâches ménagères accomplies - Mensuellement"
+      },
+      "kid_chores_sensor": {
+        "name": "Corvées",
+        "unit_of_measurement": "Corvées",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_chores": "Nombre total de tâches ménagères effectuées au fil du temps, avec des statistiques détaillées"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "chore_stat_approved_today": {
+            "name": "Approuvé aujourd'hui"
+          },
+          "chore_stat_approved_week": {
+            "name": "Approuvé cette semaine"
+          },
+          "chore_stat_approved_month": {
+            "name": "Approuvé ce mois-ci"
+          },
+          "chore_stat_approved_year": {
+            "name": "Approuvé cette année"
+          },
+          "chore_stat_approved_all_time": {
+            "name": "Approuvé en permanence"
+          },
+          "chore_stat_most_completed_chore_all_time": {
+            "name": "Tâche la plus accomplie (depuis toujours)"
+          },
+          "chore_stat_most_completed_chore_week": {
+            "name": "Tâche la plus accomplie (semaine)"
+          },
+          "chore_stat_most_completed_chore_month": {
+            "name": "Tâche la plus accomplie (mois)"
+          },
+          "chore_stat_most_completed_chore_year": {
+            "name": "Tâche la plus accomplie (Année)"
+          },
+          "chore_stat_total_points_from_chores_today": {
+            "name": "Points tirés des tâches ménagères d'aujourd'hui"
+          },
+          "chore_stat_total_points_from_chores_week": {
+            "name": "Points obtenus grâce aux tâches ménagères cette semaine"
+          },
+          "chore_stat_total_points_from_chores_month": {
+            "name": "Points obtenus grâce aux tâches ménagères ce mois-ci"
+          },
+          "chore_stat_total_points_from_chores_year": {
+            "name": "Points obtenus grâce aux corvées cette année"
+          },
+          "chore_stat_total_points_from_chores_all_time": {
+            "name": "Points obtenus grâce aux corvées (tous temps)"
+          },
+          "chore_stat_overdue_today": {
+            "name": "En retard aujourd'hui"
+          },
+          "chore_stat_overdue_week": {
+            "name": "En retard cette semaine"
+          },
+          "chore_stat_overdue_month": {
+            "name": "En retard ce mois-ci"
+          },
+          "chore_stat_overdue_year": {
+            "name": "En retard cette année"
+          },
+          "chore_stat_overdue_count_all_time": {
+            "name": "En retard depuis toujours"
+          },
+          "chore_stat_claimed_today": {
+            "name": "Réclamé aujourd'hui"
+          },
+          "chore_stat_claimed_week": {
+            "name": "Affirmé cette semaine"
+          },
+          "chore_stat_claimed_month": {
+            "name": "Réclamé ce mois-ci"
+          },
+          "chore_stat_claimed_year": {
+            "name": "Réclamé cette année"
+          },
+          "chore_stat_claimed_all_time": {
+            "name": "Réclamé à tout moment"
+          },
+          "chore_stat_disapproved_today": {
+            "name": "Désapprouvé aujourd'hui"
+          },
+          "chore_stat_disapproved_week": {
+            "name": "Désapprouvé cette semaine"
+          },
+          "chore_stat_disapproved_month": {
+            "name": "Désapprouvé ce mois-ci"
+          },
+          "chore_stat_disapproved_year": {
+            "name": "Désapprouvé cette année"
+          },
+          "chore_stat_disapproved_all_time": {
+            "name": "Désapprouvé en permanence"
+          },
+          "chore_stat_current_due_today": {
+            "name": "Échéance actuelle aujourd'hui"
+          },
+          "chore_stat_current_overdue": {
+            "name": "En retard de paiement"
+          },
+          "chore_stat_current_claimed": {
+            "name": "Revendus actuels"
+          },
+          "chore_stat_current_approved": {
+            "name": "Approuvé en vigueur"
+          },
+          "chore_stat_longest_streak_week": {
+            "name": "Série la plus longue (semaine)"
+          },
+          "chore_stat_longest_streak_month": {
+            "name": "Série la plus longue (mois)"
+          },
+          "chore_stat_longest_streak_year": {
+            "name": "Série la plus longue (année)"
+          },
+          "chore_stat_longest_streak_all_time": {
+            "name": "Plus longue série (de tous les temps)"
+          },
+          "chore_stat_avg_per_day_week": {
+            "name": "Moyenne par jour (semaine)"
+          },
+          "chore_stat_avg_per_day_month": {
+            "name": "Moyenne par jour (mois)"
+          }
+        }
+      },
+      "kid_badges_sensor": {
+        "name": "badges",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_kid_badges": "Badge le plus élevé obtenu et progression cumulative en temps réel, y compris les cycles actifs et l'historique des récompenses pour tous les types de badges."
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          },
+          "all_earned_badges": {
+            "name": "Tous les badges obtenus"
+          },
+          "highest_badge_threshold_value": {
+            "name": "Seuil de badge le plus élevé"
+          },
+          "points_to_next_badge": {
+            "name": "Points pour le prochain badge"
+          },
+          "current_badge_name": {
+            "name": "Nom actuel du badge"
+          },
+          "current_badge_eid": {
+            "name": "ID actuel de l'entité du badge"
+          },
+          "highest_earned_badge_name": {
+            "name": "Nom du badge le plus élevé obtenu"
+          },
+          "next_higher_badge_name": {
+            "name": "Nom du badge supérieur suivant"
+          },
+          "next_higher_badge_eid": {
+            "name": "Identifiant de l'entité de niveau supérieur suivant"
+          },
+          "next_lower_badge_name": {
+            "name": "Nom du badge inférieur suivant"
+          },
+          "next_lower_badge_eid": {
+            "name": "Identifiant de l'entité du badge inférieur suivant"
+          },
+          "badge_status": {
+            "name": "Statut du badge",
+            "state": {
+              "active": "Actif",
+              "grace": "Période de grâce",
+              "demoted": "Rétrogradé"
+            }
+          },
+          "last_awarded_date": {
+            "name": "Date de la dernière attribution"
+          },
+          "award_count": {
+            "name": "Nombre de récompenses"
+          },
+          "description": {
+            "name": "Description"
+          },
+          "baseline_points": {
+            "name": "Points de référence"
+          },
+          "cycle_points": {
+            "name": "Points de cycle"
+          },
+          "maintenance_grace_end_date": {
+            "name": "Date de fin de grâce pour la maintenance"
+          },
+          "maintenance_points_required": {
+            "name": "Points de maintenance requis"
+          },
+          "maintenance_end_date": {
+            "name": "Date de fin de maintenance"
+          },
+          "maintenance_points_remaining": {
+            "name": "Points de maintenance restants"
+          },
+          "reset_schedule": {
+            "name": "Réinitialiser le calendrier"
+          },
+          "target": {
+            "name": "Cible"
+          },
+          "awards": {
+            "name": "Prix"
+          }
+        }
+      },
+      "system_badge_sensor": {
+        "name": "Badge - {badge_name}",
+        "unit_of_measurement": "Enfants",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_badge": "Nombre d'enfants ayant obtenu ce badge, avec sa configuration (type, objectif, récompenses et enfants assignés)."
+            }
+          },
+          "badge_name": {
+            "name": "Nom du badge"
+          },
+          "description": {
+            "name": "Description"
+          },
+          "badge_type": {
+            "name": "Type de badge",
+            "state": {
+              "cumulative": "Cumulatif",
+              "achievement": "Réalisation",
+              "challenge": "Défi",
+              "daily": "Tous les jours",
+              "periodic": "Périodique",
+              "special": "Spécial"
+            }
+          },
+          "labels": {
+            "name": "Étiquettes"
+          },
+          "kids_earned": {
+            "name": "Les enfants ont gagné"
+          },
+          "kids_assigned": {
+            "name": "Enfants assignés"
+          },
+          "target": {
+            "name": "Cible"
+          },
+          "associated_achievement": {
+            "name": "Réalisation associée"
+          },
+          "associated_challenge": {
+            "name": "Défi associé"
+          },
+          "occasion_type": {
+            "name": "Type d'occasion"
+          },
+          "required_chores": {
+            "name": "Tâches obligatoires"
+          },
+          "badge_awards": {
+            "name": "Récompenses pour badges"
+          },
+          "reset_schedule": {
+            "name": "Réinitialiser le calendrier"
+          }
+        }
+      },
+      "kid_badge_progress_sensor": {
+        "name": "Progression du badge - {badge_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_badge_progress": "Pourcentage de progression vers l'obtention de ce badge (0-100) : suivi de l'avancement vers son obtention, avec l'état des critères, les dates et l'historique des récompenses."
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "badge_name": {
+            "name": "Nom du badge"
+          },
+          "badge_type": {
+            "name": "Type de badge",
+            "state": {
+              "cumulative": "Cumulatif",
+              "achievement": "Réalisation",
+              "challenge": "Défi",
+              "daily": "Tous les jours",
+              "periodic": "Périodique",
+              "special": "Spécial"
+            }
+          },
+          "status": {
+            "name": "Statut",
+            "state": {
+              "inactive": "Inactif",
+              "active": "Actif",
+              "completed": "Complété"
+            }
+          },
+          "target_type": {
+            "name": "Type de cible",
+            "state": {
+              "chores": "Corvées",
+              "points": "Points",
+              "days": "Jours",
+              "achievement": "Réalisation",
+              "challenge": "Défi"
+            }
+          },
+          "threshold_value": {
+            "name": "Seuil cible"
+          },
+          "recurring_frequency": {
+            "name": "Fréquence récurrente",
+            "state": {
+              "none": "Aucun",
+              "daily": "Tous les jours",
+              "weekly": "Hebdomadaire",
+              "biweekly": "Bihebdomadaire",
+              "monthly": "Mensuel"
+            }
+          },
+          "start_date": {
+            "name": "Date de début"
+          },
+          "end_date": {
+            "name": "Date de fin"
+          },
+          "last_update_day": {
+            "name": "Dernière mise à jour"
+          },
+          "overall_progress": {
+            "name": "Progrès globaux"
+          },
+          "criteria_met": {
+            "name": "Critères remplis",
+            "state": {
+              "true": "Oui",
+              "false": "Non"
+            }
+          },
+          "last_awarded": {
+            "name": "Dernière attribution"
+          },
+          "award_count": {
+            "name": "Nombre de récompenses"
+          },
+          "description": {
+            "name": "Description"
+          }
+        }
+      },
+      "system_chores_pending_approval_sensor": {
+        "name": "Approbation des tâches en attente"
+      },
+      "system_rewards_pending_approval_sensor": {
+        "name": "Approbation des récompenses en attente"
+      },
+      "system_chore_shared_state_sensor": {
+        "name": "{chore_name} - Statut global",
+        "state": {
+          "pending": "En attente",
+          "approved": "Approuvé",
+          "claimed": "Réclamé",
+          "overdue": "En retard",
+          "unknown": "Inconnu",
+          "none": "Aucun",
+          "approved_in_part": "Approuvé (en partie)",
+          "claimed_in_part": "Revendiqué (en partie)",
+          "independent": "Indépendant"
+        },
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_shared_chore": "État d'avancement global des tâches partagées avec des statistiques agrégées pour tous les enfants assignés"
+            }
+          },
+          "chore_name": {
+            "name": "Nom de la tâche"
+          },
+          "chore_icon": {
+            "name": "Icône de tâche"
+          },
+          "description": {
+            "name": "Description"
+          },
+          "assigned_kids": {
+            "name": "Enfants assignés"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          },
+          "default_points": {
+            "name": "Points par défaut"
+          },
+          "completion_criteria": {
+            "name": "Critères d'achèvement",
+            "state": {
+              "independent": "Indépendant",
+              "shared_first_only": "Partagé (Premier arrivé, premier servi)",
+              "shared_all_required": "Partagé (Tous requis)"
+            }
+          },
+          "approval_reset_type": {
+            "name": "Type de réinitialisation d'approbation",
+            "state": {
+              "at_midnight_once": "Une fois par jour",
+              "at_midnight_multi": "Plusieurs par jour",
+              "at_due_date_once": "Une fois par date d'échéance",
+              "at_due_date_multi": "Plusieurs par date d'échéance",
+              "upon_completion": "À l'achèvement"
+            }
+          },
+          "recurring_frequency": {
+            "name": "Fréquence récurrente",
+            "state": {
+              "none": "Aucun",
+              "daily": "Tous les jours",
+              "weekly": "Hebdomadaire",
+              "biweekly": "Bihebdomadaire",
+              "monthly": "Mensuel",
+              "custom": "Coutume"
+            }
+          },
+          "applicable_days": {
+            "name": "Jours applicables",
+            "state": {
+              "mon": "Lundi",
+              "tue": "Mardi",
+              "wed": "Mercredi",
+              "thu": "Jeudi",
+              "fri": "Vendredi",
+              "sat": "Samedi",
+              "sun": "Dimanche"
+            }
+          },
+          "due_date": {
+            "name": "Date d'échéance"
+          },
+          "custom_frequency_interval": {
+            "name": "Intervalle de fréquence personnalisé"
+          },
+          "custom_frequency_unit": {
+            "name": "Unité de fréquence personnalisée",
+            "state": {
+              "days": "Jours",
+              "weeks": "Semaines",
+              "months": "Mois"
+            }
+          },
+          "chore_approvals_today": {
+            "name": "Approbations aujourd'hui (Tous les enfants)"
+          },
+          "last_claimed": {
+            "name": "Dernière réclamation"
+          },
+          "last_approved": {
+            "name": "Dernière approbation"
+          },
+          "chore_claimed_by": {
+            "name": "Revendiqué par"
+          },
+          "chore_completed_by": {
+            "name": "Terminé par"
+          }
+        }
+      },
+      "kid_reward_status_sensor": {
+        "name": "Statut de récompense - {reward_name}",
+        "state": {
+          "not_claimed": "Non réclamé",
+          "approved": "Approuvé",
+          "claimed": "Réclamé",
+          "unknown": "Inconnu",
+          "none": "Aucun"
+        },
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_reward_status": "État des récompenses avec historique des demandes et boutons d'action"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "reward_name": {
+            "name": "Nom de la récompense"
+          },
+          "description": {
+            "name": "Description"
+          },
+          "cost": {
+            "name": "Coût"
+          },
+          "reward_claims_count": {
+            "name": "Total des sinistres"
+          },
+          "reward_approvals_count": {
+            "name": "Approbations totales"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          },
+          "reward_claim_button_eid": {
+            "name": "ID d'entité du bouton de réclamation"
+          },
+          "reward_approve_button_eid": {
+            "name": "ID de l'entité du bouton Approuver"
+          },
+          "reward_disapprove_button_eid": {
+            "name": "ID de l'entité du bouton de désapprobation"
+          }
+        }
+      },
+      "kid_penalty_applied_sensor": {
+        "name": "Pénalités appliquées - {penalty_name}",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "penalty_name": {
+            "name": "Nom de la pénalité"
+          },
+          "description": {
+            "name": "Description"
+          },
+          "penalty_points": {
+            "name": "Points de pénalité"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "kid_bonus_applied_sensor": {
+        "name": "Bonus applicable - {bonus_name}",
+        "state_attributes": {
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "bonus_name": {
+            "name": "Nom du bonus"
+          },
+          "description": {
+            "name": "Description"
+          },
+          "bonus_points": {
+            "name": "Points bonus"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "kid_points_earned_daily_sensor": {
+        "name": "Points gagnés - Quotidien"
+      },
+      "kid_points_earned_weekly_sensor": {
+        "name": "Points gagnés - Hebdomadaire"
+      },
+      "kid_points_earned_monthly_sensor": {
+        "name": "Points gagnés - Mensuel"
+      },
+      "system_achievement_sensor": {
+        "name": "Succès - {achievement_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_achievement": "Pourcentage de progression des résultats (0-100) agrégé pour tous les élèves assignés, avec la configuration des résultats incluant le type, l'objectif, les critères et la liste des élèves qui l'ont obtenu."
+            }
+          },
+          "achievement_name": {
+            "name": "Nom du succès"
+          },
+          "description": {
+            "name": "Description"
+          },
+          "assigned_kids": {
+            "name": "Enfants assignés"
+          },
+          "type": {
+            "name": "Taper",
+            "state": {
+              "chore_total": "Total des tâches",
+              "chore_streak": "Série de corvées",
+              "daily_minimum": "Minimum quotidien"
+            }
+          },
+          "associated_chore": {
+            "name": "Tâche associée"
+          },
+          "criteria": {
+            "name": "Critères"
+          },
+          "target_value": {
+            "name": "Cible"
+          },
+          "reward_points": {
+            "name": "Points de récompense"
+          },
+          "kids_earned": {
+            "name": "Gagné par"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "system_challenge_sensor": {
+        "name": "Défi - {challenge_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_challenge": "Pourcentage de progression du défi (0-100) agrégé pour tous les enfants assignés pendant la période concernée, avec la configuration du défi incluant le type, l'objectif, les critères, les dates et la liste des enfants qui l'ont atteint."
+            }
+          },
+          "challenge_name": {
+            "name": "Nom du défi"
+          },
+          "description": {
+            "name": "Description"
+          },
+          "assigned_kids": {
+            "name": "Enfants assignés"
+          },
+          "type": {
+            "name": "Taper",
+            "state": {
+              "total_within_window": "Total dans la fenêtre",
+              "daily_minimum": "Minimum quotidien"
+            }
+          },
+          "associated_chore": {
+            "name": "Tâche associée"
+          },
+          "criteria": {
+            "name": "Critères"
+          },
+          "target_value": {
+            "name": "Cible"
+          },
+          "reward_points": {
+            "name": "Points de récompense"
+          },
+          "start_date": {
+            "name": "Date de début"
+          },
+          "end_date": {
+            "name": "Date de fin"
+          },
+          "kids_earned": {
+            "name": "Gagné par"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "kid_achievement_progress_sensor": {
+        "name": "Progression - {achievement_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_achievement_progress": "Pourcentage de progression de chaque enfant (0-100) vers l'obtention de cette réussite, avec le nombre de points de progression bruts actuels et l'état de la récompense."
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "achievement_name": {
+            "name": "Nom du succès"
+          },
+          "description": {
+            "name": "Description"
+          },
+          "assigned_kids": {
+            "name": "Enfants assignés"
+          },
+          "type": {
+            "name": "Taper",
+            "state": {
+              "chore_total": "Total des tâches",
+              "chore_streak": "Série de corvées",
+              "daily_minimum": "Minimum quotidien"
+            }
+          },
+          "associated_chore": {
+            "name": "Tâche associée"
+          },
+          "criteria": {
+            "name": "Critères"
+          },
+          "target_value": {
+            "name": "Cible"
+          },
+          "reward_points": {
+            "name": "Points de récompense"
+          },
+          "raw_progress": {
+            "name": "Progrès brut"
+          },
+          "awarded": {
+            "name": "Récompensé",
+            "state": {
+              "true": "Oui",
+              "false": "Non"
+            }
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "kid_challenge_progress_sensor": {
+        "name": "Progression - {challenge_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_challenge_progress": "Pourcentage de progression de chaque enfant (0-100) dans la réalisation de ce défi pendant la période impartie, avec le nombre de points de progression bruts actuels et l'état de la récompense."
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "challenge_name": {
+            "name": "Nom du défi"
+          },
+          "description": {
+            "name": "Description"
+          },
+          "assigned_kids": {
+            "name": "Enfants assignés"
+          },
+          "type": {
+            "name": "Taper",
+            "state": {
+              "total_within_window": "Total dans la fenêtre",
+              "daily_minimum": "Minimum quotidien"
+            }
+          },
+          "associated_chore": {
+            "name": "Tâche associée"
+          },
+          "criteria": {
+            "name": "Critères"
+          },
+          "target_value": {
+            "name": "Cible"
+          },
+          "reward_points": {
+            "name": "Points de récompense"
+          },
+          "start_date": {
+            "name": "Date de début"
+          },
+          "end_date": {
+            "name": "Date de fin"
+          },
+          "raw_progress": {
+            "name": "Progrès brut"
+          },
+          "awarded": {
+            "name": "Récompensé",
+            "state": {
+              "true": "Oui",
+              "false": "Non"
+            }
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "kid_chore_streak_sensor": {
+        "name": "Série de tâches ménagères la plus élevée",
+        "state_attributes": {
+          "streaks_by_achievement": {
+            "name": "Séries par réussite"
+          }
+        }
+      },
+      "kid_dashboard_helper_sensor": {
+        "name": "Assistant de tableau de bord d'interface utilisateur",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_dashboard_helper": "Regroupe toutes les données relatives aux enfants pour l'affichage sur le tableau de bord."
+            }
+          },
+          "chores": {
+            "name": "Corvées"
+          },
+          "rewards": {
+            "name": "Récompenses"
+          },
+          "badges": {
+            "name": "badges"
+          },
+          "bonuses": {
+            "name": "Bonus"
+          },
+          "penalties": {
+            "name": "Pénalités"
+          },
+          "achievements": {
+            "name": "Réalisations"
+          },
+          "challenges": {
+            "name": "Défis"
+          },
+          "ui_translations": {
+            "name": "Traductions d'interface utilisateur"
+          },
+          "points_buttons": {
+            "name": "Boutons de points"
+          },
+          "pending_approvals": {
+            "name": "Approbations en attente"
+          },
+          "core_sensors": {
+            "name": "Capteurs principaux"
+          },
+          "dashboard_helpers": {
+            "name": "Assistants de tableau de bord"
+          },
+          "chores_by_label": {
+            "name": "Tâches par étiquette"
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "language": {
+            "name": "Langue"
+          }
+        }
+      }
+    },
+    "select": {
+      "kc_select_base": {
+        "name": "Sélectionner la base"
+      },
+      "system_chores_select": {
+        "name": "Sélectionner la tâche"
+      },
+      "system_rewards_select": {
+        "name": "Récompense Select"
+      },
+      "system_penalties_select": {
+        "name": "Sélectionner la pénalité"
+      },
+      "system_bonuses_select": {
+        "name": "Sélectionner le bonus"
+      },
+      "kid_dashboard_helper_chores_select": {
+        "name": "Assistant de liste de tâches du tableau de bord de l'interface utilisateur",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_select_kid_chores": "Sélection des tâches des enfants pour le filtrage du tableau de bord"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          }
+        }
+      }
+    },
+    "calendar": {
+      "kid_schedule_calendar": {
+        "name": "Calendrier",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_calendar_schedule": "Calendrier indiquant le planning des tâches ménagères des enfants et les dates d'échéance"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          }
+        }
+      }
+    },
+    "datetime": {
+      "kid_dashboard_helper_datetime_picker": {
+        "name": "Assistant de date du tableau de bord de l'interface utilisateur",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_datetime_dashboard_helper": "Outil de sélection de date pour le filtrage et la navigation dans l'interface utilisateur du tableau de bord"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          }
+        }
+      }
+    },
+    "button": {
+      "kid_chore_claim_button": {
+        "name": "Réclamez la tâche - {chore_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_button_chore_claim": "L'enfant affirme avoir terminé la tâche assignée"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "chore_name": {
+            "name": "Nom de la tâche"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "parent_chore_approve_button": {
+        "name": "Approuver la tâche - {chore_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_button_chore_approve": "Le parent approuve la tâche déclarée"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "chore_name": {
+            "name": "Nom de la tâche"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "parent_chore_disapprove_button": {
+        "name": "Désapprouver la corvée - {chore_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_button_chore_disapprove": "Le parent désapprouve la tâche revendiquée"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "chore_name": {
+            "name": "Nom de la tâche"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "kid_reward_redeem_button": {
+        "name": "Réclamez votre récompense - {reward_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_button_reward_redeem": "L'enfant utilise ses points pour obtenir sa récompense"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "reward_name": {
+            "name": "Nom de la récompense"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "parent_reward_approve_button": {
+        "name": "Approuver la récompense - {reward_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_button_reward_approve": "Le parent approuve la récompense utilisée"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "reward_name": {
+            "name": "Nom de la récompense"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "parent_reward_disapprove_button": {
+        "name": "Récompense refusée - {reward_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_button_reward_disapprove": "Le parent désapprouve l'utilisation de la récompense."
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "reward_name": {
+            "name": "Nom de la récompense"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "parent_penalty_apply_button": {
+        "name": "Appliquer une pénalité - {penalty_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_button_penalty_apply": "Le parent applique une pénalité (déduction de points)"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "penalty_name": {
+            "name": "Nom de la pénalité"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "parent_bonus_apply_button": {
+        "name": "Demande de bonus - {bonus_name}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_button_bonus_apply": "Le parent applique un bonus (ajoute des points)"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          },
+          "bonus_name": {
+            "name": "Nom du bonus"
+          },
+          "labels": {
+            "name": "Étiquettes"
+          }
+        }
+      },
+      "parent_points_adjust_button": {
+        "name": "{sign_label} {points_label}",
+        "state_attributes": {
+          "purpose": {
+            "name": "But",
+            "state": {
+              "purpose_button_points_adjust": "Le parent ajuste manuellement les points de l'enfant"
+            }
+          },
+          "kid_name": {
+            "name": "Nom de l'enfant"
+          }
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "error_msg_no_entry_found": {
+      "message": "Aucune entrée correspondante trouvée dans la configuration."
+    },
+    "not_authorized_action": {
+      "message": "Vous n'êtes pas autorisé à {action} pour cet enfant."
+    },
+    "not_authorized_action_global": {
+      "message": "Vous n'êtes pas autorisé à {action}."
+    },
+    "calendar_create_not_supported": {
+      "message": "La création d'événements n'est pas prise en charge pour ce calendrier."
+    },
+    "calendar_delete_not_supported": {
+      "message": "La suppression d'événements n'est pas prise en charge pour ce calendrier."
+    },
+    "calendar_update_not_supported": {
+      "message": "La mise à jour des événements n'est pas prise en charge pour ce calendrier."
+    },
+    "not_found": {
+      "message": "{entity_type} {name} introuvable"
+    },
+    "not_assigned": {
+      "message": "{entity} non affecté à {kid}"
+    },
+    "insufficient_points": {
+      "message": "{kid} a {current} points mais a besoin de {required} points"
+    },
+    "already_claimed": {
+      "message": "{entity} a déjà été réclamé"
+    },
+    "chore_claimed_by_other": {
+      "message": "Cette tâche a déjà été prise en charge par {claimed_by}"
+    },
+    "chore_already_approved": {
+      "message": "Tâche déjà approuvée aujourd'hui. Veuillez réessayer après la période de réinitialisation des approbations."
+    },
+    "chore_pending_claim": {
+      "message": "Chore a une demande en cours, en attente d'approbation ou de rejet."
+    },
+    "chore_completed_by_other": {
+      "message": "Cette tâche a déjà été accomplie par un autre enfant durant cette période."
+    },
+    "invalid_status": {
+      "message": "{entity} statut est {status}, attendu {expected}"
+    },
+    "entity_mismatch": {
+      "message": "{provided} ne correspond pas à {expected}"
+    },
+    "invalid_frequency": {
+      "message": "La fréquence récurrente {frequency} n'est pas valide"
+    },
+    "chore_overdue_for_kid": {
+      "message": "La tâche {chore_name} est en retard pour {kid_name}"
+    },
+    "kid_not_assigned_to_chore": {
+      "message": "L'enfant {kid_name} n'est pas affecté à la corvée {chore_name}"
+    },
+    "shared_chore_cannot_have_kid": {
+      "message": "Impossible de spécifier l'enfant pour la tâche partagée {chore_name}. Les tâches partagées ont une seule date d'échéance pour tous les enfants."
+    },
+    "required_field": {
+      "message": "Doit fournir {field}"
+    },
+    "invalid_date_format": {
+      "message": "Format de date invalide. Veuillez fournir une chaîne de date valide (par exemple, AAAA-MM-JJ ou date/heure au format ISO 8601)."
+    },
+    "date_in_past": {
+      "message": "La date d'échéance ne peut pas être passée. Veuillez indiquer une date future."
+    },
+    "missing_chore": {
+      "message": "Vous devez fournir soit l'identifiant de la tâche, soit son nom."
+    },
+    "missing_field": {
+      "message": "Le champ obligatoire {field} est manquant dans {entity}"
+    },
+    "invalid_date": {
+      "message": "La date {field} {date} n'est pas valide"
+    },
+    "date_constraint": {
+      "message": "{constraint} violation : {detail}"
+    },
+    "operation_failed": {
+      "message": "{operation} a échoué : {reason}"
+    },
+    "configuration_error": {
+      "message": "Erreur de configuration : {detail}"
+    }
+  }
+}

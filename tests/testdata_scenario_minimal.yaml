@@ -1,0 +1,65 @@
+# Test Scenario: MINIMAL
+# 1 parent, 1 kid, 2 chores, 1 badge, 1 reward, 1 bonus
+# Use case: Basic installation, simple setup
+
+family:
+  parents:
+    - name: "Môm Astrid Stârblüm"
+      ha_user_name: "parent1"
+      role: "gardener, loves stars"
+  kids:
+    - name: "Zoë"
+      ha_user_name: "kid1"
+      age: 8
+      interests: ["animals"]
+
+chores:
+  - name: "Feed the cåts"
+    assigned_to: ["Zoë"]
+    type: "daily"
+    points: 10
+    icon: "mdi:cat"
+  - name: "Wåter the plänts"
+    assigned_to: ["Zoë"]
+    type: "daily"
+    points: 10
+    icon: "mdi:watering-can"
+
+badges:
+  - name: "Brønze Står"
+    type: "cumulative"
+    threshold: 400
+    assigned_to: ["Zoë"] # Phase 2: Explicit assignment required
+    icon: "mdi:star"
+    award: "+5 bonus points"
+    points_multiplier: 1.05
+    maintenance:
+      interval: "weekly"
+      required_points: 300 # 3/4 of threshold (400 * 3/4 = 300)
+      demote_on_fail: true
+
+bonuses:
+  - name: "Stär Sprïnkle Bonus"
+    description: "Extra points for helping a sibling"
+    points: 15
+    icon: "mdi:sparkles"
+
+penalties:
+  - name: "Førget Chöre"
+    description: "Missed a daily chore"
+    points: -5
+    icon: "mdi:alert"
+
+rewards:
+  - name: "Ice Créam!"
+    cost: 60
+    icon: "mdi:ice-cream"
+
+progress:
+  Zoë:
+    chores_completed: ["Feed the cåts"]
+    badges_earned: []
+    points: 10
+    point_stats:
+      points_net_all_time: 10.0
+# Test focus: Basic entity creation, single kid dashboard, simple point tracking

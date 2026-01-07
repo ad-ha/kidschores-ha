@@ -4,60 +4,27 @@
 Ensures that all add/edit/delete operations reference entities via internal_id for consistency.
 """
 
-import datetime
 import uuid
-import voluptuous as vol
+from typing import Any, Dict, Optional
 
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
-from homeassistant.helpers import config_validation as cv
 from homeassistant.util import dt as dt_util
-from typing import Any, Optional
 
-from .const import (
-    ACHIEVEMENT_TYPE_STREAK,
-    CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW,
-    CONF_APPLICABLE_DAYS,
-    CONF_ACHIEVEMENTS,
-    CONF_BADGES,
-    CONF_CHALLENGES,
-    CONF_CHORES,
-    CONF_KIDS,
-    CONF_NOTIFY_ON_APPROVAL,
-    CONF_NOTIFY_ON_CLAIM,
-    CONF_NOTIFY_ON_DISAPPROVAL,
-    CONF_PARENTS,
-    CONF_PENALTIES,
-    CONF_POINTS_ICON,
-    CONF_POINTS_LABEL,
-    CONF_REWARDS,
-    CONF_BONUSES,
-    DEFAULT_APPLICABLE_DAYS,
-    DEFAULT_NOTIFY_ON_APPROVAL,
-    DEFAULT_NOTIFY_ON_CLAIM,
-    DEFAULT_NOTIFY_ON_DISAPPROVAL,
-    DEFAULT_POINTS_ICON,
-    DEFAULT_POINTS_LABEL,
-    FREQUENCY_CUSTOM,
-    DOMAIN,
-    LOGGER,
-)
-from .flow_helpers import (
-    build_points_schema,
-    build_kid_schema,
-    build_parent_schema,
-    build_chore_schema,
-    build_badge_schema,
-    build_reward_schema,
-    build_penalty_schema,
-    build_achievement_schema,
-    build_challenge_schema,
-    ensure_utc_datetime,
-    build_bonus_schema,
-)
+from . import const
+from . import flow_helpers as fh
+from .options_flow import KidsChoresOptionsFlowHandler
+
+# Pylint disable for valid config flow architectural patterns:
+# - too-many-lines: Config flows legitimately need many steps
+# - too-many-instance-attributes: Config flows track state across multiple steps
+# - too-many-public-methods: Each config step requires its own method
+# - abstract-method: is_matching is not required for config flows in current HA versions
+# pylint: disable=too-many-lines,too-many-instance-attributes,too-many-public-methods,abstract-method
 
 
-class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
     """Config Flow for KidsChores with internal_id-based entity management."""
 
     VERSION = 1
@@ -100,48 +67,461 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # Check if there's an existing KidsChores entry
         if any(self._async_current_entries()):
-            return self.async_abort(reason="single_instance_allowed")
+            return self.async_abort(reason=const.TRANS_KEY_ERROR_SINGLE_INSTANCE)
 
-        # Continue your normal flow
-        return await self.async_step_intro()
+        # Always show data recovery options first (even if no file exists)
+        # This allows users to restore from backup, paste JSON, or start fresh
+        return await self.async_step_data_recovery()
 
-    async def async_step_intro(self, user_input=None):
+    async def async_step_intro(self, user_input: Optional[dict[str, Any]] = None):
         """Intro / welcome step. Press Next to continue."""
         if user_input is not None:
             return await self.async_step_points_label()
 
-        return self.async_show_form(step_id="intro", data_schema=vol.Schema({}))
+        return self.async_show_form(
+            step_id=const.CONFIG_FLOW_STEP_INTRO, data_schema=vol.Schema({})
+        )
 
-    async def async_step_points_label(self, user_input=None):
+    # --------------------------------------------------------------------------
+    # DATA RECOVERY
+    # --------------------------------------------------------------------------
+    async def async_step_data_recovery(
+        self, user_input: Optional[dict[str, Any]] = None
+    ):
+        """Handle data recovery options when existing storage is found."""
+        from pathlib import Path
+
+        # Note: We don't load translations because SelectSelector cannot
+        # dynamically translate runtime-generated options (backup file lists).
+        # Using emoji prefixes (📄) as language-neutral solution instead.
+
+        errors = {}
+
+        if user_input is not None:
+            selection = user_input.get(const.CFOF_DATA_RECOVERY_INPUT_SELECTION)
+
+            # Validate that selection is not empty
+            if not selection:
+                errors["base"] = const.CFOP_ERROR_INVALID_SELECTION
+            elif selection == "start_fresh":
+                return await self._handle_start_fresh()
+            elif selection == "current_active":
+                return await self._handle_use_current()
+            elif selection == "paste_json":
+                return await self._handle_paste_json()
+            else:
+                # It's a backup selection with emoji prefix - extract the actual filename
+                # Selection format: "📄 [Tag] filename.json (age)"
+                # Using emoji prefix because backup files are dynamic and can't use SelectSelector translation
+                emoji_prefix = "📄 "
+
+                # Extract filename from the prefixed selection
+                if selection.startswith(emoji_prefix):
+                    # Remove the emoji prefix
+                    display_part = selection[len(emoji_prefix) :].strip()
+                    # Extract filename from format "[Tag] filename.json (age)"
+                    if "] " in display_part and " (" in display_part:
+                        # Get the part between "] " and " ("
+                        start_idx = display_part.find("] ") + 2
+                        end_idx = display_part.rfind(" (")
+                        if start_idx < end_idx:
+                            filename = display_part[start_idx:end_idx]
+                            return await self._handle_restore_backup(filename)
+
+                # Fallback: treat as raw filename (shouldn't happen with new format)
+                return await self._handle_restore_backup(selection)
+
+        # Build selection menu
+        storage_path = Path(
+            self.hass.config.path(const.STORAGE_PATH_SEGMENT, const.STORAGE_KEY)
+        )
+        storage_file_exists = await self.hass.async_add_executor_job(
+            storage_path.exists
+        )
+
+        # Discover backups (pass None for storage_manager - not needed for discovery)
+        backups = await fh.discover_backups(self.hass, None)
+
+        # Build options list for SelectSelector (keeping original approach for fixed options)
+        # Start with fixed options that get translated via translation_key
+        options = []
+
+        # Only show "use current" if file actually exists
+        if storage_file_exists:
+            options.append("current_active")
+
+        options.append("start_fresh")
+
+        # Add discovered backups with emoji prefix
+        # Note: Using emoji (📄) instead of translated text because:
+        # 1. Backup files are dynamically generated and can't use SelectSelector translation
+        # 2. Static options (start_fresh, etc.) use SelectSelector translation system
+        # 3. Emoji provides visual distinction without requiring translation API
+        for backup in backups:
+            age_str = fh.format_backup_age(backup["age_hours"])
+            tag_display = backup["tag"].replace("-", " ").title()
+            backup_display = f"[{tag_display}] {backup['filename']} ({age_str})"
+            emoji_option = f"📄 {backup_display}"
+            options.append(emoji_option)
+
+        # Add paste JSON option
+        options.append("paste_json")
+
+        # Build schema using SelectSelector with translation_key (original working approach)
+        from homeassistant.helpers import selector
+
+        data_schema = vol.Schema(
+            {
+                vol.Required(
+                    const.CFOF_DATA_RECOVERY_INPUT_SELECTION
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=options,
+                        mode=selector.SelectSelectorMode.LIST,
+                        translation_key="data_recovery_selection",
+                        custom_value=True,  # Allow backup filenames with prefixes
+                    )
+                )
+            }
+        )
+
+        return self.async_show_form(
+            step_id=const.CONFIG_FLOW_STEP_DATA_RECOVERY,
+            data_schema=data_schema,
+            errors=errors,
+            description_placeholders={
+                "storage_path": str(storage_path.parent),
+                "backup_count": str(len(backups)),
+            },
+        )
+
+    async def _handle_start_fresh(self):
+        """Handle 'Start Fresh' - backup existing and delete."""
+        import os
+        from pathlib import Path
+
+        from .storage_manager import KidsChoresStorageManager
+
+        try:
+            storage_manager = KidsChoresStorageManager(self.hass)
+            storage_path = Path(storage_manager.get_storage_path())
+
+            # Create safety backup if file exists
+            if storage_path.exists():
+                backup_name = await fh.create_timestamped_backup(
+                    self.hass, storage_manager, const.BACKUP_TAG_RECOVERY
+                )
+                if backup_name:
+                    const.LOGGER.info(
+                        "Created safety backup before fresh start: %s", backup_name
+                    )
+
+                # Delete active file
+                await self.hass.async_add_executor_job(os.remove, str(storage_path))
+                const.LOGGER.info("Deleted active storage file for fresh start")
+
+            # Continue to intro (standard setup)
+            return await self.async_step_intro()
+
+        except Exception as err:  # pylint: disable=broad-except
+            const.LOGGER.error("Fresh start failed: %s", err)
+            return self.async_abort(reason=const.TRANS_KEY_CFOP_ERROR_UNKNOWN)
+
+    async def _handle_use_current(self):
+        """Handle 'Use Current Active' - validate and continue setup."""
+        import json
+        from pathlib import Path
+
+        try:
+            # Get storage path without creating storage manager yet
+            storage_path = Path(self.hass.config.path(".storage", const.STORAGE_KEY))
+
+            if not storage_path.exists():
+                return self.async_abort(
+                    reason=const.TRANS_KEY_CFOP_ERROR_FILE_NOT_FOUND
+                )
+
+            # Validate JSON
+            data_str = await self.hass.async_add_executor_job(
+                storage_path.read_text, "utf-8"
+            )
+
+            try:
+                current_data = json.loads(data_str)  # Validate parseable JSON
+            except json.JSONDecodeError:
+                const.LOGGER.error("Current active file has invalid JSON")
+                return self.async_abort(reason=const.TRANS_KEY_CFOP_ERROR_CORRUPT_FILE)
+
+            # Check if file has Home Assistant storage format wrapper
+            needs_wrapping = not ("version" in current_data and "data" in current_data)
+
+            # Validate structure (validate_backup_json handles both formats)
+            if not fh.validate_backup_json(data_str):
+                const.LOGGER.error("Current active file missing required keys")
+                return self.async_abort(
+                    reason=const.TRANS_KEY_CFOP_ERROR_INVALID_STRUCTURE
+                )
+
+            # Wrap raw data if needed
+            if needs_wrapping:
+                # Raw data format (like v30, v31, v40beta1 samples)
+                # Need to wrap it in proper storage format
+                const.LOGGER.info(
+                    "Using current active storage file (wrapping raw data)"
+                )
+
+                # Build wrapped format
+                wrapped_data = {
+                    "version": 1,
+                    "minor_version": 1,
+                    "key": const.STORAGE_KEY,
+                    "data": current_data,
+                }
+
+                # Write wrapped data directly to file
+                await self.hass.async_add_executor_job(
+                    storage_path.write_text, json.dumps(wrapped_data, indent=2), "utf-8"
+                )
+            else:
+                # Already in storage format - file is ready to use
+                const.LOGGER.info("Using current active storage file (already wrapped)")
+
+            # File is valid - create config entry immediately with existing data
+            # No need to collect kids/chores/points since they're already defined
+            return self.async_create_entry(
+                title="KidsChores",
+                data={},  # Empty - integration will load from storage file
+            )
+
+        except Exception as err:  # pylint: disable=broad-except
+            const.LOGGER.error("Use current failed: %s", err)
+            return self.async_abort(reason=const.TRANS_KEY_CFOP_ERROR_UNKNOWN)
+
+    async def _handle_restore_backup(self, backup_filename: str):
+        """Handle restoring from a specific backup file."""
+        import json
+        import shutil
+        from pathlib import Path
+
+        from .storage_manager import KidsChoresStorageManager
+
+        try:
+            # Get storage path directly without creating storage manager yet
+            storage_path = Path(self.hass.config.path(".storage", const.STORAGE_KEY))
+            backup_path = storage_path.parent / backup_filename
+
+            if not backup_path.exists():
+                const.LOGGER.error("Backup file not found: %s", backup_filename)
+                return self.async_abort(
+                    reason=const.TRANS_KEY_CFOP_ERROR_FILE_NOT_FOUND
+                )
+
+            # Read and validate backup
+            backup_data_str = await self.hass.async_add_executor_job(
+                backup_path.read_text, "utf-8"
+            )
+
+            try:
+                json.loads(backup_data_str)  # Validate parseable JSON
+            except json.JSONDecodeError:
+                const.LOGGER.error("Backup file has invalid JSON: %s", backup_filename)
+                return self.async_abort(reason=const.TRANS_KEY_CFOP_ERROR_CORRUPT_FILE)
+
+            # Validate structure
+            if not fh.validate_backup_json(backup_data_str):
+                const.LOGGER.error(
+                    "Backup file missing required keys: %s", backup_filename
+                )
+                return self.async_abort(
+                    reason=const.TRANS_KEY_CFOP_ERROR_INVALID_STRUCTURE
+                )
+
+            # Create safety backup of current file if it exists
+            if storage_path.exists():
+                # Create storage manager only for safety backup creation
+                storage_manager = KidsChoresStorageManager(self.hass)
+                safety_backup = await fh.create_timestamped_backup(
+                    self.hass, storage_manager, const.BACKUP_TAG_RECOVERY
+                )
+                if safety_backup:
+                    const.LOGGER.info(
+                        "Created safety backup before restore: %s", safety_backup
+                    )
+
+            # Parse backup data
+            backup_data = json.loads(backup_data_str)
+
+            # Check if backup already has Home Assistant storage format
+            if "version" in backup_data and "data" in backup_data:
+                # Already in storage format - restore as-is
+                await self.hass.async_add_executor_job(
+                    shutil.copy2, str(backup_path), str(storage_path)
+                )
+            else:
+                # Raw data format (like v30, v31, v40beta1 samples)
+                # Load through storage manager to add proper wrapper
+                storage_manager = KidsChoresStorageManager(self.hass)
+                storage_manager.set_data(backup_data)
+                await storage_manager.async_save()
+
+            const.LOGGER.info("Restored backup: %s", backup_filename)
+
+            # Cleanup old backups
+            storage_manager = KidsChoresStorageManager(self.hass)
+            max_backups = const.DEFAULT_BACKUPS_MAX_RETAINED
+            await fh.cleanup_old_backups(self.hass, storage_manager, max_backups)
+
+            # Backup successfully restored - create config entry immediately
+            # No need to collect kids/chores/points since they were in the backup
+            return self.async_create_entry(
+                title="KidsChores",
+                data={},  # Empty - integration will load from restored storage file
+            )
+
+        except Exception as err:  # pylint: disable=broad-except
+            const.LOGGER.error("Restore backup failed: %s", err)
+            return self.async_abort(reason=const.TRANS_KEY_CFOP_ERROR_UNKNOWN)
+
+    async def _handle_paste_json(self):
+        """Handle pasting JSON data from diagnostics - show text input form."""
+        return await self.async_step_paste_json_input()
+
+    async def async_step_paste_json_input(
+        self, user_input: Optional[dict[str, Any]] = None
+    ):
+        """Allow user to paste JSON data from data file or diagnostics."""
+        import json
+        from pathlib import Path
+
+        errors = {}
+
+        if user_input is not None:
+            json_text = user_input.get(
+                const.CFOF_DATA_RECOVERY_INPUT_JSON_DATA, ""
+            ).strip()
+
+            if not json_text:
+                errors["base"] = const.CFOP_ERROR_EMPTY_JSON
+            else:
+                try:
+                    # Parse JSON
+                    pasted_data = json.loads(json_text)
+
+                    # Validate structure
+                    if not fh.validate_backup_json(json_text):
+                        errors["base"] = const.CFOP_ERROR_INVALID_STRUCTURE
+                    else:
+                        # Determine data format and extract storage data
+                        storage_data = pasted_data
+
+                        # Handle diagnostic format (KC 4.0+ diagnostic exports)
+                        if (
+                            const.DATA_KEY_HOME_ASSISTANT in pasted_data
+                            and const.DATA_KEY_DATA in pasted_data
+                        ):
+                            const.LOGGER.info("Processing diagnostic export format")
+                            storage_data = pasted_data[const.DATA_KEY_DATA]
+                        # Handle Store format (KC 3.0/3.1/4.0beta1)
+                        elif (
+                            const.DATA_KEY_VERSION in pasted_data
+                            and const.DATA_KEY_DATA in pasted_data
+                        ):
+                            const.LOGGER.info("Processing Store format")
+                            storage_data = pasted_data[const.DATA_KEY_DATA]
+                        # Raw storage data format
+                        else:
+                            const.LOGGER.info("Processing raw storage format")
+                            storage_data = pasted_data
+
+                        # Always wrap in HA Store format for storage file
+                        wrapped_data = {
+                            const.DATA_KEY_VERSION: 1,
+                            "minor_version": 1,
+                            const.DATA_KEY_KEY: const.STORAGE_KEY,
+                            const.DATA_KEY_DATA: storage_data,
+                        }
+
+                        # Write to storage file
+                        storage_path = Path(
+                            self.hass.config.path(
+                                const.STORAGE_PATH_SEGMENT, const.STORAGE_KEY
+                            )
+                        )
+
+                        # Write wrapped data to storage (directory created by HA/test fixtures)
+                        await self.hass.async_add_executor_job(
+                            storage_path.write_text,
+                            json.dumps(wrapped_data, indent=2),
+                            "utf-8",
+                        )
+
+                        const.LOGGER.info("Successfully imported JSON data to storage")
+
+                        # Create config entry - integration will load from storage
+                        return self.async_create_entry(
+                            title="KidsChores",
+                            data={},
+                        )
+
+                except json.JSONDecodeError as err:
+                    const.LOGGER.error("Invalid JSON pasted: %s", err)
+                    errors["base"] = const.CFOP_ERROR_INVALID_JSON
+                except Exception as err:  # pylint: disable=broad-except
+                    const.LOGGER.error("Failed to process pasted JSON: %s", err)
+                    errors["base"] = const.CFOP_ERROR_UNKNOWN
+
+        # Show form with text area
+        data_schema = vol.Schema(
+            {
+                vol.Required(const.CFOF_DATA_RECOVERY_INPUT_JSON_DATA): str,
+            }
+        )
+
+        return self.async_show_form(
+            step_id="paste_json_input",
+            data_schema=data_schema,
+            errors=errors,
+            description_placeholders={
+                "help_text": "Paste the complete JSON from diagnostics or backup file"
+            },
+        )
+
+    async def async_step_points_label(
+        self, user_input: Optional[dict[str, Any]] = None
+    ):
         """Let the user define a custom label for points."""
         errors = {}
 
         if user_input is not None:
-            points_label = user_input.get(CONF_POINTS_LABEL, DEFAULT_POINTS_LABEL)
-            points_icon = user_input.get(CONF_POINTS_ICON, DEFAULT_POINTS_ICON)
+            # Validate inputs
+            errors = fh.validate_points_inputs(user_input)
 
-            self._data[CONF_POINTS_LABEL] = points_label
-            self._data[CONF_POINTS_ICON] = points_icon
+            if not errors:
+                # Build and store points configuration
+                points_data = fh.build_points_data(user_input)
+                self._data.update(points_data)
+                return await self.async_step_kid_count()
 
-            return await self.async_step_kid_count()
-
-        points_schema = build_points_schema(
-            default_label=DEFAULT_POINTS_LABEL, default_icon=DEFAULT_POINTS_ICON
+        points_schema = fh.build_points_schema(
+            default_label=const.DEFAULT_POINTS_LABEL,
+            default_icon=const.DEFAULT_POINTS_ICON,
         )
 
         return self.async_show_form(
-            step_id="points_label", data_schema=points_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_POINTS,
+            data_schema=points_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
     # KIDS
     # --------------------------------------------------------------------------
-    async def async_step_kid_count(self, user_input=None):
+    async def async_step_kid_count(self, user_input: Optional[dict[str, Any]] = None):
         """Ask how many kids to define initially."""
         errors = {}
         if user_input is not None:
             try:
-                self._kid_count = int(user_input["kid_count"])
+                self._kid_count = int(user_input[const.CFOF_KIDS_INPUT_KID_COUNT])
                 if self._kid_count < 0:
                     raise ValueError
                 if self._kid_count == 0:
@@ -149,45 +529,33 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._kid_index = 0
                 return await self.async_step_kids()
             except ValueError:
-                errors["base"] = "invalid_kid_count"
+                errors[const.CFOP_ERROR_BASE] = const.TRANS_KEY_CFOF_INVALID_KID_COUNT
 
-        schema = vol.Schema({vol.Required("kid_count", default=1): vol.Coerce(int)})
+        schema = vol.Schema(
+            {vol.Required(const.CFOF_KIDS_INPUT_KID_COUNT, default=1): vol.Coerce(int)}
+        )
         return self.async_show_form(
-            step_id="kid_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_KID_COUNT, data_schema=schema, errors=errors
         )
 
-    async def async_step_kids(self, user_input=None):
-        """Collect each kid's info using internal_id as the primary key.
-
-        Store in self._kids_temp as a dict keyed by internal_id.
-        """
+    async def async_step_kids(self, user_input: Optional[dict[str, Any]] = None):
+        """Collect each kid's info using internal_id as the primary key."""
         errors = {}
         if user_input is not None:
-            kid_name = user_input["kid_name"].strip()
-            ha_user_id = user_input.get("ha_user") or ""
-            enable_mobile_notifications = user_input.get(
-                "enable_mobile_notifications", True
-            )
-            notify_service = user_input.get("mobile_notify_service") or ""
-            enable_persist = user_input.get("enable_persistent_notifications", True)
+            # Validate inputs
+            errors = fh.validate_kids_inputs(user_input, self._kids_temp)
 
-            if not kid_name:
-                errors["kid_name"] = "invalid_kid_name"
-            elif any(
-                kid_data["name"] == kid_name for kid_data in self._kids_temp.values()
-            ):
-                errors["kid_name"] = "duplicate_kid"
-            else:
-                internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-                self._kids_temp[internal_id] = {
-                    "name": kid_name,
-                    "ha_user_id": ha_user_id,
-                    "enable_notifications": enable_mobile_notifications,
-                    "mobile_notify_service": notify_service,
-                    "use_persistent_notifications": enable_persist,
-                    "internal_id": internal_id,
-                }
-                LOGGER.debug("Added kid: %s with ID: %s", kid_name, internal_id)
+            if not errors:
+                # Build and store kid data
+                kid_data = fh.build_kids_data(user_input, self._kids_temp)
+                self._kids_temp.update(kid_data)
+
+                # Get internal_id and name for logging
+                internal_id = list(kid_data.keys())[0]
+                kid_name = kid_data[internal_id][const.DATA_KID_NAME]
+                const.LOGGER.debug(
+                    "DEBUG: Added Kid: %s with ID: %s", kid_name, internal_id
+                )
 
             self._kid_index += 1
             if self._kid_index >= self._kid_count:
@@ -196,28 +564,32 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # Retrieve HA users for linking
         users = await self.hass.auth.async_get_users()
-        kid_schema = build_kid_schema(
+        kid_schema = await fh.build_kid_schema(
             self.hass,
             users=users,
-            default_kid_name="",
+            default_kid_name=const.SENTINEL_EMPTY,
             default_ha_user_id=None,
             default_enable_mobile_notifications=False,
             default_mobile_notify_service=None,
             default_enable_persistent_notifications=False,
         )
         return self.async_show_form(
-            step_id="kids", data_schema=kid_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_KIDS, data_schema=kid_schema, errors=errors
         )
 
     # --------------------------------------------------------------------------
     # PARENTS
     # --------------------------------------------------------------------------
-    async def async_step_parent_count(self, user_input=None):
+    async def async_step_parent_count(
+        self, user_input: Optional[dict[str, Any]] = None
+    ):
         """Ask how many parents to define initially."""
         errors = {}
         if user_input is not None:
             try:
-                self._parents_count = int(user_input["parent_count"])
+                self._parents_count = int(
+                    user_input[const.CFOF_PARENTS_INPUT_PARENT_COUNT]
+                )
                 if self._parents_count < 0:
                     raise ValueError
                 if self._parents_count == 0:
@@ -225,48 +597,44 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._parents_index = 0
                 return await self.async_step_parents()
             except ValueError:
-                errors["base"] = "invalid_parent_count"
+                errors[const.CFOP_ERROR_BASE] = (
+                    const.TRANS_KEY_CFOF_INVALID_PARENT_COUNT
+                )
 
-        schema = vol.Schema({vol.Required("parent_count", default=1): vol.Coerce(int)})
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    const.CFOF_PARENTS_INPUT_PARENT_COUNT, default=1
+                ): vol.Coerce(int)
+            }
+        )
         return self.async_show_form(
-            step_id="parent_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_PARENT_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
-    async def async_step_parents(self, user_input=None):
+    async def async_step_parents(self, user_input: Optional[dict[str, Any]] = None):
         """Collect each parent's info using internal_id as the primary key.
 
         Store in self._parents_temp as a dict keyed by internal_id.
         """
         errors = {}
         if user_input is not None:
-            parent_name = user_input["parent_name"].strip()
-            ha_user_id = user_input.get("ha_user_id") or ""
-            associated_kids = user_input.get("associated_kids", [])
-            enable_mobile_notifications = user_input.get(
-                "enable_mobile_notifications", True
-            )
-            notify_service = user_input.get("mobile_notify_service") or ""
-            enable_persist = user_input.get("enable_persistent_notifications", True)
+            # Validate inputs
+            errors = fh.validate_parents_inputs(user_input, self._parents_temp)
 
-            if not parent_name:
-                errors["parent_name"] = "invalid_parent_name"
-            elif any(
-                parent_data["name"] == parent_name
-                for parent_data in self._parents_temp.values()
-            ):
-                errors["parent_name"] = "duplicate_parent"
-            else:
-                internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-                self._parents_temp[internal_id] = {
-                    "name": parent_name,
-                    "ha_user_id": ha_user_id,
-                    "associated_kids": associated_kids,
-                    "enable_notifications": enable_mobile_notifications,
-                    "mobile_notify_service": notify_service,
-                    "use_persistent_notifications": enable_persist,
-                    "internal_id": internal_id,
-                }
-                LOGGER.debug("Added parent: %s with ID: %s", parent_name, internal_id)
+            if not errors:
+                # Build and store parent data
+                parent_data = fh.build_parents_data(user_input, self._parents_temp)
+                self._parents_temp.update(parent_data)
+
+                # Get internal_id and name for logging
+                internal_id = list(parent_data.keys())[0]
+                parent_name = parent_data[internal_id][const.DATA_PARENT_NAME]
+                const.LOGGER.debug(
+                    "DEBUG: Added Parent: %s with ID: %s", parent_name, internal_id
+                )
 
             self._parents_index += 1
             if self._parents_index >= self._parents_count:
@@ -275,36 +643,38 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # Retrieve kids for association from _kids_temp
         kids_dict = {
-            kid_data["name"]: kid_id for kid_id, kid_data in self._kids_temp.items()
+            kid_data[const.DATA_KID_NAME]: kid_id
+            for kid_id, kid_data in self._kids_temp.items()
         }
 
         users = await self.hass.auth.async_get_users()
 
-        parent_schema = build_parent_schema(
+        parent_schema = fh.build_parent_schema(
             self.hass,
             users=users,
             kids_dict=kids_dict,
-            default_parent_name="",
+            default_parent_name=const.SENTINEL_EMPTY,
             default_ha_user_id=None,
             default_associated_kids=[],
             default_enable_mobile_notifications=False,
             default_mobile_notify_service=None,
             default_enable_persistent_notifications=False,
-            internal_id=None,
         )
         return self.async_show_form(
-            step_id="parents", data_schema=parent_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_PARENTS,
+            data_schema=parent_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
     # CHORES
     # --------------------------------------------------------------------------
-    async def async_step_chore_count(self, user_input=None):
+    async def async_step_chore_count(self, user_input: Optional[dict[str, Any]] = None):
         """Ask how many chores to define."""
         errors = {}
         if user_input is not None:
             try:
-                self._chore_count = int(user_input["chore_count"])
+                self._chore_count = int(user_input[const.CFOF_CHORES_INPUT_CHORE_COUNT])
                 if self._chore_count < 0:
                     raise ValueError
                 if self._chore_count == 0:
@@ -312,14 +682,22 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._chore_index = 0
                 return await self.async_step_chores()
             except ValueError:
-                errors["base"] = "invalid_chore_count"
+                errors[const.CFOP_ERROR_BASE] = const.TRANS_KEY_CFOF_INVALID_CHORE_COUNT
 
-        schema = vol.Schema({vol.Required("chore_count", default=1): vol.Coerce(int)})
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    const.CFOF_CHORES_INPUT_CHORE_COUNT, default=1
+                ): vol.Coerce(int)
+            }
+        )
         return self.async_show_form(
-            step_id="chore_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_CHORE_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
-    async def async_step_chores(self, user_input=None):
+    async def async_step_chores(self, user_input: Optional[dict[str, Any]] = None):
         """Collect chore details using internal_id as the primary key.
 
         Store in self._chores_temp as a dict keyed by internal_id.
@@ -327,79 +705,35 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
-            chore_name = user_input["chore_name"].strip()
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            # Build kids_dict for name→UUID conversion
+            kids_dict = {
+                kid_data[const.DATA_KID_NAME]: kid_id
+                for kid_id, kid_data in self._kids_temp.items()
+            }
 
-            if user_input.get("due_date"):
-                raw_due = user_input["due_date"]
-                try:
-                    due_date_str = ensure_utc_datetime(self.hass, raw_due)
-                    due_dt = dt_util.parse_datetime(due_date_str)
-                    if due_dt and due_dt < dt_util.utcnow():
-                        errors["due_date"] = "due_date_in_past"
-                except ValueError:
-                    errors["due_date"] = "invalid_due_date"
-                    due_date_str = None
-            else:
-                due_date_str = None
-
-            if not chore_name:
-                errors["chore_name"] = "invalid_chore_name"
-            elif any(
-                chore_data["name"] == chore_name
-                for chore_data in self._chores_temp.values()
-            ):
-                errors["chore_name"] = "duplicate_chore"
+            # Build and validate chore data
+            chore_data, errors = fh.build_chores_data(
+                user_input, kids_dict, self._chores_temp
+            )
 
             if errors:
-                kids_dict = {
-                    kid_data["name"]: kid_id
-                    for kid_id, kid_data in self._kids_temp.items()
-                }
-                # Re-show the form with the user's current input and errors:
+                # Re-show the form with the user's current input and errors
                 default_data = user_input.copy()
                 return self.async_show_form(
-                    step_id="chores",
-                    data_schema=build_chore_schema(kids_dict, default_data),
+                    step_id=const.CONFIG_FLOW_STEP_CHORES,
+                    data_schema=fh.build_chore_schema(kids_dict, default_data),
                     errors=errors,
                 )
 
-            if user_input.get("recurring_frequency") != FREQUENCY_CUSTOM:
-                user_input.pop("custom_interval", None)
-                user_input.pop("custom_interval_unit", None)
+            # Store the chore
+            self._chores_temp.update(chore_data)
 
-            # If no errors, store the chore
-            self._chores_temp[internal_id] = {
-                "name": chore_name,
-                "default_points": user_input["default_points"],
-                "partial_allowed": user_input["partial_allowed"],
-                "shared_chore": user_input["shared_chore"],
-                "assigned_kids": user_input["assigned_kids"],
-                "allow_multiple_claims_per_day": user_input[
-                    "allow_multiple_claims_per_day"
-                ],
-                "description": user_input.get("chore_description", ""),
-                "chore_labels": user_input.get("chore_labels", []),
-                "icon": user_input.get("icon", ""),
-                "recurring_frequency": user_input.get("recurring_frequency", "none"),
-                "custom_interval": user_input.get("custom_interval"),
-                "custom_interval_unit": user_input.get("custom_interval_unit"),
-                "due_date": due_date_str,
-                "applicable_days": user_input.get(
-                    CONF_APPLICABLE_DAYS, DEFAULT_APPLICABLE_DAYS
-                ),
-                "notify_on_claim": user_input.get(
-                    CONF_NOTIFY_ON_CLAIM, DEFAULT_NOTIFY_ON_CLAIM
-                ),
-                "notify_on_approval": user_input.get(
-                    CONF_NOTIFY_ON_APPROVAL, DEFAULT_NOTIFY_ON_APPROVAL
-                ),
-                "notify_on_disapproval": user_input.get(
-                    CONF_NOTIFY_ON_DISAPPROVAL, DEFAULT_NOTIFY_ON_DISAPPROVAL
-                ),
-                "internal_id": internal_id,
-            }
-            LOGGER.debug("Added chore: %s with ID: %s", chore_name, internal_id)
+            # Get internal_id and name for logging
+            internal_id = list(chore_data.keys())[0]
+            chore_name = chore_data[internal_id][const.DATA_CHORE_NAME]
+            const.LOGGER.debug(
+                "DEBUG: Added Chore: %s with ID: %s", chore_name, internal_id
+            )
 
             self._chore_index += 1
             if self._chore_index >= self._chore_count:
@@ -408,23 +742,26 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # Use flow_helpers.build_chore_schema, passing the current kids
         kids_dict = {
-            kid_data["name"]: kid_id for kid_id, kid_data in self._kids_temp.items()
+            kid_data[const.DATA_KID_NAME]: kid_id
+            for kid_id, kid_data in self._kids_temp.items()
         }
         default_data = {}
-        chore_schema = build_chore_schema(kids_dict, default_data)
+        chore_schema = fh.build_chore_schema(kids_dict, default_data)
         return self.async_show_form(
-            step_id="chores", data_schema=chore_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_CHORES,
+            data_schema=chore_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
     # BADGES
     # --------------------------------------------------------------------------
-    async def async_step_badge_count(self, user_input=None):
+    async def async_step_badge_count(self, user_input: Optional[dict[str, Any]] = None):
         """Ask how many badges to define."""
         errors = {}
         if user_input is not None:
             try:
-                self._badge_count = int(user_input["badge_count"])
+                self._badge_count = int(user_input[const.CFOF_BADGES_INPUT_BADGE_COUNT])
                 if self._badge_count < 0:
                     raise ValueError
                 if self._badge_count == 0:
@@ -432,62 +769,110 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._badge_index = 0
                 return await self.async_step_badges()
             except ValueError:
-                errors["base"] = "invalid_badge_count"
+                errors[const.CFOP_ERROR_BASE] = const.TRANS_KEY_CFOF_INVALID_BADGE_COUNT
 
-        schema = vol.Schema({vol.Required("badge_count", default=0): vol.Coerce(int)})
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    const.CFOF_BADGES_INPUT_BADGE_COUNT, default=0
+                ): vol.Coerce(int)
+            }
+        )
         return self.async_show_form(
-            step_id="badge_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_BADGE_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
-    async def async_step_badges(self, user_input=None):
-        """Collect badge details using internal_id as the primary key.
+    async def async_step_badges(self, user_input: Optional[dict[str, Any]] = None):
+        """Collect badge details using internal_id as the primary key."""
+        return await self.async_add_badge_common(
+            user_input=user_input,
+            badge_type=const.BADGE_TYPE_CUMULATIVE,
+        )
 
-        Store in self._badges_temp as a dict keyed by internal_id.
-        """
-        errors = {}
+    async def async_add_badge_common(
+        self,
+        user_input: Optional[Dict[str, Any]] = None,
+        badge_type: str = const.BADGE_TYPE_CUMULATIVE,
+        default_data: Optional[Dict[str, Any]] = None,
+    ):
+        """Handle adding a badge in the config flow."""
+        errors: Dict[str, str] = {}
+
         if user_input is not None:
-            badge_name = user_input["badge_name"].strip()
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            # --- Validate Inputs ---
+            errors = fh.validate_badge_common_inputs(
+                user_input=user_input,
+                internal_id=None,  # No internal_id yet for new badges
+                existing_badges=self._badges_temp,
+                badge_type=badge_type,
+            )
 
-            if not badge_name:
-                errors["badge_name"] = "invalid_badge_name"
-            elif any(
-                badge_data["name"] == badge_name
-                for badge_data in self._badges_temp.values()
-            ):
-                errors["badge_name"] = "duplicate_badge"
-            else:
-                self._badges_temp[internal_id] = {
-                    "name": badge_name,
-                    "threshold_type": user_input["threshold_type"],
-                    "threshold_value": user_input["threshold_value"],
-                    "points_multiplier": user_input["points_multiplier"],
-                    "icon": user_input.get("icon", ""),
-                    "internal_id": internal_id,
-                    "description": user_input.get("badge_description", ""),
-                    "badge_labels": user_input.get("badge_labels", []),
-                }
-                LOGGER.debug("Added badge: %s with ID: %s", badge_name, internal_id)
+            if not errors:
+                # --- Build Data ---
+                internal_id = str(uuid.uuid4())
+                updated_badge_data = fh.build_badge_common_data(
+                    user_input=user_input,
+                    internal_id=internal_id,
+                    badge_type=badge_type,
+                )
+                updated_badge_data[const.DATA_BADGE_TYPE] = badge_type
 
-            self._badge_index += 1
-            if self._badge_index >= self._badge_count:
-                return await self.async_step_reward_count()
-            return await self.async_step_badges()
+                # --- Save Data ---
+                self._badges_temp[internal_id] = updated_badge_data
 
-        badge_schema = build_badge_schema()
+                const.LOGGER.debug(
+                    "Added Badge '%s' with ID: %s. Data: %s",
+                    updated_badge_data[const.DATA_BADGE_NAME],
+                    internal_id,
+                    updated_badge_data,
+                )
+
+                # Proceed to the next step or finish
+                self._badge_index += 1
+                if self._badge_index >= self._badge_count:
+                    return await self.async_step_reward_count()
+                return await self.async_step_badges()
+
+        # --- Build Schema ---
+        badge_schema_data = user_input if user_input else default_data or {}
+        schema_fields = fh.build_badge_common_schema(
+            default=badge_schema_data,
+            kids_dict={
+                kid_data[const.DATA_KID_NAME]: kid_id
+                for kid_id, kid_data in self._kids_temp.items()
+            },
+            chores_dict=self._chores_temp,
+            rewards_dict=self._rewards_temp,
+            achievements_dict=self._achievements_temp,
+            challenges_dict=self._challenges_temp,
+            badge_type=badge_type,
+        )
+        data_schema = vol.Schema(schema_fields)
+
+        # Determine step name dynamically
+        step_name = const.CONFIG_FLOW_STEP_BADGES
+
         return self.async_show_form(
-            step_id="badges", data_schema=badge_schema, errors=errors
+            step_id=step_name,
+            data_schema=data_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
     # REWARDS
     # --------------------------------------------------------------------------
-    async def async_step_reward_count(self, user_input=None):
+    async def async_step_reward_count(
+        self, user_input: Optional[dict[str, Any]] = None
+    ):
         """Ask how many rewards to define."""
         errors = {}
         if user_input is not None:
             try:
-                self._reward_count = int(user_input["reward_count"])
+                self._reward_count = int(
+                    user_input[const.CFOF_REWARDS_INPUT_REWARD_COUNT]
+                )
                 if self._reward_count < 0:
                     raise ValueError
                 if self._reward_count == 0:
@@ -495,60 +880,65 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._reward_index = 0
                 return await self.async_step_rewards()
             except ValueError:
-                errors["base"] = "invalid_reward_count"
+                errors[const.CFOP_ERROR_BASE] = (
+                    const.TRANS_KEY_CFOF_INVALID_REWARD_COUNT
+                )
 
-        schema = vol.Schema({vol.Required("reward_count", default=0): vol.Coerce(int)})
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    const.CFOF_REWARDS_INPUT_REWARD_COUNT, default=0
+                ): vol.Coerce(int)
+            }
+        )
         return self.async_show_form(
-            step_id="reward_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_REWARD_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
-    async def async_step_rewards(self, user_input=None):
+    async def async_step_rewards(self, user_input: Optional[dict[str, Any]] = None):
         """Collect reward details using internal_id as the primary key.
 
         Store in self._rewards_temp as a dict keyed by internal_id.
         """
         errors = {}
         if user_input is not None:
-            reward_name = user_input["reward_name"].strip()
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-
-            if not reward_name:
-                errors["reward_name"] = "invalid_reward_name"
-            elif any(
-                reward_data["name"] == reward_name
-                for reward_data in self._rewards_temp.values()
-            ):
-                errors["reward_name"] = "duplicate_reward"
-            else:
-                self._rewards_temp[internal_id] = {
-                    "name": reward_name,
-                    "cost": user_input["reward_cost"],
-                    "description": user_input.get("reward_description", ""),
-                    "reward_labels": user_input.get("reward_labels", []),
-                    "icon": user_input.get("icon", ""),
-                    "internal_id": internal_id,
-                }
-                LOGGER.debug("Added reward: %s with ID: %s", reward_name, internal_id)
+            errors = fh.validate_rewards_inputs(user_input, self._rewards_temp)
+            if not errors:
+                reward_data = fh.build_rewards_data(user_input, self._rewards_temp)
+                self._rewards_temp.update(reward_data)
+                internal_id = list(reward_data.keys())[0]
+                reward_name = reward_data[internal_id][const.DATA_REWARD_NAME]
+                const.LOGGER.debug(
+                    "DEBUG: Added Reward: %s with ID: %s", reward_name, internal_id
+                )
 
             self._reward_index += 1
             if self._reward_index >= self._reward_count:
                 return await self.async_step_penalty_count()
             return await self.async_step_rewards()
 
-        reward_schema = build_reward_schema()
+        reward_schema = fh.build_reward_schema()
         return self.async_show_form(
-            step_id="rewards", data_schema=reward_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_REWARDS,
+            data_schema=reward_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
     # PENALTIES
     # --------------------------------------------------------------------------
-    async def async_step_penalty_count(self, user_input=None):
+    async def async_step_penalty_count(
+        self, user_input: Optional[dict[str, Any]] = None
+    ):
         """Ask how many penalties to define."""
         errors = {}
         if user_input is not None:
             try:
-                self._penalty_count = int(user_input["penalty_count"])
+                self._penalty_count = int(
+                    user_input[const.CFOF_PENALTIES_INPUT_PENALTY_COUNT]
+                )
                 if self._penalty_count < 0:
                     raise ValueError
                 if self._penalty_count == 0:
@@ -556,61 +946,69 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._penalty_index = 0
                 return await self.async_step_penalties()
             except ValueError:
-                errors["base"] = "invalid_penalty_count"
+                errors[const.CFOP_ERROR_BASE] = (
+                    const.TRANS_KEY_CFOF_INVALID_PENALTY_COUNT
+                )
 
-        schema = vol.Schema({vol.Required("penalty_count", default=0): vol.Coerce(int)})
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    const.CFOF_PENALTIES_INPUT_PENALTY_COUNT, default=0
+                ): vol.Coerce(int)
+            }
+        )
         return self.async_show_form(
-            step_id="penalty_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_PENALTY_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
-    async def async_step_penalties(self, user_input=None):
+    async def async_step_penalties(self, user_input: Optional[dict[str, Any]] = None):
         """Collect penalty details using internal_id as the primary key.
 
         Store in self._penalties_temp as a dict keyed by internal_id.
         """
         errors = {}
         if user_input is not None:
-            penalty_name = user_input["penalty_name"].strip()
-            penalty_points = user_input["penalty_points"]
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            # Validate inputs
+            errors = fh.validate_penalties_inputs(user_input, self._penalties_temp)
 
-            if not penalty_name:
-                errors["penalty_name"] = "invalid_penalty_name"
-            elif any(
-                penalty_data["name"] == penalty_name
-                for penalty_data in self._penalties_temp.values()
-            ):
-                errors["penalty_name"] = "duplicate_penalty"
-            else:
-                self._penalties_temp[internal_id] = {
-                    "name": penalty_name,
-                    "description": user_input.get("penalty_description", ""),
-                    "penalty_labels": user_input.get("penalty_labels", []),
-                    "points": -abs(penalty_points),  # Ensure points are negative
-                    "icon": user_input.get("icon", ""),
-                    "internal_id": internal_id,
-                }
-                LOGGER.debug("Added penalty: %s with ID: %s", penalty_name, internal_id)
+            if not errors:
+                # Build penalty data
+                penalty_data = fh.build_penalties_data(user_input, self._penalties_temp)
+                self._penalties_temp.update(penalty_data)
+
+                penalty_name = user_input[const.CFOF_PENALTIES_INPUT_NAME].strip()
+                internal_id = user_input.get(
+                    const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+                )
+                const.LOGGER.debug(
+                    "DEBUG: Added Penalty: %s with ID: %s", penalty_name, internal_id
+                )
 
             self._penalty_index += 1
             if self._penalty_index >= self._penalty_count:
                 return await self.async_step_bonus_count()
             return await self.async_step_penalties()
 
-        penalty_schema = build_penalty_schema()
+        penalty_schema = fh.build_penalty_schema()
         return self.async_show_form(
-            step_id="penalties", data_schema=penalty_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_PENALTIES,
+            data_schema=penalty_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
     # BONUSES
     # --------------------------------------------------------------------------
-    async def async_step_bonus_count(self, user_input=None):
+    async def async_step_bonus_count(self, user_input: Optional[dict[str, Any]] = None):
         """Ask how many bonuses to define."""
         errors = {}
         if user_input is not None:
             try:
-                self._bonus_count = int(user_input["bonus_count"])
+                self._bonus_count = int(
+                    user_input[const.CFOF_BONUSES_INPUT_BONUS_COUNT]
+                )
                 if self._bonus_count < 0:
                     raise ValueError
                 if self._bonus_count == 0:
@@ -618,61 +1016,67 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._bonus_index = 0
                 return await self.async_step_bonuses()
             except ValueError:
-                errors["base"] = "invalid_bonus_count"
+                errors[const.CFOP_ERROR_BASE] = const.TRANS_KEY_CFOF_INVALID_BONUS_COUNT
 
-        schema = vol.Schema({vol.Required("bonus_count", default=0): vol.Coerce(int)})
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    const.CFOF_BONUSES_INPUT_BONUS_COUNT, default=0
+                ): vol.Coerce(int)
+            }
+        )
         return self.async_show_form(
-            step_id="bonus_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_BONUS_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
-    async def async_step_bonuses(self, user_input=None):
+    async def async_step_bonuses(self, user_input: Optional[dict[str, Any]] = None):
         """Collect bonus details using internal_id as the primary key.
 
         Store in self._bonuses_temp as a dict keyed by internal_id.
         """
         errors = {}
         if user_input is not None:
-            bonus_name = user_input["bonus_name"].strip()
-            bonus_points = user_input["bonus_points"]
-            internal_id = user_input.get("internal_id", str(uuid.uuid4()))
+            # Validate inputs
+            errors = fh.validate_bonuses_inputs(user_input, self._bonuses_temp)
 
-            if not bonus_name:
-                errors["bonus_name"] = "invalid_bonus_name"
-            elif any(
-                bonus_data["name"] == bonus_name
-                for bonus_data in self._bonuses_temp.values()
-            ):
-                errors["bonus_name"] = "duplicate_bonus"
-            else:
-                self._bonuses_temp[internal_id] = {
-                    "name": bonus_name,
-                    "description": user_input.get("bonus_description", ""),
-                    "bonus_labels": user_input.get("bonus_labels", []),
-                    "points": abs(bonus_points),  # Ensure points are positive
-                    "icon": user_input.get("icon", ""),
-                    "internal_id": internal_id,
-                }
-                LOGGER.debug("Added bonus '%s' with ID: %s", bonus_name, internal_id)
+            if not errors:
+                # Build bonus data
+                bonus_data = fh.build_bonuses_data(user_input, self._bonuses_temp)
+                self._bonuses_temp.update(bonus_data)
+
+                bonus_name = user_input[const.CFOF_BONUSES_INPUT_NAME].strip()
+                internal_id = user_input.get(
+                    const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+                )
+                const.LOGGER.debug(
+                    "DEBUG: Added Bonus '%s' with ID: %s", bonus_name, internal_id
+                )
 
             self._bonus_index += 1
             if self._bonus_index >= self._bonus_count:
                 return await self.async_step_achievement_count()
             return await self.async_step_bonuses()
 
-        schema = build_bonus_schema()
+        schema = fh.build_bonus_schema()
         return self.async_show_form(
-            step_id="bonuses", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_BONUSES, data_schema=schema, errors=errors
         )
 
     # --------------------------------------------------------------------------
     # ACHIEVEMENTS
     # --------------------------------------------------------------------------
-    async def async_step_achievement_count(self, user_input=None):
+    async def async_step_achievement_count(
+        self, user_input: Optional[dict[str, Any]] = None
+    ):
         """Ask how many achievements to define initially."""
         errors = {}
         if user_input is not None:
             try:
-                self._achievement_count = int(user_input["achievement_count"])
+                self._achievement_count = int(
+                    user_input[const.CFOF_ACHIEVEMENTS_INPUT_ACHIEVEMENT_COUNT]
+                )
                 if self._achievement_count < 0:
                     raise ValueError
                 if self._achievement_count == 0:
@@ -680,82 +1084,81 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._achievement_index = 0
                 return await self.async_step_achievements()
             except ValueError:
-                errors["base"] = "invalid_achievement_count"
+                errors[const.CFOP_ERROR_BASE] = (
+                    const.TRANS_KEY_CFOF_INVALID_ACHIEVEMENT_COUNT
+                )
         schema = vol.Schema(
-            {vol.Required("achievement_count", default=0): vol.Coerce(int)}
+            {
+                vol.Required(
+                    const.CFOF_ACHIEVEMENTS_INPUT_ACHIEVEMENT_COUNT, default=0
+                ): vol.Coerce(int)
+            }
         )
         return self.async_show_form(
-            step_id="achievement_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_ACHIEVEMENT_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
-    async def async_step_achievements(self, user_input=None):
+    async def async_step_achievements(
+        self, user_input: Optional[dict[str, Any]] = None
+    ):
         """Collect each achievement's details using internal_id as the key."""
         errors = {}
 
         if user_input is not None:
-            achievement_name = user_input["name"].strip()
-            if not achievement_name:
-                errors["name"] = "invalid_achievement_name"
-            elif any(
-                achievement_data["name"] == achievement_name
-                for achievement_data in self._achievements_temp.values()
-            ):
-                errors["name"] = "duplicate_achievement"
-            else:
-                _type = user_input["type"]
+            # Build achievement data with integrated validation
+            achievement_data, errors = fh.build_achievements_data(
+                user_input, self._achievements_temp, kids_name_to_id={}
+            )
 
-                if _type == ACHIEVEMENT_TYPE_STREAK:
-                    chore_id = user_input.get("selected_chore_id")
-                    if not chore_id or chore_id == "None":
-                        errors["selected_chore_id"] = "a_chore_must_be_selected"
+            if not errors:
+                self._achievements_temp.update(achievement_data)
 
-                    final_chore_id = chore_id
-                else:
-                    # Discard chore if not streak
-                    final_chore_id = ""
+                achievement_name = user_input[
+                    const.CFOF_ACHIEVEMENTS_INPUT_NAME
+                ].strip()
+                internal_id = user_input.get(
+                    const.CFOF_GLOBAL_INPUT_INTERNAL_ID, str(uuid.uuid4())
+                )
+                const.LOGGER.debug(
+                    "DEBUG: Added Achievement '%s' with ID: %s",
+                    achievement_name,
+                    internal_id,
+                )
 
-                if not errors:
-                    internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-                    self._achievements_temp[internal_id] = {
-                        "name": achievement_name,
-                        "description": user_input.get("description", ""),
-                        "achievement_labels": user_input.get("achievement_labels", []),
-                        "icon": user_input.get("icon", ""),
-                        "assigned_kids": user_input["assigned_kids"],
-                        "type": _type,
-                        "selected_chore_id": final_chore_id,
-                        "criteria": user_input.get("criteria", "").strip(),
-                        "target_value": user_input["target_value"],
-                        "reward_points": user_input["reward_points"],
-                        "internal_id": internal_id,
-                        "progress": {},
-                    }
-
-                    self._achievement_index += 1
-                    if self._achievement_index >= self._achievement_count:
-                        return await self.async_step_challenge_count()
-                    return await self.async_step_achievements()
+            self._achievement_index += 1
+            if self._achievement_index >= self._achievement_count:
+                return await self.async_step_challenge_count()
+            return await self.async_step_achievements()
 
         kids_dict = {
-            kid_data["name"]: kid_id for kid_id, kid_data in self._kids_temp.items()
+            kid_data[const.DATA_KID_NAME]: kid_id
+            for kid_id, kid_data in self._kids_temp.items()
         }
         all_chores = self._chores_temp
-        achievement_schema = build_achievement_schema(
+        achievement_schema = fh.build_achievement_schema(
             kids_dict=kids_dict, chores_dict=all_chores, default=None
         )
         return self.async_show_form(
-            step_id="achievements", data_schema=achievement_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_ACHIEVEMENTS,
+            data_schema=achievement_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
     # CHALLENGES
     # --------------------------------------------------------------------------
-    async def async_step_challenge_count(self, user_input=None):
+    async def async_step_challenge_count(
+        self, user_input: Optional[dict[str, Any]] = None
+    ):
         """Ask how many challenges to define initially."""
         errors = {}
         if user_input is not None:
             try:
-                self._challenge_count = int(user_input["challenge_count"])
+                self._challenge_count = int(
+                    user_input[const.CFOF_CHALLENGES_INPUT_CHALLENGE_COUNT]
+                )
                 if self._challenge_count < 0:
                     raise ValueError
                 if self._challenge_count == 0:
@@ -763,178 +1166,337 @@ class KidsChoresConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._challenge_index = 0
                 return await self.async_step_challenges()
             except ValueError:
-                errors["base"] = "invalid_challenge_count"
+                errors[const.CFOP_ERROR_BASE] = (
+                    const.TRANS_KEY_CFOF_INVALID_CHALLENGE_COUNT
+                )
         schema = vol.Schema(
-            {vol.Required("challenge_count", default=0): vol.Coerce(int)}
+            {
+                vol.Required(
+                    const.CFOF_CHALLENGES_INPUT_CHALLENGE_COUNT, default=0
+                ): vol.Coerce(int)
+            }
         )
         return self.async_show_form(
-            step_id="challenge_count", data_schema=schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_CHALLENGE_COUNT,
+            data_schema=schema,
+            errors=errors,
         )
 
-    async def async_step_challenges(self, user_input=None):
+    async def async_step_challenges(self, user_input: Optional[dict[str, Any]] = None):
         """Collect each challenge's details using internal_id as the key."""
         errors = {}
         if user_input is not None:
-            challenge_name = user_input["name"].strip()
-            if not challenge_name:
-                errors["name"] = "invalid_challenge_name"
-            elif any(
-                challenge_data["name"] == challenge_name
-                for challenge_data in self._challenges_temp.values()
-            ):
-                errors["name"] = "duplicate_challenge"
-            else:
-                _type = user_input["type"]
+            # Use the helper to build and validate challenge data
+            challenge_data, errors = fh.build_challenges_data(
+                user_input,
+                self._kids_temp,
+                existing_challenges=self._challenges_temp,
+                current_id=None,  # New challenge
+            )
 
-                if _type == CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW:
-                    chosen_chore_id = user_input.get("selected_chore_id")
-                    if not chosen_chore_id or chosen_chore_id == "None":
-                        errors["selected_chore_id"] = "a_chore_must_be_selected"
-                    final_chore_id = chosen_chore_id
-                else:
-                    # Discard chore if not "CHALLENGE_TYPE_TOTAL_WITHIN_WINDOW"
-                    final_chore_id = ""
+            if not errors and challenge_data:
+                # Additional config flow specific validation: dates must be in the future
+                start_date_str = list(challenge_data.values())[0][
+                    const.DATA_CHALLENGE_START_DATE
+                ]
+                end_date_str = list(challenge_data.values())[0][
+                    const.DATA_CHALLENGE_END_DATE
+                ]
 
-                # Process start_date and end_date using the helper:
-                start_date_input = user_input.get("start_date")
-                end_date_input = user_input.get("end_date")
+                start_dt = dt_util.parse_datetime(start_date_str)
+                end_dt = dt_util.parse_datetime(end_date_str)
 
-                if start_date_input:
-                    try:
-                        start_date = ensure_utc_datetime(self.hass, start_date_input)
-                        start_dt = dt_util.parse_datetime(start_date)
-                        if start_dt and start_dt < dt_util.utcnow():
-                            errors["start_date"] = "start_date_in_past"
-                    except Exception:
-                        errors["start_date"] = "invalid_start_date"
-                        start_date = None
-                else:
-                    start_date = None
-
-                if end_date_input:
-                    try:
-                        end_date = ensure_utc_datetime(self.hass, end_date_input)
-                        end_dt = dt_util.parse_datetime(end_date)
-                        if end_dt and end_dt <= dt_util.utcnow():
-                            errors["end_date"] = "end_date_in_past"
-                        if start_date:
-                            # Compare start_dt and end_dt if both are valid
-                            if end_dt and start_dt and end_dt <= start_dt:
-                                errors["end_date"] = "end_date_not_after_start_date"
-                    except Exception:
-                        errors["end_date"] = "invalid_end_date"
-                        end_date = None
-                else:
-                    end_date = None
-
-                if not errors:
-                    internal_id = user_input.get("internal_id", str(uuid.uuid4()))
-                    self._challenges_temp[internal_id] = {
-                        "name": challenge_name,
-                        "description": user_input.get("description", ""),
-                        "challenge_labels": user_input.get("challenge_labels", []),
-                        "icon": user_input.get("icon", ""),
-                        "assigned_kids": user_input["assigned_kids"],
-                        "type": _type,
-                        "selected_chore_id": final_chore_id,
-                        "criteria": user_input.get("criteria", "").strip(),
-                        "target_value": user_input["target_value"],
-                        "reward_points": user_input["reward_points"],
-                        "start_date": start_date,
-                        "end_date": end_date,
-                        "internal_id": internal_id,
-                        "progress": {},
+                if start_dt and start_dt < dt_util.utcnow():
+                    errors = {
+                        const.CFOP_ERROR_START_DATE: const.TRANS_KEY_CFOF_START_DATE_IN_PAST
                     }
-                    self._challenge_index += 1
-                    if self._challenge_index >= self._challenge_count:
-                        return await self.async_step_finish()
-                    return await self.async_step_challenges()
+                elif end_dt and end_dt <= dt_util.utcnow():
+                    errors = {
+                        const.CFOP_ERROR_END_DATE: const.TRANS_KEY_CFOF_END_DATE_IN_PAST
+                    }
+
+            if not errors and challenge_data:
+                self._challenges_temp.update(challenge_data)
+
+                challenge_name = user_input[const.CFOF_CHALLENGES_INPUT_NAME].strip()
+                internal_id = list(challenge_data.keys())[0]
+                const.LOGGER.debug(
+                    "DEBUG: Added Challenge '%s' with ID: %s",
+                    challenge_name,
+                    internal_id,
+                )
+
+            if not errors:
+                self._challenge_index += 1
+                if self._challenge_index >= self._challenge_count:
+                    return await self.async_step_finish()
+                return await self.async_step_challenges()
 
         kids_dict = {
-            kid_data["name"]: kid_id for kid_id, kid_data in self._kids_temp.items()
+            kid_data[const.DATA_KID_NAME]: kid_id
+            for kid_id, kid_data in self._kids_temp.items()
         }
         all_chores = self._chores_temp
         default_data = user_input if user_input else None
-        challenge_schema = build_challenge_schema(
+        challenge_schema = fh.build_challenge_schema(
             kids_dict=kids_dict,
             chores_dict=all_chores,
             default=default_data,
         )
         return self.async_show_form(
-            step_id="challenges", data_schema=challenge_schema, errors=errors
+            step_id=const.CONFIG_FLOW_STEP_CHALLENGES,
+            data_schema=challenge_schema,
+            errors=errors,
         )
 
     # --------------------------------------------------------------------------
     # FINISH
     # --------------------------------------------------------------------------
-    async def async_step_finish(self, user_input=None):
+    async def async_step_finish(self, user_input: Optional[dict[str, Any]] = None):
         """Finalize summary and create the config entry."""
         if user_input is not None:
-            return self._create_entry()
+            return await self._create_entry()
 
         # Create a mapping from kid_id to kid_name for easy lookup
         kid_id_to_name = {
-            kid_id: data["name"] for kid_id, data in self._kids_temp.items()
+            kid_id: data[const.DATA_KID_NAME]
+            for kid_id, data in self._kids_temp.items()
         }
 
         # Enhance parents summary to include associated kids by name
         parents_summary = []
         for parent in self._parents_temp.values():
             associated_kids_names = [
-                kid_id_to_name.get(kid_id, "Unknown")
-                for kid_id in parent.get("associated_kids", [])
+                kid_id_to_name.get(kid_id, const.TRANS_KEY_DISPLAY_UNKNOWN_KID)
+                for kid_id in parent.get(const.DATA_PARENT_ASSOCIATED_KIDS, [])
             ]
             if associated_kids_names:
                 kids_str = ", ".join(associated_kids_names)
-                parents_summary.append(f"{parent['name']} (Kids: {kids_str})")
+                parents_summary.append(
+                    f"{parent[const.DATA_PARENT_NAME]} (Kids: {kids_str})"
+                )
             else:
-                parents_summary.append(parent["name"])
+                parents_summary.append(parent[const.DATA_PARENT_NAME])
 
+        kids_names = (
+            ", ".join(
+                kid_data[const.DATA_KID_NAME] for kid_data in self._kids_temp.values()
+            )
+            or const.SENTINEL_NONE_TEXT
+        )
+        parents_names = ", ".join(parents_summary) or const.SENTINEL_NONE_TEXT
+        chores_names = (
+            ", ".join(
+                chore_data[const.DATA_CHORE_NAME]
+                for chore_data in self._chores_temp.values()
+            )
+            or const.SENTINEL_NONE_TEXT
+        )
+        badges_names = (
+            ", ".join(
+                badge_data[const.DATA_BADGE_NAME]
+                for badge_data in self._badges_temp.values()
+            )
+            or const.SENTINEL_NONE_TEXT
+        )
+        rewards_names = (
+            ", ".join(
+                reward_data[const.DATA_REWARD_NAME]
+                for reward_data in self._rewards_temp.values()
+            )
+            or const.SENTINEL_NONE_TEXT
+        )
+        penalties_names = (
+            ", ".join(
+                penalty_data[const.DATA_PENALTY_NAME]
+                for penalty_data in self._penalties_temp.values()
+            )
+            or const.SENTINEL_NONE_TEXT
+        )
+        bonuses_names = (
+            ", ".join(
+                bonus_data[const.DATA_BONUS_NAME]
+                for bonus_data in self._bonuses_temp.values()
+            )
+            or const.SENTINEL_NONE_TEXT
+        )
+        achievements_names = (
+            ", ".join(
+                achievement_data[const.DATA_ACHIEVEMENT_NAME]
+                for achievement_data in self._achievements_temp.values()
+            )
+            or const.SENTINEL_NONE_TEXT
+        )
+        challenges_names = (
+            ", ".join(
+                challenge_data[const.DATA_CHALLENGE_NAME]
+                for challenge_data in self._challenges_temp.values()
+            )
+            or const.SENTINEL_NONE_TEXT
+        )
+
+        # Use TRANS_KEY constants that already contain English labels (e.g., "Kids: ")
         summary = (
-            f"\nKids: {', '.join(kid_data['name'] for kid_data in self._kids_temp.values()) or 'None'}\n\n"
-            f"Parents: {', '.join(parents_summary) or 'None'}\n\n"
-            f"Chores: {', '.join(chore_data['name'] for chore_data in self._chores_temp.values()) or 'None'}\n\n"
-            f"Badges: {', '.join(badge_data['name'] for badge_data in self._badges_temp.values()) or 'None'}\n\n"
-            f"Rewards: {', '.join(reward_data['name'] for reward_data in self._rewards_temp.values()) or 'None'}\n\n"
-            f"Penalties: {', '.join(penalty_data['name'] for penalty_data in self._penalties_temp.values()) or 'None'}\n\n"
-            f"Bonuses: {', '.join(bonus_data['name'] for bonus_data in self._bonuses_temp.values()) or 'None'}\n\n"
-            f"Achievements: {', '.join(achievement_data['name'] for achievement_data in self._achievements_temp.values()) or 'None'}\n\n"
-            f"Challenges: {', '.join(challenge_data['name'] for challenge_data in self._challenges_temp.values()) or 'None'}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_KIDS}{kids_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_PARENTS}{parents_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_CHORES}{chores_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_BADGES}{badges_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_REWARDS}{rewards_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_PENALTIES}{penalties_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_BONUSES}{bonuses_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_ACHIEVEMENTS}{achievements_names}\n\n"
+            f"{const.TRANS_KEY_CFOF_SUMMARY_CHALLENGES}{challenges_names}\n\n"
         )
         return self.async_show_form(
-            step_id="finish",
+            step_id=const.CONFIG_FLOW_STEP_FINISH,
             data_schema=vol.Schema({}),
-            description_placeholders={"summary": summary},
+            description_placeholders={const.OPTIONS_FLOW_PLACEHOLDER_SUMMARY: summary},
         )
 
-    def _create_entry(self):
-        """Finalize config entry with data and options using internal_id as keys."""
-        entry_data = {}
-        entry_options = {
-            CONF_POINTS_LABEL: self._data.get(CONF_POINTS_LABEL, DEFAULT_POINTS_LABEL),
-            CONF_POINTS_ICON: self._data.get(CONF_POINTS_ICON, DEFAULT_POINTS_ICON),
-            CONF_KIDS: self._kids_temp,
-            CONF_PARENTS: self._parents_temp,
-            CONF_CHORES: self._chores_temp,
-            CONF_BADGES: self._badges_temp,
-            CONF_REWARDS: self._rewards_temp,
-            CONF_PENALTIES: self._penalties_temp,
-            CONF_BONUSES: self._bonuses_temp,
-            CONF_ACHIEVEMENTS: self._achievements_temp,
-            CONF_CHALLENGES: self._challenges_temp,
+    async def _create_entry(self):
+        """Finalize config entry with direct-to-storage entity data (KC 4.0+ architecture)."""
+        from .storage_manager import KidsChoresStorageManager
+
+        # Write all entity data directly to storage BEFORE creating config entry
+        # This implements the KC 4.0 storage-only architecture from day one
+        storage_data = {
+            const.DATA_SCHEMA_VERSION: const.SCHEMA_VERSION_STORAGE_ONLY,  # Set to 42 immediately
+            const.DATA_KIDS: self._kids_temp,
+            const.DATA_PARENTS: self._parents_temp,
+            const.DATA_CHORES: self._chores_temp,
+            const.DATA_BADGES: self._badges_temp,
+            const.DATA_REWARDS: self._rewards_temp,
+            const.DATA_PENALTIES: self._penalties_temp,
+            const.DATA_BONUSES: self._bonuses_temp,
+            const.DATA_ACHIEVEMENTS: self._achievements_temp,
+            const.DATA_CHALLENGES: self._challenges_temp,
+            # Legacy queues removed in v0.4.0 - computed from timestamps/reward_data
         }
 
-        LOGGER.debug(
-            "Creating entry with data=%s, options=%s", entry_data, entry_options
+        # Initialize storage manager and save entity data
+        storage_manager = KidsChoresStorageManager(self.hass)
+        storage_manager.set_data(storage_data)
+        await storage_manager.async_save()
+
+        const.LOGGER.info(
+            "INFO: Config Flow saved storage with schema version %s (%d kids, %d parents, %d chores, %d badges, %d rewards, %d bonuses, %d penalties)",
+            const.SCHEMA_VERSION_STORAGE_ONLY,
+            len(self._kids_temp),
+            len(self._parents_temp),
+            len(self._chores_temp),
+            len(self._badges_temp),
+            len(self._rewards_temp),
+            len(self._bonuses_temp),
+            len(self._penalties_temp),
+        )
+        const.LOGGER.debug(
+            "DEBUG: Config Flow - Kids data: %s",
+            {
+                kid_id: kid_data.get(const.DATA_KID_NAME)
+                for kid_id, kid_data in self._kids_temp.items()
+            },
+        )
+
+        # Config entry contains ONLY system settings (no entity data)
+        entry_data = {}  # Keep empty - standard HA pattern
+
+        # Build all 9 system settings using consolidated helper function
+        entry_options = fh.build_all_system_settings_data(self._data)
+
+        const.LOGGER.debug(
+            "Creating config entry with system settings only: %s",
+            entry_options,
         )
         return self.async_create_entry(
             title="KidsChores", data=entry_data, options=entry_options
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.FlowResult:  # type: ignore[override]
+        """Handle reconfiguration (editing system settings via Configure button).
+
+        This flow allows users to update all 9 system settings via the standard
+        Home Assistant "Configure" button instead of navigating the options menu.
+        Uses consolidated flow_helpers for validation and data building.
+        """
+        entry_id = self.context.get("entry_id")
+        if not entry_id or not isinstance(entry_id, str):
+            return self.async_abort(reason=const.CONFIG_FLOW_ABORT_RECONFIGURE_FAILED)  # type: ignore[return-value]
+
+        config_entry = self.hass.config_entries.async_get_entry(entry_id)
+        if not config_entry:
+            return self.async_abort(reason=const.CONFIG_FLOW_ABORT_RECONFIGURE_FAILED)  # type: ignore[return-value]
+
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            # Validate all 9 system settings using consolidated helper
+            errors = fh.validate_all_system_settings(user_input)
+
+            if not errors:
+                # Build all 9 system settings using consolidated helper
+                all_settings_data = fh.build_all_system_settings_data(user_input)
+
+                # Update config entry options with all system settings
+                updated_options = dict(config_entry.options)
+                updated_options.update(all_settings_data)
+
+                const.LOGGER.debug(
+                    "Reconfiguring system settings: points_label=%s, update_interval=%s",
+                    all_settings_data.get(const.CONF_POINTS_LABEL),
+                    all_settings_data.get(const.CONF_UPDATE_INTERVAL),
+                )
+
+                # Update and reload integration
+                self.hass.config_entries.async_update_entry(
+                    config_entry, options=updated_options
+                )
+                await self.hass.config_entries.async_reload(config_entry.entry_id)
+
+                return self.async_abort(
+                    reason=const.CONFIG_FLOW_ABORT_RECONFIGURE_SUCCESSFUL
+                )  # type: ignore[return-value]
+
+        # Build the comprehensive schema with all 9 settings using current values
+        all_settings_schema = fh.build_all_system_settings_schema(
+            default_points_label=config_entry.options.get(
+                const.CONF_POINTS_LABEL, const.DEFAULT_POINTS_LABEL
+            ),
+            default_points_icon=config_entry.options.get(
+                const.CONF_POINTS_ICON, const.DEFAULT_POINTS_ICON
+            ),
+            default_update_interval=config_entry.options.get(
+                const.CONF_UPDATE_INTERVAL, const.DEFAULT_UPDATE_INTERVAL
+            ),
+            default_calendar_show_period=config_entry.options.get(
+                const.CONF_CALENDAR_SHOW_PERIOD, const.DEFAULT_CALENDAR_SHOW_PERIOD
+            ),
+            default_retention_daily=config_entry.options.get(
+                const.CONF_RETENTION_DAILY, const.DEFAULT_RETENTION_DAILY
+            ),
+            default_retention_weekly=config_entry.options.get(
+                const.CONF_RETENTION_WEEKLY, const.DEFAULT_RETENTION_WEEKLY
+            ),
+            default_retention_monthly=config_entry.options.get(
+                const.CONF_RETENTION_MONTHLY, const.DEFAULT_RETENTION_MONTHLY
+            ),
+            default_retention_yearly=config_entry.options.get(
+                const.CONF_RETENTION_YEARLY, const.DEFAULT_RETENTION_YEARLY
+            ),
+            default_points_adjust_values=config_entry.options.get(
+                const.CONF_POINTS_ADJUST_VALUES, const.DEFAULT_POINTS_ADJUST_VALUES
+            ),
+        )
+
+        return self.async_show_form(  # type: ignore[return-value]
+            step_id=const.CONFIG_FLOW_STEP_RECONFIGURE,
+            data_schema=all_settings_schema,
+            errors=errors,
         )
 
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
         """Return the Options Flow."""
-        from .options_flow import KidsChoresOptionsFlowHandler
-
         return KidsChoresOptionsFlowHandler(config_entry)

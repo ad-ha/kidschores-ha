@@ -1,0 +1,144 @@
+# Test Scenario: MEDIUM
+# 2 parents, 2 kids, 4 chores, 2 badges, 2 rewards, 2 bonuses
+# Use case: Typical family, moderate complexity
+
+family:
+  parents:
+    - name: "Môm Astrid Stârblüm"
+      ha_user_name: "parent1"
+      role: "gardener, loves stars"
+    - name: "Dad Leo"
+      ha_user_name: "parent2"
+      role: "adventurer, loves maps"
+  kids:
+    - name: "Zoë"
+      ha_user_name: "kid1"
+      age: 8
+      interests: ["animals"]
+    - name: "Max!"
+      ha_user_name: "kid2"
+      age: 6
+      interests: ["robots"]
+
+chores:
+  - name: "Feed the cåts"
+    assigned_to: ["Zoë"]
+    type: "daily"
+    points: 10
+    icon: "mdi:cat"
+    auto_approve: true
+  - name: "Wåter the plänts"
+    assigned_to: ["Zoë"]
+    type: "daily"
+    points: 10
+    icon: "mdi:watering-can"
+    auto_approve: false
+  - name: "Pick up Lëgo!"
+    assigned_to: ["Max!"]
+    type: "weekly"
+    points: 15
+    icon: "mdi:lego"
+    auto_approve: false
+  - name: "Stär sweep"
+    assigned_to: ["Zoë", "Max!"]
+    type: "periodic"
+    points: 20
+    icon: "mdi:star"
+    auto_approve: false
+
+badges:
+  - name: "Brønze Står"
+    type: "cumulative"
+    threshold: 400
+    assigned_to: ["Zoë", "Max!"] # Phase 2: Explicit assignment required
+    icon: "mdi:star"
+    award: "+5 bonus points"
+    points_multiplier: 1.05
+    maintenance:
+      interval: "weekly"
+      required_points: 300 # 3/4 of threshold (400 * 3/4 = 300)
+      demote_on_fail: true
+  - name: "Sïlver Står"
+    type: "cumulative"
+    threshold: 800
+    icon: "mdi:star-circle"
+    award: "+10 bonus points"
+    points_multiplier: 1.15
+    maintenance:
+      interval: "weekly"
+      required_points: 600 # 3/4 of threshold (800 * 3/4 = 600)
+      demote_on_fail: true
+  - name: "Gøld Står"
+    type: "cumulative"
+    threshold: 1600
+    icon: "mdi:star-four-points"
+    award: "+20 bonus points"
+    points_multiplier: 1.25
+    maintenance:
+      interval: "weekly"
+      required_points: 1200 # 3/4 of threshold (1600 * 3/4 = 1200)
+      demote_on_fail: true
+  - name: "Wëekly Wïzard"
+    type: "periodic"
+    icon: "mdi:calendar-week"
+    threshold: 10
+    award: "Weekly achievement reward"
+    reset_schedule:
+      frequency: "weekly"
+      start_date: "2025-10-01" # Current quarter start
+      end_date: "2025-12-31" # Current quarter end
+  - name: "Dåily Dëlight"
+    type: "daily"
+    icon: "mdi:emoticon-happy"
+    threshold: 2
+    award: "+3 bonus points"
+  - name: "Spëcial Öccasion"
+    type: "special_occasion"
+    icon: "mdi:party-popper"
+    threshold: 1
+    award: "Birthday bonus"
+    start_date: "2025-12-21" # 2 days from current date
+    end_date: "2025-12-21"
+
+bonuses:
+  - name: "Stär Sprïnkle Bonus"
+    description: "Extra points for helping a sibling"
+    points: 15
+    icon: "mdi:sparkles"
+  - name: "Mågic Mïnute Bonus"
+    description: "Quick tidy-up before dinner"
+    points: 10
+    icon: "mdi:timer"
+
+penalties:
+  - name: "Førget Chöre"
+    description: "Missed a daily chore"
+    points: -5
+    icon: "mdi:alert"
+  - name: "Messÿ Røom"
+    description: "Room not cleaned as requested"
+    points: -10
+    icon: "mdi:home-alert"
+
+rewards:
+  - name: "Ice Créam!"
+    cost: 60
+    icon: "mdi:ice-cream"
+  - name: "Extra Plåytime"
+    cost: 40
+    icon: "mdi:gamepad-variant"
+
+progress:
+  Zoë:
+    chores_completed: ["Feed the cåts", "Stär sweep"]
+    badges_earned: ["Dåily Dëlight"]
+    points: 35
+    point_stats:
+      points_net_all_time: 350.0
+  Max!:
+    chores_completed: ["Pick up Lëgo!"]
+    badges_earned: []
+    points: 15
+    point_stats:
+      points_net_all_time: 180.0
+# Test focus: Multi-kid coordination, shared chores, badge progression, reward redemption

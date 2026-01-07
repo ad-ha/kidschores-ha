@@ -1,0 +1,78 @@
+{
+  "chore_assigned": {
+    "title": "Børneopgaver: Ny pligt",
+    "message": "Ny opgave {chore_name} er blevet tildelt dig! Forfaldsdato: {due_date}"
+  },
+  "chore_claimed": {
+    "title": "Børneopgaver: Huslige pligter påberåbt",
+    "message": "{kid_name} påtog sig en opgave {chore_name}"
+  },
+  "chore_approved": {
+    "title": "Børneopgaver: Godkendt til pligter",
+    "message": "Opgave {chore_name} godkendt! +{points} point"
+  },
+  "chore_disapproved": {
+    "title": "Børneopgaver: Huslige pligter ikke godkendt",
+    "message": "Opgave {chore_name} blev ikke godkendt"
+  },
+  "chore_overdue": {
+    "title": "Børneopgaver: Forsinkede opgaver",
+    "message": "Opgave {chore_name} er for sent! Forfaldsdatoen var {due_date}"
+  },
+  "chore_reminder": {
+    "title": "KidsChores: Påmindelse om ventende pligt",
+    "message": "Påmindelse: Opgave {chore_name} , som {kid_name} har gjort krav på, venter på godkendelse"
+  },
+  "reward_claimed_kid": {
+    "title": "Børneopgaver: Belønning modtaget",
+    "message": "Du har gjort krav på belønning {reward_name} for {points} point!"
+  },
+  "reward_claimed_parent": {
+    "title": "Børneopgaver: Belønning modtaget",
+    "message": "{kid_name} krævede belønning {reward_name} for {points} point"
+  },
+  "reward_approved": {
+    "title": "Børneopgaver: Belønning godkendt",
+    "message": "Belønning {reward_name} godkendt!"
+  },
+  "reward_disapproved": {
+    "title": "Børneopgaver: Belønning afvist",
+    "message": "Belønning {reward_name} blev ikke godkendt"
+  },
+  "reward_reminder": {
+    "title": "KidsChores: Påmindelse om ventende belønning",
+    "message": "Påmindelse: Belønning {reward_name} , som {kid_name} har gjort krav på, venter på godkendelse"
+  },
+  "badge_earned_kid": {
+    "title": "BørneGarn: Badge optjent",
+    "message": "Du har fortjent {badge_name} -mærket!"
+  },
+  "badge_earned_parent": {
+    "title": "BørneGarn: Badge optjent",
+    "message": "{kid_name} har fået {badge_name} -mærket!"
+  },
+  "achievement_earned_kid": {
+    "title": "Børneopgaver: Opnået præstation",
+    "message": "Du har opnået præstationen {achievement_name}!"
+  },
+  "achievement_earned_parent": {
+    "title": "Børneopgaver: Opnået præstation",
+    "message": "{kid_name} opnået præstation {achievement_name}!"
+  },
+  "challenge_completed_kid": {
+    "title": "BørneGarn: Udfordring fuldført",
+    "message": "Du har gennemført udfordring {challenge_name}!"
+  },
+  "challenge_completed_parent": {
+    "title": "BørneGarn: Udfordring fuldført",
+    "message": "{kid_name} fuldførte udfordring {challenge_name}!"
+  },
+  "penalty_applied": {
+    "title": "Børneopgaver: Straf anvendt",
+    "message": "Straf {penalty_name} anvendt: -{points} point"
+  },
+  "bonus_applied": {
+    "title": "Børneopgaver: Bonus anvendt",
+    "message": "Bonus {bonus_name} anvendt: +{points} point"
+  }
+}

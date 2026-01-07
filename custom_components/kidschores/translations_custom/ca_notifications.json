@@ -1,0 +1,78 @@
+{
+  "chore_assigned": {
+    "title": "Tasques infantils: Nova tasca",
+    "message": "Se t'ha assignat una nova tasca {chore_name} ! Data límit: {due_date}"
+  },
+  "chore_claimed": {
+    "title": "Tasques infantils: Tasca reclamada",
+    "message": "{kid_name} tasca reclamada {chore_name}"
+  },
+  "chore_approved": {
+    "title": "Tasques infantils: Tasques aprovades",
+    "message": "Tasca {chore_name} aprovada! +{points} punts"
+  },
+  "chore_disapproved": {
+    "title": "Tasques infantils: Tasca rebutjada",
+    "message": "La tasca {chore_name} no s'ha aprovat"
+  },
+  "chore_overdue": {
+    "title": "Tasques infantils: Tasca pendent",
+    "message": "La tasca {chore_name} està endarrerida! La data de venciment era {due_date}"
+  },
+  "chore_reminder": {
+    "title": "KidsChores: Recordatori per a tasques pendents",
+    "message": "Recordatori: La tasca {chore_name} reclamada per {kid_name} està pendent d'aprovació."
+  },
+  "reward_claimed_kid": {
+    "title": "Tasques infantils: Recompensa reclamada",
+    "message": "Has reclamat la recompensa {reward_name} per {points} punts!"
+  },
+  "reward_claimed_parent": {
+    "title": "Tasques infantils: Recompensa reclamada",
+    "message": "{kid_name} ha reclamat la recompensa {reward_name} per {points} punts"
+  },
+  "reward_approved": {
+    "title": "Tasques infantils: Recompensa aprovada",
+    "message": "Recompensa {reward_name} aprovada!"
+  },
+  "reward_disapproved": {
+    "title": "Tasques infantils: Recompensa rebutjada",
+    "message": "La recompensa {reward_name} no s'ha aprovat."
+  },
+  "reward_reminder": {
+    "title": "KidsChores: Recordatori per a la recompensa pendent",
+    "message": "Recordatori: La recompensa {reward_name} reclamada per {kid_name} està pendent d'aprovació."
+  },
+  "badge_earned_kid": {
+    "title": "Tasques infantils: Insígnia guanyada",
+    "message": "Has guanyat la insígnia {badge_name} !"
+  },
+  "badge_earned_parent": {
+    "title": "Tasques infantils: Insígnia guanyada",
+    "message": "{kid_name} ha guanyat la insígnia {badge_name} !"
+  },
+  "achievement_earned_kid": {
+    "title": "KidsChores: Assoliment aconseguit",
+    "message": "Has aconseguit l'assoliment {achievement_name}!"
+  },
+  "achievement_earned_parent": {
+    "title": "KidsChores: Assoliment aconseguit",
+    "message": "{kid_name} assoliment aconseguit {achievement_name}!"
+  },
+  "challenge_completed_kid": {
+    "title": "Tasques infantils: Repte completat",
+    "message": "Has completat el repte {challenge_name}!"
+  },
+  "challenge_completed_parent": {
+    "title": "Tasques infantils: Repte completat",
+    "message": "{kid_name} repte completat {challenge_name}!"
+  },
+  "penalty_applied": {
+    "title": "Tasques infantils: penalització aplicada",
+    "message": "Penalització {penalty_name} aplicada: -{points} punts"
+  },
+  "bonus_applied": {
+    "title": "Tasques infantils: Bonificació aplicada",
+    "message": "Bonus {bonus_name} aplicat: +{points} punts"
+  }
+}

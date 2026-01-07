@@ -1,0 +1,78 @@
+{
+  "chore_assigned": {
+    "title": "Lastenkotitehtävät: Uusi kotitehtävä",
+    "message": "Sinulle on määrätty uusi tehtävä {chore_name} ! Määräaika: {due_date}"
+  },
+  "chore_claimed": {
+    "title": "KidsChores: Kotitehtävä vaadittu",
+    "message": "{kid_name} lunasti tehtävän {chore_name}"
+  },
+  "chore_approved": {
+    "title": "KidsChores: Kotitöiden hyväksyntä",
+    "message": "Kotitehtävä {chore_name} hyväksytty! +{points} pistettä"
+  },
+  "chore_disapproved": {
+    "title": "KidsChores: Kotitehtävä hylätty",
+    "message": "Työtä {chore_name} ei hyväksytty"
+  },
+  "chore_overdue": {
+    "title": "KidsChores: Kotiapu myöhässä",
+    "message": "Kotityö {chore_name} on myöhässä! Määräpäivä oli {due_date}"
+  },
+  "chore_reminder": {
+    "title": "KidsChores: Muistutus odottavista kotitöistä",
+    "message": "Muistutus: Työ {chore_name} , jonka {kid_name} on lunastanut, odottaa hyväksyntää."
+  },
+  "reward_claimed_kid": {
+    "title": "KidsChores: Palkinto lunastettu",
+    "message": "Lunasit palkinnon {reward_name} {points} pisteellä!"
+  },
+  "reward_claimed_parent": {
+    "title": "KidsChores: Palkinto lunastettu",
+    "message": "{kid_name} lunasti palkinnon {reward_name} {points} pisteellä"
+  },
+  "reward_approved": {
+    "title": "KidsChores: Palkinto hyväksytty",
+    "message": "Palkinto {reward_name} hyväksytty!"
+  },
+  "reward_disapproved": {
+    "title": "KidsChores: Palkinto hylätty",
+    "message": "Palkintoa {reward_name} ei hyväksytty"
+  },
+  "reward_reminder": {
+    "title": "KidsChores: Muistutus odottavasta palkinnosta",
+    "message": "Muistutus: Palkinto {reward_name} , jonka {kid_name} on lunastanut, odottaa hyväksyntää."
+  },
+  "badge_earned_kid": {
+    "title": "KidsChores: Ansaittu merkki",
+    "message": "Ansaitsit {badge_name} -merkin!"
+  },
+  "badge_earned_parent": {
+    "title": "KidsChores: Ansaittu merkki",
+    "message": "{kid_name} ansaitsi {badge_name} -merkin!"
+  },
+  "achievement_earned_kid": {
+    "title": "KidsChores: Ansaitut saavutukset",
+    "message": "Ansaitsit saavutuksen {achievement_name}!"
+  },
+  "achievement_earned_parent": {
+    "title": "KidsChores: Ansaitut saavutukset",
+    "message": "{kid_name} ansaittu saavutus {achievement_name}!"
+  },
+  "challenge_completed_kid": {
+    "title": "LastenAskareita: Haaste suoritettu",
+    "message": "Suoritit haasteen {challenge_name}!"
+  },
+  "challenge_completed_parent": {
+    "title": "LastenAskareita: Haaste suoritettu",
+    "message": "{kid_name} suoritettu haaste {challenge_name}!"
+  },
+  "penalty_applied": {
+    "title": "LastenAskareita: Rangaistus sovellettu",
+    "message": "Rangaistus {penalty_name} sovellettu: -{points} pistettä"
+  },
+  "bonus_applied": {
+    "title": "Lastenkotitehtävät: Bonus käytetty",
+    "message": "Bonus {bonus_name} käytetty: +{points} pistettä"
+  }
+}
