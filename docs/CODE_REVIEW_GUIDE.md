@@ -985,7 +985,7 @@ async def build_kid_schema(hass, ...):
     return vol.Schema({
         # ... other fields ...
         vol.Optional(
-            const.CONF_DASHBOARD_LANGUAGE,
+            const.CFOF_KIDS_INPUT_DASHBOARD_LANGUAGE,  # ✅ Use CFOF_* for schema fields
             default=default_dashboard_language or const.DEFAULT_DASHBOARD_LANGUAGE,
         ): selector.LanguageSelector(
             selector.LanguageSelectorConfig(

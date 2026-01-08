@@ -63,6 +63,16 @@ async def async_send_notification(
         data = payload.setdefault(const.NOTIFY_DATA, {})
         data.update(extra_data)  # type: ignore[attr-defined]
 
+    # Log full payload for debugging (useful for testing translations)
+    const.LOGGER.debug(
+        "DEBUG: Notification payload for '%s.%s': title='%s', message='%s', actions=%s",
+        domain,
+        service,
+        title,
+        message,
+        actions,
+    )
+
     try:
         await hass.services.async_call(domain, service, payload, blocking=True)
         const.LOGGER.debug("DEBUG: Notification sent via '%s.%s'", domain, service)

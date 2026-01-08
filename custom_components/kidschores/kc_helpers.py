@@ -1853,6 +1853,10 @@ async def load_notification_translation(
         A dict with notification keys mapping to {title, message} dicts.
         If the requested language is not found, returns English translations.
     """
+    # Normalize language: default to English if empty/None
+    if not language:
+        language = "en"
+
     translations_path = os.path.join(
         os.path.dirname(__file__), const.CUSTOM_TRANSLATIONS_DIR
     )
@@ -1896,6 +1900,15 @@ async def load_notification_translation(
                 const.LOGGER.error(
                     "Error loading English notification translations: %s", err
                 )
+    else:
+        # If we get here, English was requested but file not found
+        const.LOGGER.error(
+            "English notification translations not found at: %s",
+            os.path.join(
+                translations_path,
+                f"en{const.NOTIFICATION_TRANSLATIONS_SUFFIX}.json",
+            ),
+        )
 
     return {}
 

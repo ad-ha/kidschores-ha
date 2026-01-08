@@ -15,11 +15,276 @@ from collections import Counter
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+
 from . import const
+from . import flow_helpers as fh
 from . import kc_helpers as kh
+from .storage_manager import KidsChoresStorageManager
 
 if TYPE_CHECKING:
     from .coordinator import KidsChoresDataCoordinator
+
+
+# ================================================================================================
+# KC 3.x → 4.x Config-to-Storage Migration (runs BEFORE coordinator init)
+# ================================================================================================
+
+
+async def migrate_config_to_storage(
+    hass: HomeAssistant, entry: ConfigEntry, storage_manager: KidsChoresStorageManager
+) -> None:
+    """One-time migration: Move entity data from config_entry.options to storage.
+
+    This migration runs once to transition from the legacy KC 3.x "config as source of truth"
+    architecture to the new KC 4.x "storage as source of truth" architecture.
+
+    System settings (points_label, points_icon, update_interval) remain in config.
+    All entity definitions (kids, chores, badges, etc.) move to storage.
+
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry to migrate
+        storage_manager: Initialized storage manager
+
+    """
+    storage_data = storage_manager.data
+
+    # Check schema version - support both v41 (top-level) and v42+ (meta section)
+    # v41 format: {"schema_version": 41, "kids": {...}}
+    # v42+ format: {"meta": {"schema_version": 42}, "kids": {...}}
+    meta_section = storage_data.get(const.DATA_META, {})
+    storage_version = meta_section.get(
+        const.DATA_META_SCHEMA_VERSION,
+        storage_data.get(const.DATA_SCHEMA_VERSION, const.DEFAULT_ZERO),
+    )
+
+    # Check if migration is needed
+    if storage_version >= const.SCHEMA_VERSION_STORAGE_ONLY:
+        const.LOGGER.info(
+            "INFO: Storage schema version %s already >= %s, skipping config→storage migration",
+            storage_version,
+            const.SCHEMA_VERSION_STORAGE_ONLY,
+        )
+        return
+
+    # Check if config has entity data to migrate
+    config_has_entities = any(
+        key in entry.options
+        for key in [
+            const.CONF_KIDS_LEGACY,
+            const.CONF_CHORES_LEGACY,
+            const.CONF_BADGES_LEGACY,
+            const.CONF_REWARDS_LEGACY,
+            const.CONF_PARENTS_LEGACY,
+            const.CONF_PENALTIES_LEGACY,
+            const.CONF_BONUSES_LEGACY,
+            const.CONF_ACHIEVEMENTS_LEGACY,
+            const.CONF_CHALLENGES_LEGACY,
+        ]
+    )
+
+    # Also check if storage already has entity data (handles storage-based v3.x installations)
+    storage_has_entities = any(
+        len(storage_data.get(key, {})) > 0
+        for key in [
+            const.DATA_KIDS,
+            const.DATA_CHORES,
+            const.DATA_BADGES,
+            const.DATA_REWARDS,
+        ]
+    )
+
+    # Only treat as clean install if BOTH config and storage are empty
+    if not config_has_entities and not storage_has_entities:
+        const.LOGGER.info(
+            "INFO: No entity data in config or storage, setting storage version to %s (clean install)",
+            const.SCHEMA_VERSION_STORAGE_ONLY,
+        )
+        # Clean install - set version in meta section and save
+        from homeassistant.util import dt as dt_util
+
+        storage_data[const.DATA_META] = {
+            const.DATA_META_SCHEMA_VERSION: const.SCHEMA_VERSION_STORAGE_ONLY,
+            const.DATA_META_LAST_MIGRATION_DATE: dt_util.utcnow().isoformat(),
+            const.DATA_META_MIGRATIONS_APPLIED: [],
+        }
+        storage_manager.set_data(storage_data)
+        await storage_manager.async_save()
+        return
+
+    # Storage-only data (Config Flow import path): let coordinator handle all migrations
+    if not config_has_entities and storage_has_entities:
+        const.LOGGER.info(
+            "INFO: Storage has data but config is empty (schema v%s). Coordinator will handle migrations.",
+            storage_version,
+        )
+        return
+
+    # Migration needed: config has entities and storage version < 42
+    const.LOGGER.info("INFO: ========================================")
+    const.LOGGER.info(
+        "INFO: Starting config→storage migration (schema version %s → %s)",
+        storage_version,
+        const.SCHEMA_VERSION_STORAGE_ONLY,
+    )
+
+    # Create backup of storage data before migration
+    try:
+        backup_name = await fh.create_timestamped_backup(
+            hass, storage_manager, const.BACKUP_TAG_PRE_MIGRATION
+        )
+        if backup_name:
+            const.LOGGER.info("INFO: Created pre-migration backup: %s", backup_name)
+        else:
+            const.LOGGER.warning("WARNING: No data available for pre-migration backup")
+    except Exception as err:  # pylint: disable=broad-exception-caught
+        const.LOGGER.warning("WARNING: Failed to create pre-migration backup: %s", err)
+
+    # Define fields that should NOT be migrated from config (relational/runtime fields)
+    # IMPORTANT: These fields in OLD config data may have stale/incorrect data:
+    # - Relational fields may contain entity NAMES instead of INTERNAL_IDS
+    # - Runtime state fields should never come from config
+    # By excluding these fields, we preserve the correct data already in storage
+    excluded_fields_by_type = {
+        const.DATA_CHORES: {
+            "assigned_kids",  # May contain names instead of internal_ids
+            "state",
+            "last_completed",
+            "last_claimed",
+        },
+        const.DATA_PARENTS: {
+            "associated_kids",  # May contain names instead of internal_ids
+        },
+        const.DATA_BADGES: {
+            "assigned_to",  # May contain names instead of internal_ids
+        },
+        const.DATA_ACHIEVEMENTS: {
+            "assigned_kids",  # May contain names instead of internal_ids
+            "selected_chore_id",  # May contain name instead of internal_id
+            "progress",  # Runtime data
+        },
+        const.DATA_CHALLENGES: {
+            "assigned_kids",  # May contain names instead of internal_ids
+            "selected_chore_id",  # May contain name instead of internal_id
+            "progress",  # Runtime data
+        },
+    }
+
+    # Merge entity data from config into storage (preserving existing state)
+    entity_sections = [
+        (const.CONF_KIDS_LEGACY, const.DATA_KIDS),
+        (const.CONF_PARENTS_LEGACY, const.DATA_PARENTS),
+        (const.CONF_CHORES_LEGACY, const.DATA_CHORES),
+        (const.CONF_BADGES_LEGACY, const.DATA_BADGES),
+        (const.CONF_REWARDS_LEGACY, const.DATA_REWARDS),
+        (const.CONF_PENALTIES_LEGACY, const.DATA_PENALTIES),
+        (const.CONF_BONUSES_LEGACY, const.DATA_BONUSES),
+        (const.CONF_ACHIEVEMENTS_LEGACY, const.DATA_ACHIEVEMENTS),
+        (const.CONF_CHALLENGES_LEGACY, const.DATA_CHALLENGES),
+    ]
+
+    for config_key, data_key in entity_sections:
+        config_entities = entry.options.get(config_key, {})
+        if config_entities:
+            # Merge config entities into storage (config is source of truth for definitions)
+            if data_key not in storage_data:
+                storage_data[data_key] = {}
+
+            # Get excluded fields for this entity type
+            excluded_fields = excluded_fields_by_type.get(data_key, set())
+
+            # For each entity from config, merge with existing storage data
+            # Preserve all existing runtime data, only update definition fields
+            for entity_id, config_entity_data in config_entities.items():
+                if entity_id in storage_data[data_key]:
+                    # Entity exists in storage - update only definition fields, preserve runtime data
+                    existing_entity = storage_data[data_key][entity_id]
+                    # Only update fields that are not excluded
+                    for field, value in config_entity_data.items():
+                        if field not in excluded_fields:
+                            existing_entity[field] = value
+                else:
+                    # New entity - add from config
+                    storage_data[data_key][entity_id] = config_entity_data
+
+                # For kids, ensure each kid has the required v42 fields
+                if config_key == const.CONF_KIDS_LEGACY:
+                    # Add overdue_notifications field if missing
+                    if (
+                        const.DATA_KID_OVERDUE_NOTIFICATIONS
+                        not in storage_data[data_key][entity_id]
+                    ):
+                        storage_data[data_key][entity_id][
+                            const.DATA_KID_OVERDUE_NOTIFICATIONS
+                        ] = {}
+
+            const.LOGGER.debug(
+                "DEBUG: Migrated %s %s from config to storage",
+                len(config_entities),
+                config_key,
+            )
+
+    # Set new schema version in meta section
+    from homeassistant.util import dt as dt_util
+
+    storage_data[const.DATA_META] = {
+        const.DATA_META_SCHEMA_VERSION: const.SCHEMA_VERSION_STORAGE_ONLY,
+        const.DATA_META_LAST_MIGRATION_DATE: dt_util.utcnow().isoformat(),
+        const.DATA_META_MIGRATIONS_APPLIED: ["config_to_storage"],
+    }
+    # Remove old top-level schema_version if present
+    storage_data.pop(const.DATA_SCHEMA_VERSION, None)
+
+    # Save merged data to storage
+    storage_manager.set_data(storage_data)
+    await storage_manager.async_save()
+
+    # Build new config with ONLY system settings
+    new_options = {
+        const.CONF_POINTS_LABEL: entry.options.get(
+            const.CONF_POINTS_LABEL, const.DEFAULT_POINTS_LABEL
+        ),
+        const.CONF_POINTS_ICON: entry.options.get(
+            const.CONF_POINTS_ICON, const.DEFAULT_POINTS_ICON
+        ),
+        const.CONF_UPDATE_INTERVAL: entry.options.get(
+            const.CONF_UPDATE_INTERVAL, const.DEFAULT_UPDATE_INTERVAL
+        ),
+        const.CONF_POINTS_ADJUST_VALUES: entry.options.get(
+            const.CONF_POINTS_ADJUST_VALUES, const.DEFAULT_POINTS_ADJUST_VALUES
+        ),
+        const.CONF_CALENDAR_SHOW_PERIOD: entry.options.get(
+            const.CONF_CALENDAR_SHOW_PERIOD, const.DEFAULT_CALENDAR_SHOW_PERIOD
+        ),
+        const.CONF_RETENTION_DAILY: entry.options.get(
+            const.CONF_RETENTION_DAILY, const.DEFAULT_RETENTION_DAILY
+        ),
+        const.CONF_RETENTION_WEEKLY: entry.options.get(
+            const.CONF_RETENTION_WEEKLY, const.DEFAULT_RETENTION_WEEKLY
+        ),
+        const.CONF_RETENTION_MONTHLY: entry.options.get(
+            const.CONF_RETENTION_MONTHLY, const.DEFAULT_RETENTION_MONTHLY
+        ),
+        const.CONF_RETENTION_YEARLY: entry.options.get(
+            const.CONF_RETENTION_YEARLY, const.DEFAULT_RETENTION_YEARLY
+        ),
+        const.CONF_SCHEMA_VERSION_LEGACY: const.SCHEMA_VERSION_STORAGE_ONLY,
+    }
+
+    # Update config entry with cleaned options
+    hass.config_entries.async_update_entry(entry, options=new_options)
+
+    const.LOGGER.info(
+        "INFO: ✓ Config→storage migration complete! Entity data now in storage, system settings in config."
+    )
+    const.LOGGER.info("INFO: ========================================")
+
+
+# ================================================================================================
+# Coordinator Data Migrations (run AFTER coordinator init, when storage schema < 42)
+# ================================================================================================
 
 
 class PreV42Migrator:
@@ -402,16 +667,17 @@ class PreV42Migrator:
         chores = self.coordinator._data.get(const.DATA_CHORES, {})
         for chore_info in chores.values():
             chore_info.setdefault(
-                const.CONF_APPLICABLE_DAYS, const.DEFAULT_APPLICABLE_DAYS
+                const.CONF_APPLICABLE_DAYS_LEGACY, const.DEFAULT_APPLICABLE_DAYS
             )
             chore_info.setdefault(
-                const.CONF_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM
+                const.DATA_CHORE_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM
             )
             chore_info.setdefault(
-                const.CONF_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
+                const.DATA_CHORE_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
             )
             chore_info.setdefault(
-                const.CONF_NOTIFY_ON_DISAPPROVAL, const.DEFAULT_NOTIFY_ON_DISAPPROVAL
+                const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL,
+                const.DEFAULT_NOTIFY_ON_DISAPPROVAL,
             )
             # Remove legacy partial_allowed field (unused stub)
             chore_info.pop(const.DATA_CHORE_PARTIAL_ALLOWED_LEGACY, None)
@@ -743,7 +1009,7 @@ class PreV42Migrator:
 
                     # Force to points type and set new value
                     badge_info[const.DATA_BADGE_THRESHOLD_TYPE_LEGACY] = (
-                        const.CONF_POINTS
+                        const.CONF_POINTS_LEGACY
                     )
                     badge_info[const.DATA_BADGE_THRESHOLD_VALUE_LEGACY] = new_threshold
 
@@ -751,7 +1017,7 @@ class PreV42Migrator:
                     badge_info.setdefault(const.DATA_BADGE_TARGET, {})
                     badge_info[const.DATA_BADGE_TARGET][
                         const.DATA_BADGE_TARGET_TYPE
-                    ] = const.CONF_POINTS
+                    ] = const.CONF_POINTS_LEGACY
                     badge_info[const.DATA_BADGE_TARGET][
                         const.DATA_BADGE_TARGET_THRESHOLD_VALUE
                     ] = new_threshold
@@ -1118,7 +1384,7 @@ class PreV42Migrator:
         options = self.coordinator.config_entry.options
 
         # Skip if no KC 3.x config data present (pure storage migration, no config sync needed)
-        if not options or not options.get(const.CONF_KIDS):
+        if not options or not options.get(const.CONF_KIDS_LEGACY):
             const.LOGGER.info(
                 "No KC 3.x config data - skipping config sync (already using storage-only mode)"
             )
@@ -1126,15 +1392,15 @@ class PreV42Migrator:
 
         # Retrieve configuration dictionaries from config entry options (KC 3.x architecture)
         config_sections = {
-            const.DATA_KIDS: options.get(const.CONF_KIDS, {}),
-            const.DATA_PARENTS: options.get(const.CONF_PARENTS, {}),
-            const.DATA_CHORES: options.get(const.CONF_CHORES, {}),
-            const.DATA_BADGES: options.get(const.CONF_BADGES, {}),
-            const.DATA_REWARDS: options.get(const.CONF_REWARDS, {}),
-            const.DATA_PENALTIES: options.get(const.CONF_PENALTIES, {}),
-            const.DATA_BONUSES: options.get(const.CONF_BONUSES, {}),
-            const.DATA_ACHIEVEMENTS: options.get(const.CONF_ACHIEVEMENTS, {}),
-            const.DATA_CHALLENGES: options.get(const.CONF_CHALLENGES, {}),
+            const.DATA_KIDS: options.get(const.CONF_KIDS_LEGACY, {}),
+            const.DATA_PARENTS: options.get(const.CONF_PARENTS_LEGACY, {}),
+            const.DATA_CHORES: options.get(const.CONF_CHORES_LEGACY, {}),
+            const.DATA_BADGES: options.get(const.CONF_BADGES_LEGACY, {}),
+            const.DATA_REWARDS: options.get(const.CONF_REWARDS_LEGACY, {}),
+            const.DATA_PENALTIES: options.get(const.CONF_PENALTIES_LEGACY, {}),
+            const.DATA_BONUSES: options.get(const.CONF_BONUSES_LEGACY, {}),
+            const.DATA_ACHIEVEMENTS: options.get(const.CONF_ACHIEVEMENTS_LEGACY, {}),
+            const.DATA_CHALLENGES: options.get(const.CONF_CHALLENGES_LEGACY, {}),
         }
 
         # Ensure minimal structure

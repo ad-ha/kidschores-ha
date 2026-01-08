@@ -36,11 +36,7 @@ def _ensure_str(value):
     """Convert anything to string safely."""
     if isinstance(value, dict):
         # Attempt to get a known key or fallback
-        return str(
-            value.get(
-                const.CONF_VALUE, next(iter(value.values()), const.SENTINEL_EMPTY)
-            )
-        )
+        return str(value.get("value", next(iter(value.values()), const.SENTINEL_EMPTY)))
     return str(value)
 
 
@@ -2353,7 +2349,7 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             # Get the raw text from the multiline text area.
             points_str = user_input.get(
-                const.CONF_POINTS_ADJUST_VALUES, const.SENTINEL_EMPTY
+                const.CFOF_SYSTEM_INPUT_POINTS_ADJUST_VALUES, const.SENTINEL_EMPTY
             ).strip()
             if points_str:
                 # Parse the values by splitting on separator.
@@ -2365,14 +2361,16 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                 self._entry_options.pop(const.CONF_POINTS_ADJUST_VALUES, None)
             # Update the update interval.
             self._entry_options[const.CONF_UPDATE_INTERVAL] = user_input.get(
-                const.CONF_UPDATE_INTERVAL
+                const.CFOF_SYSTEM_INPUT_UPDATE_INTERVAL
             )
             # update calendar show period
             self._entry_options[const.CONF_CALENDAR_SHOW_PERIOD] = user_input.get(
-                const.CONF_CALENDAR_SHOW_PERIOD
+                const.CFOF_SYSTEM_INPUT_CALENDAR_SHOW_PERIOD
             )
             # Parse consolidated retention periods
-            retention_str = user_input.get(const.CONF_RETENTION_PERIODS, "").strip()
+            retention_str = user_input.get(
+                const.CFOF_SYSTEM_INPUT_RETENTION_PERIODS, ""
+            ).strip()
             if retention_str:
                 try:
                     daily, weekly, monthly, yearly = fh.parse_retention_periods(
@@ -2399,12 +2397,12 @@ class KidsChoresOptionsFlowHandler(config_entries.OptionsFlow):
                     )
             # Update legacy entities toggle
             self._entry_options[const.CONF_SHOW_LEGACY_ENTITIES] = user_input.get(
-                const.CONF_SHOW_LEGACY_ENTITIES,
+                const.CFOF_SYSTEM_INPUT_SHOW_LEGACY_ENTITIES,
                 const.DEFAULT_SHOW_LEGACY_ENTITIES,
             )
             # Update backup retention (count-based)
             self._entry_options[const.CONF_BACKUPS_MAX_RETAINED] = user_input.get(
-                const.CONF_BACKUPS_MAX_RETAINED,
+                const.CFOF_SYSTEM_INPUT_BACKUPS_MAX_RETAINED,
                 const.DEFAULT_BACKUPS_MAX_RETAINED,
             )
             const.LOGGER.debug(

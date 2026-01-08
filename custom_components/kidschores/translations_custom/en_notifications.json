@@ -74,5 +74,10 @@
   "bonus_applied": {
     "title": "KidsChores: Bonus Applied",
     "message": "Bonus {bonus_name} applied: +{points} points"
+  },
+  "actions": {
+    "approve": "Approve",
+    "disapprove": "Disapprove",
+    "remind_30": "Remind in 30 min"
   }
 }

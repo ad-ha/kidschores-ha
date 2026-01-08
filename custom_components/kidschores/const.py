@@ -54,7 +54,6 @@ DEFAULT_TIME_ZONE = None  # noqa: N816
 
 # Schema version for config→storage migration
 DATA_SCHEMA_VERSION: Final = "schema_version"
-CONF_SCHEMA_VERSION: Final = "schema_version"
 SCHEMA_VERSION_STORAGE_ONLY: Final = (
     42  # v42: Storage-only mode (staying on v42 per 2025-12-19 decision)
 )
@@ -236,17 +235,6 @@ OPTIONS_FLOW_PENALTIES: Final = "manage_penalty"
 OPTIONS_FLOW_POINTS: Final = "manage_points"
 OPTIONS_FLOW_REWARDS: Final = "manage_reward"
 
-# OptionsFlow Configuration Keys
-CONF_ACHIEVEMENTS: Final = "achievements"
-CONF_BADGES: Final = "badges"
-CONF_BONUSES: Final = "bonuses"
-CONF_CHALLENGES: Final = "challenges"
-CONF_CHORES: Final = "chores"
-CONF_KIDS: Final = "kids"
-CONF_PARENTS: Final = "parents"
-CONF_PENALTIES: Final = "penalties"
-CONF_REWARDS: Final = "rewards"
-
 # OptionsFlow Steps
 OPTIONS_FLOW_STEP_INIT: Final = "init"
 OPTIONS_FLOW_STEP_MANAGE_ENTITY: Final = "manage_entity"
@@ -365,6 +353,9 @@ CFOF_CHORES_INPUT_APPROVAL_RESET_PENDING_CLAIM_ACTION: Final = (
     "approval_reset_pending_claim_action"
 )
 CFOF_CHORES_INPUT_APPLY_TEMPLATE_TO_ALL: Final = "apply_template_to_all"
+CFOF_CHORES_INPUT_AUTO_APPROVE: Final = "auto_approve"
+CFOF_CHORES_INPUT_SHOW_ON_CALENDAR: Final = "show_on_calendar"
+CFOF_CHORES_INPUT_NOTIFICATIONS: Final = "chore_notifications"
 
 # BADGES
 CFOF_BADGES_INPUT_ASSIGNED_KIDS: Final = "assigned_kids"
@@ -487,12 +478,6 @@ OPTIONS_FLOW_MENU_MANAGE_PREFIX: Final = "manage_"
 
 # Global Settings
 CONF_CALENDAR_SHOW_PERIOD: Final = "calendar_show_period"
-CONF_COST: Final = "cost"
-CONF_DASHBOARD_LANGUAGE: Final = "dashboard_language"
-CONF_HA_USER: Final = "ha_user"
-CONF_INTERNAL_ID: Final = "internal_id"
-CONF_LABEL: Final = "label"
-CONF_POINTS: Final = "points"
 CONF_POINTS_ADJUST_VALUES: Final = "points_adjust_values"
 CONF_POINTS_ICON: Final = "points_icon"
 CONF_POINTS_LABEL: Final = "points_label"
@@ -503,10 +488,7 @@ CONF_RETENTION_PERIODS: Final = (
 )
 CONF_RETENTION_WEEKLY: Final = "retention_weekly"
 CONF_RETENTION_YEARLY: Final = "retention_yearly"
-CONF_SHARED_CHORE: Final = "shared_chore"
-CONF_COMPLETION_CRITERIA: Final = "completion_criteria"
 CONF_UPDATE_INTERVAL: Final = "update_interval"
-CONF_VALUE: Final = "value"
 
 # Backup Management Configuration
 CONF_BACKUPS_MAX_RETAINED: Final = "backups_max_retained"
@@ -534,6 +516,11 @@ CFOF_SYSTEM_INPUT_RETENTION_MONTHLY: Final = "retention_monthly"
 CFOF_SYSTEM_INPUT_RETENTION_YEARLY: Final = "retention_yearly"
 CFOF_SYSTEM_INPUT_POINTS_ADJUST_VALUES: Final = "points_adjust_values"
 
+# Additional system settings form inputs (General Options)
+CFOF_SYSTEM_INPUT_RETENTION_PERIODS: Final = "retention_periods"
+CFOF_SYSTEM_INPUT_SHOW_LEGACY_ENTITIES: Final = "show_legacy_entities"
+CFOF_SYSTEM_INPUT_BACKUPS_MAX_RETAINED: Final = "backups_max_retained"
+
 # Chore Custom Interval Reset Periods
 CUSTOM_INTERVAL_UNIT_OPTIONS: Final = [
     SENTINEL_EMPTY,
@@ -543,81 +530,13 @@ CUSTOM_INTERVAL_UNIT_OPTIONS: Final = [
 ]
 
 # Entity-Specific Configuration
-# Achievements
-CONF_ACHIEVEMENT_ASSIGNED_KIDS: Final = "assigned_kids"
-CONF_ACHIEVEMENT_CRITERIA: Final = "criteria"
-CONF_ACHIEVEMENT_LABELS: Final = "achievement_labels"
-CONF_ACHIEVEMENT_REWARD_POINTS: Final = "reward_points"
-CONF_ACHIEVEMENT_SELECTED_CHORE_ID: Final = "selected_chore_id"
-CONF_ACHIEVEMENT_TARGET_VALUE: Final = "target_value"
-CONF_ACHIEVEMENT_TYPE: Final = "type"
-
-# Bonuses
-CONF_BONUS_DESCRIPTION: Final = "bonus_description"
-CONF_BONUS_LABELS: Final = "bonus_labels"
-CONF_BONUS_NAME: Final = "bonus_name"
-CONF_BONUS_POINTS: Final = "bonus_points"
-
-# Challenges
-CONF_CHALLENGE_ASSIGNED_KIDS: Final = "assigned_kids"
-CONF_CHALLENGE_CRITERIA: Final = "criteria"
-CONF_CHALLENGE_END_DATE: Final = "end_date"
-CONF_CHALLENGE_LABELS: Final = "challenge_labels"
-CONF_CHALLENGE_REWARD_POINTS: Final = "reward_points"
-CONF_CHALLENGE_SELECTED_CHORE_ID: Final = "selected_chore_id"
-CONF_CHALLENGE_START_DATE: Final = "start_date"
-CONF_CHALLENGE_TARGET_VALUE: Final = "target_value"
-CONF_CHALLENGE_TYPE: Final = "type"
-
-# Chores
-CONF_ALLOW_MULTIPLE_CLAIMS_PER_DAY: Final = (
-    "allow_multiple_claims_per_day"  # DEPRECATED
-)
-CONF_APPLICABLE_DAYS: Final = "applicable_days"
-CONF_APPROVAL_RESET_PENDING_CLAIM_ACTION: Final = "approval_reset_pending_claim_action"
-CONF_APPROVAL_RESET_TYPE: Final = "approval_reset_type"
-CONF_ASSIGNED_KIDS: Final = "assigned_kids"
-CONF_CHORE_AUTO_APPROVE: Final = "auto_approve"
-CONF_CHORE_DESCRIPTION: Final = "chore_description"
-CONF_CHORE_LABELS: Final = "chore_labels"
-CONF_CHORE_NAME: Final = "chore_name"
-CONF_CUSTOM_INTERVAL: Final = "custom_interval"
-CONF_CUSTOM_INTERVAL_UNIT: Final = "custom_interval_unit"
-CONF_DEFAULT_POINTS: Final = "default_points"
-CONF_DUE_DATE: Final = "due_date"
-CONF_OVERDUE_HANDLING_TYPE: Final = "overdue_handling_type"
-CONF_RECURRING_FREQUENCY: Final = "recurring_frequency"
-CONF_CHORE_SHOW_ON_CALENDAR: Final = "show_on_calendar"
+# (No legacy constants - all moved to _LEGACY section at end of file)
 
 # Notifications
-CONF_ENABLE_MOBILE_NOTIFICATIONS: Final = "enable_mobile_notifications"
-CONF_ENABLE_PERSISTENT_NOTIFICATIONS: Final = "enable_persistent_notifications"
-CONF_MOBILE_NOTIFY_SERVICE: Final = "mobile_notify_service"
-CONF_NOTIFY_ON_APPROVAL: Final = "notify_on_approval"
-CONF_NOTIFY_ON_CLAIM: Final = "notify_on_claim"
-CONF_NOTIFY_ON_DISAPPROVAL: Final = "notify_on_disapproval"
-CONF_CHORE_NOTIFICATIONS: Final = "chore_notifications"
 NOTIFICATION_EVENT: Final = "mobile_app_notification_action"
 
-# Sensor Settings
+# Legacy / Extra Entity Settings
 CONF_SHOW_LEGACY_ENTITIES: Final = "show_legacy_entities"
-
-# Parents
-CONF_ASSOCIATED_KIDS: Final = "associated_kids"
-CONF_HA_USER_ID: Final = "ha_user_id"
-CONF_PARENT_NAME: Final = "parent_name"
-
-# Penalties
-CONF_PENALTY_DESCRIPTION: Final = "penalty_description"
-CONF_PENALTY_LABELS: Final = "penalty_labels"
-CONF_PENALTY_NAME: Final = "penalty_name"
-CONF_PENALTY_POINTS: Final = "penalty_points"
-
-# Rewards
-CONF_REWARD_COST: Final = "reward_cost"
-CONF_REWARD_DESCRIPTION: Final = "reward_description"
-CONF_REWARD_LABELS: Final = "reward_labels"
-CONF_REWARD_NAME: Final = "reward_name"
 
 # Badge Types
 BADGE_TYPE_ACHIEVEMENT_LINKED: Final = "achievement_linked"
@@ -2923,21 +2842,116 @@ REWARD_OPTION_NONE = [
 
 
 # ================================================================================================
-# DEPRECATED CONSTANTS (Currently active in KC 4.x, planned for future refactoring)
-# These reference CURRENT storage keys that are actively used in production code.
+# DEPRECATED CONSTANTS (Currently active in existing version, planned for future refactoring)
+# These reference CONSTANTS that are actively used in production code.
 # They are marked for eventual replacement when underlying features are refactored.
-# DO NOT DELETE - would break current KC 4.x installations without migration.
+# Must be named as _DEPRECATED and organized in the dedicates section at the bottom of const.py.
+# DO NOT DELETE - would break installations without migration.
 # ================================================================================================
 
 # Not in use at this time
 
 # ================================================================================================
-# LEGACY CONSTANTS (KC 3.x→4.x migrations - one-time data conversion only)
-# These reference OLD storage keys that are replaced during migration.
+# LEGACY CONSTANTS for one-time data conversion only (migration support)
+# These reference constants that are replaced during migration.
 # After migration completes, these keys NO LONGER EXIST in storage.
 # Remove in KC-vNext after migration support is dropped.
+# Must be named as _LEGACY and organized in the dedicates section at the bottom of const.py.
 # DO NOT DELETE - would break migrations for upgrading users.
 # ================================================================================================
+
+# Top-level schema version field (KC 3.x→4.x migration)
+CONF_SCHEMA_VERSION_LEGACY: Final = "schema_version"
+
+# Config entry entity keys (KC 3.x stored entity data in config_entry.options)
+# These are read ONCE during migration, then entity data lives in .storage/kidschores_data
+CONF_ACHIEVEMENTS_LEGACY: Final = "achievements"
+CONF_BADGES_LEGACY: Final = "badges"
+CONF_BONUSES_LEGACY: Final = "bonuses"
+CONF_CHALLENGES_LEGACY: Final = "challenges"
+CONF_CHORES_LEGACY: Final = "chores"
+CONF_KIDS_LEGACY: Final = "kids"
+CONF_PARENTS_LEGACY: Final = "parents"
+CONF_PENALTIES_LEGACY: Final = "penalties"
+CONF_REWARDS_LEGACY: Final = "rewards"
+
+# Individual entity field keys (used during KC 3.x→4.x migration)
+CONF_COST_LEGACY: Final = "cost"
+CONF_DASHBOARD_LANGUAGE_LEGACY: Final = "dashboard_language"
+CONF_HA_USER_LEGACY: Final = "ha_user"
+CONF_INTERNAL_ID_LEGACY: Final = "internal_id"
+CONF_POINTS_LEGACY: Final = "points"
+CONF_SHARED_CHORE_LEGACY: Final = "shared_chore"
+CONF_COMPLETION_CRITERIA_LEGACY: Final = "completion_criteria"
+
+# Achievement entity fields (KC 3.x migration)
+CONF_ACHIEVEMENT_ASSIGNED_KIDS_LEGACY: Final = "assigned_kids"
+CONF_ACHIEVEMENT_CRITERIA_LEGACY: Final = "criteria"
+CONF_ACHIEVEMENT_LABELS_LEGACY: Final = "achievement_labels"
+CONF_ACHIEVEMENT_REWARD_POINTS_LEGACY: Final = "reward_points"
+CONF_ACHIEVEMENT_SELECTED_CHORE_ID_LEGACY: Final = "selected_chore_id"
+CONF_ACHIEVEMENT_TARGET_VALUE_LEGACY: Final = "target_value"
+CONF_ACHIEVEMENT_TYPE_LEGACY: Final = "type"
+
+# Bonus entity fields (KC 3.x migration)
+CONF_BONUS_DESCRIPTION_LEGACY: Final = "bonus_description"
+CONF_BONUS_LABELS_LEGACY: Final = "bonus_labels"
+CONF_BONUS_NAME_LEGACY: Final = "bonus_name"
+CONF_BONUS_POINTS_LEGACY: Final = "bonus_points"
+
+# Challenge entity fields (KC 3.x migration)
+CONF_CHALLENGE_ASSIGNED_KIDS_LEGACY: Final = "assigned_kids"
+CONF_CHALLENGE_CRITERIA_LEGACY: Final = "criteria"
+CONF_CHALLENGE_END_DATE_LEGACY: Final = "end_date"
+CONF_CHALLENGE_LABELS_LEGACY: Final = "challenge_labels"
+CONF_CHALLENGE_REWARD_POINTS_LEGACY: Final = "reward_points"
+CONF_CHALLENGE_SELECTED_CHORE_ID_LEGACY: Final = "selected_chore_id"
+CONF_CHALLENGE_START_DATE_LEGACY: Final = "start_date"
+CONF_CHALLENGE_TARGET_VALUE_LEGACY: Final = "target_value"
+CONF_CHALLENGE_TYPE_LEGACY: Final = "type"
+
+# Chore entity fields (KC 3.x migration)
+CONF_ALLOW_MULTIPLE_CLAIMS_PER_DAY_LEGACY: Final = "allow_multiple_claims_per_day"
+CONF_APPLICABLE_DAYS_LEGACY: Final = "applicable_days"
+CONF_APPROVAL_RESET_PENDING_CLAIM_ACTION_LEGACY: Final = (
+    "approval_reset_pending_claim_action"
+)
+CONF_APPROVAL_RESET_TYPE_LEGACY: Final = "approval_reset_type"
+CONF_ASSIGNED_KIDS_LEGACY: Final = "assigned_kids"
+CONF_CHORE_AUTO_APPROVE_LEGACY: Final = "auto_approve"
+CONF_CHORE_DESCRIPTION_LEGACY: Final = "chore_description"
+CONF_CHORE_LABELS_LEGACY: Final = "chore_labels"
+CONF_CHORE_NAME_LEGACY: Final = "chore_name"
+CONF_CUSTOM_INTERVAL_LEGACY: Final = "custom_interval"
+CONF_CUSTOM_INTERVAL_UNIT_LEGACY: Final = "custom_interval_unit"
+CONF_DEFAULT_POINTS_LEGACY: Final = "default_points"
+CONF_DUE_DATE_LEGACY: Final = "due_date"
+CONF_OVERDUE_HANDLING_TYPE_LEGACY: Final = "overdue_handling_type"
+CONF_RECURRING_FREQUENCY_LEGACY: Final = "recurring_frequency"
+CONF_CHORE_SHOW_ON_CALENDAR_LEGACY: Final = "show_on_calendar"
+
+# Notification entity fields (KC 3.x migration)
+CONF_ENABLE_MOBILE_NOTIFICATIONS_LEGACY: Final = "enable_mobile_notifications"
+CONF_ENABLE_PERSISTENT_NOTIFICATIONS_LEGACY: Final = "enable_persistent_notifications"
+CONF_MOBILE_NOTIFY_SERVICE_LEGACY: Final = "mobile_notify_service"
+CONF_CHORE_NOTIFICATIONS_LEGACY: Final = "chore_notifications"
+
+# Parent entity fields (KC 3.x migration)
+CONF_ASSOCIATED_KIDS_LEGACY: Final = "associated_kids"
+CONF_HA_USER_ID_LEGACY: Final = "ha_user_id"
+CONF_PARENT_NAME_LEGACY: Final = "parent_name"
+
+# Penalty entity fields (KC 3.x migration)
+CONF_PENALTY_DESCRIPTION_LEGACY: Final = "penalty_description"
+CONF_PENALTY_LABELS_LEGACY: Final = "penalty_labels"
+CONF_PENALTY_NAME_LEGACY: Final = "penalty_name"
+CONF_PENALTY_POINTS_LEGACY: Final = "penalty_points"
+
+# Reward entity fields (KC 3.x migration)
+CONF_REWARD_COST_LEGACY: Final = "reward_cost"
+CONF_REWARD_DESCRIPTION_LEGACY: Final = "reward_description"
+CONF_REWARD_LABELS_LEGACY: Final = "reward_labels"
+CONF_REWARD_NAME_LEGACY: Final = "reward_name"
 
 CFOF_CHORES_INPUT_PARTIAL_ALLOWED_LEGACY: Final = "partial_allowed"
 CONF_PARTIAL_ALLOWED_LEGACY: Final = "partial_allowed"
@@ -2952,6 +2966,9 @@ DATA_CHORE_PARTIAL_ALLOWED_LEGACY: Final = "partial_allowed"
 # Keep constants for backward-compat migration code in migration_pre_v42.py
 DATA_PENDING_CHORE_APPROVALS_LEGACY: Final = "pending_chore_approvals"
 DATA_PENDING_REWARD_APPROVALS_LEGACY: Final = "pending_reward_approvals"
+
+# Runtime flag keys (stored in hass.data, not persisted)
+RUNTIME_KEY_STARTUP_BACKUP_CREATED: Final = "_startup_backup_created_"
 
 DEFAULT_BADGE_THRESHOLD_VALUE_LEGACY: Final = 50
 DEFAULT_PARTIAL_ALLOWED_LEGACY = False

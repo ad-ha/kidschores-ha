@@ -2510,7 +2510,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
         else:
             # Send a notification to the parents that a kid claimed a chore (awaiting approval)
             if chore_info.get(
-                const.CONF_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM
+                const.DATA_CHORE_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM
             ):
                 actions = [
                     {
@@ -2780,7 +2780,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Send a notification to the kid that chore was approved
         if chore_info.get(
-            const.CONF_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
+            const.DATA_CHORE_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
         ):
             extra_data = {const.DATA_KID_ID: kid_id, const.DATA_CHORE_ID: chore_id}
             self.hass.async_create_task(
@@ -2871,7 +2871,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Send a notification to the kid that chore was disapproved
         if chore_info.get(
-            const.CONF_NOTIFY_ON_DISAPPROVAL, const.DEFAULT_NOTIFY_ON_DISAPPROVAL
+            const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL, const.DEFAULT_NOTIFY_ON_DISAPPROVAL
         ):
             extra_data = {const.DATA_KID_ID: kid_id, const.DATA_CHORE_ID: chore_id}
             self.hass.async_create_task(
@@ -8591,7 +8591,7 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
 
         # Get applicable weekdays configuration
         raw_applicable = chore_info.get(
-            const.CONF_APPLICABLE_DAYS, const.DEFAULT_APPLICABLE_DAYS
+            const.DATA_CHORE_APPLICABLE_DAYS, const.DEFAULT_APPLICABLE_DAYS
         )
         if raw_applicable and isinstance(next(iter(raw_applicable), None), str):
             order = list(const.WEEKDAY_OPTIONS.keys())
@@ -9625,12 +9625,12 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 "DEBUG: Notification - Notifications disabled for Kid ID '%s'", kid_id
             )
             return
-        mobile_enabled = kid_info.get(const.CONF_ENABLE_MOBILE_NOTIFICATIONS, True)
+        mobile_enabled = kid_info.get(const.DATA_KID_ENABLE_NOTIFICATIONS, True)
         persistent_enabled = kid_info.get(
-            const.CONF_ENABLE_PERSISTENT_NOTIFICATIONS, True
+            const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS, True
         )
         mobile_notify_service = kid_info.get(
-            const.CONF_MOBILE_NOTIFY_SERVICE, const.SENTINEL_EMPTY
+            const.DATA_KID_MOBILE_NOTIFY_SERVICE, const.SENTINEL_EMPTY
         )
         if mobile_enabled and mobile_notify_service:
             await async_send_notification(
@@ -9683,9 +9683,20 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             const.DATA_KID_DASHBOARD_LANGUAGE,
             self.hass.config.language,
         )
+        const.LOGGER.debug(
+            "Notification: kid_id=%s, language=%s, title_key=%s",
+            kid_id,
+            language,
+            title_key,
+        )
 
         # Load notification translations from custom translations directory
         translations = await kh.load_notification_translation(self.hass, language)
+        const.LOGGER.debug(
+            "Notification translations loaded: %d keys, language=%s",
+            len(translations),
+            language,
+        )
 
         # Convert const key to JSON key by removing prefix
         # e.g., "notification_title_chore_assigned" -> "chore_assigned"
@@ -9709,8 +9720,29 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             message = message_template  # Use template without formatting
 
+        # Translate action button titles
+        translated_actions = None
+        if actions:
+            # Get action translations from the "actions" section
+            action_translations = translations.get("actions", {})
+            translated_actions = []
+            for action in actions:
+                translated_action = action.copy()
+                action_title_key = action.get(const.NOTIFY_TITLE, "")
+                # Convert "notif_action_approve" -> "approve"
+                action_key = action_title_key.replace("notif_action_", "")
+                # Look up translation, fallback to key
+                translated_title = action_translations.get(action_key, action_title_key)
+                translated_action[const.NOTIFY_TITLE] = translated_title
+                translated_actions.append(translated_action)
+            const.LOGGER.debug(
+                "Translated action buttons: %s -> %s",
+                [a.get(const.NOTIFY_TITLE) for a in actions],
+                [a.get(const.NOTIFY_TITLE) for a in translated_actions],
+            )
+
         # Call original notification method
-        await self._notify_kid(kid_id, title, message, actions, extra_data)
+        await self._notify_kid(kid_id, title, message, translated_actions, extra_data)
 
     async def _notify_parents(
         self,
@@ -9735,13 +9767,13 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
                 )
                 continue
             mobile_enabled = parent_info.get(
-                const.CONF_ENABLE_MOBILE_NOTIFICATIONS, True
+                const.DATA_PARENT_ENABLE_NOTIFICATIONS, True
             )
             persistent_enabled = parent_info.get(
-                const.CONF_ENABLE_PERSISTENT_NOTIFICATIONS, True
+                const.DATA_PARENT_USE_PERSISTENT_NOTIFICATIONS, True
             )
             mobile_notify_service = parent_info.get(
-                const.CONF_MOBILE_NOTIFY_SERVICE, const.SENTINEL_EMPTY
+                const.DATA_PARENT_MOBILE_NOTIFY_SERVICE, const.SENTINEL_EMPTY
             )
             if mobile_enabled and mobile_notify_service:
                 parent_count += 1
@@ -9799,9 +9831,25 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             actions: Optional list of notification actions
             extra_data: Optional extra data for mobile notifications
         """
-        # Load notification translations (parents use system language)
-        language = self.hass.config.language
+        # Load notification translations using kid's language
+        # (parent likely speaks same language as their child)
+        kid_info = self.kids_data.get(kid_id, {})
+        language = kid_info.get(
+            const.DATA_KID_DASHBOARD_LANGUAGE,
+            self.hass.config.language,
+        )
+        const.LOGGER.debug(
+            "Parent notification: kid_id=%s, language=%s, title_key=%s",
+            kid_id,
+            language,
+            title_key,
+        )
         translations = await kh.load_notification_translation(self.hass, language)
+        const.LOGGER.debug(
+            "Parent notification translations loaded: %d keys, language=%s",
+            len(translations),
+            language,
+        )
 
         # Convert const key to JSON key by removing prefix
         # e.g., "notification_title_chore_assigned" -> "chore_assigned"
@@ -9825,8 +9873,31 @@ class KidsChoresDataCoordinator(DataUpdateCoordinator):
             )
             message = message_template  # Use template without formatting
 
+        # Translate action button titles
+        translated_actions = None
+        if actions:
+            # Get action translations from the "actions" section
+            action_translations = translations.get("actions", {})
+            translated_actions = []
+            for action in actions:
+                translated_action = action.copy()
+                action_title_key = action.get(const.NOTIFY_TITLE, "")
+                # Convert "notif_action_approve" -> "approve"
+                action_key = action_title_key.replace("notif_action_", "")
+                # Look up translation, fallback to key
+                translated_title = action_translations.get(action_key, action_title_key)
+                translated_action[const.NOTIFY_TITLE] = translated_title
+                translated_actions.append(translated_action)
+            const.LOGGER.debug(
+                "Translated action buttons: %s -> %s",
+                [a.get(const.NOTIFY_TITLE) for a in actions],
+                [a.get(const.NOTIFY_TITLE) for a in translated_actions],
+            )
+
         # Call original notification method
-        await self._notify_parents(kid_id, title, message, actions, extra_data)
+        await self._notify_parents(
+            kid_id, title, message, translated_actions, extra_data
+        )
 
     async def remind_in_minutes(
         self,

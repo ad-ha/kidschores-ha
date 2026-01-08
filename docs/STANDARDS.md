@@ -34,12 +34,46 @@ With over 1,000 constants, we follow strict naming patterns to ensure the code r
 | -------------------- | ------------ | ----------------------------------- | --------------------------------- |
 | `DATA_*`             | **Singular** | Storage keys for specific entities  | `DATA_KID_NAME`                   |
 | `CFOF_*`             | **Plural**   | Config/Options flow input fields    | `CFOF_KIDS_INPUT_NAME`            |
+| `CONF_*`             | **N/A**      | Config entry data access only       | `CONF_POINTS_LABEL`               |
 | `CFOP_ERROR_*`       | **Singular** | Flow validation error keys          | `CFOP_ERROR_KID_NAME`             |
 | `TRANS_KEY_*`        | **N/A**      | Stable identifiers for translations | `TRANS_KEY_CFOF_DUPLICATE_KID`    |
 | `CONFIG_FLOW_STEP_*` | **Action**   | Config flow step identifiers        | `CONFIG_FLOW_STEP_COLLECT_CHORES` |
 | `OPTIONS_FLOW_*`     | **Action**   | Options flow identifiers            | `OPTIONS_FLOW_STEP_EDIT_CHORE`    |
 | `DEFAULT_*`          | **N/A**      | Default configuration values        | `DEFAULT_POINTS_LABEL`            |
 | `LABEL_*`            | **N/A**      | Consistent UI text labels           | `LABEL_CHORE`                     |
+
+#### Storage-Only Architecture (v0.5.0+)
+
+**Critical Distinction**: Since moving to storage-only mode, constants have specific usage contexts:
+
+**`DATA_*`** = **Internal Storage Keys**
+
+- **Usage**: Accessing/modifying `.storage/kidschores_data`
+- **Context**: `coordinator._data[const.DATA_KIDS][kid_id][const.DATA_KID_NAME]`
+- **Rule**: Always singular entity names (`DATA_KID_*`, `DATA_PARENT_*`)
+
+**`CFOF_*`** = **Config/Options Flow Input Fields**
+
+- **Usage**: Form field names in schema definitions during user input
+- **Context**: `vol.Required(const.CFOF_KIDS_INPUT_KID_NAME, ...)`
+- **Rule**: Always plural entity names with `_INPUT_` (`CFOF_KIDS_INPUT_*`, `CFOF_PARENTS_INPUT_*`)
+
+**`CONF_*`** = **Configuration Entry Data Access**
+
+- **Usage**: ONLY for accessing the 9 system settings in `config_entry.options`
+- **Context**: `config_entry.options[const.CONF_POINTS_LABEL]`
+- **Scope**: System-wide settings (points theme, update intervals, retention periods)
+- **Rule**: Never use in flow schemas - those should use `CFOF_*`
+
+**Common Anti-Pattern** ❌:
+
+```python
+# WRONG: Using CONF_ in flow schema
+vol.Required(const.CONF_PARENT_NAME, default=name): str
+
+# CORRECT: Use CFOF_ for flow input fields
+vol.Required(const.CFOF_PARENTS_INPUT_NAME, default=name): str
+```
 
 #### Entity State & Actions
 
@@ -65,11 +99,29 @@ All entity platforms MUST provide both human-readable (`*_EID_*`) and machine-re
 - **Selects**: `SELECT_KC_EID_*` / `SELECT_KC_UID_*` (e.g., `kc_sarah_chore_list` vs `kc_{uuid}_chore_select`)
 - **Calendars**: `CALENDAR_KC_*` (Standardized prefixes/suffixes)
 
-#### Lifecycle Suffixes (Internal Development Tools)
+#### Lifecycle Suffixes (Constant Management)
 
-- **`_DEPRECATED`**: Current keys actively used in production but slated for a future refactor.
-- **`_LEGACY`**: Used **only** during migration functions to read old data.
-- **`_UNUSED`**: Abandoned constants with no code references; safe to delete immediately.
+**`_DEPRECATED`** = **Active Production Code Pending Refactor**
+
+- **Usage**: Constants actively used in production but planned for replacement in future versions
+- **Code Impact**: Removing these WOULD break existing installations without migration
+- **Organization**: Defined in dedicated section at bottom of `const.py` (lines 2935+)
+- **Deletion**: Only after feature is refactored AND migration path implemented
+- **Current Status**: None in use (all previous deprecations completed)
+
+**`_LEGACY`** = **Migration Support Only**
+
+- **Usage**: One-time data conversion during version upgrades (e.g., KC 3.x→4.x config migration)
+- **Code Impact**: After migration completes, these keys NO LONGER EXIST in active storage
+- **Organization**: Defined in dedicated section at bottom of `const.py` after `_DEPRECATED` section
+- **Deletion**: Remove when migration support dropped (typically 2+ major versions, <1% users)
+
+**`_UNUSED`** = **Safe for Immediate Deletion**
+
+- **Usage**: Abandoned constants with zero code references
+- **Code Impact**: None — safe to delete immediately
+- **Organization**: None required; delete on discovery
+- **Verification**: `grep -r "CONSTANT_NAME" custom_components/` to confirm zero usage
 
 ---
 

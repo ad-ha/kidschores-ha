@@ -105,9 +105,9 @@ _LOGGER.debug(f"Processing {kid_name}")  # ❌ f-string evaluated even if log sk
 - ✅ All user-facing strings stored in `const.py`
 - ✅ Constants follow strict naming patterns:
   - `DATA_*` - Storage data keys
-  - `CONF_*` - Configuration entry keys
+  - `CONF_*` - Config entry options (9 system settings only, never in schemas)
+  - `CFOF_*` - Config/Options flow input fields (use in schemas)
   - `TRANS_KEY_*` - Translation keys
-  - `CFOF_*` - Config flow input fields
   - `CFOP_ERROR_*` - Config flow error keys
   - etc. (see const.py for complete patterns)
 - ✅ No hardcoded strings in error messages, labels, or notifications

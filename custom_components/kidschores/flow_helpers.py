@@ -87,7 +87,6 @@ import uuid
 from typing import Any, Dict, Optional, Tuple
 
 import voluptuous as vol
-from homeassistant.const import CONF_DESCRIPTION, CONF_ICON, CONF_NAME  # noqa: F401
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import selector
@@ -111,14 +110,19 @@ def _build_notification_defaults(default: Dict[str, Any]) -> list[str]:
         List of selected notification option values.
     """
     notifications = []
-    if default.get(const.CONF_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM):
-        notifications.append(const.CONF_NOTIFY_ON_CLAIM)
-    if default.get(const.CONF_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL):
-        notifications.append(const.CONF_NOTIFY_ON_APPROVAL)
     if default.get(
-        const.CONF_NOTIFY_ON_DISAPPROVAL, const.DEFAULT_NOTIFY_ON_DISAPPROVAL
+        const.CFOF_CHORES_INPUT_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM
     ):
-        notifications.append(const.CONF_NOTIFY_ON_DISAPPROVAL)
+        notifications.append(const.DATA_CHORE_NOTIFY_ON_CLAIM)
+    if default.get(
+        const.CFOF_CHORES_INPUT_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
+    ):
+        notifications.append(const.DATA_CHORE_NOTIFY_ON_APPROVAL)
+    if default.get(
+        const.CFOF_CHORES_INPUT_NOTIFY_ON_DISAPPROVAL,
+        const.DEFAULT_NOTIFY_ON_DISAPPROVAL,
+    ):
+        notifications.append(const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL)
     return notifications
 
 
@@ -133,9 +137,11 @@ def build_points_schema(
     """Build a schema for points label & icon."""
     return vol.Schema(
         {
-            vol.Required(const.CONF_POINTS_LABEL, default=default_label): str,
+            vol.Required(
+                const.CFOF_SYSTEM_INPUT_POINTS_LABEL, default=default_label
+            ): str,
             vol.Optional(
-                const.CONF_POINTS_ICON, default=default_icon
+                const.CFOF_SYSTEM_INPUT_POINTS_ICON, default=default_icon
             ): selector.IconSelector(),
         }
     )
@@ -154,10 +160,10 @@ def build_points_data(user_input: Dict[str, Any]) -> Dict[str, Any]:
     """
     return {
         const.CONF_POINTS_LABEL: user_input.get(
-            const.CONF_POINTS_LABEL, const.DEFAULT_POINTS_LABEL
+            const.CFOF_SYSTEM_INPUT_POINTS_LABEL, const.DEFAULT_POINTS_LABEL
         ),
         const.CONF_POINTS_ICON: user_input.get(
-            const.CONF_POINTS_ICON, const.DEFAULT_POINTS_ICON
+            const.CFOF_SYSTEM_INPUT_POINTS_ICON, const.DEFAULT_POINTS_ICON
         ),
     }
 
@@ -173,7 +179,7 @@ def validate_points_inputs(user_input: Dict[str, Any]) -> Dict[str, str]:
     """
     errors = {}
 
-    points_label = user_input.get(const.CONF_POINTS_LABEL, "").strip()
+    points_label = user_input.get(const.CFOF_SYSTEM_INPUT_POINTS_LABEL, "").strip()
 
     # Validate label is not empty
     if not points_label:
@@ -212,7 +218,8 @@ async def build_kid_schema(
         {
             vol.Required(const.CFOF_KIDS_INPUT_KID_NAME, default=default_kid_name): str,
             vol.Optional(
-                const.CONF_HA_USER, default=default_ha_user_id or const.SENTINEL_EMPTY
+                const.CFOF_KIDS_INPUT_HA_USER,
+                default=default_ha_user_id or const.SENTINEL_EMPTY,
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=user_options,
@@ -221,7 +228,7 @@ async def build_kid_schema(
                 )
             ),
             vol.Optional(
-                const.CONF_DASHBOARD_LANGUAGE,
+                const.CFOF_KIDS_INPUT_DASHBOARD_LANGUAGE,
                 default=default_dashboard_language or const.DEFAULT_DASHBOARD_LANGUAGE,
             ): selector.LanguageSelector(
                 selector.LanguageSelectorConfig(
@@ -230,11 +237,11 @@ async def build_kid_schema(
                 )
             ),
             vol.Required(
-                const.CONF_ENABLE_MOBILE_NOTIFICATIONS,
+                const.CFOF_KIDS_INPUT_ENABLE_MOBILE_NOTIFICATIONS,
                 default=default_enable_mobile_notifications,
             ): selector.BooleanSelector(),
             vol.Optional(
-                const.CONF_MOBILE_NOTIFY_SERVICE,
+                const.CFOF_KIDS_INPUT_MOBILE_NOTIFY_SERVICE,
                 default=default_mobile_notify_service or const.SENTINEL_EMPTY,
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
@@ -244,7 +251,7 @@ async def build_kid_schema(
                 )
             ),
             vol.Required(
-                const.CONF_ENABLE_PERSISTENT_NOTIFICATIONS,
+                const.CFOF_KIDS_INPUT_ENABLE_PERSISTENT_NOTIFICATIONS,
                 default=default_enable_persistent_notifications,
             ): selector.BooleanSelector(),
         }
@@ -354,9 +361,11 @@ def build_parent_schema(
 
     return vol.Schema(
         {
-            vol.Required(const.CONF_PARENT_NAME, default=default_parent_name): str,
+            vol.Required(
+                const.CFOF_PARENTS_INPUT_NAME, default=default_parent_name
+            ): str,
             vol.Optional(
-                const.CONF_HA_USER_ID,
+                const.CFOF_PARENTS_INPUT_HA_USER,
                 default=default_ha_user_id or const.SENTINEL_EMPTY,
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
@@ -366,7 +375,7 @@ def build_parent_schema(
                 )
             ),
             vol.Optional(
-                const.CONF_ASSOCIATED_KIDS,
+                const.CFOF_PARENTS_INPUT_ASSOCIATED_KIDS,
                 default=default_associated_kids or [],
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
@@ -376,11 +385,11 @@ def build_parent_schema(
                 )
             ),
             vol.Required(
-                const.CONF_ENABLE_MOBILE_NOTIFICATIONS,
+                const.CFOF_PARENTS_INPUT_ENABLE_MOBILE_NOTIFICATIONS,
                 default=default_enable_mobile_notifications,
             ): selector.BooleanSelector(),
             vol.Optional(
-                const.CONF_MOBILE_NOTIFY_SERVICE,
+                const.CFOF_PARENTS_INPUT_MOBILE_NOTIFY_SERVICE,
                 default=default_mobile_notify_service or const.SENTINEL_EMPTY,
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
@@ -390,7 +399,7 @@ def build_parent_schema(
                 )
             ),
             vol.Required(
-                const.CONF_ENABLE_PERSISTENT_NOTIFICATIONS,
+                const.CFOF_PARENTS_INPUT_ENABLE_PERSISTENT_NOTIFICATIONS,
                 default=default_enable_persistent_notifications,
             ): selector.BooleanSelector(),
         }
@@ -486,27 +495,30 @@ def build_chore_schema(kids_dict, default=None):
     Uses internal_id for entity management.
     """
     default = default or {}
-    chore_name_default = default.get(CONF_NAME, const.SENTINEL_EMPTY)
+    chore_name_default = default.get(const.DATA_CHORE_NAME, const.SENTINEL_EMPTY)
 
     kid_choices = {k: k for k in kids_dict}
 
     return vol.Schema(
         {
-            vol.Required(const.CONF_CHORE_NAME, default=chore_name_default): str,
+            vol.Required(const.CFOF_CHORES_INPUT_NAME, default=chore_name_default): str,
             vol.Optional(
-                const.CONF_CHORE_DESCRIPTION,
-                default=default.get(CONF_DESCRIPTION, const.SENTINEL_EMPTY),
+                const.CFOF_CHORES_INPUT_DESCRIPTION,
+                default=default.get(const.DATA_CHORE_DESCRIPTION, const.SENTINEL_EMPTY),
             ): str,
             vol.Optional(
-                CONF_ICON, default=default.get(CONF_ICON, const.DEFAULT_CHORE_ICON)
+                const.CFOF_CHORES_INPUT_ICON,
+                default=default.get(const.DATA_CHORE_ICON, const.DEFAULT_CHORE_ICON),
             ): selector.IconSelector(),
             vol.Optional(
-                const.CONF_CHORE_LABELS,
-                default=default.get(const.CONF_CHORE_LABELS, []),
+                const.CFOF_CHORES_INPUT_LABELS,
+                default=default.get(const.CFOF_CHORES_INPUT_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Required(
-                const.CONF_DEFAULT_POINTS,
-                default=default.get(const.CONF_DEFAULT_POINTS, const.DEFAULT_POINTS),
+                const.CFOF_CHORES_INPUT_DEFAULT_POINTS,
+                default=default.get(
+                    const.CFOF_CHORES_INPUT_DEFAULT_POINTS, const.DEFAULT_POINTS
+                ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -515,13 +527,13 @@ def build_chore_schema(kids_dict, default=None):
                 )
             ),
             vol.Required(
-                const.CONF_ASSIGNED_KIDS,
-                default=default.get(const.CONF_ASSIGNED_KIDS, []),
+                const.CFOF_CHORES_INPUT_ASSIGNED_KIDS,
+                default=default.get(const.CFOF_CHORES_INPUT_ASSIGNED_KIDS, []),
             ): cv.multi_select(kid_choices),
             vol.Required(
-                const.CONF_COMPLETION_CRITERIA,
+                const.CFOF_CHORES_INPUT_COMPLETION_CRITERIA,
                 default=default.get(
-                    const.CONF_COMPLETION_CRITERIA,
+                    const.CFOF_CHORES_INPUT_COMPLETION_CRITERIA,
                     const.COMPLETION_CRITERIA_INDEPENDENT,
                 ),
             ): selector.SelectSelector(
@@ -532,9 +544,9 @@ def build_chore_schema(kids_dict, default=None):
                 )
             ),
             vol.Required(
-                const.CONF_APPROVAL_RESET_TYPE,
+                const.CFOF_CHORES_INPUT_APPROVAL_RESET_TYPE,
                 default=default.get(
-                    const.CONF_APPROVAL_RESET_TYPE,
+                    const.CFOF_CHORES_INPUT_APPROVAL_RESET_TYPE,
                     const.DEFAULT_APPROVAL_RESET_TYPE,
                 ),
             ): selector.SelectSelector(
@@ -545,9 +557,9 @@ def build_chore_schema(kids_dict, default=None):
                 )
             ),
             vol.Required(
-                const.CONF_APPROVAL_RESET_PENDING_CLAIM_ACTION,
+                const.CFOF_CHORES_INPUT_APPROVAL_RESET_PENDING_CLAIM_ACTION,
                 default=default.get(
-                    const.CONF_APPROVAL_RESET_PENDING_CLAIM_ACTION,
+                    const.CFOF_CHORES_INPUT_APPROVAL_RESET_PENDING_CLAIM_ACTION,
                     const.DEFAULT_APPROVAL_RESET_PENDING_CLAIM_ACTION,
                 ),
             ): selector.SelectSelector(
@@ -558,9 +570,9 @@ def build_chore_schema(kids_dict, default=None):
                 )
             ),
             vol.Required(
-                const.CONF_OVERDUE_HANDLING_TYPE,
+                const.CFOF_CHORES_INPUT_OVERDUE_HANDLING_TYPE,
                 default=default.get(
-                    const.CONF_OVERDUE_HANDLING_TYPE,
+                    const.CFOF_CHORES_INPUT_OVERDUE_HANDLING_TYPE,
                     const.DEFAULT_OVERDUE_HANDLING_TYPE,
                 ),
             ): selector.SelectSelector(
@@ -571,15 +583,16 @@ def build_chore_schema(kids_dict, default=None):
                 )
             ),
             vol.Required(
-                const.CONF_CHORE_AUTO_APPROVE,
+                const.CFOF_CHORES_INPUT_AUTO_APPROVE,
                 default=default.get(
-                    const.CONF_CHORE_AUTO_APPROVE, const.DEFAULT_CHORE_AUTO_APPROVE
+                    const.CFOF_CHORES_INPUT_AUTO_APPROVE,
+                    const.DEFAULT_CHORE_AUTO_APPROVE,
                 ),
             ): selector.BooleanSelector(),
             vol.Required(
-                const.CONF_RECURRING_FREQUENCY,
+                const.CFOF_CHORES_INPUT_RECURRING_FREQUENCY,
                 default=default.get(
-                    const.CONF_RECURRING_FREQUENCY, const.FREQUENCY_NONE
+                    const.CFOF_CHORES_INPUT_RECURRING_FREQUENCY, const.FREQUENCY_NONE
                 ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
@@ -588,8 +601,8 @@ def build_chore_schema(kids_dict, default=None):
                 )
             ),
             vol.Optional(
-                const.CONF_CUSTOM_INTERVAL,
-                default=default.get(const.CONF_CUSTOM_INTERVAL, None),
+                const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL,
+                default=default.get(const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL, None),
             ): vol.Any(
                 None,
                 selector.NumberSelector(
@@ -599,8 +612,8 @@ def build_chore_schema(kids_dict, default=None):
                 ),
             ),
             vol.Optional(
-                const.CONF_CUSTOM_INTERVAL_UNIT,
-                default=default.get(const.CONF_CUSTOM_INTERVAL_UNIT, None),
+                const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL_UNIT,
+                default=default.get(const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL_UNIT, None),
             ): vol.Any(
                 None,
                 selector.SelectSelector(
@@ -613,9 +626,10 @@ def build_chore_schema(kids_dict, default=None):
                 ),
             ),
             vol.Optional(
-                const.CONF_APPLICABLE_DAYS,
+                const.CFOF_CHORES_INPUT_APPLICABLE_DAYS,
                 default=default.get(
-                    const.CONF_APPLICABLE_DAYS, const.DEFAULT_APPLICABLE_DAYS
+                    const.CFOF_CHORES_INPUT_APPLICABLE_DAYS,
+                    const.DEFAULT_APPLICABLE_DAYS,
                 ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
@@ -628,21 +642,22 @@ def build_chore_schema(kids_dict, default=None):
                 )
             ),
             vol.Optional(
-                const.CONF_DUE_DATE, default=default.get(const.CONF_DUE_DATE)
+                const.CFOF_CHORES_INPUT_DUE_DATE,
+                default=default.get(const.CFOF_CHORES_INPUT_DUE_DATE),
             ): vol.Any(None, selector.DateTimeSelector()),
             vol.Required(
-                const.CONF_CHORE_SHOW_ON_CALENDAR,
-                default=default.get(const.CONF_CHORE_SHOW_ON_CALENDAR, True),
+                const.CFOF_CHORES_INPUT_SHOW_ON_CALENDAR,
+                default=default.get(const.CFOF_CHORES_INPUT_SHOW_ON_CALENDAR, True),
             ): selector.BooleanSelector(),
             vol.Optional(
-                const.CONF_CHORE_NOTIFICATIONS,
+                const.CFOF_CHORES_INPUT_NOTIFICATIONS,
                 default=_build_notification_defaults(default),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[
-                        const.CONF_NOTIFY_ON_CLAIM,
-                        const.CONF_NOTIFY_ON_APPROVAL,
-                        const.CONF_NOTIFY_ON_DISAPPROVAL,
+                        const.DATA_CHORE_NOTIFY_ON_CLAIM,
+                        const.DATA_CHORE_NOTIFY_ON_APPROVAL,
+                        const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL,
                     ],
                     multiple=True,
                     translation_key=const.TRANS_KEY_FLOW_HELPERS_CHORE_NOTIFICATIONS,
@@ -838,16 +853,16 @@ def build_chores_data(
         ),
         # Extract notification selections from consolidated field
         const.DATA_CHORE_NOTIFY_ON_CLAIM: (
-            const.CONF_NOTIFY_ON_CLAIM
-            in user_input.get(const.CONF_CHORE_NOTIFICATIONS, [])
+            const.DATA_CHORE_NOTIFY_ON_CLAIM
+            in user_input.get(const.CFOF_CHORES_INPUT_NOTIFICATIONS, [])
         ),
         const.DATA_CHORE_NOTIFY_ON_APPROVAL: (
-            const.CONF_NOTIFY_ON_APPROVAL
-            in user_input.get(const.CONF_CHORE_NOTIFICATIONS, [])
+            const.DATA_CHORE_NOTIFY_ON_APPROVAL
+            in user_input.get(const.CFOF_CHORES_INPUT_NOTIFICATIONS, [])
         ),
         const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL: (
-            const.CONF_NOTIFY_ON_DISAPPROVAL
-            in user_input.get(const.CONF_CHORE_NOTIFICATIONS, [])
+            const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL
+            in user_input.get(const.CFOF_CHORES_INPUT_NOTIFICATIONS, [])
         ),
         const.DATA_CHORE_INTERNAL_ID: internal_id,
     }
@@ -1784,16 +1799,16 @@ def build_badge_common_schema(
 
         award_items_options.append(
             {
-                const.CONF_VALUE: const.AWARD_ITEMS_KEY_POINTS,
-                const.CONF_LABEL: const.AWARD_ITEMS_LABEL_POINTS,
+                "value": const.AWARD_ITEMS_KEY_POINTS,
+                "label": const.AWARD_ITEMS_LABEL_POINTS,
             }
         )
 
         if is_cumulative:
             award_items_options.append(
                 {
-                    const.CONF_VALUE: (const.AWARD_ITEMS_KEY_POINTS_MULTIPLIER),
-                    const.CONF_LABEL: (const.AWARD_ITEMS_LABEL_POINTS_MULTIPLIER),
+                    "value": (const.AWARD_ITEMS_KEY_POINTS_MULTIPLIER),
+                    "label": (const.AWARD_ITEMS_LABEL_POINTS_MULTIPLIER),
                 }
             )
 
@@ -1803,8 +1818,8 @@ def build_badge_common_schema(
                 label = f"{const.AWARD_ITEMS_LABEL_REWARD} {reward_name}"
                 award_items_options.append(
                     {
-                        const.CONF_VALUE: f"{const.AWARD_ITEMS_PREFIX_REWARD}{reward_id}",
-                        const.CONF_LABEL: label,
+                        "value": f"{const.AWARD_ITEMS_PREFIX_REWARD}{reward_id}",
+                        "label": label,
                     }
                 )
         if bonuses_dict:
@@ -1813,8 +1828,8 @@ def build_badge_common_schema(
                 label = f"{const.AWARD_ITEMS_LABEL_BONUS} {bonus_name}"
                 award_items_options.append(
                     {
-                        const.CONF_VALUE: f"{const.AWARD_ITEMS_PREFIX_BONUS}{bonus_id}",
-                        const.CONF_LABEL: label,
+                        "value": f"{const.AWARD_ITEMS_PREFIX_BONUS}{bonus_id}",
+                        "label": label,
                     }
                 )
         if include_penalties:
@@ -1823,8 +1838,8 @@ def build_badge_common_schema(
                     label = f"{const.AWARD_ITEMS_LABEL_PENALTY} {penalty.get(const.DATA_PENALTY_NAME, penalty_id)}"
                     award_items_options.append(
                         {
-                            const.CONF_VALUE: f"{const.AWARD_ITEMS_PREFIX_PENALTY}{penalty_id}",
-                            const.CONF_LABEL: label,
+                            "value": f"{const.AWARD_ITEMS_PREFIX_PENALTY}{penalty_id}",
+                            "label": label,
                         }
                     )
 
@@ -2070,22 +2085,28 @@ def build_badge_common_schema(
 def build_reward_schema(default=None):
     """Build a schema for rewards, keyed by internal_id in the dict."""
     default = default or {}
-    reward_name_default = default.get(CONF_NAME, const.SENTINEL_EMPTY)
+    reward_name_default = default.get(const.DATA_REWARD_NAME, const.SENTINEL_EMPTY)
 
     return vol.Schema(
         {
-            vol.Required(const.CONF_REWARD_NAME, default=reward_name_default): str,
-            vol.Optional(
-                const.CONF_REWARD_DESCRIPTION,
-                default=default.get(CONF_DESCRIPTION, const.SENTINEL_EMPTY),
+            vol.Required(
+                const.CFOF_REWARDS_INPUT_NAME, default=reward_name_default
             ): str,
             vol.Optional(
-                const.CONF_REWARD_LABELS,
-                default=default.get(const.CONF_REWARD_LABELS, []),
+                const.CFOF_REWARDS_INPUT_DESCRIPTION,
+                default=default.get(
+                    const.DATA_REWARD_DESCRIPTION, const.SENTINEL_EMPTY
+                ),
+            ): str,
+            vol.Optional(
+                const.CFOF_REWARDS_INPUT_LABELS,
+                default=default.get(const.CFOF_REWARDS_INPUT_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Required(
-                const.CONF_REWARD_COST,
-                default=default.get(const.CONF_COST, const.DEFAULT_REWARD_COST),
+                const.CFOF_REWARDS_INPUT_COST,
+                default=default.get(
+                    const.CFOF_REWARDS_INPUT_COST, const.DEFAULT_REWARD_COST
+                ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -2094,7 +2115,8 @@ def build_reward_schema(default=None):
                 )
             ),
             vol.Optional(
-                CONF_ICON, default=default.get(CONF_ICON, const.SENTINEL_EMPTY)
+                const.CFOF_REWARDS_INPUT_ICON,
+                default=default.get(const.DATA_REWARD_ICON, const.SENTINEL_EMPTY),
             ): selector.IconSelector(),
         }
     )
@@ -2179,28 +2201,30 @@ def build_bonus_schema(default=None):
     Stores bonus_points as positive in the form, converted to negative internally.
     """
     default = default or {}
-    bonus_name_default = default.get(CONF_NAME, const.SENTINEL_EMPTY)
+    bonus_name_default = default.get(const.DATA_BONUS_NAME, const.SENTINEL_EMPTY)
 
     # Display bonus points as positive for user input
     display_points = (
-        abs(default.get(const.CONF_POINTS, const.DEFAULT_BONUS_POINTS))
+        abs(default.get(const.CFOF_BONUSES_INPUT_POINTS, const.DEFAULT_BONUS_POINTS))
         if default
         else const.DEFAULT_BONUS_POINTS
     )
 
     return vol.Schema(
         {
-            vol.Required(const.CONF_BONUS_NAME, default=bonus_name_default): str,
-            vol.Optional(
-                const.CONF_BONUS_DESCRIPTION,
-                default=default.get(CONF_DESCRIPTION, const.SENTINEL_EMPTY),
+            vol.Required(
+                const.CFOF_BONUSES_INPUT_NAME, default=bonus_name_default
             ): str,
             vol.Optional(
-                const.CONF_BONUS_LABELS,
-                default=default.get(const.CONF_BONUS_LABELS, []),
+                const.CFOF_BONUSES_INPUT_DESCRIPTION,
+                default=default.get(const.DATA_BONUS_DESCRIPTION, const.SENTINEL_EMPTY),
+            ): str,
+            vol.Optional(
+                const.CFOF_BONUSES_INPUT_LABELS,
+                default=default.get(const.CFOF_BONUSES_INPUT_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Required(
-                const.CONF_BONUS_POINTS, default=display_points
+                const.CFOF_BONUSES_INPUT_POINTS, default=display_points
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -2209,7 +2233,8 @@ def build_bonus_schema(default=None):
                 )
             ),
             vol.Optional(
-                CONF_ICON, default=default.get(CONF_ICON, const.SENTINEL_EMPTY)
+                const.CFOF_BONUSES_INPUT_ICON,
+                default=default.get(const.DATA_BONUS_ICON, const.SENTINEL_EMPTY),
             ): selector.IconSelector(),
         }
     )
@@ -2296,28 +2321,34 @@ def build_penalty_schema(default=None):
     Stores penalty_points as positive in the form, converted to negative internally.
     """
     default = default or {}
-    penalty_name_default = default.get(CONF_NAME, const.SENTINEL_EMPTY)
+    penalty_name_default = default.get(const.DATA_PENALTY_NAME, const.SENTINEL_EMPTY)
 
     # Display penalty points as positive for user input
     display_points = (
-        abs(default.get(const.CONF_POINTS, const.DEFAULT_PENALTY_POINTS))
+        abs(
+            default.get(const.CFOF_PENALTIES_INPUT_POINTS, const.DEFAULT_PENALTY_POINTS)
+        )
         if default
         else const.DEFAULT_PENALTY_POINTS
     )
 
     return vol.Schema(
         {
-            vol.Required(const.CONF_PENALTY_NAME, default=penalty_name_default): str,
-            vol.Optional(
-                const.CONF_PENALTY_DESCRIPTION,
-                default=default.get(CONF_DESCRIPTION, const.SENTINEL_EMPTY),
+            vol.Required(
+                const.CFOF_PENALTIES_INPUT_NAME, default=penalty_name_default
             ): str,
             vol.Optional(
-                const.CONF_PENALTY_LABELS,
-                default=default.get(const.CONF_PENALTY_LABELS, []),
+                const.CFOF_PENALTIES_INPUT_DESCRIPTION,
+                default=default.get(
+                    const.DATA_PENALTY_DESCRIPTION, const.SENTINEL_EMPTY
+                ),
+            ): str,
+            vol.Optional(
+                const.CFOF_PENALTIES_INPUT_LABELS,
+                default=default.get(const.CFOF_PENALTIES_INPUT_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Required(
-                const.CONF_PENALTY_POINTS, default=display_points
+                const.CFOF_PENALTIES_INPUT_POINTS, default=display_points
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -2326,7 +2357,8 @@ def build_penalty_schema(default=None):
                 )
             ),
             vol.Optional(
-                CONF_ICON, default=default.get(CONF_ICON, const.SENTINEL_EMPTY)
+                const.CFOF_PENALTIES_INPUT_ICON,
+                default=default.get(const.DATA_PENALTY_ICON, const.SENTINEL_EMPTY),
             ): selector.IconSelector(),
         }
     )
@@ -2675,7 +2707,9 @@ def build_challenges_data(
 def build_achievement_schema(kids_dict, chores_dict, default=None):
     """Build a schema for achievements, keyed by internal_id."""
     default = default or {}
-    achievement_name_default = default.get(CONF_NAME, const.SENTINEL_EMPTY)
+    achievement_name_default = default.get(
+        const.DATA_ACHIEVEMENT_NAME, const.SENTINEL_EMPTY
+    )
 
     kid_options = [
         {"value": kid_id, "label": kid_name} for kid_name, kid_id in kids_dict.items()
@@ -2683,11 +2717,11 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
 
     chore_options = [{"value": const.SENTINEL_EMPTY, "label": const.LABEL_NONE}]
     for chore_id, chore_data in chores_dict.items():
-        chore_name = chore_data.get(CONF_NAME, f"Chore {chore_id[:6]}")
+        chore_name = chore_data.get(const.DATA_CHORE_NAME, f"Chore {chore_id[:6]}")
         chore_options.append({"value": chore_id, "label": chore_name})
 
     default_selected_chore = default.get(
-        const.CONF_ACHIEVEMENT_SELECTED_CHORE_ID, const.SENTINEL_EMPTY
+        const.CONF_ACHIEVEMENT_SELECTED_CHORE_ID_LEGACY, const.SENTINEL_EMPTY
     )
     if not default_selected_chore or default_selected_chore not in [
         option["value"] for option in chore_options
@@ -2695,28 +2729,34 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
         pass
 
     default_criteria = default.get(
-        const.CONF_ACHIEVEMENT_CRITERIA, const.SENTINEL_EMPTY
+        const.CFOF_ACHIEVEMENTS_INPUT_CRITERIA, const.SENTINEL_EMPTY
     )
-    default_assigned_kids = default.get(const.CONF_ACHIEVEMENT_ASSIGNED_KIDS, [])
+    default_assigned_kids = default.get(const.CFOF_ACHIEVEMENTS_INPUT_ASSIGNED_KIDS, [])
     if not isinstance(default_assigned_kids, list):
         default_assigned_kids = [default_assigned_kids]
 
     return vol.Schema(
         {
-            vol.Required(CONF_NAME, default=achievement_name_default): str,
-            vol.Optional(
-                CONF_DESCRIPTION,
-                default=default.get(CONF_DESCRIPTION, const.SENTINEL_EMPTY),
+            vol.Required(
+                const.CFOF_ACHIEVEMENTS_INPUT_NAME, default=achievement_name_default
             ): str,
             vol.Optional(
-                const.CONF_ACHIEVEMENT_LABELS,
-                default=default.get(const.CONF_ACHIEVEMENT_LABELS, []),
+                const.CFOF_ACHIEVEMENTS_INPUT_DESCRIPTION,
+                default=default.get(
+                    const.DATA_ACHIEVEMENT_DESCRIPTION, const.SENTINEL_EMPTY
+                ),
+            ): str,
+            vol.Optional(
+                const.CFOF_ACHIEVEMENTS_INPUT_LABELS,
+                default=default.get(const.CFOF_ACHIEVEMENTS_INPUT_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
-                CONF_ICON, default=default.get(CONF_ICON, const.SENTINEL_EMPTY)
+                const.CFOF_ACHIEVEMENTS_INPUT_ICON,
+                default=default.get(const.DATA_ACHIEVEMENT_ICON, const.SENTINEL_EMPTY),
             ): selector.IconSelector(),
             vol.Required(
-                const.CONF_ACHIEVEMENT_ASSIGNED_KIDS, default=default_assigned_kids
+                const.CFOF_ACHIEVEMENTS_INPUT_ASSIGNED_KIDS,
+                default=default_assigned_kids,
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=kid_options,
@@ -2725,9 +2765,9 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
                 )
             ),
             vol.Required(
-                const.CONF_ACHIEVEMENT_TYPE,
+                const.CFOF_ACHIEVEMENTS_INPUT_TYPE,
                 default=default.get(
-                    const.CONF_ACHIEVEMENT_TYPE, const.ACHIEVEMENT_TYPE_STREAK
+                    const.CFOF_ACHIEVEMENTS_INPUT_TYPE, const.ACHIEVEMENT_TYPE_STREAK
                 ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
@@ -2737,7 +2777,8 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
             ),
             # If type == "chore_streak", let the user choose the chore to track:
             vol.Optional(
-                const.CONF_ACHIEVEMENT_SELECTED_CHORE_ID, default=default_selected_chore
+                const.CFOF_ACHIEVEMENTS_INPUT_SELECTED_CHORE_ID,
+                default=default_selected_chore,
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=chore_options,
@@ -2747,12 +2788,12 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
             ),
             # For non-streak achievements the user can type criteria freely:
             vol.Optional(
-                const.CONF_ACHIEVEMENT_CRITERIA, default=default_criteria
+                const.CFOF_ACHIEVEMENTS_INPUT_CRITERIA, default=default_criteria
             ): str,
             vol.Required(
-                const.CONF_ACHIEVEMENT_TARGET_VALUE,
+                const.CFOF_ACHIEVEMENTS_INPUT_TARGET_VALUE,
                 default=default.get(
-                    const.CONF_ACHIEVEMENT_TARGET_VALUE,
+                    const.CFOF_ACHIEVEMENTS_INPUT_TARGET_VALUE,
                     const.DEFAULT_ACHIEVEMENT_TARGET,
                 ),
             ): selector.NumberSelector(
@@ -2763,9 +2804,9 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
                 )
             ),
             vol.Required(
-                const.CONF_ACHIEVEMENT_REWARD_POINTS,
+                const.CFOF_ACHIEVEMENTS_INPUT_REWARD_POINTS,
                 default=default.get(
-                    const.CONF_ACHIEVEMENT_REWARD_POINTS,
+                    const.CFOF_ACHIEVEMENTS_INPUT_REWARD_POINTS,
                     const.DEFAULT_ACHIEVEMENT_REWARD_POINTS,
                 ),
             ): selector.NumberSelector(
@@ -2787,7 +2828,9 @@ def build_achievement_schema(kids_dict, chores_dict, default=None):
 def build_challenge_schema(kids_dict, chores_dict, default=None):
     """Build a schema for challenges, keyed by internal_id."""
     default = default or {}
-    challenge_name_default = default.get(CONF_NAME, const.SENTINEL_EMPTY)
+    challenge_name_default = default.get(
+        const.DATA_CHALLENGE_NAME, const.SENTINEL_EMPTY
+    )
 
     kid_options = [
         {"value": kid_id, "label": kid_name} for kid_name, kid_id in kids_dict.items()
@@ -2795,37 +2838,44 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
 
     chore_options = [{"value": const.SENTINEL_EMPTY, "label": const.LABEL_NONE}]
     for chore_id, chore_data in chores_dict.items():
-        chore_name = chore_data.get(CONF_NAME, f"Chore {chore_id[:6]}")
+        chore_name = chore_data.get(const.DATA_CHORE_NAME, f"Chore {chore_id[:6]}")
         chore_options.append({"value": chore_id, "label": chore_name})
 
     default_selected_chore = default.get(
-        const.CONF_CHALLENGE_SELECTED_CHORE_ID, const.SENTINEL_EMPTY
+        const.CONF_CHALLENGE_SELECTED_CHORE_ID_LEGACY, const.SENTINEL_EMPTY
     )
     available_values = [option["value"] for option in chore_options]
     if default_selected_chore not in available_values:
         default_selected_chore = ""
 
-    default_criteria = default.get(const.CONF_CHALLENGE_CRITERIA, const.SENTINEL_EMPTY)
-    default_assigned_kids = default.get(const.CONF_CHALLENGE_ASSIGNED_KIDS, [])
+    default_criteria = default.get(
+        const.CFOF_CHALLENGES_INPUT_CRITERIA, const.SENTINEL_EMPTY
+    )
+    default_assigned_kids = default.get(const.CFOF_CHALLENGES_INPUT_ASSIGNED_KIDS, [])
     if not isinstance(default_assigned_kids, list):
         default_assigned_kids = [default_assigned_kids]
 
     return vol.Schema(
         {
-            vol.Required(CONF_NAME, default=challenge_name_default): str,
-            vol.Optional(
-                CONF_DESCRIPTION,
-                default=default.get(CONF_DESCRIPTION, const.SENTINEL_EMPTY),
+            vol.Required(
+                const.CFOF_CHALLENGES_INPUT_NAME, default=challenge_name_default
             ): str,
             vol.Optional(
-                const.CONF_CHALLENGE_LABELS,
-                default=default.get(const.CONF_CHALLENGE_LABELS, []),
+                const.CFOF_CHALLENGES_INPUT_DESCRIPTION,
+                default=default.get(
+                    const.DATA_CHALLENGE_DESCRIPTION, const.SENTINEL_EMPTY
+                ),
+            ): str,
+            vol.Optional(
+                const.CFOF_CHALLENGES_INPUT_LABELS,
+                default=default.get(const.CFOF_CHALLENGES_INPUT_LABELS, []),
             ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
             vol.Optional(
-                CONF_ICON, default=default.get(CONF_ICON, const.SENTINEL_EMPTY)
+                const.CFOF_CHALLENGES_INPUT_ICON,
+                default=default.get(const.DATA_CHALLENGE_ICON, const.SENTINEL_EMPTY),
             ): selector.IconSelector(),
             vol.Required(
-                const.CONF_CHALLENGE_ASSIGNED_KIDS, default=default_assigned_kids
+                const.CFOF_CHALLENGES_INPUT_ASSIGNED_KIDS, default=default_assigned_kids
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=kid_options,
@@ -2834,9 +2884,9 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
                 )
             ),
             vol.Required(
-                const.CONF_CHALLENGE_TYPE,
+                const.CFOF_CHALLENGES_INPUT_TYPE,
                 default=default.get(
-                    const.CONF_CHALLENGE_TYPE, const.CHALLENGE_TYPE_DAILY_MIN
+                    const.CFOF_CHALLENGES_INPUT_TYPE, const.CHALLENGE_TYPE_DAILY_MIN
                 ),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
@@ -2846,7 +2896,8 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
             ),
             # If type == "chore_streak", let the user choose the chore to track:
             vol.Optional(
-                const.CONF_CHALLENGE_SELECTED_CHORE_ID, default=default_selected_chore
+                const.CFOF_CHALLENGES_INPUT_SELECTED_CHORE_ID,
+                default=default_selected_chore,
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=chore_options,
@@ -2855,11 +2906,14 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
                 )
             ),
             # For non-streak achievements the user can type criteria freely:
-            vol.Optional(const.CONF_CHALLENGE_CRITERIA, default=default_criteria): str,
+            vol.Optional(
+                const.CFOF_CHALLENGES_INPUT_CRITERIA, default=default_criteria
+            ): str,
             vol.Required(
-                const.CONF_CHALLENGE_TARGET_VALUE,
+                const.CFOF_CHALLENGES_INPUT_TARGET_VALUE,
                 default=default.get(
-                    const.CONF_CHALLENGE_TARGET_VALUE, const.DEFAULT_CHALLENGE_TARGET
+                    const.CFOF_CHALLENGES_INPUT_TARGET_VALUE,
+                    const.DEFAULT_CHALLENGE_TARGET,
                 ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
@@ -2869,9 +2923,9 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
                 )
             ),
             vol.Required(
-                const.CONF_CHALLENGE_REWARD_POINTS,
+                const.CFOF_CHALLENGES_INPUT_REWARD_POINTS,
                 default=default.get(
-                    const.CONF_CHALLENGE_REWARD_POINTS,
+                    const.CFOF_CHALLENGES_INPUT_REWARD_POINTS,
                     const.DEFAULT_CHALLENGE_REWARD_POINTS,
                 ),
             ): selector.NumberSelector(
@@ -2882,12 +2936,12 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
                 )
             ),
             vol.Required(
-                const.CONF_CHALLENGE_START_DATE,
-                default=default.get(const.CONF_CHALLENGE_START_DATE),
+                const.CFOF_CHALLENGES_INPUT_START_DATE,
+                default=default.get(const.CFOF_CHALLENGES_INPUT_START_DATE),
             ): selector.DateTimeSelector(),
             vol.Required(
-                const.CONF_CHALLENGE_END_DATE,
-                default=default.get(const.CONF_CHALLENGE_END_DATE),
+                const.CFOF_CHALLENGES_INPUT_END_DATE,
+                default=default.get(const.CFOF_CHALLENGES_INPUT_END_DATE),
             ): selector.DateTimeSelector(),
         }
     )
@@ -2901,7 +2955,7 @@ def build_challenge_schema(kids_dict, chores_dict, default=None):
 def build_general_options_schema(default: Optional[dict] = None) -> vol.Schema:
     """Build schema for general options including points adjust values and update interval."""
     default = default or {}
-    current_values = default.get(const.CONF_POINTS_ADJUST_VALUES)
+    current_values = default.get(const.CFOF_SYSTEM_INPUT_POINTS_ADJUST_VALUES)
     if current_values and isinstance(current_values, list):
         default_points_str = "|".join(str(v) for v in current_values)
     else:
@@ -2910,24 +2964,24 @@ def build_general_options_schema(default: Optional[dict] = None) -> vol.Schema:
         )
 
     default_interval = default.get(
-        const.CONF_UPDATE_INTERVAL, const.DEFAULT_UPDATE_INTERVAL
+        const.CFOF_SYSTEM_INPUT_UPDATE_INTERVAL, const.DEFAULT_UPDATE_INTERVAL
     )
     default_calendar_period = default.get(
-        const.CONF_CALENDAR_SHOW_PERIOD, const.DEFAULT_CALENDAR_SHOW_PERIOD
+        const.CFOF_SYSTEM_INPUT_CALENDAR_SHOW_PERIOD, const.DEFAULT_CALENDAR_SHOW_PERIOD
     )
 
     # Consolidated retention periods (pipe-separated: Daily|Weekly|Monthly|Yearly)
     default_retention_daily = default.get(
-        const.CONF_RETENTION_DAILY, const.DEFAULT_RETENTION_DAILY
+        const.CFOF_SYSTEM_INPUT_RETENTION_DAILY, const.DEFAULT_RETENTION_DAILY
     )
     default_retention_weekly = default.get(
-        const.CONF_RETENTION_WEEKLY, const.DEFAULT_RETENTION_WEEKLY
+        const.CFOF_SYSTEM_INPUT_RETENTION_WEEKLY, const.DEFAULT_RETENTION_WEEKLY
     )
     default_retention_monthly = default.get(
-        const.CONF_RETENTION_MONTHLY, const.DEFAULT_RETENTION_MONTHLY
+        const.CFOF_SYSTEM_INPUT_RETENTION_MONTHLY, const.DEFAULT_RETENTION_MONTHLY
     )
     default_retention_yearly = default.get(
-        const.CONF_RETENTION_YEARLY, const.DEFAULT_RETENTION_YEARLY
+        const.CFOF_SYSTEM_INPUT_RETENTION_YEARLY, const.DEFAULT_RETENTION_YEARLY
     )
     default_retention_periods = format_retention_periods(
         default_retention_daily,
@@ -2943,14 +2997,14 @@ def build_general_options_schema(default: Optional[dict] = None) -> vol.Schema:
     return vol.Schema(
         {
             vol.Required(
-                const.CONF_POINTS_ADJUST_VALUES, default=default_points_str
+                const.CFOF_SYSTEM_INPUT_POINTS_ADJUST_VALUES, default=default_points_str
             ): selector.TextSelector(
                 selector.TextSelectorConfig(
                     multiline=False,
                 )
             ),
             vol.Required(
-                const.CONF_UPDATE_INTERVAL, default=default_interval
+                const.CFOF_SYSTEM_INPUT_UPDATE_INTERVAL, default=default_interval
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -2959,7 +3013,8 @@ def build_general_options_schema(default: Optional[dict] = None) -> vol.Schema:
                 )
             ),
             vol.Required(
-                const.CONF_CALENDAR_SHOW_PERIOD, default=default_calendar_period
+                const.CFOF_SYSTEM_INPUT_CALENDAR_SHOW_PERIOD,
+                default=default_calendar_period,
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     mode=selector.NumberSelectorMode.BOX,
@@ -2968,17 +3023,19 @@ def build_general_options_schema(default: Optional[dict] = None) -> vol.Schema:
                 )
             ),
             vol.Required(
-                const.CONF_RETENTION_PERIODS, default=default_retention_periods
+                const.CFOF_SYSTEM_INPUT_RETENTION_PERIODS,
+                default=default_retention_periods,
             ): selector.TextSelector(
                 selector.TextSelectorConfig(
                     multiline=False,
                 )
             ),
             vol.Required(
-                const.CONF_SHOW_LEGACY_ENTITIES, default=default_show_legacy_entities
+                const.CFOF_SYSTEM_INPUT_SHOW_LEGACY_ENTITIES,
+                default=default_show_legacy_entities,
             ): selector.BooleanSelector(),
             vol.Required(
-                const.CONF_BACKUPS_MAX_RETAINED,
+                const.CFOF_SYSTEM_INPUT_BACKUPS_MAX_RETAINED,
                 default=default.get(
                     const.CONF_BACKUPS_MAX_RETAINED,
                     const.DEFAULT_BACKUPS_MAX_RETAINED,
@@ -3066,7 +3123,7 @@ def parse_retention_periods(retention_str: str) -> tuple[int, int, int, int]:
 def process_penalty_form_input(user_input: dict) -> dict:
     """Ensure penalty points are negative internally."""
     data = dict(user_input)
-    data[const.DATA_PENALTY_POINTS] = -abs(data[const.CONF_PENALTY_POINTS])
+    data[const.DATA_PENALTY_POINTS] = -abs(data[const.CFOF_PENALTIES_INPUT_POINTS])
     return data
 
 
