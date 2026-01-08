@@ -74,5 +74,10 @@
   "bonus_applied": {
     "title": "Lastenkotitehtävät: Bonus käytetty",
     "message": "Bonus {bonus_name} käytetty: +{points} pistettä"
+  },
+  "actions": {
+    "approve": "Hyväksyä",
+    "disapprove": "Hylkää",
+    "remind_30": "Muistutus 30 minuutin kuluttua"
   }
 }

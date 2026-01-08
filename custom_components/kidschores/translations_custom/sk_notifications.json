@@ -74,5 +74,10 @@
   "bonus_applied": {
     "title": "Detské práce: Uplatnený bonus",
     "message": "Použitý bonus {bonus_name} : +{points} bodov"
+  },
+  "actions": {
+    "approve": "Schváliť",
+    "disapprove": "Neschváliť",
+    "remind_30": "Pripomenúť o 30 minút"
   }
 }

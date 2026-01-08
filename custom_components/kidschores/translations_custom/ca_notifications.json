@@ -74,5 +74,10 @@
   "bonus_applied": {
     "title": "Tasques infantils: Bonificació aplicada",
     "message": "Bonus {bonus_name} aplicat: +{points} punts"
+  },
+  "actions": {
+    "approve": "Aprova",
+    "disapprove": "Rebutjar",
+    "remind_30": "Recorda en 30 minuts"
   }
 }

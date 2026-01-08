@@ -74,5 +74,10 @@
   "bonus_applied": {
     "title": "KidsChorks: Bonus toegepast",
     "message": "Bonus {bonus_name} toegepast: +{points} punten"
+  },
+  "actions": {
+    "approve": "Goedkeuren",
+    "disapprove": "Afkeuren",
+    "remind_30": "Herinnering over 30 minuten"
   }
 }

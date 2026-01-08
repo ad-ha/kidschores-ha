@@ -74,5 +74,10 @@
   "bonus_applied": {
     "title": "KidsChore's: Bonus angewendet",
     "message": "Bonus {bonus_name} angewendet: +{points} Punkte"
+  },
+  "actions": {
+    "approve": "Genehmigen",
+    "disapprove": "Missbilligen",
+    "remind_30": "Erinnere in 30 Minuten"
   }
 }

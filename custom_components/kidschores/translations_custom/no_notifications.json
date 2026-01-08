@@ -74,5 +74,10 @@
   "bonus_applied": {
     "title": "Barnearbeid: Bonus benyttet",
     "message": "Bonus {bonus_name} brukt: +{points} poeng"
+  },
+  "actions": {
+    "approve": "Vedta",
+    "disapprove": "Mislike",
+    "remind_30": "Påminn om 30 min"
   }
 }

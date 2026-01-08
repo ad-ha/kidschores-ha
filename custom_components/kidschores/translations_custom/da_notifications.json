@@ -74,5 +74,10 @@
   "bonus_applied": {
     "title": "Børneopgaver: Bonus anvendt",
     "message": "Bonus {bonus_name} anvendt: +{points} point"
+  },
+  "actions": {
+    "approve": "Godkende",
+    "disapprove": "Misbillige",
+    "remind_30": "Påmind om 30 min"
   }
 }

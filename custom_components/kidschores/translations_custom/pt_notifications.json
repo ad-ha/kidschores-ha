@@ -74,5 +74,10 @@
   "bonus_applied": {
     "title": "Tarefas para Crianças: Bónus Aplicado",
     "message": "Bônus {bonus_name} aplicado: +{points} pontos"
+  },
+  "actions": {
+    "approve": "Aprovar",
+    "disapprove": "Desaprovar",
+    "remind_30": "Lembrete em 30 minutos"
   }
 }

@@ -74,5 +74,10 @@
   "bonus_applied": {
     "title": "Barnsysslor: Bonus tillämpad",
     "message": "Bonus {bonus_name} tillämpad: +{points} poäng"
+  },
+  "actions": {
+    "approve": "Godkänna",
+    "disapprove": "Ogilla",
+    "remind_30": "Påminn om 30 min"
   }
 }

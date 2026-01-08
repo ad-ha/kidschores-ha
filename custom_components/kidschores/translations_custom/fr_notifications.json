@@ -74,5 +74,10 @@
   "bonus_applied": {
     "title": "KidsChores : Bonus appliqué",
     "message": "Bonus {bonus_name} appliqué : +{points} points"
+  },
+  "actions": {
+    "approve": "Approuver",
+    "disapprove": "Désapprouver",
+    "remind_30": "Rappel dans 30 min"
   }
 }
