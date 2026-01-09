@@ -313,6 +313,7 @@
       "invalid_chore": "Ongeldige taak",
       "invalid_chore_count": "Ongeldig aantal taken",
       "invalid_chore_name": "Ongeldige taaknaam",
+      "invalid_overdue_reset_combination": "De optie 'Op de vervaldatum en dan opnieuw instellen' voor het afhandelen van te late betalingen werkt alleen met resettypes die om middernacht plaatsvinden. Selecteer 'Om middernacht (eenmalig)' of 'Om middernacht (herhalend)' voor het type goedkeuringsreset.",
       "invalid_due_date": "Ongeldige vervaldatum",
       "date_required_for_frequency": "Voor deze terugkerende frequentie is een vervaldatum vereist. De optie 'Vrijgemaakte datums' werkt alleen met de frequenties 'Geen', 'Dagelijks' of 'Wekelijks'.",
       "invalid_end_date": "Ongeldige einddatum.",
@@ -790,6 +791,7 @@
           "custom_interval_unit": "🔄 Schema: Aangepaste intervaleenheid",
           "applicable_days": "📅 Schema: Toepasselijke dagen (optioneel)",
           "due_date": "📅 Planning: Uiterste inleverdatum (optioneel)",
+          "clear_due_date": "🗑️ Duidelijke vervaldatum",
           "show_on_calendar": "📅 Weergeven op de kalender?",
           "chore_notifications": "🔔 Meldingen (optioneel)"
         },
@@ -810,6 +812,7 @@
           "custom_interval_unit": "Tijdseenheid voor een aangepast interval (dagen, weken, maanden). Alleen te gebruiken met een aangepaste frequentie.",
           "applicable_days": "Beperk de taak tot specifieke weekdagen. Laat dit veld leeg voor alle dagen.",
           "due_date": "Optionele deadline. Kan gecombineerd worden met terugkerende schema's. Voor zelfstandige klusjes dient dit als sjabloon: er verschijnt een extra scherm waarop je per kind een aparte datum kunt instellen.",
+          "clear_due_date": "Vink dit vakje aan om de deadline voor deze taak te verwijderen.",
           "show_on_calendar": "Toon deze taak in de kalenderweergave.",
           "chore_notifications": "Wanneer moeten meldingen worden verzonden: Bij een aanvraag, bij goedkeuring, bij afwijzing, of een combinatie hiervan."
         }

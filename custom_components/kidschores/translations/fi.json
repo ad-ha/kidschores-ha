@@ -313,6 +313,7 @@
       "invalid_chore": "Virheellinen työtehtävä",
       "invalid_chore_count": "Virheellinen tehtävien määrä",
       "invalid_chore_name": "Virheellinen työn nimi",
+      "invalid_overdue_reset_combination": "”Eräpäivänä nollaa sitten” -myöhästymiskäsittely toimii vain keskiyön nollaustyyppien kanssa. Valitse hyväksynnän nollaustyypiksi ”Keskiyöllä (kerran)” tai ”Keskiyöllä (toistuvasti)”.",
       "invalid_due_date": "Virheellinen eräpäivä",
       "date_required_for_frequency": "Tälle toistuvalle tiheydelle vaaditaan eräpäivä. Tyhjennä päivämääriä toimii vain, jos tiheys on Ei mitään, Päivittäin tai Viikoittain.",
       "invalid_end_date": "Virheellinen päättymispäivämäärä.",
@@ -790,6 +791,7 @@
           "custom_interval_unit": "🔄 Aikataulu: Mukautettu intervalliyksikkö",
           "applicable_days": "📅 Aikataulu: Soveltuvat päivät (valinnainen)",
           "due_date": "📅 Aikataulu: Määräpäivä (valinnainen)",
+          "clear_due_date": "🗑️ Selkeä eräpäivä",
           "show_on_calendar": "📅 Näytetäänkö kalenterissa?",
           "chore_notifications": "🔔 Ilmoitustapahtumat (valinnainen)"
         },
@@ -810,6 +812,7 @@
           "custom_interval_unit": "Mukautetun aikavälin aikayksikkö (päivät, viikot, kuukaudet). Käytetään vain mukautetun taajuuden kanssa.",
           "applicable_days": "Rajoita askareita tiettyihin viikonpäiviin. Jätä tyhjäksi kaikkien päivien kohdalla.",
           "due_date": "Valinnainen määräaika. Voidaan yhdistää toistuviin aikatauluihin. ITSENÄISILLE askareille tämä toimii mallina – näkyviin tulee ylimääräinen näyttö, jossa voit määrittää lapsellesi omat päivämäärät.",
+          "clear_due_date": "Valitse tämä ruutu poistaaksesi määräpäivän tästä tehtävästä.",
           "show_on_calendar": "Näytä tämä tehtävä kalenterinäkymässä.",
           "chore_notifications": "Milloin ilmoituksia lähetetään: Vaatimuksen, hyväksynnän, hylkäämisen tai minkä tahansa näiden yhdistelmän yhteydessä."
         }

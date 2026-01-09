@@ -313,6 +313,7 @@
       "invalid_chore": "Tarea no válida",
       "invalid_chore_count": "Recuento de tareas no válido",
       "invalid_chore_name": "Nombre de tarea no válido",
+      "invalid_overdue_reset_combination": "La gestión de retrasos \"A la fecha de vencimiento y luego reiniciar\" solo funciona con reinicios a medianoche. Seleccione \"A medianoche (una vez)\" o \"A medianoche (repetidamente)\" para el tipo de reinicio de aprobación.",
       "invalid_due_date": "Fecha de vencimiento no válida",
       "date_required_for_frequency": "Se requiere una fecha de vencimiento para esta frecuencia recurrente. Borrar fechas solo funciona con las frecuencias Ninguna, Diaria o Semanal.",
       "invalid_end_date": "Fecha de finalización no válida.",
@@ -790,6 +791,7 @@
           "custom_interval_unit": "🔄 Horario: Unidad de intervalo personalizada",
           "applicable_days": "📅 Horario: Días Aplicables (opcional)",
           "due_date": "📅 Horario: Fecha de entrega (opcional)",
+          "clear_due_date": "🗑️ Fecha de vencimiento clara",
           "show_on_calendar": "📅 ¿Mostrar en el calendario?",
           "chore_notifications": "🔔 Eventos de notificación (opcional)"
         },
@@ -810,6 +812,7 @@
           "custom_interval_unit": "Unidad de tiempo para intervalos personalizados (días, semanas, meses). Solo se usa con frecuencia personalizada.",
           "applicable_days": "Restringe la tarea a días específicos de la semana. Deja en blanco todos los días.",
           "due_date": "Fecha límite opcional. Se puede combinar con horarios recurrentes. Para tareas independientes, esto sirve como plantilla; aparecerá una pantalla adicional que permite especificar fechas individuales por niño.",
+          "clear_due_date": "Marque esta casilla para eliminar la fecha de vencimiento de esta tarea.",
           "show_on_calendar": "Muestra esta tarea en la vista del calendario.",
           "chore_notifications": "Cuándo enviar notificaciones: por reclamo, por aprobación, por rechazo o cualquier combinación."
         }

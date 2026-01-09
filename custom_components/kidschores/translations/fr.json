@@ -313,6 +313,7 @@
       "invalid_chore": "Tâche invalide",
       "invalid_chore_count": "Nombre de tâches invalide",
       "invalid_chore_name": "Nom de tâche invalide",
+      "invalid_overdue_reset_combination": "La gestion des retards « À l'échéance, puis réinitialisation » ne fonctionne qu'avec les réinitialisations à minuit. Veuillez sélectionner « À minuit (une seule fois) » ou « À minuit (de façon répétée) » pour le type de réinitialisation de l'approbation.",
       "invalid_due_date": "Date d'échéance invalide",
       "date_required_for_frequency": "Une date d'échéance est requise pour cette fréquence récurrente. L'option « Date d'échéance » ne fonctionne qu'avec les fréquences « Aucune », « Quotidienne » ou « Hebdomadaire ».",
       "invalid_end_date": "Date de fin invalide.",
@@ -790,6 +791,7 @@
           "custom_interval_unit": "🔄 Programme : Unité d’intervalle personnalisée",
           "applicable_days": "📅 Calendrier : Jours concernés (facultatif)",
           "due_date": "📅 Calendrier : Date d’échéance (facultatif)",
+          "clear_due_date": "🗑️ Date d'échéance claire",
           "show_on_calendar": "📅 Afficher dans le calendrier ?",
           "chore_notifications": "🔔 Notifications d'événements (facultatif)"
         },
@@ -810,6 +812,7 @@
           "custom_interval_unit": "Unité de temps pour l'intervalle personnalisé (jours, semaines, mois). Utilisée uniquement avec la fréquence personnalisée.",
           "applicable_days": "Limiter la tâche à certains jours de la semaine. Laisser vide pour tous les jours.",
           "due_date": "Date limite facultative. Peut être combinée avec des calendriers récurrents. Pour les tâches ménagères INDIVIDUELLES, ceci sert de modèle ; un écran supplémentaire apparaîtra permettant de définir des dates individuelles pour chaque enfant.",
+          "clear_due_date": "Cochez cette case pour supprimer la date d'échéance de cette tâche.",
           "show_on_calendar": "Afficher cette tâche dans le calendrier.",
           "chore_notifications": "Quand envoyer les notifications : lors de la réclamation, lors de l’approbation, lors du rejet ou toute combinaison de ces éléments."
         }

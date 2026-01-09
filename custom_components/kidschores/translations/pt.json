@@ -313,6 +313,7 @@
       "invalid_chore": "Tarefa inválida",
       "invalid_chore_count": "Contagem de tarefas inválida",
       "invalid_chore_name": "Nome de tarefa inválido",
+      "invalid_overdue_reset_combination": "A opção \"Repor na data de vencimento\" só funciona com reinicializações à meia-noite. Selecione \"À meia-noite (uma vez)\" ou \"À meia-noite (repetíveis)\" para obter o tipo de reposição de aprovação.",
       "invalid_due_date": "Data de vencimento inválida",
       "date_required_for_frequency": "É necessário definir uma data de vencimento para esta frequência recorrente. A opção \"Limpar datas\" só funciona com as frequências \"Nenhuma\", \"Diária\" ou \"Semanal\".",
       "invalid_end_date": "Data de fim inválida.",
@@ -790,6 +791,7 @@
           "custom_interval_unit": "🔄 Cronograma: Unidade de Intervalo Personalizada",
           "applicable_days": "📅 Cronograma: Dias aplicáveis (opcional)",
           "due_date": "📅 Cronograma: Data de vencimento (opcional)",
+          "clear_due_date": "🗑️ Limpar data de validade",
           "show_on_calendar": "📅 Mostrar no calendário?",
           "chore_notifications": "🔔 Eventos de notificação (opcional)"
         },
@@ -810,6 +812,7 @@
           "custom_interval_unit": "Unidade de tempo para intervalo personalizado (dias, semanas, meses). Utilizada apenas com frequência personalizada.",
           "applicable_days": "Restrinja a tarefa a dias específicos da semana. Deixe em branco para todos os dias.",
           "due_date": "Prazo facultativo. Pode ser combinado com horários recorrentes. Para tarefas INDIVIDUAIS, isto serve como modelo — será apresentado um ecrã adicional permitindo datas individuais para cada criança.",
+          "clear_due_date": "Marque esta caixa para remover a data de validade desta tarefa.",
           "show_on_calendar": "Visualizar esta tarefa na visualização de calendário.",
           "chore_notifications": "Quando enviar notificações: No pedido, na aprovação, na rejeição ou em qualquer combinação destes fatores."
         }

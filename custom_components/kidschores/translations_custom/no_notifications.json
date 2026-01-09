@@ -1,0 +1,83 @@
+{
+  "chore_assigned": {
+    "title": "Barneoppgaver: Ny oppgave",
+    "message": "Ny gjøremål {chore_name} ble tildelt deg! Forfall: {due_date}"
+  },
+  "chore_claimed": {
+    "title": "Barneoppgaver: Gjøremål påkrevd",
+    "message": "{kid_name} tok på seg gjøremål {chore_name}"
+  },
+  "chore_approved": {
+    "title": "Barnehusarbeid: Godkjent for husarbeid",
+    "message": "Gjøremål {chore_name} godkjent! +{points} poeng"
+  },
+  "chore_disapproved": {
+    "title": "Barneoppgaver: Gjøremål ikke godkjent",
+    "message": "Gjøremål {chore_name} ble ikke godkjent"
+  },
+  "chore_overdue": {
+    "title": "Barneoppgaver: Forfalte oppgaver",
+    "message": "Gjøremål {chore_name} er for sent! Forfallsdato var {due_date}"
+  },
+  "chore_reminder": {
+    "title": "Barneoppgaver: Påminnelse om ventende gjøremål",
+    "message": "Påminnelse: Gjøremål {chore_name} som er gjort krav på av {kid_name} venter på godkjenning"
+  },
+  "reward_claimed_kid": {
+    "title": "Barneoppgaver: Belønning mottatt",
+    "message": "Du krevde belønning {reward_name} for {points} poeng!"
+  },
+  "reward_claimed_parent": {
+    "title": "Barneoppgaver: Belønning mottatt",
+    "message": "{kid_name} krevde belønning {reward_name} for {points} poeng"
+  },
+  "reward_approved": {
+    "title": "Barneoppgaver: Belønning godkjent",
+    "message": "Belønning {reward_name} godkjent!"
+  },
+  "reward_disapproved": {
+    "title": "Barneoppgaver: Belønning ikke godkjent",
+    "message": "Belønning {reward_name} ble ikke godkjent"
+  },
+  "reward_reminder": {
+    "title": "KidsChores: Påminnelse om ventende belønning",
+    "message": "Påminnelse: Belønning {reward_name} som er gjort krav på av {kid_name} venter på godkjenning"
+  },
+  "badge_earned_kid": {
+    "title": "BarneGjørninger: Merke opptjent",
+    "message": "Du har fortjent {badge_name} -merket!"
+  },
+  "badge_earned_parent": {
+    "title": "BarneGjørninger: Merke opptjent",
+    "message": "{kid_name} har fått {badge_name} -merket!"
+  },
+  "achievement_earned_kid": {
+    "title": "BarneGjørninger: Oppnådde prestasjoner",
+    "message": "Du oppnådde prestasjonen {achievement_name}!"
+  },
+  "achievement_earned_parent": {
+    "title": "BarneGjørninger: Oppnådde prestasjoner",
+    "message": "{kid_name} oppnådd prestasjon {achievement_name}!"
+  },
+  "challenge_completed_kid": {
+    "title": "Barneoppgaver: Utfordring fullført",
+    "message": "Du fullførte utfordring {challenge_name}!"
+  },
+  "challenge_completed_parent": {
+    "title": "Barneoppgaver: Utfordring fullført",
+    "message": "{kid_name} fullførte utfordringen {challenge_name}!"
+  },
+  "penalty_applied": {
+    "title": "Barneoppgaver: Straff ilagt",
+    "message": "Straff {penalty_name} brukt: -{points} poeng"
+  },
+  "bonus_applied": {
+    "title": "Barnearbeid: Bonus benyttet",
+    "message": "Bonus {bonus_name} brukt: +{points} poeng"
+  },
+  "actions": {
+    "approve": "Vedta",
+    "disapprove": "Mislike",
+    "remind_30": "Påminn om 30 min"
+  }
+}

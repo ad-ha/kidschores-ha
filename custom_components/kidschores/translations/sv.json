@@ -313,6 +313,7 @@
       "invalid_chore": "Ogiltig syssla",
       "invalid_chore_count": "Ogiltigt antal sysslor",
       "invalid_chore_name": "Ogiltigt namn på syssla",
+      "invalid_overdue_reset_combination": "Hanteringen av förseningar \"Återställ sedan vid förfallodatum\" fungerar endast med återställningstyperna midnatt. Välj \"Vid midnatt (en gång)\" eller \"Vid midnatt (upprepad)\" för återställningstypen för godkännande.",
       "invalid_due_date": "Ogiltigt förfallodatum",
       "date_required_for_frequency": "Ett förfallodatum krävs för denna återkommande frekvens. Rensa datum fungerar endast med frekvensen Ingen, Daglig eller Veckovis.",
       "invalid_end_date": "Ogiltigt slutdatum.",
@@ -790,6 +791,7 @@
           "custom_interval_unit": "🔄 Schema: Anpassad intervallenhet",
           "applicable_days": "📅 Schema: Tillämpliga dagar (valfritt)",
           "due_date": "📅 Schema: Förfallodatum (valfritt)",
+          "clear_due_date": "🗑️ Rensa förfallodatum",
           "show_on_calendar": "📅 Visa i kalendern?",
           "chore_notifications": "🔔 Aviseringshändelser (valfritt)"
         },
@@ -810,6 +812,7 @@
           "custom_interval_unit": "Tidsenhet för anpassat intervall (dagar, veckor, månader). Används endast med anpassad frekvens.",
           "applicable_days": "Begränsa sysslan till specifika veckodagar. Lämna tomt för alla dagar.",
           "due_date": "Valfri deadline. Kan kombineras med återkommande scheman. För SJÄLVSTÄNDIGA sysslor fungerar detta som en mall – en ytterligare skärm visas som tillåter individuella datum per barn.",
+          "clear_due_date": "Markera den här rutan för att ta bort förfallodatumet från den här sysslan.",
           "show_on_calendar": "Visa den här uppgiften i kalendervyn.",
           "chore_notifications": "När aviseringar ska skickas: Vid anspråk, vid godkännande, vid avslag eller någon kombination."
         }

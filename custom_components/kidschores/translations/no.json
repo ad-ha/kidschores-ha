@@ -313,7 +313,6 @@
       "invalid_chore": "Ugyldig gjøremål",
       "invalid_chore_count": "Ugyldig antall gjøremål",
       "invalid_chore_name": "Ugyldig navn på gjøremål",
-      "invalid_overdue_reset_combination": "Håndteringen 'Ved forfallsdato, deretter nullstill' fungerer kun med nullstilling ved midnatt. Vennligst velg 'Ved midnatt (én gang)' eller 'Ved midnatt (gjentakende)' som type for godkjenningsnullstilling.",
       "invalid_due_date": "Ugyldig forfallsdato",
       "date_required_for_frequency": "En forfallsdato kreves for denne gjentakende frekvensen. Fjerne datoer fungerer bare med Ingen, Daglig eller Ukentlig frekvens.",
       "invalid_end_date": "Ugyldig sluttdato.",
@@ -791,7 +790,6 @@
           "custom_interval_unit": "🔄 Tidsplan: Tilpasset intervallenhet",
           "applicable_days": "📅 Tidsplan: Gjeldende dager (valgfritt)",
           "due_date": "📅 Tidsplan: Forfallsdato (valgfritt)",
-          "clear_due_date": "🗑️ Fjern forfallsdato",
           "show_on_calendar": "📅 Vis i kalenderen?",
           "chore_notifications": "🔔 Varslingshendelser (valgfritt)"
         },
@@ -812,7 +810,6 @@
           "custom_interval_unit": "Tidsenhet for tilpasset intervall (dager, uker, måneder). Brukes kun med tilpasset frekvens.",
           "applicable_days": "Begrens gjøremål til bestemte ukedager. La stå tomt for alle dager.",
           "due_date": "Valgfri tidsfrist. Kan kombineres med regelmessige timeplaner. For SELVSTENDIGE gjøremål fungerer dette som en mal – et ekstra skjermbilde vil vises som tillater individuelle datoer per barn.",
-          "clear_due_date": "Merk av denne boksen for å fjerne forfallsdatoen fra dette gjøremålet.",
           "show_on_calendar": "Vis denne gjøremålet i kalendervisningen.",
           "chore_notifications": "Når varsler skal sendes: Ved krav, ved godkjenning, ved avslag eller en hvilken som helst kombinasjon."
         }

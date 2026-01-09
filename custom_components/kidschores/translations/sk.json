@@ -313,6 +313,7 @@
       "invalid_chore": "Neplatná úloha",
       "invalid_chore_count": "Neplatný počet úloh",
       "invalid_chore_name": "Neplatný názov úlohy",
+      "invalid_overdue_reset_combination": "Manipulácia s oneskorením „V deň splatnosti a potom reset“ funguje iba s typmi resetovania o polnoci. Ako typ resetovania schválenia vyberte možnosť „O polnoci (raz)“ alebo „O polnoci (opakujúce sa)“.",
       "invalid_due_date": "Neplatný dátum splatnosti",
       "date_required_for_frequency": "Pre túto opakujúcu sa frekvenciu je potrebný dátum splatnosti. Vymazať dátumy funguje iba s frekvenciou Žiadna, Denne alebo Týždenne.",
       "invalid_end_date": "Neplatný dátum ukončenia.",
@@ -790,6 +791,7 @@
           "custom_interval_unit": "🔄 Rozvrh: Vlastná intervalová jednotka",
           "applicable_days": "📅 Harmonogram: Použiteľné dni (voliteľné)",
           "due_date": "📅 Harmonogram: Termín odovzdania (voliteľné)",
+          "clear_due_date": "🗑️ Jasný dátum splatnosti",
           "show_on_calendar": "📅 Zobraziť v kalendári?",
           "chore_notifications": "🔔 Udalosti oznámení (voliteľné)"
         },
@@ -810,6 +812,7 @@
           "custom_interval_unit": "Časová jednotka pre vlastný interval (dni, týždne, mesiace). Používa sa iba s vlastnou frekvenciou.",
           "applicable_days": "Obmedzte povinnosti na konkrétne dni v týždni. Pre všetky dni nechajte pole prázdne.",
           "due_date": "Voliteľný termín. Dá sa kombinovať s opakujúcimi sa rozvrhmi. Pre NEZÁVISLÉ domáce práce slúži toto ako šablóna – zobrazí sa ďalšia obrazovka, ktorá umožňuje individuálne termíny pre každé dieťa.",
+          "clear_due_date": "Začiarknite toto políčko, ak chcete odstrániť dátum dokončenia z tejto úlohy.",
           "show_on_calendar": "Zobraziť túto úlohu v zobrazení kalendára.",
           "chore_notifications": "Kedy odosielať oznámenia: Pri reklamácii, schválení, zamietnutí alebo akejkoľvek kombinácii."
         }

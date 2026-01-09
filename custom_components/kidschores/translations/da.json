@@ -313,6 +313,7 @@
       "invalid_chore": "Ugyldig opgave",
       "invalid_chore_count": "Ugyldigt antal opgaver",
       "invalid_chore_name": "Ugyldigt navn på opgave",
+      "invalid_overdue_reset_combination": "Håndtering af forsinkede transaktioner 'Nulstil derefter ved forfaldsdato' fungerer kun med nulstillingstyper ved midnat. Vælg venligst 'Ved midnat (én gang)' eller 'Ved midnat (gentagende)' for nulstillingstypen for godkendelse.",
       "invalid_due_date": "Ugyldig forfaldsdato",
       "date_required_for_frequency": "En forfaldsdato er påkrævet for denne tilbagevendende frekvens. Rydning af datoer fungerer kun med Ingen, Daglig eller Ugentlig frekvens.",
       "invalid_end_date": "Ugyldig slutdato.",
@@ -790,6 +791,7 @@
           "custom_interval_unit": "🔄 Tidsplan: Brugerdefineret intervalenhed",
           "applicable_days": "📅 Tidsplan: Gældende dage (valgfrit)",
           "due_date": "📅 Tidsplan: Forfaldsdato (valgfrit)",
+          "clear_due_date": "🗑️ Ryd forfaldsdato",
           "show_on_calendar": "📅 Vis i kalenderen?",
           "chore_notifications": "🔔 Notifikationsbegivenheder (valgfrit)"
         },
@@ -810,6 +812,7 @@
           "custom_interval_unit": "Tidsenhed for brugerdefineret interval (dage, uger, måneder). Bruges kun med brugerdefineret frekvens.",
           "applicable_days": "Begræns opgaven til bestemte ugedage. Lad feltet stå tomt for alle dage.",
           "due_date": "Valgfri deadline. Kan kombineres med tilbagevendende skemaer. For SELVSTÆNDIGE pligter fungerer dette som en skabelon - en ekstra skærm vises, der tillader individuelle datoer pr. barn.",
+          "clear_due_date": "Markér dette felt for at fjerne forfaldsdatoen fra denne opgave.",
           "show_on_calendar": "Vis denne opgave i kalendervisningen.",
           "chore_notifications": "Hvornår skal notifikationer sendes: Ved krav, ved godkendelse, ved afvisning eller enhver kombination."
         }

@@ -313,6 +313,7 @@
       "invalid_chore": "Ungültige Aufgabe",
       "invalid_chore_count": "Ungültige Aufgabenanzahl",
       "invalid_chore_name": "Ungültiger Aufgabenname",
+      "invalid_overdue_reset_combination": "Die Funktion „Zum Fälligkeitsdatum zurücksetzen“ funktioniert nur bei Zurücksetzungstypen um Mitternacht. Bitte wählen Sie für den Genehmigungs-Zurücksetzungstyp „Um Mitternacht (einmalig)“ oder „Um Mitternacht (wiederkehrend)“.",
       "invalid_due_date": "Ungültiges Fälligkeitsdatum",
       "date_required_for_frequency": "Für diese wiederkehrende Häufigkeit ist ein Fälligkeitsdatum erforderlich. Die Option „Datum löschen“ funktioniert nur bei den Häufigkeiten „Keine“, „Täglich“ oder „Wöchentlich“.",
       "invalid_end_date": "Ungültiges Enddatum.",
@@ -790,6 +791,7 @@
           "custom_interval_unit": "🔄 Zeitplan: Benutzerdefinierte Intervalleinheit",
           "applicable_days": "📅 Zeitplan: Anwendbare Tage (optional)",
           "due_date": "📅 Zeitplan: Fälligkeitsdatum (optional)",
+          "clear_due_date": "🗑️ Fälligkeitsdatum klären",
           "show_on_calendar": "📅 Im Kalender anzeigen?",
           "chore_notifications": "🔔 Benachrichtigungsereignisse (optional)"
         },
@@ -810,6 +812,7 @@
           "custom_interval_unit": "Zeiteinheit für benutzerdefinierte Intervalle (Tage, Wochen, Monate). Nur bei benutzerdefinierter Frequenz verwendbar.",
           "applicable_days": "Beschränken Sie die Aufgabe auf bestimmte Wochentage. Lassen Sie das Feld für alle Tage leer.",
           "due_date": "Optionale Frist. Kann mit wiederkehrenden Aufgaben kombiniert werden. Für individuelle Aufgaben dient dies als Vorlage – ein zusätzliches Fenster öffnet sich, in dem für jedes Kind ein individuelles Datum festgelegt werden kann.",
+          "clear_due_date": "Markieren Sie dieses Kästchen, um das Fälligkeitsdatum für diese Aufgabe zu entfernen.",
           "show_on_calendar": "Diese Aufgabe in der Kalenderansicht anzeigen.",
           "chore_notifications": "Wann Benachrichtigungen versendet werden sollen: Bei Antragstellung, bei Genehmigung, bei Ablehnung oder in beliebiger Kombination."
         }

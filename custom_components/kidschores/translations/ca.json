@@ -313,6 +313,7 @@
       "invalid_chore": "Tasca no vàlida",
       "invalid_chore_count": "Recompte de tasques no vàlid",
       "invalid_chore_name": "Nom de tasca no vàlid",
+      "invalid_overdue_reset_combination": "La gestió de venciments \"A la data de venciment, després es reinicia\" només funciona amb els tipus de restabliment a mitjanit. Seleccioneu \"A mitjanit (una vegada)\" o \"A mitjanit (repetint)\" per al tipus de restabliment d'aprovació.",
       "invalid_due_date": "Data de venciment no vàlida",
       "date_required_for_frequency": "Cal una data de venciment per a aquesta freqüència recurrent. L'opció \"Esborrar dates\" només funciona amb la freqüència Cap, Diària o Setmanal.",
       "invalid_end_date": "Data de finalització no vàlida.",
@@ -790,6 +791,7 @@
           "custom_interval_unit": "🔄 Programació: Unitat d'interval personalitzada",
           "applicable_days": "📅 Horari: Dies aplicables (opcional)",
           "due_date": "📅 Horari: Data de venciment (opcional)",
+          "clear_due_date": "🗑️ Data de venciment clara",
           "show_on_calendar": "📅 Mostrar al calendari?",
           "chore_notifications": "🔔 Esdeveniments de notificació (opcional)"
         },
@@ -810,6 +812,7 @@
           "custom_interval_unit": "Unitat de temps per a l'interval personalitzat (dies, setmanes, mesos). Només s'utilitza amb la freqüència personalitzada.",
           "applicable_days": "Restringeix la tasca a dies feiners específics. Deixa en blanc per a tots els dies.",
           "due_date": "Data límit opcional. Es pot combinar amb horaris recurrents. Per a tasques INDEPENDENTS, això serveix com a plantilla: apareixerà una pantalla addicional que permetrà dates individuals per nen.",
+          "clear_due_date": "Marqueu aquesta casella per eliminar la data de venciment d'aquesta tasca.",
           "show_on_calendar": "Mostra aquesta tasca a la vista de calendari.",
           "chore_notifications": "Quan enviar notificacions: En cas de reclamació, aprovació, rebuig o qualsevol combinació."
         }
