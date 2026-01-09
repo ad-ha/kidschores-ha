@@ -889,49 +889,8 @@ def async_setup_services(hass: HomeAssistant):
 
         coordinator: KidsChoresDataCoordinator = data[const.COORDINATOR]
 
-        # Get current time for resetting approval periods
-        now_utc_iso = datetime.now(dt_util.UTC).isoformat()
-
-        # Loop over all chores, reset them to pending
-        for chore_info in coordinator.chores_data.values():
-            chore_info[const.DATA_CHORE_STATE] = const.CHORE_STATE_PENDING
-            # Reset SHARED chore approval_period_start to now
-            if (
-                chore_info.get(const.DATA_CHORE_COMPLETION_CRITERIA)
-                != const.COMPLETION_CRITERIA_INDEPENDENT
-            ):
-                chore_info[const.DATA_CHORE_APPROVAL_PERIOD_START] = now_utc_iso
-
-        # Clear all chore tracking timestamps for each kid (v0.5.0+ timestamp-based)
-        for kid_info in coordinator.kids_data.values():
-            # Clear timestamp-based tracking data
-            kid_chore_data = kid_info.get(const.DATA_KID_CHORE_DATA, {})
-            for chore_tracking in kid_chore_data.values():
-                # NOTE: last_claimed is intentionally NEVER removed - historical tracking
-                # NOTE: last_approved is intentionally NEVER removed - historical tracking
-                # Reset pending_claim_count to 0 (v0.5.0+ counter-based tracking)
-                chore_tracking[const.DATA_KID_CHORE_DATA_PENDING_CLAIM_COUNT] = 0
-                # Set approval_period_start to NOW to start fresh approval period
-                # This ensures old last_approved timestamps are invalidated
-                chore_tracking[const.DATA_KID_CHORE_DATA_APPROVAL_PERIOD_START] = (
-                    now_utc_iso
-                )
-                # Reset state to PENDING (single source of truth for state)
-                chore_tracking[const.DATA_KID_CHORE_DATA_STATE] = (
-                    const.CHORE_STATE_PENDING
-                )
-            # Clear overdue notification tracking
-            kid_info[const.DATA_KID_OVERDUE_NOTIFICATIONS] = {}
-
-        # Chore queue removed in v0.5.0 - computed from timestamps
-        # Setting approval_period_start to NOW handles pending approvals
-
-        # Persist & notify
-        await coordinator.storage_manager.async_save()
-        coordinator.async_set_updated_data(coordinator.data)
-        const.LOGGER.info(
-            "Manually reset all chores to pending, reset approval periods to now"
-        )
+        # Delegate to coordinator method
+        coordinator.reset_all_chores()
 
     async def handle_reset_overdue_chores(call: ServiceCall) -> None:
         """Handle resetting overdue chores."""
@@ -1021,9 +980,15 @@ def async_setup_services(hass: HomeAssistant):
                 const.DATA_CHORE_COMPLETION_CRITERIA,
                 const.COMPLETION_CRITERIA_INDEPENDENT,
             )
-            if completion_criteria == const.COMPLETION_CRITERIA_SHARED:
+            # Reject kid_id for SHARED and SHARED_FIRST chores
+            # (they use chore-level due dates, not per-kid)
+            if completion_criteria in (
+                const.COMPLETION_CRITERIA_SHARED,
+                const.COMPLETION_CRITERIA_SHARED_FIRST,
+            ):
                 const.LOGGER.warning(
-                    "Set Chore Due Date: Cannot specify kid_id for SHARED chore '%s'",
+                    "Set Chore Due Date: Cannot specify kid_id for %s chore '%s'",
+                    completion_criteria,
                     chore_name,
                 )
                 raise HomeAssistantError(
@@ -1147,9 +1112,15 @@ def async_setup_services(hass: HomeAssistant):
                 const.DATA_CHORE_COMPLETION_CRITERIA,
                 const.COMPLETION_CRITERIA_INDEPENDENT,
             )
-            if completion_criteria == const.COMPLETION_CRITERIA_SHARED:
+            # Reject kid_id for SHARED and SHARED_FIRST chores
+            # (they use chore-level due dates, not per-kid)
+            if completion_criteria in (
+                const.COMPLETION_CRITERIA_SHARED,
+                const.COMPLETION_CRITERIA_SHARED_FIRST,
+            ):
                 const.LOGGER.warning(
-                    "Skip Chore Due Date: Cannot specify kid_id for SHARED chore '%s'",
+                    "Skip Chore Due Date: Cannot specify kid_id for %s chore '%s'",
+                    completion_criteria,
                     chore_name,
                 )
                 raise HomeAssistantError(

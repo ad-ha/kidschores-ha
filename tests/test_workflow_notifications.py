@@ -35,7 +35,6 @@ from custom_components.kidschores import const
 from custom_components.kidschores.coordinator import KidsChoresDataCoordinator
 from tests.helpers.setup import SetupResult, setup_from_yaml
 
-
 # =============================================================================
 # FIXTURES
 # =============================================================================
@@ -47,6 +46,7 @@ def register_mock_notify_services(hass: HomeAssistant) -> None:
     This allows the config flow to accept notify service names in the
     mobile_notify_service field, enabling true end-to-end notification testing.
     """
+
     async def mock_notify_service(call):  # noqa: ARG001
         """Mock notify service handler."""
 
@@ -92,8 +92,15 @@ def load_notification_translations(language: str) -> dict[str, Any]:
     Returns:
         Dictionary containing the full translations file content
     """
-    translations_path = Path(
-        f"custom_components/kidschores/translations_custom/{language}_notifications.json"
+    # Use absolute path based on this file's location
+    tests_dir = Path(__file__).parent
+    workspace_root = tests_dir.parent
+    translations_path = (
+        workspace_root
+        / "custom_components"
+        / "kidschores"
+        / "translations_custom"
+        / f"{language}_notifications.json"
     )
 
     if not translations_path.exists():
@@ -166,13 +173,15 @@ class NotificationCapture:
         extra_data: dict[str, Any] | None = None,
     ) -> None:
         """Capture a notification call."""
-        self.notifications.append({
-            "service": service,
-            "title": title,
-            "message": message,
-            "actions": actions or [],
-            "extra_data": extra_data or {},
-        })
+        self.notifications.append(
+            {
+                "service": service,
+                "title": title,
+                "message": message,
+                "actions": actions or [],
+                "extra_data": extra_data or {},
+            }
+        )
 
     def clear(self) -> None:
         """Clear captured notifications."""
@@ -221,9 +230,10 @@ class TestChoreClaimNotifications:
         assert parent_data.get(const.DATA_PARENT_ENABLE_NOTIFICATIONS) is True, (
             "Notifications should be enabled through config flow"
         )
-        assert parent_data.get(const.CONF_MOBILE_NOTIFY_SERVICE_LEGACY) == "notify.mobile_app_mom", (
-            "Mobile notify service should be set through config flow"
-        )
+        assert (
+            parent_data.get(const.CONF_MOBILE_NOTIFY_SERVICE_LEGACY)
+            == "notify.mobile_app_mom"
+        ), "Mobile notify service should be set through config flow"
 
         # Verify mock service exists
         all_services = hass.services.async_services()
@@ -283,7 +293,9 @@ class TestChoreClaimNotifications:
 
         # Actions should include approve, disapprove, remind
         action_titles = capture.get_action_titles()
-        assert len(action_titles) >= 2, f"Expected at least 2 action buttons, got: {action_titles}"
+        assert len(action_titles) >= 2, (
+            f"Expected at least 2 action buttons, got: {action_titles}"
+        )
 
     @pytest.mark.asyncio
     async def test_auto_approve_chore_no_parent_notification(
@@ -360,8 +372,7 @@ class TestNotificationLanguage:
         # At least one expected English title should appear
         matching = actual_titles & expected_titles
         assert len(matching) > 0, (
-            f"Expected English action titles {expected_titles}, "
-            f"but got {actual_titles}"
+            f"Expected English action titles {expected_titles}, but got {actual_titles}"
         )
 
     @pytest.mark.asyncio
@@ -404,8 +415,7 @@ class TestNotificationLanguage:
         # At least one expected Slovak title should appear
         matching = actual_titles & expected_titles
         assert len(matching) > 0, (
-            f"Expected Slovak action titles {expected_titles}, "
-            f"but got {actual_titles}"
+            f"Expected Slovak action titles {expected_titles}, but got {actual_titles}"
         )
 
     @pytest.mark.asyncio

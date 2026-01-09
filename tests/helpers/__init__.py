@@ -74,9 +74,11 @@ from tests.helpers.constants import (
     COMPLETION_CRITERIA_VALUES,
     # Domain
     COORDINATOR,
+    DATA_CHORE_APPROVAL_PERIOD_START,
     DATA_CHORE_APPROVAL_RESET_PENDING_CLAIM_ACTION,
     DATA_CHORE_APPROVAL_RESET_TYPE,
     DATA_CHORE_ASSIGNED_KIDS,
+    DATA_CHORE_COMPLETION_CRITERIA,
     DATA_CHORE_DEFAULT_POINTS,
     DATA_CHORE_DUE_DATE,
     # Data keys - chore fields
@@ -88,6 +90,8 @@ from tests.helpers.constants import (
     DATA_CHORES,
     # Data keys - kid chore data
     DATA_KID_CHORE_DATA,
+    DATA_KID_CHORE_DATA_APPROVAL_PERIOD_START,
+    DATA_KID_CHORE_DATA_DUE_DATE,
     DATA_KID_CHORE_DATA_STATE,
     DATA_KID_COMPLETED_BY_OTHER_CHORES,
     DATA_KID_NAME,
@@ -115,6 +119,7 @@ from tests.helpers.constants import (
 )
 from tests.helpers.setup import (
     SetupResult,
+    setup_from_yaml,
     setup_minimal_scenario,
     setup_multi_kid_scenario,
     setup_scenario,
@@ -174,6 +179,7 @@ from tests.helpers.workflows import (
 __all__ = [
     # Setup
     "SetupResult",
+    "setup_from_yaml",
     "setup_scenario",
     "setup_minimal_scenario",
     "setup_multi_kid_scenario",
@@ -223,9 +229,13 @@ __all__ = [
     "DATA_KID_NAME",
     # Constants - Kid chore data keys
     "DATA_KID_CHORE_DATA",
+    "DATA_KID_CHORE_DATA_APPROVAL_PERIOD_START",
+    "DATA_KID_CHORE_DATA_DUE_DATE",
     "DATA_KID_CHORE_DATA_STATE",
     "DATA_KID_COMPLETED_BY_OTHER_CHORES",
     # Constants - Chore field keys
+    "DATA_CHORE_APPROVAL_PERIOD_START",
+    "DATA_CHORE_COMPLETION_CRITERIA",
     "DATA_CHORE_NAME",
     "DATA_CHORE_STATE",
     "DATA_CHORE_DUE_DATE",

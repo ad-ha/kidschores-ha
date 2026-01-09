@@ -1,4 +1,4 @@
-"""Chore scheduling tests - due dates, overdue detection, and frequency behavior.
+"""Chore scheduling tests - due dates, overdue detection, and frequency behavior. CLS
 
 This module tests:
 1. Due date loading from YAML scenario (with relative past/future dates)
@@ -24,7 +24,6 @@ from typing import Any
 
 import pytest
 from homeassistant.core import HomeAssistant
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.kidschores import kc_helpers as kh
 from tests.helpers import (
@@ -43,10 +42,14 @@ from tests.helpers import (
     CHORE_STATE_CLAIMED,
     CHORE_STATE_OVERDUE,
     CHORE_STATE_PENDING,
-    COORDINATOR,
+    # Completion criteria
+    COMPLETION_CRITERIA_INDEPENDENT,
+    COMPLETION_CRITERIA_SHARED,
+    DATA_CHORE_APPROVAL_PERIOD_START,
     DATA_CHORE_APPROVAL_RESET_PENDING_CLAIM_ACTION,
     DATA_CHORE_APPROVAL_RESET_TYPE,
     DATA_CHORE_ASSIGNED_KIDS,
+    DATA_CHORE_COMPLETION_CRITERIA,
     DATA_CHORE_DEFAULT_POINTS,
     DATA_CHORE_DUE_DATE,
     # Data keys - chore
@@ -55,14 +58,15 @@ from tests.helpers import (
     DATA_CHORE_PER_KID_DUE_DATES,
     DATA_CHORE_RECURRING_FREQUENCY,
     DATA_KID_CHORE_DATA,
+    DATA_KID_CHORE_DATA_APPROVAL_PERIOD_START,
+    DATA_KID_CHORE_DATA_DUE_DATE,
     DATA_KID_CHORE_DATA_STATE,
     # Data keys - kid
     DATA_KID_NAME,
     DATA_KID_POINTS,
-    # Domain & Coordinator
-    DOMAIN,
     # Frequencies
     FREQUENCY_DAILY,
+    FREQUENCY_NONE,
     FREQUENCY_WEEKLY,
     # Overdue handling types
     OVERDUE_HANDLING_AT_DUE_DATE,
@@ -70,11 +74,107 @@ from tests.helpers import (
     OVERDUE_HANDLING_NEVER_OVERDUE,
     # Translation keys
     TRANS_KEY_ERROR_CHORE_ALREADY_APPROVED,
+    # Setup
+    SetupResult,
+    setup_from_yaml,
 )
 
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
+
+
+def set_chore_due_date_to_past(
+    coordinator: Any,
+    chore_id: str,
+    kid_id: str | None = None,
+    days_ago: int = 1,
+) -> datetime:
+    """Set a chore's due date to a past date for testing overdue behavior.
+
+    ╔══════════════════════════════════════════════════════════════════════════╗
+    ║  WHY THIS HELPER EXISTS                                                  ║
+    ╠══════════════════════════════════════════════════════════════════════════╣
+    ║  coordinator.set_chore_due_date() INTENTIONALLY:                         ║
+    ║    1. Resets chore state to PENDING                                      ║
+    ║    2. Clears pending_claim_count to 0                                    ║
+    ║    3. Resets approval_period_start to now                                ║
+    ║                                                                          ║
+    ║  This is correct behavior for production (changing due date = new period)║
+    ║  but breaks tests that need to simulate "time passing" while PRESERVING  ║
+    ║  current claim/approval state (e.g., testing claimed chores don't        ║
+    ║  become overdue).                                                        ║
+    ║                                                                          ║
+    ║  This helper directly modifies the data structures to:                   ║
+    ║    - Set due date to the past                                            ║
+    ║    - Set approval_period_start BEFORE the past due date                  ║
+    ║    - NOT touch state or pending_claim_count                              ║
+    ╚══════════════════════════════════════════════════════════════════════════╝
+
+    Storage locations by completion_criteria:
+      SHARED:      due_date at chore level, approval_period_start at chore level
+      INDEPENDENT: due_date per-kid, approval_period_start per-kid in kid_chore_data
+
+    Args:
+        coordinator: KidsChoresDataCoordinator
+        chore_id: The chore's internal UUID
+        kid_id: For independent chores, the kid's UUID (or None to set all)
+        days_ago: How many days in the past (default: 1 = yesterday)
+
+    Returns:
+        The past datetime that was set
+    """
+    from datetime import timedelta
+
+    from homeassistant.util import dt as dt_util
+
+    # Calculate past due date
+    past_date = datetime.now(timezone.utc) - timedelta(days=days_ago)
+    past_date = past_date.replace(hour=17, minute=0, second=0, microsecond=0)
+    past_date_iso = dt_util.as_utc(past_date).isoformat()
+
+    # Approval period start must be BEFORE the past due date
+    # (so any claims made "now" are valid for this period)
+    period_start = past_date - timedelta(days=1)
+    period_start_iso = dt_util.as_utc(period_start).isoformat()
+
+    chore_info = coordinator.chores_data.get(chore_id, {})
+    criteria = chore_info.get(
+        DATA_CHORE_COMPLETION_CRITERIA,
+        COMPLETION_CRITERIA_SHARED,
+    )
+
+    # Update due date and approval_period_start WITHOUT resetting state
+    if criteria == COMPLETION_CRITERIA_INDEPENDENT:
+        # INDEPENDENT: due date and approval_period_start are per-kid
+        per_kid_due_dates = chore_info.setdefault(DATA_CHORE_PER_KID_DUE_DATES, {})
+        if kid_id:
+            # Single kid
+            per_kid_due_dates[kid_id] = past_date_iso
+            kid_info = coordinator.kids_data.get(kid_id, {})
+            kid_chore_data = kid_info.get(DATA_KID_CHORE_DATA, {}).get(chore_id, {})
+            if kid_chore_data:
+                kid_chore_data[DATA_KID_CHORE_DATA_DUE_DATE] = past_date_iso
+                kid_chore_data[DATA_KID_CHORE_DATA_APPROVAL_PERIOD_START] = (
+                    period_start_iso
+                )
+        else:
+            # All assigned kids
+            for assigned_kid_id in chore_info.get(DATA_CHORE_ASSIGNED_KIDS, []):
+                per_kid_due_dates[assigned_kid_id] = past_date_iso
+                kid_info = coordinator.kids_data.get(assigned_kid_id, {})
+                kid_chore_data = kid_info.get(DATA_KID_CHORE_DATA, {}).get(chore_id, {})
+                if kid_chore_data:
+                    kid_chore_data[DATA_KID_CHORE_DATA_DUE_DATE] = past_date_iso
+                    kid_chore_data[DATA_KID_CHORE_DATA_APPROVAL_PERIOD_START] = (
+                        period_start_iso
+                    )
+    else:
+        # SHARED: due date and approval_period_start are at chore level
+        chore_info[DATA_CHORE_DUE_DATE] = past_date_iso
+        chore_info[DATA_CHORE_APPROVAL_PERIOD_START] = period_start_iso
+
+    return past_date
 
 
 def get_chore_due_date(
@@ -201,33 +301,18 @@ def get_kid_by_name(
 @pytest.fixture
 async def scheduling_scenario(
     hass: HomeAssistant,
-    init_integration: MockConfigEntry,
     mock_hass_users: dict[str, Any],
-) -> tuple[MockConfigEntry, Any, str, dict[str, str]]:
-    """Load scheduling scenario and return coordinator and key IDs.
+) -> SetupResult:
+    """Load scheduling scenario using modern setup_from_yaml().
 
     Returns:
-        Tuple of (config_entry, coordinator, zoe_kid_id, chore_name_to_id_map)
+        SetupResult with config_entry, coordinator, kid_ids, chore_ids maps
     """
-    # Import here to avoid circular imports
-    from tests.legacy.conftest import apply_scenario_direct, load_scenario_yaml
-
-    scenario_data = load_scenario_yaml("scheduling")
-    await apply_scenario_direct(hass, init_integration, scenario_data, mock_hass_users)
-
-    coordinator = hass.data[DOMAIN][init_integration.entry_id][COORDINATOR]
-
-    # Get Zoë's ID
-    zoe_result = get_kid_by_name(coordinator, "Zoë")
-    assert zoe_result is not None, "Zoë not found in scenario"
-    zoe_id = zoe_result[0]
-
-    # Build chore name to ID map
-    chore_map = {}
-    for chore_id, chore_info in coordinator.chores_data.items():
-        chore_map[chore_info.get(DATA_CHORE_NAME)] = chore_id
-
-    return init_integration, coordinator, zoe_id, chore_map
+    return await setup_from_yaml(
+        hass,
+        mock_hass_users,
+        "tests/scenarios/scenario_scheduling.yaml",
+    )
 
 
 # =============================================================================
@@ -242,10 +327,12 @@ class TestDueDateLoading:
     async def test_future_due_date_is_in_future(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test that chores with due_date_relative='future' have future due dates."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         # "Reset Midnight Once" has due_date_relative: "future"
         chore_id = chore_map["Reset Midnight Once"]
@@ -259,13 +346,18 @@ class TestDueDateLoading:
     async def test_past_due_date_is_in_past(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
-        """Test that chores with due_date_relative='past' have past due dates."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        """Test that we can set a due date to the past via coordinator."""
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
-        # "Overdue At Due Date" has due_date_relative: "past"
+        # "Overdue At Due Date" - set due date to past via coordinator
+        # (Config flow rejects past dates, so we modify after setup)
         chore_id = chore_map["Overdue At Due Date"]
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
+
         due_date = get_kid_due_date(coordinator, zoe_id, chore_id)
 
         assert due_date is not None, "Due date should be set"
@@ -276,10 +368,12 @@ class TestDueDateLoading:
     async def test_all_scheduling_chores_have_due_dates(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test that all chores in scheduling scenario have due dates set."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         for chore_name, chore_id in chore_map.items():
             due_date = get_kid_due_date(coordinator, zoe_id, chore_id)
@@ -289,10 +383,12 @@ class TestDueDateLoading:
     async def test_due_date_is_timezone_aware(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test that due dates are timezone-aware (UTC)."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Reset Midnight Once"]
         due_date = get_kid_due_date(coordinator, zoe_id, chore_id)
@@ -313,17 +409,20 @@ class TestOverdueDetection:
     async def test_past_due_at_due_date_is_overdue(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: overdue_handling_type='at_due_date' with past due date → OVERDUE state.
 
-        "Overdue At Due Date" has:
-        - due_date_relative: past
-        - overdue_handling_type: at_due_date
+        "Overdue At Due Date" - set due date to past via coordinator, then check overdue.
         """
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Overdue At Due Date"]
+
+        # Set due date to past (config flow rejects past dates)
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
 
         # Trigger overdue check by calling the coordinator's check method
         await coordinator._check_overdue_chores()
@@ -341,17 +440,20 @@ class TestOverdueDetection:
     async def test_past_due_never_overdue_stays_pending(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: overdue_handling_type='never_overdue' with past due date → stays PENDING.
 
-        "Overdue Never" has:
-        - due_date_relative: past
-        - overdue_handling_type: never_overdue
+        "Overdue Never" - set to past but should NOT become overdue.
         """
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Overdue Never"]
+
+        # Set due date to past (config flow rejects past dates)
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
 
         # Trigger overdue check
         await coordinator._check_overdue_chores()
@@ -369,10 +471,12 @@ class TestOverdueDetection:
     async def test_future_due_not_overdue(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: Future due date should NOT be overdue."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Reset Midnight Once"]
 
@@ -391,17 +495,20 @@ class TestOverdueDetection:
     async def test_weekly_overdue_is_detected(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: Weekly chore with past due date becomes overdue.
 
-        "Weekly Overdue" has:
-        - type: weekly
-        - due_date_relative: past
+        "Weekly Overdue" - set to past and verify it becomes overdue.
         """
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Weekly Overdue"]
+
+        # Set due date to past (config flow rejects past dates)
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=3)
 
         # Trigger overdue check
         await coordinator._check_overdue_chores()
@@ -425,10 +532,12 @@ class TestFrequencyEffects:
     async def test_one_time_chore_has_due_date(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: One-time chore has a due date set."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["One Time Task"]
 
@@ -436,21 +545,22 @@ class TestFrequencyEffects:
         due_date = get_kid_due_date(coordinator, zoe_id, chore_id)
         assert due_date is not None, "One-time chore should have a due date"
 
-        # Verify frequency (YAML type: "once" -> "once" in recurring_frequency)
+        # Verify frequency (recurring_frequency: "none" for one-time chores)
         chore_info = coordinator.chores_data.get(chore_id, {})
         frequency = chore_info.get(DATA_CHORE_RECURRING_FREQUENCY)
-        assert frequency == "once", (
-            f"One-time chore should have 'once' frequency, got {frequency}"
+        assert frequency == FREQUENCY_NONE, (
+            f"One-time chore should have 'none' frequency, got {frequency}"
         )
 
     @pytest.mark.asyncio
     async def test_daily_chore_frequency(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: Daily chores have correct frequency setting."""
-        _, coordinator, _, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Reset Midnight Once"]
         chore_info = coordinator.chores_data.get(chore_id, {})
@@ -464,10 +574,11 @@ class TestFrequencyEffects:
     async def test_weekly_chore_frequency(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: Weekly chores have correct frequency setting."""
-        _, coordinator, _, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Reset Due Date Once"]
         chore_info = coordinator.chores_data.get(chore_id, {})
@@ -488,10 +599,11 @@ class TestChoreConfigurationVerification:
     async def test_approval_reset_types_loaded(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: All 5 approval reset types are loaded from scenario."""
-        _, coordinator, _, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        chore_map = scheduling_scenario.chore_ids
 
         expected = {
             "Reset Midnight Once": APPROVAL_RESET_AT_MIDNIGHT_ONCE,
@@ -513,10 +625,11 @@ class TestChoreConfigurationVerification:
     async def test_overdue_handling_types_loaded(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: All 3 overdue handling types are loaded from scenario."""
-        _, coordinator, _, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        chore_map = scheduling_scenario.chore_ids
 
         expected = {
             "Overdue At Due Date": OVERDUE_HANDLING_AT_DUE_DATE,
@@ -536,10 +649,11 @@ class TestChoreConfigurationVerification:
     async def test_pending_claim_actions_loaded(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: All 3 pending claim actions are loaded from scenario."""
-        _, coordinator, _, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        chore_map = scheduling_scenario.chore_ids
 
         expected = {
             "Pending Hold": APPROVAL_RESET_PENDING_CLAIM_HOLD,
@@ -556,25 +670,28 @@ class TestChoreConfigurationVerification:
             )
 
     @pytest.mark.asyncio
-    async def test_scenario_has_13_chores(
+    async def test_scenario_has_14_chores(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
-        """Test: Scheduling scenario has exactly 13 chores."""
-        _, coordinator, _, chore_map = scheduling_scenario
+        """Test: Scheduling scenario has exactly 14 chores."""
+        coordinator = scheduling_scenario.coordinator
+        chore_map = scheduling_scenario.chore_ids
 
-        assert len(chore_map) == 13, f"Expected 13 chores, got {len(chore_map)}"
-        assert len(coordinator.chores_data) == 13
+        assert len(chore_map) == 14, f"Expected 14 chores, got {len(chore_map)}"
+        assert len(coordinator.chores_data) == 14
 
     @pytest.mark.asyncio
     async def test_all_chores_assigned_to_zoe(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: All chores in scheduling scenario are assigned to Zoë."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         for chore_name, chore_id in chore_map.items():
             chore_info = coordinator.chores_data.get(chore_id, {})
@@ -604,14 +721,16 @@ class TestApprovalResetAtMidnightOnce:
     async def test_at_midnight_once_due_date_unchanged_on_approval(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """BUG REPRODUCTION: AT_MIDNIGHT_ONCE should NOT reschedule due date on approval.
 
         Expected: Approval → state=APPROVED, due_date unchanged
         Bug: Due date is rescheduled immediately on approval
         """
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Reset Midnight Once"]
         chore_info = coordinator.chores_data.get(chore_id, {})
@@ -648,10 +767,12 @@ class TestApprovalResetAtMidnightOnce:
     async def test_at_midnight_once_blocks_second_approval(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: AT_MIDNIGHT_ONCE should block second approval in same period."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Reset Midnight Once"]
 
@@ -690,10 +811,12 @@ class TestApprovalResetAtMidnightMulti:
     async def test_at_midnight_multi_allows_multiple_approvals(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: AT_MIDNIGHT_MULTI allows multiple claim-approve cycles in same period."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Reset Midnight Multi"]
         chore_info = coordinator.chores_data.get(chore_id, {})
@@ -727,10 +850,12 @@ class TestApprovalResetUponCompletion:
     async def test_upon_completion_reschedules_due_date(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: UPON_COMPLETION should reschedule due date immediately on approval."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Reset Upon Completion"]
         chore_info = coordinator.chores_data.get(chore_id, {})
@@ -763,10 +888,12 @@ class TestApprovalResetUponCompletion:
     async def test_upon_completion_resets_to_pending(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: UPON_COMPLETION should reset state to PENDING immediately."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Reset Upon Completion"]
 
@@ -794,10 +921,12 @@ class TestApprovalResetAtDueDateOnce:
     async def test_at_due_date_once_due_date_unchanged_on_approval(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: AT_DUE_DATE_ONCE should NOT reschedule due date on approval."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Reset Due Date Once"]
         chore_info = coordinator.chores_data.get(chore_id, {})
@@ -833,10 +962,12 @@ class TestApprovalResetAtDueDateOnce:
     async def test_at_due_date_once_blocks_second_approval(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: AT_DUE_DATE_ONCE should block second approval before due date."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Reset Due Date Once"]
 
@@ -865,14 +996,18 @@ class TestOverdueAtDueDate:
     async def test_at_due_date_becomes_overdue_when_past(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: Chore with at_due_date becomes OVERDUE when past due date."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Overdue At Due Date"]
 
-        # Chore has due_date_relative: "past" in YAML, so should be overdue
+        # Set due date to past (config flow rejects past dates)
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
+
         # Run the overdue check
         await coordinator._check_overdue_chores()
 
@@ -893,10 +1028,12 @@ class TestOverdueAtDueDate:
     async def test_at_due_date_future_not_overdue(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: Chore with at_due_date and future due date is NOT overdue."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         # Use a chore with future due date
         chore_id = chore_map["Reset Midnight Once"]  # Has due_date_relative: "future"
@@ -917,10 +1054,12 @@ class TestOverdueNeverOverdue:
     async def test_never_overdue_stays_pending_when_past_due(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: Chore with never_overdue stays PENDING even when past due date."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Overdue Never"]
 
@@ -938,7 +1077,10 @@ class TestOverdueNeverOverdue:
             f"Initial state should be None or PENDING, got {initial_state_value}"
         )
 
-        # Run overdue check (chore has past due date in YAML)
+        # Set due date to past (config flow rejects past dates)
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
+
+        # Run overdue check
         await coordinator._check_overdue_chores()
 
         # Verify state is STILL PENDING or None (not overdue despite past due date)
@@ -962,10 +1104,12 @@ class TestOverdueThenReset:
     async def test_at_due_date_then_reset_becomes_overdue(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: Chore with at_due_date_then_reset becomes OVERDUE when past due."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Overdue Then Reset"]
 
@@ -976,7 +1120,10 @@ class TestOverdueThenReset:
             f"Test chore should have at_due_date_then_reset handling, got {overdue_type}"
         )
 
-        # Run overdue check (chore has past due date in YAML)
+        # Set due date to past (config flow rejects past dates)
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
+
+        # Run overdue check
         await coordinator._check_overdue_chores()
 
         # Verify state is OVERDUE
@@ -1000,12 +1147,14 @@ class TestOverdueClaimedChoreNotOverdue:
     async def test_claimed_chore_not_marked_overdue(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: A claimed chore should NOT be marked as overdue."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
-        # Use a chore with past due date
+        # Use a chore with at_due_date handling
         chore_id = chore_map["Overdue At Due Date"]
 
         # Claim the chore first
@@ -1017,6 +1166,9 @@ class TestOverdueClaimedChoreNotOverdue:
         assert state_before == CHORE_STATE_CLAIMED, (
             f"State should be CLAIMED after claim, got {state_before}"
         )
+
+        # Set due date to past AFTER claiming (config flow rejects past dates)
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
 
         # Run overdue check
         await coordinator._check_overdue_chores()
@@ -1037,12 +1189,17 @@ class TestIsOverdueHelper:
     async def test_is_overdue_returns_true_for_overdue_state(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: is_overdue() returns True when chore state is OVERDUE."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Overdue At Due Date"]
+
+        # Set due date to past (config flow rejects past dates)
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
 
         # Run overdue check to mark chore as overdue
         await coordinator._check_overdue_chores()
@@ -1055,10 +1212,12 @@ class TestIsOverdueHelper:
     async def test_is_overdue_returns_false_for_pending_state(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: is_overdue() returns False when chore state is PENDING."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         # Use a chore with future due date (won't be overdue)
         chore_id = chore_map["Reset Midnight Once"]
@@ -1074,10 +1233,11 @@ class TestIsOverdueHelper:
     async def test_is_overdue_returns_false_for_nonexistent_chore(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: is_overdue() returns False for non-existent chore."""
-        _, coordinator, zoe_id, _ = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
 
         # Use a fake chore ID
         fake_chore_id = "nonexistent-chore-id-12345"
@@ -1105,10 +1265,12 @@ class TestPendingClaimHold:
     async def test_pending_hold_retains_claim_after_reset(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: HOLD pending claim is retained after reset."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Pending Hold"]
 
@@ -1149,10 +1311,12 @@ class TestPendingClaimHold:
     async def test_pending_hold_no_points_awarded(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: HOLD pending claim does NOT award points on reset."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Pending Hold"]
 
@@ -1185,10 +1349,12 @@ class TestPendingClaimClear:
     async def test_pending_clear_resets_to_pending(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: CLEAR pending claim resets state to PENDING."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Pending Clear"]
 
@@ -1206,6 +1372,10 @@ class TestPendingClaimClear:
         state_before = get_kid_chore_state(coordinator, zoe_id, chore_id)
         assert state_before == CHORE_STATE_CLAIMED
 
+        # Set due date to past so reset will process the chore
+        # (reset checks if now > due_date before processing)
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
+
         # Trigger reset
         await coordinator._reset_daily_chore_statuses([FREQUENCY_DAILY])
 
@@ -1219,10 +1389,12 @@ class TestPendingClaimClear:
     async def test_pending_clear_removes_pending_claim(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: CLEAR pending claim removes pending claim status."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Pending Clear"]
 
@@ -1233,6 +1405,9 @@ class TestPendingClaimClear:
         assert coordinator.has_pending_claim(zoe_id, chore_id), (
             "Should have pending claim before reset"
         )
+
+        # Set due date to past so reset will process the chore
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
 
         # Trigger reset
         await coordinator._reset_daily_chore_statuses([FREQUENCY_DAILY])
@@ -1246,10 +1421,12 @@ class TestPendingClaimClear:
     async def test_pending_clear_no_points_awarded(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: CLEAR pending claim does NOT award points on reset."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Pending Clear"]
 
@@ -1259,6 +1436,9 @@ class TestPendingClaimClear:
 
         # Claim the chore
         coordinator.claim_chore(zoe_id, chore_id, "Test User")
+
+        # Set due date to past so reset will process the chore
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
 
         # Trigger reset
         await coordinator._reset_daily_chore_statuses([FREQUENCY_DAILY])
@@ -1283,10 +1463,12 @@ class TestPendingClaimAutoApprove:
     async def test_pending_auto_approve_awards_points(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: AUTO_APPROVE pending claim awards points on reset."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Pending Auto Approve"]
 
@@ -1308,6 +1490,9 @@ class TestPendingClaimAutoApprove:
         # Claim the chore
         coordinator.claim_chore(zoe_id, chore_id, "Test User")
 
+        # Set due date to past so reset will process the chore
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
+
         # Trigger reset
         await coordinator._reset_daily_chore_statuses([FREQUENCY_DAILY])
 
@@ -1324,10 +1509,12 @@ class TestPendingClaimAutoApprove:
     async def test_pending_auto_approve_then_resets_to_pending(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: AUTO_APPROVE pending claim resets to PENDING after auto-approval."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Pending Auto Approve"]
 
@@ -1337,6 +1524,9 @@ class TestPendingClaimAutoApprove:
         # Verify state is CLAIMED before reset
         state_before = get_kid_chore_state(coordinator, zoe_id, chore_id)
         assert state_before == CHORE_STATE_CLAIMED
+
+        # Set due date to past so reset will process the chore
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
 
         # Trigger reset
         await coordinator._reset_daily_chore_statuses([FREQUENCY_DAILY])
@@ -1351,10 +1541,12 @@ class TestPendingClaimAutoApprove:
     async def test_pending_auto_approve_removes_pending_claim(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: AUTO_APPROVE pending claim removes pending claim status."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Pending Auto Approve"]
 
@@ -1365,6 +1557,9 @@ class TestPendingClaimAutoApprove:
         assert coordinator.has_pending_claim(zoe_id, chore_id), (
             "Should have pending claim before reset"
         )
+
+        # Set due date to past so reset will process the chore
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
 
         # Trigger reset
         await coordinator._reset_daily_chore_statuses([FREQUENCY_DAILY])
@@ -1382,10 +1577,12 @@ class TestPendingClaimEdgeCases:
     async def test_approved_chore_not_affected_by_pending_claim_action(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: Already approved chores are not affected by pending claim action."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         chore_id = chore_map["Pending Hold"]
 
@@ -1402,6 +1599,9 @@ class TestPendingClaimEdgeCases:
             "Approved chore should not have pending claim"
         )
 
+        # Set due date to past so reset will process the chore
+        set_chore_due_date_to_past(coordinator, chore_id, zoe_id, days_ago=1)
+
         # Trigger reset
         await coordinator._reset_daily_chore_statuses([FREQUENCY_DAILY])
 
@@ -1415,10 +1615,12 @@ class TestPendingClaimEdgeCases:
     async def test_unclaimed_chore_not_affected_by_pending_claim_action(
         self,
         hass: HomeAssistant,
-        scheduling_scenario: tuple[MockConfigEntry, Any, str, dict[str, str]],
+        scheduling_scenario: SetupResult,
     ) -> None:
         """Test: Unclaimed chores are not affected by pending claim action settings."""
-        _, coordinator, zoe_id, chore_map = scheduling_scenario
+        coordinator = scheduling_scenario.coordinator
+        zoe_id = scheduling_scenario.kid_ids["Zoë"]
+        chore_map = scheduling_scenario.chore_ids
 
         _chore_id = chore_map[
             "Pending Auto Approve"

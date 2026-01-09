@@ -133,6 +133,7 @@ from custom_components.kidschores.const import (
     # DATA KEYS - CHORE FIELDS
     # =========================================================================
     DATA_CHORE_APPLICABLE_DAYS,
+    DATA_CHORE_APPROVAL_PERIOD_START,
     DATA_CHORE_APPROVAL_RESET_PENDING_CLAIM_ACTION,
     DATA_CHORE_APPROVAL_RESET_TYPE,
     DATA_CHORE_ASSIGNED_KIDS,

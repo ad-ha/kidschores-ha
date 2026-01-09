@@ -104,32 +104,39 @@
      - Phase 1 establishes state matrix as foundation before tackling scheduling
      - `at_midnight_once` bug is priority - tests should reproduce it first
      - Use coordinator API directly for speed; dashboard helper tests can follow later
-   - **Completion confirmation**: `[ ]` All follow-up items completed
+   - **Completion confirmation**: `[x]` All follow-up items completed ✅
 
 ---
 
-## Current Test Coverage (Baseline)
+## Current Test Coverage (Final)
 
-### Existing Tests (11 total in `test_workflow_chores.py`)
+### Chore Workflow Test Files (Modern Suite)
 
-| Test Class            | Tests | What's Verified                                           |
-| --------------------- | ----- | --------------------------------------------------------- |
-| TestIndependentChores | 4     | Basic claim→approve→points cycle, disapprove reset        |
-| TestAutoApprove       | 1     | auto_approve=true skips claimed state                     |
-| TestSharedFirstChores | 3     | First claimer wins, others blocked, disapprove resets all |
-| TestSharedAllChores   | 3     | Independent per-kid tracking, each gets points            |
+| Test File                                    | Tests | What's Verified                                                 |
+| -------------------------------------------- | ----- | --------------------------------------------------------------- |
+| `test_workflow_chores.py`                    | 11    | Basic claim→approve→points, disapprove, shared chore patterns   |
+| `test_chore_state_matrix.py`                 | 18    | All states × completion criteria, global state consistency      |
+| `test_chore_scheduling.py`                   | 41    | Due dates, overdue, approval reset types, pending claim actions |
+| `test_chore_services.py`                     | 20    | All chore services (claim, approve, set_due_date, skip, reset)  |
+| `test_shared_chore_features.py`              | 15    | Auto-approve and pending claim actions for SHARED chores        |
+| `test_approval_reset_overdue_interaction.py` | 8     | AT_DUE_DATE_THEN_RESET interactions with approval states        |
 
-### Gap Analysis
+**Total: 113 chore workflow tests**
 
-| Area                                                   | Coverage      | Priority        |
-| ------------------------------------------------------ | ------------- | --------------- |
-| **Global State** (`ATTR_GLOBAL_STATE`)                 | ❌ Not tested | HIGH            |
-| **Due Date Calculation**                               | ❌ Not tested | HIGH            |
-| **Approval Reset Types** (5 types)                     | ❌ Not tested | HIGH (bug here) |
-| **Overdue Handling Types** (3 types)                   | ❌ Not tested | MEDIUM          |
-| **Pending Claim Actions** (3 types)                    | ❌ Not tested | MEDIUM          |
-| **Partial States** (claimed_in_part, approved_in_part) | ❌ Not tested | MEDIUM          |
-| **Frequency Effects** (daily/weekly/monthly/once)      | ❌ Not tested | LOW             |
+### Coverage Analysis (Final)
+
+| Area                                                   | Coverage    | Tests                                                    |
+| ------------------------------------------------------ | ----------- | -------------------------------------------------------- |
+| **Global State** (`ATTR_GLOBAL_STATE`)                 | ✅ Complete | test_chore_state_matrix.py (3 tests)                     |
+| **Due Date Calculation**                               | ✅ Complete | test_chore_scheduling.py (16 tests)                      |
+| **Approval Reset Types** (5 types)                     | ✅ Complete | test_chore_scheduling.py (7 tests) - BUG FIXED           |
+| **Overdue Handling Types** (3 types)                   | ✅ Complete | test_chore_scheduling.py (8 tests)                       |
+| **Pending Claim Actions** (3 types)                    | ✅ Complete | test_chore_scheduling.py + test_shared_chore_features.py |
+| **Partial States** (claimed_in_part, approved_in_part) | ✅ Complete | test_chore_state_matrix.py (6 tests)                     |
+| **Chore Services** (all 7 services)                    | ✅ Complete | test_chore_services.py (20 tests)                        |
+| **Shared Chore Auto-Approve**                          | ✅ Complete | test_shared_chore_features.py (6 tests)                  |
+| **AT_DUE_DATE_THEN_RESET Interactions**                | ✅ Complete | test_approval_reset_overdue_interaction.py (8 tests)     |
+| **Frequency Effects** (daily/weekly/monthly/once)      | ✅ Partial  | test_chore_scheduling.py (3 tests) - basic coverage      |
 
 ---
 

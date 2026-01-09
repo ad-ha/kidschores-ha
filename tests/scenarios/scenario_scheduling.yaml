@@ -132,6 +132,7 @@ chores:
   # ---------------------------------------------------------------------------
 
   # Test: at_due_date - Shows OVERDUE when past due (standard behavior)
+  # NOTE: Due date set to future during setup; tests set to past via coordinator
   - name: "Overdue At Due Date"
     assigned_to: ["Zoë"]
     points: 10.0
@@ -142,10 +143,11 @@ chores:
     approval_reset_type: "at_midnight_once"
     overdue_handling_type: "at_due_date"
     approval_reset_pending_claim_action: "clear_pending"
-    # Due date: Yesterday 5 PM (past, should be OVERDUE)
-    due_date: "-1d17:00"
+    # Due date: Future for config flow (tests set past via coordinator)
+    due_date: "+1d17:00"
 
   # Test: never_overdue - Never shows OVERDUE even when past due
+  # NOTE: Due date set to future during setup; tests set to past via coordinator
   - name: "Overdue Never"
     assigned_to: ["Zoë"]
     points: 10.0
@@ -156,10 +158,11 @@ chores:
     approval_reset_type: "at_midnight_once"
     overdue_handling_type: "never_overdue"
     approval_reset_pending_claim_action: "clear_pending"
-    # Due date: Yesterday 5 PM (past, but should NOT be overdue)
-    due_date: "-1d17:00"
+    # Due date: Future for config flow (tests set past via coordinator)
+    due_date: "+1d17:00"
 
   # Test: at_due_date_then_reset - Shows OVERDUE briefly, then auto-resets
+  # NOTE: Due date set to future during setup; tests set to past via coordinator
   - name: "Overdue Then Reset"
     assigned_to: ["Zoë"]
     points: 10.0
@@ -170,8 +173,8 @@ chores:
     approval_reset_type: "at_midnight_once"
     overdue_handling_type: "at_due_date_then_reset"
     approval_reset_pending_claim_action: "clear_pending"
-    # Due date: Yesterday 5 PM (past, should be OVERDUE then reset)
-    due_date: "-1d17:00"
+    # Due date: Future for config flow (tests set past via coordinator)
+    due_date: "+1d17:00"
 
   # ---------------------------------------------------------------------------
   # SECTION 3: PENDING CLAIM ACTIONS (3 chores)
@@ -222,13 +225,13 @@ chores:
   # Additional coverage for rescheduling logic
   # ---------------------------------------------------------------------------
 
-  # Test: One-time chore (frequency=once) - Should NOT reschedule after approval
+  # Test: One-time chore (frequency=none) - Should NOT reschedule after approval
   - name: "One Time Task"
     assigned_to: ["Zoë"]
     points: 50.0
     icon: "mdi:numeric-1-circle"
     completion_criteria: "independent"
-    recurring_frequency: "once"
+    recurring_frequency: "none"
     auto_approve: false
     approval_reset_type: "upon_completion"
     overdue_handling_type: "at_due_date"
@@ -251,6 +254,7 @@ chores:
     due_date: "+14d17:00"
 
   # Test: Weekly chore with past due date - Overdue + weekly reschedule
+  # NOTE: Due date set to future during setup; tests set to past via coordinator
   - name: "Weekly Overdue"
     assigned_to: ["Zoë"]
     points: 15.0
@@ -261,8 +265,20 @@ chores:
     approval_reset_type: "at_midnight_once"
     overdue_handling_type: "at_due_date"
     approval_reset_pending_claim_action: "clear_pending"
-    # Due date: 3 days ago (past, should be overdue)
-    due_date: "-3d17:00"
+    # Due date: Future for config flow (tests set past via coordinator)
+    due_date: "+1d17:00"
+
+# Minimal badges for config flow completion (scheduling tests don't use badges)
+badges:
+  - name: "Placeholder"
+    icon: "mdi:star"
+    points: 100
+    description: "Placeholder badge for config flow"
+
+# No bonuses, penalties, rewards needed for scheduling tests
+bonuses: []
+penalties: []
+rewards: []
 # =============================================================================
 # CHORE SUMMARY (15 total)
 # =============================================================================

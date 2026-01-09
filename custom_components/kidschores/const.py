@@ -2193,6 +2193,7 @@ CFOP_ERROR_UNKNOWN: Final = "unknown"
 # Phase 3 additions for config_flow remediation
 CFOP_ERROR_EMPTY_JSON: Final = "empty_json"  # Empty JSON data provided
 CFOP_ERROR_INVALID_SELECTION: Final = "invalid_selection"  # Invalid menu selection
+CFOP_ERROR_OVERDUE_RESET_COMBO: Final = "overdue_handling_type"  # Invalid combination
 # Phase 3c: System Settings Consolidation
 CFOP_ERROR_UPDATE_INTERVAL: Final = "update_interval"
 CFOP_ERROR_CALENDAR_SHOW_PERIOD: Final = "calendar_show_period"
@@ -2368,6 +2369,9 @@ TRANS_KEY_CFOF_CHALLENGE_POINTS_INVALID: Final = "err_points_invalid"
 TRANS_KEY_CFOF_INVALID_CHORE: Final = "invalid_chore"
 TRANS_KEY_CFOF_INVALID_CHORE_COUNT: Final = "invalid_chore_count"
 TRANS_KEY_CFOF_INVALID_CHORE_NAME: Final = "invalid_chore_name"
+TRANS_KEY_CFOF_INVALID_OVERDUE_RESET_COMBINATION: Final = (
+    "invalid_overdue_reset_combination"
+)
 TRANS_KEY_CFOF_NO_KIDS_ASSIGNED: Final = "no_kids_assigned"
 TRANS_KEY_CFOF_INVALID_DUE_DATE: Final = "invalid_due_date"
 TRANS_KEY_CFOF_DATE_REQUIRED_FOR_FREQUENCY: Final = "date_required_for_frequency"

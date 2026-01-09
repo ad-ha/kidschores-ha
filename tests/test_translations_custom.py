@@ -24,7 +24,6 @@ import pytest
 
 from custom_components.kidschores import const
 
-
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
@@ -32,7 +31,11 @@ from custom_components.kidschores import const
 
 def get_translations_dir() -> Path:
     """Get path to custom translations directory."""
-    return Path("custom_components/kidschores/translations_custom")
+    # Use absolute path based on this file's location
+    # tests/test_translations_custom.py -> custom_components/kidschores/translations_custom
+    tests_dir = Path(__file__).parent
+    workspace_root = tests_dir.parent
+    return workspace_root / "custom_components" / "kidschores" / "translations_custom"
 
 
 def load_notification_translations(language: str) -> dict[str, Any]:

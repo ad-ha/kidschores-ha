@@ -21,7 +21,7 @@
 | Phase 6 – Workflow Tests      | Create test_workflow_chores.py (chore matrix)    | 100%       | ✅ 11 tests, all passing               |
 | Phase 6b – Notification Tests | Create test_workflow_notifications.py            | 100%       | ✅ 9 tests, true config flow setup     |
 | Phase 6c – Translation Tests  | Create test_translations_custom.py               | 100%       | ✅ 85 tests, all 12 languages          |
-| Phase 7 – Migration (Ongoing) | Migrate high-value tests to modern patterns      | 10%        | Deleted 2 legacy notif test files      |
+| Phase 7 – Migration (Ongoing) | Migrate high-value tests to modern patterns      | 25%        | ✅ 6 new chore test files              |
 
 1. **Key objective** – Separate legacy tests (direct coordinator manipulation) from modern tests (full config flow integration) to establish a high-confidence test suite while preserving existing regression coverage.
 
@@ -65,7 +65,14 @@
    - ✅ **NEW**: Deleted legacy notification tests (superseded by modern tests):
      - `tests/legacy/test_notification_translations.py` (435 lines)
      - `tests/legacy/test_notification_translations_integration.py` (131 lines)
-   - ✅ **NEW**: Total test suite: 819 passed, 36 skipped
+   - ✅ **NEW**: Comprehensive chore services testing (Phase 7 migration):
+     - Created `test_chore_services.py` (20 tests) - claim, approve, set_due_date, skip, reset
+     - Created `test_shared_chore_features.py` (15 tests) - auto-approve, pending claim actions
+     - Created `test_approval_reset_overdue_interaction.py` (8 tests) - reset type interactions
+     - Created `test_chore_state_matrix.py` (18 tests) - all states × completion criteria
+     - Created `test_chore_scheduling.py` (41 tests) - due dates, overdue, approval reset
+   - ✅ **NEW**: Refactored `coordinator.reset_all_chores()` from services.py (service handler delegation)
+   - ✅ **NEW**: Total test suite: 899 passed, 65 skipped (964 total collected)
 
 3. **Next steps (short term)**
 
@@ -115,9 +122,16 @@
   - `test_config_flow_fresh_start.py` (modern pattern - 12 tests)
   - `test_setup_helper.py` (setup helper tests - 5 tests)
   - `test_yaml_setup.py` (YAML setup tests - 6 tests)
-  - `test_workflow_chores.py` (chore workflow tests - 11 tests) ⭐ NEW
+  - `test_workflow_chores.py` (chore workflow tests - 11 tests)
+  - `test_workflow_notifications.py` (notification tests - 9 tests)
+  - `test_translations_custom.py` (translation tests - 85 tests)
+  - `test_chore_state_matrix.py` (state matrix tests - 18 tests) ⭐ NEW
+  - `test_chore_scheduling.py` (scheduling tests - 41 tests) ⭐ NEW
+  - `test_chore_services.py` (service tests - 20 tests) ⭐ NEW
+  - `test_shared_chore_features.py` (shared chore tests - 15 tests) ⭐ NEW
+  - `test_approval_reset_overdue_interaction.py` (reset interaction tests - 8 tests) ⭐ NEW
   - `helpers/` module (constants, workflows, validation, setup)
-  - `scenarios/` directory (YAML scenario files: minimal, shared, full)
+  - `scenarios/` directory (YAML scenario files: minimal, shared, full, scheduling, etc.)
   - Documentation files (\*.md)
 
 - **Files MOVED to tests/legacy/** (67+ files):
@@ -462,32 +476,44 @@
   ```
   tests/
   ├── __init__.py
-  ├── conftest.py              # Modern fixtures (~190 lines)
-  ├── test_config_flow_fresh_start.py  # 12 tests
-  ├── test_setup_helper.py     # 5 tests
-  ├── test_yaml_setup.py       # 6 tests
-  ├── test_workflow_chores.py  # 11 tests ⭐ NEW
-  ├── helpers/                 # Helper modules
+  ├── conftest.py                             # Modern fixtures (~190 lines)
+  ├── test_config_flow_fresh_start.py         # 12 tests
+  ├── test_setup_helper.py                    # 5 tests
+  ├── test_yaml_setup.py                      # 6 tests
+  ├── test_workflow_chores.py                 # 11 tests
+  ├── test_workflow_notifications.py          # 9 tests
+  ├── test_translations_custom.py             # 85 tests
+  ├── test_chore_state_matrix.py              # 18 tests ⭐ NEW
+  ├── test_chore_scheduling.py                # 41 tests ⭐ NEW
+  ├── test_chore_services.py                  # 20 tests ⭐ NEW
+  ├── test_shared_chore_features.py           # 15 tests ⭐ NEW
+  ├── test_approval_reset_overdue_interaction.py  # 8 tests ⭐ NEW
+  ├── helpers/                                # Helper modules
   │   ├── __init__.py
   │   ├── constants.py
   │   ├── setup.py
   │   ├── validation.py
   │   └── workflows.py
-  ├── scenarios/               # YAML scenario files
+  ├── scenarios/                              # YAML scenario files
   │   ├── __init__.py
-  │   ├── scenario_full.yaml     # 3 kids, 18 chores
-  │   ├── scenario_minimal.yaml  # 1 kid, 5 chores ⭐ NEW
-  │   └── scenario_shared.yaml   # 3 kids, 8 shared chores ⭐ NEW
-  ├── legacy/                  # Legacy tests (699 tests)
+  │   ├── scenario_full.yaml                  # 3 kids, 18 chores
+  │   ├── scenario_minimal.yaml               # 1 kid, 5 chores
+  │   ├── scenario_shared.yaml                # 3 kids, 8 shared chores
+  │   ├── scenario_scheduling.yaml            # 1 kid, 13 chores ⭐ NEW
+  │   ├── scenario_chore_services.yaml        # 2 kids, 7 chores ⭐ NEW
+  │   ├── scenario_approval_reset_overdue.yaml    # 3 kids, 5 chores ⭐ NEW
+  │   └── scenario_notifications.yaml         # Notification scenarios
+  ├── legacy/                                 # Legacy tests (~735 tests)
   │   ├── conftest.py
   │   ├── test_*.py files
   │   └── testdata_*.yaml files
-  └── *.md                     # Documentation
+  └── *.md                                    # Documentation
   ```
 
-- **Test Results After Cleanup**:
-  - Modern tests: 21 passed, 2 skipped
-  - Legacy tests: 699 passed, 34 skipped
+- **Test Results After Chore Workflow Testing**:
+  - Modern tests: 227 passed, 4 skipped
+  - Legacy tests: ~737 passed (includes some skips)
+  - **Total combined: 899 passed, 65 skipped (964 total)**
 
 ### Phase 6 – Workflow Tests ✅ COMPLETE
 
@@ -615,18 +641,18 @@
 
 - **Modern suite**: `python -m pytest tests/ -v --ignore=tests/legacy --tb=line`
 
-  - Current: 32 passed, 2 skipped ✅
-  - Files: test_config_flow_fresh_start.py (12), test_setup_helper.py (5), test_yaml_setup.py (6), test_workflow_chores.py (11)
-  - Target: 50+ tests (next: rewards, penalties, bonuses)
+  - Current: 227 passed, 4 skipped ✅
+  - Files: test_config_flow_fresh_start.py (12), test_setup_helper.py (5), test_yaml_setup.py (6), test_workflow_chores.py (11), test_workflow_notifications.py (9), test_translations_custom.py (85), test_chore_state_matrix.py (18), test_chore_scheduling.py (41), test_chore_services.py (20), test_shared_chore_features.py (15), test_approval_reset_overdue_interaction.py (8)
+  - Target: Comprehensive chore workflow coverage ✅ ACHIEVED
 
 - **Legacy suite**: `python -m pytest tests/legacy/ -v --tb=line`
 
-  - Current: 699 passed, 34 skipped
+  - Current: ~737 passed with skips
   - Will decrease as tests are migrated
 
 - **Combined suite**: `python -m pytest tests/ -v --tb=line`
 
-  - Current: 731 passed, 36 skipped ✅
+  - Current: 899 passed, 65 skipped ✅
   - Should always pass before any PR merge
 
 - **Linting**: `./utils/quick_lint.sh --fix`

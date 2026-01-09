@@ -128,6 +128,112 @@ chores:
     completion_criteria: "shared_first"
     recurring_frequency: "weekly"
     auto_approve: false
+
+  # ==========================================================================
+  # SHARED_ALL WITH AUTO-APPROVE AND PENDING CLAIM ACTIONS
+  # ==========================================================================
+
+  # Test: shared_all with auto_approve=true
+  - name: "Shared All Auto Approve"
+    assigned_to: ["Zoë", "Max", "Lila"]
+    points: 12.0
+    icon: "mdi:check-all"
+    completion_criteria: "shared_all"
+    recurring_frequency: "daily"
+    auto_approve: true
+    due_date: "+1d17:00"
+
+  # Test: shared_all with pending_claim_action=hold_pending
+  - name: "Shared All Pending Hold"
+    assigned_to: ["Zoë", "Max"]
+    points: 10.0
+    icon: "mdi:hand-back-left"
+    completion_criteria: "shared_all"
+    recurring_frequency: "daily"
+    auto_approve: false
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "hold_pending"
+    due_date: "+1d17:00"
+
+  # Test: shared_all with pending_claim_action=clear_pending
+  - name: "Shared All Pending Clear"
+    assigned_to: ["Zoë", "Max"]
+    points: 10.0
+    icon: "mdi:eraser"
+    completion_criteria: "shared_all"
+    recurring_frequency: "daily"
+    auto_approve: false
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date: "+1d17:00"
+
+  # Test: shared_all with pending_claim_action=auto_approve_pending
+  - name: "Shared All Pending Auto Approve"
+    assigned_to: ["Zoë", "Max"]
+    points: 10.0
+    icon: "mdi:check-decagram"
+    completion_criteria: "shared_all"
+    recurring_frequency: "daily"
+    auto_approve: false
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "auto_approve_pending"
+    due_date: "+1d17:00"
+
+  # ==========================================================================
+  # SHARED_FIRST WITH AUTO-APPROVE AND PENDING CLAIM ACTIONS
+  # ==========================================================================
+
+  # Test: shared_first with auto_approve=true
+  - name: "Shared First Auto Approve"
+    assigned_to: ["Zoë", "Max", "Lila"]
+    points: 15.0
+    icon: "mdi:flash-auto"
+    completion_criteria: "shared_first"
+    recurring_frequency: "daily"
+    auto_approve: true
+    due_date: "+1d17:00"
+
+  # Test: shared_first with pending_claim_action=hold_pending
+  - name: "Shared First Pending Hold"
+    assigned_to: ["Zoë", "Max"]
+    points: 10.0
+    icon: "mdi:hand-back-left-outline"
+    completion_criteria: "shared_first"
+    recurring_frequency: "daily"
+    auto_approve: false
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "hold_pending"
+    due_date: "+1d17:00"
+
+  # Test: shared_first with pending_claim_action=clear_pending
+  - name: "Shared First Pending Clear"
+    assigned_to: ["Zoë", "Max"]
+    points: 10.0
+    icon: "mdi:eraser-variant"
+    completion_criteria: "shared_first"
+    recurring_frequency: "daily"
+    auto_approve: false
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date: "+1d17:00"
+
+  # Test: shared_first with pending_claim_action=auto_approve_pending
+  - name: "Shared First Pending Auto Approve"
+    assigned_to: ["Zoë", "Max"]
+    points: 10.0
+    icon: "mdi:check-decagram-outline"
+    completion_criteria: "shared_first"
+    recurring_frequency: "daily"
+    auto_approve: false
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "auto_approve_pending"
+    due_date: "+1d17:00"
 # =============================================================================
 # CHORE COVERAGE MATRIX
 # =============================================================================
@@ -143,7 +249,20 @@ chores:
 #   - Weekly, 3 kids: Wash the car (25pts)
 #   - Weekly, 2 kids: Organize garage (30pts) - Zoë, Max
 #
+# SHARED_ALL AUTO-APPROVE & PENDING CLAIM (4 chores):
+#   - Auto Approve, 3 kids: Shared All Auto Approve (12pts)
+#   - Pending Hold, 2 kids: Shared All Pending Hold (10pts) - Zoë, Max
+#   - Pending Clear, 2 kids: Shared All Pending Clear (10pts) - Zoë, Max
+#   - Pending Auto Approve, 2 kids: Shared All Pending Auto Approve (10pts) - Zoë, Max
+#
+# SHARED_FIRST AUTO-APPROVE & PENDING CLAIM (4 chores):
+#   - Auto Approve, 3 kids: Shared First Auto Approve (15pts)
+#   - Pending Hold, 2 kids: Shared First Pending Hold (10pts) - Zoë, Max
+#   - Pending Clear, 2 kids: Shared First Pending Clear (10pts) - Zoë, Max
+#   - Pending Auto Approve, 2 kids: Shared First Pending Auto Approve (10pts) - Zoë, Max
+#
 # Kid Assignment Coverage:
 #   - Zoë: 7 chores (all except Clean bathroom)
 #   - Max: 7 chores (all except Get the mail)
 #   - Lila: 6 chores (all except Walk the dog, Organize garage)
+

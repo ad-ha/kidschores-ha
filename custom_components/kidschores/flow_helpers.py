@@ -783,6 +783,28 @@ def build_chores_data(
         errors[const.CFOP_ERROR_ASSIGNED_KIDS] = const.TRANS_KEY_CFOF_NO_KIDS_ASSIGNED
         return {}, errors
 
+    # Validate AT_DUE_DATE_THEN_RESET only works with AT_MIDNIGHT_* reset types
+    overdue_handling = user_input.get(
+        const.CFOF_CHORES_INPUT_OVERDUE_HANDLING_TYPE,
+        const.DEFAULT_OVERDUE_HANDLING_TYPE,
+    )
+    approval_reset = user_input.get(
+        const.CFOF_CHORES_INPUT_APPROVAL_RESET_TYPE,
+        const.DEFAULT_APPROVAL_RESET_TYPE,
+    )
+    if overdue_handling == const.OVERDUE_HANDLING_AT_DUE_DATE_THEN_RESET:
+        # AT_DUE_DATE_THEN_RESET only makes sense with midnight resets
+        # where the reset time is AFTER the due date
+        valid_reset_types = {
+            const.APPROVAL_RESET_AT_MIDNIGHT_ONCE,
+            const.APPROVAL_RESET_AT_MIDNIGHT_MULTI,
+        }
+        if approval_reset not in valid_reset_types:
+            errors[const.CFOP_ERROR_OVERDUE_RESET_COMBO] = (
+                const.TRANS_KEY_CFOF_INVALID_OVERDUE_RESET_COMBINATION
+            )
+            return {}, errors
+
     # Build chore data
     completion_criteria = user_input.get(
         const.CFOF_CHORES_INPUT_COMPLETION_CRITERIA,

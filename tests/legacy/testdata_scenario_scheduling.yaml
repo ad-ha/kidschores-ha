@@ -1,3 +1,17 @@
+# ##############################################################################
+# ⚠️  WARNING: LEGACY TEST PATTERN - DO NOT COPY
+# ##############################################################################
+#
+# These tests are VALID and PASSING, but use a LEGACY fixture pattern.
+# DO NOT use this file as a reference for writing new tests.
+#
+# For new tests, follow AGENT_TEST_CREATION_INSTRUCTIONS.md:
+#   - Use setup_from_yaml() with scenarios in tests/scenarios/
+#   - Import constants from tests.helpers, NOT from const.py
+#   - See test_workflow_chores.py or test_yaml_setup.py for examples
+#
+# ##############################################################################
+
 # Test Scenario: SCHEDULING
 # =============================================================================
 # Comprehensive scheduling configuration for Phases 3-6 tests

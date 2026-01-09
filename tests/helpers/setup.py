@@ -28,15 +28,13 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-
+from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
-from homeassistant import config_entries
 
 from custom_components.kidschores import const
 from custom_components.kidschores.coordinator import KidsChoresDataCoordinator
-
 
 # =============================================================================
 # DATACLASSES
@@ -113,12 +111,8 @@ def _extract_kid_names_from_schema(result: ConfigFlowResult) -> list[str]:
         List of kid names available in the form
     """
     data_schema = _require_data_schema(result)
-    assigned_kids_field = data_schema.schema.get(
-        const.CFOF_CHORES_INPUT_ASSIGNED_KIDS
-    )
-    assert assigned_kids_field is not None, (
-        "assigned_kids field not found in schema"
-    )
+    assigned_kids_field = data_schema.schema.get(const.CFOF_CHORES_INPUT_ASSIGNED_KIDS)
+    assert assigned_kids_field is not None, "assigned_kids field not found in schema"
 
     kid_options = assigned_kids_field.config["options"]
     return [option["value"] for option in kid_options]
@@ -151,9 +145,7 @@ async def _configure_points_step(
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         user_input={
-            const.CFOF_SYSTEM_INPUT_POINTS_LABEL: points_config.get(
-                "label", "Points"
-            ),
+            const.CFOF_SYSTEM_INPUT_POINTS_LABEL: points_config.get("label", "Points"),
             const.CFOF_SYSTEM_INPUT_POINTS_ICON: points_config.get(
                 "icon", "mdi:star-outline"
             ),
@@ -236,9 +228,7 @@ async def _configure_parent_step(
     # Determine associated kid IDs
     associated_kid_names = parent_config.get("kids", list(kid_name_to_id.keys()))
     associated_kid_ids = [
-        kid_name_to_id[name]
-        for name in associated_kid_names
-        if name in kid_name_to_id
+        kid_name_to_id[name] for name in associated_kid_names if name in kid_name_to_id
     ]
 
     # Mobile notify service handling
@@ -362,8 +352,76 @@ async def _configure_chore_step(
     }
 
     # Add optional fields if provided
-    if "due_date" in chore_config and chore_config["due_date"] is not None:
-        user_input[const.CFOF_CHORES_INPUT_DUE_DATE] = chore_config["due_date"]
+    # Handle relative due dates in multiple formats
+    due_dt = None
+    if "due_date_relative" in chore_config:
+        # Simple format: "past" (yesterday) or "future" (tomorrow)
+        from datetime import datetime, timedelta, timezone
+
+        now = datetime.now(timezone.utc)
+        if chore_config["due_date_relative"] == "past":
+            due_dt = now - timedelta(days=1)
+        else:  # "future"
+            due_dt = now + timedelta(days=1)
+        # Set to 5 PM for consistency
+        due_dt = due_dt.replace(hour=17, minute=0, second=0, microsecond=0)
+    elif "due_date" in chore_config and chore_config["due_date"] is not None:
+        due_date_val = chore_config["due_date"]
+        # Handle relative format: "+1d17:00" (future) or "-3d17:00" (past)
+        if isinstance(due_date_val, str) and due_date_val[0] in "+-":
+            import re
+            from datetime import datetime, timedelta, timezone
+
+            match = re.match(r"([+-])(\d+)d(\d{2}):(\d{2})", due_date_val)
+            if match:
+                sign, days, hour, minute = match.groups()
+                now = datetime.now(timezone.utc)
+                delta = timedelta(days=int(days))
+                due_dt = now + delta if sign == "+" else now - delta
+                due_dt = due_dt.replace(
+                    hour=int(hour), minute=int(minute), second=0, microsecond=0
+                )
+            else:
+                # Static date string - parse it
+                from datetime import datetime, timezone
+
+                try:
+                    due_dt = datetime.fromisoformat(due_date_val)
+                except ValueError:
+                    due_dt = None
+        else:
+            # Static date string - parse it
+            from datetime import datetime, timezone
+
+            try:
+                if isinstance(due_date_val, str):
+                    due_dt = datetime.fromisoformat(due_date_val)
+                else:
+                    due_dt = due_date_val
+            except (ValueError, TypeError):
+                due_dt = None
+
+    # If we have a due_dt, check if it's in the past and adjust
+    if due_dt is not None:
+        from datetime import datetime, timedelta, timezone
+
+        now = datetime.now(timezone.utc)
+        if due_dt < now:
+            # Past due date - adjust to 1 week from now, keeping same time
+            original_dt = due_dt
+            due_dt = now + timedelta(weeks=1)
+            due_dt = due_dt.replace(
+                hour=original_dt.hour,
+                minute=original_dt.minute,
+                second=0,
+                microsecond=0,
+            )
+            print(
+                f"⚠️  WARNING: Chore '{chore_config['name']}' has past due date "
+                f"{original_dt.isoformat()}. Adjusted to {due_dt.isoformat()} "
+                f"(1 week from now) for config flow validation."
+            )
+        user_input[const.CFOF_CHORES_INPUT_DUE_DATE] = due_dt.isoformat()
     if "custom_interval" in chore_config:
         user_input[const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL] = chore_config[
             "custom_interval"
@@ -740,8 +798,7 @@ async def setup_multi_kid_scenario(
         kid_names = ["Zoë", "Max"]
 
     kids = [
-        {"name": name, "ha_user": f"kid{i + 1}"}
-        for i, name in enumerate(kid_names)
+        {"name": name, "ha_user": f"kid{i + 1}"} for i, name in enumerate(kid_names)
     ]
 
     return await setup_scenario(
@@ -896,4 +953,3 @@ async def setup_from_yaml(
 
     # Run setup
     return await setup_scenario(hass, mock_hass_users, scenario)
-
