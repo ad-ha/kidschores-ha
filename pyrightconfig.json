@@ -1,0 +1,6 @@
+{
+  "extraPaths": ["/workspaces/core"],
+  "exclude": ["**/node_modules", "**/__pycache__", ".git"],
+  "reportMissingImports": "warning",
+  "pythonVersion": "3.13"
+}

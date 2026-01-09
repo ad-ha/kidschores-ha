@@ -497,178 +497,198 @@ def build_chore_schema(kids_dict, default=None):
     """Build a schema for chores, referencing existing kids by name.
 
     Uses internal_id for entity management.
+    Dynamically adds "clear due date" checkbox when editing with existing date.
     """
     default = default or {}
     chore_name_default = default.get(const.DATA_CHORE_NAME, const.SENTINEL_EMPTY)
 
     kid_choices = {k: k for k in kids_dict}
 
-    return vol.Schema(
-        {
-            vol.Required(const.CFOF_CHORES_INPUT_NAME, default=chore_name_default): str,
-            vol.Optional(
-                const.CFOF_CHORES_INPUT_DESCRIPTION,
-                default=default.get(const.DATA_CHORE_DESCRIPTION, const.SENTINEL_EMPTY),
-            ): str,
-            vol.Optional(
-                const.CFOF_CHORES_INPUT_ICON,
-                default=default.get(const.DATA_CHORE_ICON, const.DEFAULT_CHORE_ICON),
-            ): selector.IconSelector(),
-            vol.Optional(
-                const.CFOF_CHORES_INPUT_LABELS,
-                default=default.get(const.CFOF_CHORES_INPUT_LABELS, []),
-            ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
-            vol.Required(
-                const.CFOF_CHORES_INPUT_DEFAULT_POINTS,
-                default=default.get(
-                    const.CFOF_CHORES_INPUT_DEFAULT_POINTS, const.DEFAULT_POINTS
-                ),
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    mode=selector.NumberSelectorMode.BOX,
-                    min=0,
-                    step=0.1,
-                )
-            ),
-            vol.Required(
-                const.CFOF_CHORES_INPUT_ASSIGNED_KIDS,
-                default=default.get(const.CFOF_CHORES_INPUT_ASSIGNED_KIDS, []),
-            ): cv.multi_select(kid_choices),
-            vol.Required(
-                const.CFOF_CHORES_INPUT_COMPLETION_CRITERIA,
-                default=default.get(
-                    const.CFOF_CHORES_INPUT_COMPLETION_CRITERIA,
-                    const.COMPLETION_CRITERIA_INDEPENDENT,
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.COMPLETION_CRITERIA_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_COMPLETION_CRITERIA,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
-            ),
-            vol.Required(
-                const.CFOF_CHORES_INPUT_APPROVAL_RESET_TYPE,
-                default=default.get(
-                    const.CFOF_CHORES_INPUT_APPROVAL_RESET_TYPE,
-                    const.DEFAULT_APPROVAL_RESET_TYPE,
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.APPROVAL_RESET_TYPE_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_APPROVAL_RESET_TYPE,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
-            ),
-            vol.Required(
-                const.CFOF_CHORES_INPUT_APPROVAL_RESET_PENDING_CLAIM_ACTION,
-                default=default.get(
-                    const.CFOF_CHORES_INPUT_APPROVAL_RESET_PENDING_CLAIM_ACTION,
-                    const.DEFAULT_APPROVAL_RESET_PENDING_CLAIM_ACTION,
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.APPROVAL_RESET_PENDING_CLAIM_ACTION_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_APPROVAL_RESET_PENDING_CLAIM_ACTION,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
-            ),
-            vol.Required(
-                const.CFOF_CHORES_INPUT_OVERDUE_HANDLING_TYPE,
-                default=default.get(
-                    const.CFOF_CHORES_INPUT_OVERDUE_HANDLING_TYPE,
-                    const.DEFAULT_OVERDUE_HANDLING_TYPE,
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.OVERDUE_HANDLING_TYPE_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_OVERDUE_HANDLING_TYPE,
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                )
-            ),
-            vol.Required(
-                const.CFOF_CHORES_INPUT_AUTO_APPROVE,
-                default=default.get(
-                    const.CFOF_CHORES_INPUT_AUTO_APPROVE,
-                    const.DEFAULT_CHORE_AUTO_APPROVE,
-                ),
-            ): selector.BooleanSelector(),
-            vol.Required(
-                const.CFOF_CHORES_INPUT_RECURRING_FREQUENCY,
-                default=default.get(
-                    const.CFOF_CHORES_INPUT_RECURRING_FREQUENCY, const.FREQUENCY_NONE
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=const.FREQUENCY_OPTIONS,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_RECURRING_FREQUENCY,
-                )
-            ),
-            vol.Optional(
-                const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL,
-                default=default.get(const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL, None),
-            ): vol.Any(
-                None,
-                selector.NumberSelector(
-                    selector.NumberSelectorConfig(
-                        mode=selector.NumberSelectorMode.BOX, min=1, step=1
-                    )
-                ),
-            ),
-            vol.Optional(
-                const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL_UNIT,
-                default=default.get(const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL_UNIT, None),
-            ): vol.Any(
-                None,
-                selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=const.CUSTOM_INTERVAL_UNIT_OPTIONS,
-                        translation_key=const.TRANS_KEY_FLOW_HELPERS_CUSTOM_INTERVAL_UNIT,
-                        multiple=False,
-                        mode=selector.SelectSelectorMode.DROPDOWN,
-                    )
-                ),
-            ),
-            vol.Optional(
-                const.CFOF_CHORES_INPUT_APPLICABLE_DAYS,
-                default=default.get(
-                    const.CFOF_CHORES_INPUT_APPLICABLE_DAYS,
-                    const.DEFAULT_APPLICABLE_DAYS,
-                ),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=[
-                        {"value": key, "label": label}
-                        for key, label in const.WEEKDAY_OPTIONS.items()
-                    ],
-                    multiple=True,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_APPLICABLE_DAYS,
-                )
-            ),
-            vol.Optional(
-                const.CFOF_CHORES_INPUT_DUE_DATE,
-                default=default.get(const.CFOF_CHORES_INPUT_DUE_DATE),
-            ): vol.Any(None, selector.DateTimeSelector()),
-            vol.Required(
-                const.CFOF_CHORES_INPUT_SHOW_ON_CALENDAR,
-                default=default.get(const.CFOF_CHORES_INPUT_SHOW_ON_CALENDAR, True),
-            ): selector.BooleanSelector(),
-            vol.Optional(
-                const.CFOF_CHORES_INPUT_NOTIFICATIONS,
-                default=_build_notification_defaults(default),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=[
-                        const.DATA_CHORE_NOTIFY_ON_CLAIM,
-                        const.DATA_CHORE_NOTIFY_ON_APPROVAL,
-                        const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL,
-                    ],
-                    multiple=True,
-                    translation_key=const.TRANS_KEY_FLOW_HELPERS_CHORE_NOTIFICATIONS,
-                )
-            ),
-        }
+    # Check if there's an existing due date (for edit mode)
+    existing_due_date = default.get(const.CFOF_CHORES_INPUT_DUE_DATE) or default.get(
+        const.DATA_CHORE_DUE_DATE
     )
+
+    # Build schema fields dict
+    schema_fields: dict[Any, Any] = {
+        vol.Required(const.CFOF_CHORES_INPUT_NAME, default=chore_name_default): str,
+        vol.Optional(
+            const.CFOF_CHORES_INPUT_DESCRIPTION,
+            default=default.get(const.DATA_CHORE_DESCRIPTION, const.SENTINEL_EMPTY),
+        ): str,
+        vol.Optional(
+            const.CFOF_CHORES_INPUT_ICON,
+            default=default.get(const.DATA_CHORE_ICON, const.DEFAULT_CHORE_ICON),
+        ): selector.IconSelector(),
+        vol.Optional(
+            const.CFOF_CHORES_INPUT_LABELS,
+            default=default.get(const.CFOF_CHORES_INPUT_LABELS, []),
+        ): selector.LabelSelector(selector.LabelSelectorConfig(multiple=True)),
+        vol.Required(
+            const.CFOF_CHORES_INPUT_DEFAULT_POINTS,
+            default=default.get(
+                const.CFOF_CHORES_INPUT_DEFAULT_POINTS, const.DEFAULT_POINTS
+            ),
+        ): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                mode=selector.NumberSelectorMode.BOX,
+                min=0,
+                step=0.1,
+            )
+        ),
+        vol.Required(
+            const.CFOF_CHORES_INPUT_ASSIGNED_KIDS,
+            default=default.get(const.CFOF_CHORES_INPUT_ASSIGNED_KIDS, []),
+        ): cv.multi_select(kid_choices),
+        vol.Required(
+            const.CFOF_CHORES_INPUT_COMPLETION_CRITERIA,
+            default=default.get(
+                const.CFOF_CHORES_INPUT_COMPLETION_CRITERIA,
+                const.COMPLETION_CRITERIA_INDEPENDENT,
+            ),
+        ): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=const.COMPLETION_CRITERIA_OPTIONS,
+                translation_key=const.TRANS_KEY_FLOW_HELPERS_COMPLETION_CRITERIA,
+                mode=selector.SelectSelectorMode.DROPDOWN,
+            )
+        ),
+        vol.Required(
+            const.CFOF_CHORES_INPUT_APPROVAL_RESET_TYPE,
+            default=default.get(
+                const.CFOF_CHORES_INPUT_APPROVAL_RESET_TYPE,
+                const.DEFAULT_APPROVAL_RESET_TYPE,
+            ),
+        ): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=const.APPROVAL_RESET_TYPE_OPTIONS,
+                translation_key=const.TRANS_KEY_FLOW_HELPERS_APPROVAL_RESET_TYPE,
+                mode=selector.SelectSelectorMode.DROPDOWN,
+            )
+        ),
+        vol.Required(
+            const.CFOF_CHORES_INPUT_APPROVAL_RESET_PENDING_CLAIM_ACTION,
+            default=default.get(
+                const.CFOF_CHORES_INPUT_APPROVAL_RESET_PENDING_CLAIM_ACTION,
+                const.DEFAULT_APPROVAL_RESET_PENDING_CLAIM_ACTION,
+            ),
+        ): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=const.APPROVAL_RESET_PENDING_CLAIM_ACTION_OPTIONS,
+                translation_key=const.TRANS_KEY_FLOW_HELPERS_APPROVAL_RESET_PENDING_CLAIM_ACTION,
+                mode=selector.SelectSelectorMode.DROPDOWN,
+            )
+        ),
+        vol.Required(
+            const.CFOF_CHORES_INPUT_OVERDUE_HANDLING_TYPE,
+            default=default.get(
+                const.CFOF_CHORES_INPUT_OVERDUE_HANDLING_TYPE,
+                const.DEFAULT_OVERDUE_HANDLING_TYPE,
+            ),
+        ): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=const.OVERDUE_HANDLING_TYPE_OPTIONS,
+                translation_key=const.TRANS_KEY_FLOW_HELPERS_OVERDUE_HANDLING_TYPE,
+                mode=selector.SelectSelectorMode.DROPDOWN,
+            )
+        ),
+        vol.Required(
+            const.CFOF_CHORES_INPUT_AUTO_APPROVE,
+            default=default.get(
+                const.CFOF_CHORES_INPUT_AUTO_APPROVE,
+                const.DEFAULT_CHORE_AUTO_APPROVE,
+            ),
+        ): selector.BooleanSelector(),
+        vol.Required(
+            const.CFOF_CHORES_INPUT_RECURRING_FREQUENCY,
+            default=default.get(
+                const.CFOF_CHORES_INPUT_RECURRING_FREQUENCY, const.FREQUENCY_NONE
+            ),
+        ): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=const.FREQUENCY_OPTIONS,
+                translation_key=const.TRANS_KEY_FLOW_HELPERS_RECURRING_FREQUENCY,
+            )
+        ),
+        vol.Optional(
+            const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL,
+            default=default.get(const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL, None),
+        ): vol.Any(
+            None,
+            selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    mode=selector.NumberSelectorMode.BOX, min=1, step=1
+                )
+            ),
+        ),
+        vol.Optional(
+            const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL_UNIT,
+            default=default.get(const.CFOF_CHORES_INPUT_CUSTOM_INTERVAL_UNIT, None),
+        ): vol.Any(
+            None,
+            selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=const.CUSTOM_INTERVAL_UNIT_OPTIONS,
+                    translation_key=const.TRANS_KEY_FLOW_HELPERS_CUSTOM_INTERVAL_UNIT,
+                    multiple=False,
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                )
+            ),
+        ),
+        vol.Optional(
+            const.CFOF_CHORES_INPUT_APPLICABLE_DAYS,
+            default=default.get(
+                const.CFOF_CHORES_INPUT_APPLICABLE_DAYS,
+                const.DEFAULT_APPLICABLE_DAYS,
+            ),
+        ): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=[
+                    {"value": key, "label": label}
+                    for key, label in const.WEEKDAY_OPTIONS.items()
+                ],
+                multiple=True,
+                translation_key=const.TRANS_KEY_FLOW_HELPERS_APPLICABLE_DAYS,
+            )
+        ),
+        vol.Optional(
+            const.CFOF_CHORES_INPUT_DUE_DATE,
+            default=default.get(const.CFOF_CHORES_INPUT_DUE_DATE),
+        ): vol.Any(None, selector.DateTimeSelector()),
+    }
+
+    # Add "Clear due date" checkbox only when there's an existing date
+    if existing_due_date:
+        schema_fields[
+            vol.Optional(const.CFOF_CHORES_INPUT_CLEAR_DUE_DATE, default=False)
+        ] = selector.BooleanSelector()
+
+    # Add remaining fields
+    schema_fields[
+        vol.Required(
+            const.CFOF_CHORES_INPUT_SHOW_ON_CALENDAR,
+            default=default.get(const.CFOF_CHORES_INPUT_SHOW_ON_CALENDAR, True),
+        )
+    ] = selector.BooleanSelector()
+
+    schema_fields[
+        vol.Optional(
+            const.CFOF_CHORES_INPUT_NOTIFICATIONS,
+            default=_build_notification_defaults(default),
+        )
+    ] = selector.SelectSelector(
+        selector.SelectSelectorConfig(
+            options=[
+                const.DATA_CHORE_NOTIFY_ON_CLAIM,
+                const.DATA_CHORE_NOTIFY_ON_APPROVAL,
+                const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL,
+            ],
+            multiple=True,
+            translation_key=const.TRANS_KEY_FLOW_HELPERS_CHORE_NOTIFICATIONS,
+        )
+    )
+
+    return vol.Schema(schema_fields)
 
 
 def build_chores_data(
@@ -711,8 +731,15 @@ def build_chores_data(
         return {}, errors
 
     # Process due date
+    # Check if user explicitly wants to clear the date
+    clear_due_date = user_input.get(const.CFOF_CHORES_INPUT_CLEAR_DUE_DATE, False)
     due_date_str = None
-    if user_input.get(const.CFOF_CHORES_INPUT_DUE_DATE):
+
+    if clear_due_date:
+        # User explicitly cleared the date
+        const.LOGGER.debug("build_chores_data: user cleared due date via checkbox")
+        due_date_str = None
+    elif user_input.get(const.CFOF_CHORES_INPUT_DUE_DATE):
         raw_due = user_input[const.CFOF_CHORES_INPUT_DUE_DATE]
         const.LOGGER.debug(
             "build_chores_data: raw_due input = %s (type: %s)",
@@ -814,19 +841,22 @@ def build_chores_data(
     # Build per_kid_due_dates for ALL chores (SHARED + INDEPENDENT)
     # - SHARED: All kids have same date (synced with chore-level)
     # - INDEPENDENT: Template on creation, preserve existing per-kid overrides on edit
+    #   (unless user explicitly cleared the date via checkbox)
     per_kid_due_dates: dict[str, str | None] = {}
     for kid_id in assigned_kids_ids:
         # For INDEPENDENT chores being edited: preserve existing per-kid dates
+        # UNLESS user explicitly cleared the date via checkbox
         # For new kids or SHARED chores: use template date
         if (
             existing_per_kid_due_dates
             and completion_criteria == const.COMPLETION_CRITERIA_INDEPENDENT
             and kid_id in existing_per_kid_due_dates
+            and not clear_due_date  # Don't preserve if user wants to clear
         ):
             # Preserve existing per-kid date (may have been set via service)
             per_kid_due_dates[kid_id] = existing_per_kid_due_dates[kid_id]
         else:
-            # New kid or SHARED chore: use template date
+            # New kid, SHARED chore, or explicit clear: use template date (may be None)
             per_kid_due_dates[kid_id] = due_date_str  # Can be None (never overdue)
 
     # Build partial chore data from user input

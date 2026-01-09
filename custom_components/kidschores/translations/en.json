@@ -791,6 +791,7 @@
           "custom_interval_unit": "🔄 Schedule: Custom Interval Unit",
           "applicable_days": "📅 Schedule: Applicable Days (optional)",
           "due_date": "📅 Schedule: Due Date (optional)",
+          "clear_due_date": "🗑️ Clear Due Date",
           "show_on_calendar": "📅 Show on Calendar?",
           "chore_notifications": "🔔 Notification Events (optional)"
         },
@@ -811,6 +812,7 @@
           "custom_interval_unit": "Time unit for custom interval (days, weeks, months). Only used with Custom frequency.",
           "applicable_days": "Restrict chore to specific weekdays. Leave blank for all days.",
           "due_date": "Optional deadline. Can be combined with recurring schedules. For INDEPENDENT chores, this serves as a template—an additional screen will appear allowing individual dates per kid.",
+          "clear_due_date": "Check this box to remove the due date from this chore.",
           "show_on_calendar": "Display this chore on the calendar view.",
           "chore_notifications": "When to send notifications: On claim, on approval, on rejection, or any combination."
         }
