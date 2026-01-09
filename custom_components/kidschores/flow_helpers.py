@@ -287,6 +287,9 @@ def build_kids_data(
     enable_persist = user_input.get(
         const.CFOF_KIDS_INPUT_ENABLE_PERSISTENT_NOTIFICATIONS, True
     )
+    dashboard_language = user_input.get(
+        const.CFOF_KIDS_INPUT_DASHBOARD_LANGUAGE, const.DEFAULT_DASHBOARD_LANGUAGE
+    )
 
     return {
         internal_id: {
@@ -295,6 +298,7 @@ def build_kids_data(
             const.DATA_KID_ENABLE_NOTIFICATIONS: enable_mobile_notifications,
             const.DATA_KID_MOBILE_NOTIFY_SERVICE: notify_service,
             const.DATA_KID_USE_PERSISTENT_NOTIFICATIONS: enable_persist,
+            const.DATA_KID_DASHBOARD_LANGUAGE: dashboard_language,
             const.DATA_KID_INTERNAL_ID: internal_id,
         }
     }
@@ -803,7 +807,9 @@ def build_chores_data(
             # New kid or SHARED chore: use template date
             per_kid_due_dates[kid_id] = due_date_str  # Can be None (never overdue)
 
-    chore_data = {
+    # Build partial chore data from user input
+    # The shared helper (kh.build_default_chore_data) will apply all defaults
+    partial_chore_data = {
         const.DATA_CHORE_NAME: chore_name,
         const.DATA_CHORE_DEFAULT_POINTS: user_input.get(
             const.CFOF_CHORES_INPUT_DEFAULT_POINTS, const.DEFAULT_POINTS
@@ -864,8 +870,20 @@ def build_chores_data(
             const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL
             in user_input.get(const.CFOF_CHORES_INPUT_NOTIFICATIONS, [])
         ),
-        const.DATA_CHORE_INTERNAL_ID: internal_id,
+        # Calendar and auto-approve settings
+        const.DATA_CHORE_SHOW_ON_CALENDAR: user_input.get(
+            const.CFOF_CHORES_INPUT_SHOW_ON_CALENDAR,
+            const.DEFAULT_CHORE_SHOW_ON_CALENDAR,
+        ),
+        const.DATA_CHORE_AUTO_APPROVE: user_input.get(
+            const.CFOF_CHORES_INPUT_AUTO_APPROVE,
+            const.DEFAULT_CHORE_AUTO_APPROVE,
+        ),
     }
+
+    # Use shared helper to build complete chore data with all defaults
+    # This is the SINGLE SOURCE OF TRUTH for chore field initialization
+    chore_data = kh.build_default_chore_data(internal_id, partial_chore_data)
 
     return {internal_id: chore_data}, {}
 

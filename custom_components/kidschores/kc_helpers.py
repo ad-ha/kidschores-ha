@@ -20,19 +20,22 @@ This file is organized into logical sections for easy navigation:
 5. **Helper Functions** (Line 160)
    - Basic ID/name lookups without error raising (safe for optional checks)
 
-6. **Entity Lookup Helpers with Error Raising** (Line 311) 🔍
+6. **Data Structure Builders** (Line 470) 🏗️
+   - build_default_chore_data() - Single source of truth for chore field initialization
+
+7. **Entity Lookup Helpers with Error Raising** (Line 560) 🔍
    - ID/name lookups that raise HomeAssistantError (for services/actions)
 
-7. **KidsChores Progress & Completion Helpers** (Line 432) 🧮
+8. **KidsChores Progress & Completion Helpers** (Line 520) 🧮
    - Badge progress, chore completion, streak calculations
 
-8. **Date & Time Helpers** (Line 602) 🕒
+9. **Date & Time Helpers** (Line 690) 🕒
    - DateTime parsing, UTC conversion, interval calculations, scheduling
 
-9. **Dashboard Translation Loaders** (Line 1417)
-   - Helper translations for dashboard UI rendering
+10. **Dashboard Translation Loaders** (Line 1500)
+    - Helper translations for dashboard UI rendering
 
-10. **Device Info Helpers** (Line 1542)
+11. **Device Info Helpers** (Line 1630)
     - Device registry and device info construction
 
 """
@@ -45,7 +48,7 @@ import json
 import os
 from calendar import monthrange
 from datetime import date, datetime, timedelta, tzinfo
-from typing import TYPE_CHECKING, Iterable, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, Optional, Union
 
 import homeassistant.util.dt as dt_util
 from homeassistant.auth.models import User
@@ -469,7 +472,130 @@ async def async_get_friendly_label(hass: HomeAssistant, label_name: str) -> str:
 
 
 # ────────────────────────────────────────────────────────────────
-# 🎯 -------- Entity Lookup Helpers with Error Raising (for Services) --------
+# �️ -------- Data Structure Builders --------
+# These helpers build complete data structures with all required fields.
+# SINGLE SOURCE OF TRUTH for entity field initialization.
+# Used by both config flow (build_chores_data) and coordinator (_create_chore).
+# ────────────────────────────────────────────────────────────────
+
+
+def build_default_chore_data(
+    chore_id: str, chore_data: dict[str, Any]
+) -> dict[str, Any]:
+    """Build a complete chore data structure with all fields initialized.
+
+    This is the SINGLE SOURCE OF TRUTH for chore field initialization.
+    Used by both config flow's build_chores_data() and coordinator's _create_chore().
+
+    Args:
+        chore_id: The internal UUID for the chore.
+        chore_data: Partial chore data dict (from user input or existing data).
+
+    Returns:
+        Complete chore data dict with all fields set to appropriate defaults.
+    """
+    # Extract assigned_kids - these should already be UUIDs from flow helpers
+    assigned_kids_ids = chore_data.get(const.DATA_CHORE_ASSIGNED_KIDS, [])
+
+    # Handle custom interval fields - only set if frequency is CUSTOM
+    is_custom_frequency = (
+        chore_data.get(const.DATA_CHORE_RECURRING_FREQUENCY) == const.FREQUENCY_CUSTOM
+    )
+
+    return {
+        # Core identification
+        const.DATA_CHORE_INTERNAL_ID: chore_id,
+        const.DATA_CHORE_NAME: chore_data.get(
+            const.DATA_CHORE_NAME, const.SENTINEL_EMPTY
+        ),
+        # State - always starts as PENDING
+        const.DATA_CHORE_STATE: chore_data.get(
+            const.DATA_CHORE_STATE, const.CHORE_STATE_PENDING
+        ),
+        # Points and configuration
+        const.DATA_CHORE_DEFAULT_POINTS: chore_data.get(
+            const.DATA_CHORE_DEFAULT_POINTS, const.DEFAULT_POINTS
+        ),
+        const.DATA_CHORE_APPROVAL_RESET_TYPE: chore_data.get(
+            const.DATA_CHORE_APPROVAL_RESET_TYPE,
+            const.DEFAULT_APPROVAL_RESET_TYPE,
+        ),
+        const.DATA_CHORE_OVERDUE_HANDLING_TYPE: chore_data.get(
+            const.DATA_CHORE_OVERDUE_HANDLING_TYPE,
+            const.DEFAULT_OVERDUE_HANDLING_TYPE,
+        ),
+        const.DATA_CHORE_APPROVAL_RESET_PENDING_CLAIM_ACTION: chore_data.get(
+            const.DATA_CHORE_APPROVAL_RESET_PENDING_CLAIM_ACTION,
+            const.DEFAULT_APPROVAL_RESET_PENDING_CLAIM_ACTION,
+        ),
+        # Description and display
+        const.DATA_CHORE_DESCRIPTION: chore_data.get(
+            const.DATA_CHORE_DESCRIPTION, const.SENTINEL_EMPTY
+        ),
+        const.DATA_CHORE_LABELS: chore_data.get(const.DATA_CHORE_LABELS, []),
+        const.DATA_CHORE_ICON: chore_data.get(
+            const.DATA_CHORE_ICON, const.DEFAULT_ICON
+        ),
+        # Assignment
+        const.DATA_CHORE_ASSIGNED_KIDS: assigned_kids_ids,
+        # Scheduling - recurring frequency and custom interval
+        const.DATA_CHORE_RECURRING_FREQUENCY: chore_data.get(
+            const.DATA_CHORE_RECURRING_FREQUENCY, const.FREQUENCY_NONE
+        ),
+        const.DATA_CHORE_CUSTOM_INTERVAL: (
+            chore_data.get(const.DATA_CHORE_CUSTOM_INTERVAL)
+            if is_custom_frequency
+            else None
+        ),
+        const.DATA_CHORE_CUSTOM_INTERVAL_UNIT: (
+            chore_data.get(const.DATA_CHORE_CUSTOM_INTERVAL_UNIT)
+            if is_custom_frequency
+            else None
+        ),
+        # Due dates
+        const.DATA_CHORE_DUE_DATE: chore_data.get(const.DATA_CHORE_DUE_DATE),
+        const.DATA_CHORE_PER_KID_DUE_DATES: chore_data.get(
+            const.DATA_CHORE_PER_KID_DUE_DATES, {}
+        ),
+        const.DATA_CHORE_APPLICABLE_DAYS: chore_data.get(
+            const.DATA_CHORE_APPLICABLE_DAYS, []
+        ),
+        # Runtime tracking fields (initially None/empty)
+        const.DATA_CHORE_LAST_COMPLETED: chore_data.get(
+            const.DATA_CHORE_LAST_COMPLETED
+        ),
+        const.DATA_CHORE_LAST_CLAIMED: chore_data.get(const.DATA_CHORE_LAST_CLAIMED),
+        const.DATA_CHORE_APPROVAL_PERIOD_START: chore_data.get(
+            const.DATA_CHORE_APPROVAL_PERIOD_START
+        ),
+        # Notifications
+        const.DATA_CHORE_NOTIFY_ON_CLAIM: chore_data.get(
+            const.DATA_CHORE_NOTIFY_ON_CLAIM, const.DEFAULT_NOTIFY_ON_CLAIM
+        ),
+        const.DATA_CHORE_NOTIFY_ON_APPROVAL: chore_data.get(
+            const.DATA_CHORE_NOTIFY_ON_APPROVAL, const.DEFAULT_NOTIFY_ON_APPROVAL
+        ),
+        const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL: chore_data.get(
+            const.DATA_CHORE_NOTIFY_ON_DISAPPROVAL,
+            const.DEFAULT_NOTIFY_ON_DISAPPROVAL,
+        ),
+        # Calendar and features
+        const.DATA_CHORE_SHOW_ON_CALENDAR: chore_data.get(
+            const.DATA_CHORE_SHOW_ON_CALENDAR, const.DEFAULT_CHORE_SHOW_ON_CALENDAR
+        ),
+        const.DATA_CHORE_AUTO_APPROVE: chore_data.get(
+            const.DATA_CHORE_AUTO_APPROVE, const.DEFAULT_CHORE_AUTO_APPROVE
+        ),
+        # Completion criteria (SHARED vs INDEPENDENT)
+        const.DATA_CHORE_COMPLETION_CRITERIA: chore_data.get(
+            const.DATA_CHORE_COMPLETION_CRITERIA,
+            const.COMPLETION_CRITERIA_INDEPENDENT,
+        ),
+    }
+
+
+# ────────────────────────────────────────────────────────────────
+# �🎯 -------- Entity Lookup Helpers with Error Raising (for Services) --------
 # These helpers wrap the lookup functions above and raise HomeAssistantError
 # when entities are not found. This centralizes the error handling pattern
 # used throughout services.py, eliminating 40+ duplicate lookup blocks.
@@ -780,7 +906,6 @@ def get_today_chore_completion_progress(
     """
     today_local = get_now_local_time()
     today_iso = today_local.date().isoformat()
-    overdue_chores = set(kid_info.get(const.DATA_KID_OVERDUE_CHORES, []))
     chores_data = kid_info.get(const.DATA_KID_CHORE_DATA, {})
 
     # Use all kid's chores if tracked_chores is empty
@@ -827,13 +952,16 @@ def get_today_chore_completion_progress(
     if require_no_overdue:
         for chore_id in chores_to_check:
             chore_data = chores_data.get(chore_id, {})
+            # Check if chore state is overdue (single source of truth)
+            chore_state = chore_data.get(const.DATA_KID_CHORE_DATA_STATE)
+            if chore_state == const.CHORE_STATE_OVERDUE:
+                return False, approved_count, total_count
+            # Also check if it was marked overdue today (for daily achievements)
             last_overdue_iso = chore_data.get(const.DATA_KID_CHORE_DATA_LAST_OVERDUE)
             if (
                 last_overdue_iso
                 and last_overdue_iso[: const.ISO_DATE_STRING_LENGTH] == today_iso
             ):
-                return False, approved_count, total_count
-            if chore_id in overdue_chores:
                 return False, approved_count, total_count
 
     return True, approved_count, total_count

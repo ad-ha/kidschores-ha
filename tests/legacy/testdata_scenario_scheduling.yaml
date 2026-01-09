@@ -1,0 +1,241 @@
+# Test Scenario: SCHEDULING
+# =============================================================================
+# Comprehensive scheduling configuration for Phases 3-6 tests
+# Covers all 5 approval_reset_type, 3 overdue_handling_type, 3 pending_claim_action
+#
+# Contents:
+#   - 1 parent: Test Parent
+#   - 1 kid: Zoë (isolates scheduling from shared chore complexity)
+#   - 15 chores: One for each scheduling configuration combination
+#
+# Use case:
+#   - Phase 3: Due date calculation tests
+#   - Phase 4: Approval reset type tests (at_midnight_once bug)
+#   - Phase 5: Overdue handling tests
+#   - Phase 6: Pending claim action tests
+#
+# Due Date Convention:
+#   - past: Chore was due yesterday (test overdue detection)
+#   - future: Chore is due tomorrow (test normal workflow)
+#   - Tests will convert these to actual ISO timestamps at runtime
+# =============================================================================
+
+family:
+  parents:
+    - name: "Test Parent"
+      ha_user_name: "parent1"
+  kids:
+    - name: "Zoë"
+      ha_user_name: "kid1"
+
+# =============================================================================
+# CHORES: Organized by test phase
+# =============================================================================
+
+chores:
+  # ---------------------------------------------------------------------------
+  # SECTION 1: APPROVAL RESET TYPES (Phase 4)
+  # ---------------------------------------------------------------------------
+
+  # Test: at_midnight_once (DEFAULT) - Bug reproduction target
+  - name: "Reset Midnight Once"
+    assigned_to: ["Zoë"]
+    points: 10
+    type: "daily"
+    icon: "mdi:clock-outline"
+    completion_criteria: "independent"
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date_relative: "future"
+
+  # Test: at_midnight_multi
+  - name: "Reset Midnight Multi"
+    assigned_to: ["Zoë"]
+    points: 5
+    type: "daily"
+    icon: "mdi:clock-fast"
+    completion_criteria: "independent"
+    approval_reset_type: "at_midnight_multi"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date_relative: "future"
+
+  # Test: at_due_date_once
+  - name: "Reset Due Date Once"
+    assigned_to: ["Zoë"]
+    points: 10
+    type: "weekly"
+    icon: "mdi:calendar-check"
+    completion_criteria: "independent"
+    approval_reset_type: "at_due_date_once"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date_relative: "future"
+
+  # Test: at_due_date_multi
+  - name: "Reset Due Date Multi"
+    assigned_to: ["Zoë"]
+    points: 5
+    type: "weekly"
+    icon: "mdi:calendar-multiple"
+    completion_criteria: "independent"
+    approval_reset_type: "at_due_date_multi"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date_relative: "future"
+
+  # Test: upon_completion - Should reschedule immediately
+  - name: "Reset Upon Completion"
+    assigned_to: ["Zoë"]
+    points: 10
+    type: "daily"
+    icon: "mdi:check-circle"
+    completion_criteria: "independent"
+    approval_reset_type: "upon_completion"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date_relative: "future"
+
+  # ---------------------------------------------------------------------------
+  # SECTION 2: OVERDUE HANDLING TYPES (Phase 5)
+  # These chores have PAST due dates to test overdue detection
+  # ---------------------------------------------------------------------------
+
+  # Test: at_due_date - Should show OVERDUE
+  - name: "Overdue At Due Date"
+    assigned_to: ["Zoë"]
+    points: 10
+    type: "daily"
+    icon: "mdi:alert-circle"
+    completion_criteria: "independent"
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date_relative: "past"
+
+  # Test: never_overdue - Should NOT show overdue even when past
+  - name: "Overdue Never"
+    assigned_to: ["Zoë"]
+    points: 10
+    type: "daily"
+    icon: "mdi:shield-check"
+    completion_criteria: "independent"
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "never_overdue"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date_relative: "past"
+
+  # Test: at_due_date_then_reset - Should show OVERDUE then auto-reset
+  - name: "Overdue Then Reset"
+    assigned_to: ["Zoë"]
+    points: 10
+    type: "daily"
+    icon: "mdi:autorenew"
+    completion_criteria: "independent"
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "at_due_date_then_reset"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date_relative: "past"
+
+  # ---------------------------------------------------------------------------
+  # SECTION 3: PENDING CLAIM ACTIONS (Phase 6)
+  # NOTE: Must use "past" due date so reset logic triggers and processes pending claims
+  # Also using "never_overdue" to prevent overdue state from interfering
+  # ---------------------------------------------------------------------------
+
+  # Test: hold_pending - Claimed chore retained after reset
+  - name: "Pending Hold"
+    assigned_to: ["Zoë"]
+    points: 10
+    type: "daily"
+    icon: "mdi:hand-back-left"
+    completion_criteria: "independent"
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "never_overdue"
+    approval_reset_pending_claim_action: "hold_pending"
+    due_date_relative: "past"
+
+  # Test: clear_pending - Claimed chore cleared to pending after reset
+  - name: "Pending Clear"
+    assigned_to: ["Zoë"]
+    points: 10
+    type: "daily"
+    icon: "mdi:eraser"
+    completion_criteria: "independent"
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "never_overdue"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date_relative: "past"
+
+  # Test: auto_approve_pending - Claimed chore auto-approved at reset
+  - name: "Pending Auto Approve"
+    assigned_to: ["Zoë"]
+    points: 10
+    type: "daily"
+    icon: "mdi:check-decagram"
+    completion_criteria: "independent"
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "never_overdue"
+    approval_reset_pending_claim_action: "auto_approve_pending"
+    due_date_relative: "past"
+
+  # ---------------------------------------------------------------------------
+  # SECTION 4: FREQUENCY VARIATIONS (Phase 3)
+  # ---------------------------------------------------------------------------
+
+  # Test: one-time chore - Should NOT reschedule after approval
+  - name: "One Time Task"
+    assigned_to: ["Zoë"]
+    points: 50
+    type: "once"
+    icon: "mdi:numeric-1-circle"
+    completion_criteria: "independent"
+    approval_reset_type: "upon_completion"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date_relative: "future"
+
+  # Test: Weekly chore with past due date
+  - name: "Weekly Overdue"
+    assigned_to: ["Zoë"]
+    points: 15
+    type: "weekly"
+    icon: "mdi:calendar-week"
+    completion_criteria: "independent"
+    approval_reset_type: "at_midnight_once"
+    overdue_handling_type: "at_due_date"
+    approval_reset_pending_claim_action: "clear_pending"
+    due_date_relative: "past"
+
+# No badges, bonuses, penalties, rewards needed for scheduling tests
+badges: []
+bonuses: []
+penalties: []
+rewards: []
+
+progress: {}
+# =============================================================================
+# CHORE SUMMARY (15 total)
+# =============================================================================
+# Section 1 - Approval Reset Types (5 chores, all future due date):
+#   - Reset Midnight Once (at_midnight_once) - BUG REPRODUCTION TARGET
+#   - Reset Midnight Multi (at_midnight_multi)
+#   - Reset Due Date Once (at_due_date_once)
+#   - Reset Due Date Multi (at_due_date_multi)
+#   - Reset Upon Completion (upon_completion)
+#
+# Section 2 - Overdue Handling Types (3 chores, all past due date):
+#   - Overdue At Due Date (at_due_date)
+#   - Overdue Never (never_overdue)
+#   - Overdue Then Reset (at_due_date_then_reset)
+#
+# Section 3 - Pending Claim Actions (3 chores, all future due date):
+#   - Pending Hold (hold_pending)
+#   - Pending Clear (clear_pending)
+#   - Pending Auto Approve (auto_approve_pending)
+#
+# Section 4 - Frequency Variations (2 chores):
+#   - One Time Task (once) - no reschedule after approval
+#   - Weekly Overdue (weekly, past due)
+# =============================================================================

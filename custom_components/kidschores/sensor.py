@@ -436,7 +436,7 @@ class KidChoreStatusSensor(KidsChoresCoordinatorEntity, SensorEntity):
             return const.CHORE_STATE_COMPLETED_BY_OTHER
         elif self.coordinator.has_pending_claim(self._kid_id, self._chore_id):
             return const.CHORE_STATE_CLAIMED
-        elif self._chore_id in kid_info.get(const.DATA_KID_OVERDUE_CHORES, []):
+        elif self.coordinator.is_overdue(self._kid_id, self._chore_id):
             return const.CHORE_STATE_OVERDUE
         else:
             return const.CHORE_STATE_PENDING
@@ -2771,7 +2771,7 @@ class KidDashboardHelperSensor(KidsChoresCoordinatorEntity, SensorEntity):
             status = const.CHORE_STATE_APPROVED
         elif self.coordinator.has_pending_claim(self._kid_id, chore_id):
             status = const.CHORE_STATE_CLAIMED
-        elif chore_id in kid_info.get(const.DATA_KID_OVERDUE_CHORES, []):
+        elif self.coordinator.is_overdue(self._kid_id, chore_id):
             status = const.CHORE_STATE_OVERDUE
         elif chore_id in kid_info.get(const.DATA_KID_COMPLETED_BY_OTHER_CHORES, []):
             status = const.CHORE_STATE_COMPLETED_BY_OTHER
@@ -2937,7 +2937,7 @@ class KidDashboardHelperSensor(KidsChoresCoordinatorEntity, SensorEntity):
                 status = const.CHORE_STATE_APPROVED
             elif self.coordinator.has_pending_claim(self._kid_id, chore_id):
                 status = const.CHORE_STATE_CLAIMED
-            elif chore_id in kid_info.get(const.DATA_KID_OVERDUE_CHORES, []):
+            elif self.coordinator.is_overdue(self._kid_id, chore_id):
                 status = const.CHORE_STATE_OVERDUE
             elif chore_id in kid_info.get(const.DATA_KID_COMPLETED_BY_OTHER_CHORES, []):
                 status = const.CHORE_STATE_COMPLETED_BY_OTHER

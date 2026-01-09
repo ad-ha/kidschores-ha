@@ -916,8 +916,11 @@ def async_setup_services(hass: HomeAssistant):
                 chore_tracking[const.DATA_KID_CHORE_DATA_APPROVAL_PERIOD_START] = (
                     now_utc_iso
                 )
-            # Clear overdue tracking
-            kid_info[const.DATA_KID_OVERDUE_CHORES] = []
+                # Reset state to PENDING (single source of truth for state)
+                chore_tracking[const.DATA_KID_CHORE_DATA_STATE] = (
+                    const.CHORE_STATE_PENDING
+                )
+            # Clear overdue notification tracking
             kid_info[const.DATA_KID_OVERDUE_NOTIFICATIONS] = {}
 
         # Chore queue removed in v0.5.0 - computed from timestamps
