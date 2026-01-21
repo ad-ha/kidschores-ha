@@ -13,8 +13,7 @@ from typing import Optional
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-
-from .const import DOMAIN, LOGGER
+from . import const
 
 
 async def async_send_notification(
@@ -28,26 +27,28 @@ async def async_send_notification(
 ) -> None:
     """Send a notification using the specified notify service."""
 
-    payload = {"title": title, "message": message}
+    payload = {const.NOTIFY_TITLE: title, const.NOTIFY_MESSAGE: message}
 
     if actions:
-        payload.setdefault("data", {})["actions"] = actions
+        payload.setdefault(const.NOTIFY_DATA, {})[const.NOTIFY_ACTIONS] = actions
 
     if extra_data:
-        payload.setdefault("data", {}).update(extra_data)
+        payload.setdefault(const.NOTIFY_DATA, {}).update(extra_data)
 
     try:
-        if "." not in notify_service:
-            domain = "notify"
+        if const.CONF_DOT not in notify_service:
+            domain = const.NOTIFY_DOMAIN
             service = notify_service
         else:
             domain, service = notify_service.split(".", 1)
         await hass.services.async_call(domain, service, payload, blocking=True)
-        LOGGER.debug("Notification sent via '%s': %s", notify_service, payload)
+        const.LOGGER.debug(
+            "DEBUG: Notification sent via '%s': %s", notify_service, payload
+        )
 
     except Exception as err:
-        LOGGER.error(
-            "Failed to send notification via '%s': %s. Payload: %s",
+        const.LOGGER.error(
+            "ERROR: Failed to send notification via '%s': %s. Payload: %s",
             notify_service,
             err,
             payload,

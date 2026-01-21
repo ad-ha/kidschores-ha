@@ -6,24 +6,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.util import dt as dt_util
 
-from .const import (
-    DOMAIN,
-    FREQUENCY_BIWEEKLY,
-    FREQUENCY_CUSTOM,
-    FREQUENCY_DAILY,
-    FREQUENCY_MONTHLY,
-    FREQUENCY_NONE,
-    FREQUENCY_WEEKLY,
-    LOGGER,
-    WEEKDAY_OPTIONS,
-    ATTR_KID_NAME,
-)
+from . import const
 
-# Map weekday integers (0=Monday, …) to e.g. "mon","tue","wed" in WEEKDAY_OPTIONS.
-WEEKDAY_MAP = {i: key for i, key in enumerate(WEEKDAY_OPTIONS.keys())}
-
-# For chores without a due_date, we generate up to 3 months
-FOREVER_DURATION = datetime.timedelta(days=90)
+# Map weekday integers (0=Monday, …) to e.g. "mon","tue","wed" in const.WEEKDAY_OPTIONS.
+WEEKDAY_MAP = {i: key for i, key in enumerate(const.WEEKDAY_OPTIONS.keys())}
 
 
 async def async_setup_entry(
@@ -31,30 +17,46 @@ async def async_setup_entry(
 ):
     """Set up the KidsChores calendar platform."""
     try:
-        coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
+        coordinator = hass.data[const.DOMAIN][entry.entry_id][const.COORDINATOR]
     except KeyError:
-        LOGGER.error("Coordinator not found in hass.data for entry %s", entry.entry_id)
+        const.LOGGER.error("ERROR: Coordinator not found for entry %s", entry.entry_id)
         return
+
+    calendar_show_period_days = entry.options.get(
+        const.CONF_CALENDAR_SHOW_PERIOD, const.DEFAULT_CALENDAR_SHOW_PERIOD
+    )
+    calendar_duration = datetime.timedelta(days=calendar_show_period_days)
 
     entities = []
     for kid_id, kid_info in coordinator.kids_data.items():
-        kid_name = kid_info.get("name", f"Kid {kid_id}")
-        entities.append(KidsChoresCalendarEntity(coordinator, kid_id, kid_name, entry))
+        kid_name = kid_info.get(
+            const.DATA_KID_NAME, f"{const.TRANS_KEY_LABEL_KID} {kid_id}"
+        )
+        entities.append(
+            KidsChoresCalendarEntity(
+                coordinator, kid_id, kid_name, entry, calendar_duration
+            )
+        )
     async_add_entities(entities)
 
 
 class KidsChoresCalendarEntity(CalendarEntity):
     """Calendar entity representing a kid's combined chores + challenges."""
 
-    def __init__(self, coordinator, kid_id: str, kid_name: str, config_entry):
+    def __init__(
+        self, coordinator, kid_id: str, kid_name: str, config_entry, calendar_duration
+    ):
         super().__init__()
         self.coordinator = coordinator
         self._kid_id = kid_id
         self._kid_name = kid_name
         self._config_entry = config_entry
-        self._attr_name = f"KidsChores Calendar: {kid_name}"
-        self._attr_unique_id = f"{config_entry.entry_id}_{kid_id}_calendar"
-        self.entity_id = f"calendar.kc_{kid_name}"
+        self._calendar_duration = calendar_duration
+        self._attr_name = f"{const.TRANS_KEY_CALENDAR_NAME}: {kid_name}"
+        self._attr_unique_id = (
+            f"{config_entry.entry_id}_{kid_id}{const.CALENDAR_KC_UID_SUFFIX_CALENDAR}"
+        )
+        self.entity_id = f"{const.CALENDAR_KC_PREFIX}{kid_name}"
 
     async def async_get_events(
         self, hass: HomeAssistant, start: datetime.datetime, end: datetime.datetime
@@ -75,12 +77,12 @@ class KidsChoresCalendarEntity(CalendarEntity):
 
         # 1) Generate chore events
         for chore in self.coordinator.chores_data.values():
-            if self._kid_id in chore.get("assigned_kids", []):
+            if self._kid_id in chore.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
                 events.extend(self._generate_events_for_chore(chore, start, end))
 
         # 2) Generate challenge events
         for challenge in self.coordinator.challenges_data.values():
-            if self._kid_id in challenge.get("assigned_kids", []):
+            if self._kid_id in challenge.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, []):
                 evs = self._generate_events_for_challenge(challenge, start, end)
                 events.extend(evs)
 
@@ -95,13 +97,15 @@ class KidsChoresCalendarEntity(CalendarEntity):
         """Same recurring-chores logic from earlier solutions."""
         events: list[CalendarEvent] = []
 
-        summary = chore.get("name", "Unnamed Chore")
-        description = chore.get("description", "")
-        recurring = chore.get("recurring_frequency", FREQUENCY_NONE)
-        applicable_days = chore.get("applicable_days", [])
+        summary = chore.get(const.DATA_CHORE_NAME, const.UNKNOWN_CHORE)
+        description = chore.get(const.DATA_CHORE_DESCRIPTION, const.CONF_EMPTY)
+        recurring = chore.get(
+            const.DATA_CHORE_RECURRING_FREQUENCY, const.FREQUENCY_NONE
+        )
+        applicable_days = chore.get(const.DATA_CHORE_APPLICABLE_DAYS, [])
 
         # Parse chore due_date if any
-        due_date_str = chore.get("due_date")
+        due_date_str = chore.get(const.DATA_CHORE_DUE_DATE)
         due_dt: datetime.datetime | None = None
         if due_date_str:
             dt_parsed = dt_util.parse_datetime(due_date_str)
@@ -130,7 +134,7 @@ class KidsChoresCalendarEntity(CalendarEntity):
             return (edt > window_start) and (sdt < window_end)
 
         # --- Non-recurring chores ---
-        if recurring == FREQUENCY_NONE:
+        if recurring == const.FREQUENCY_NONE:
             if due_dt:
                 # single event if in window
                 if window_start <= due_dt <= window_end:
@@ -156,7 +160,9 @@ class KidsChoresCalendarEntity(CalendarEntity):
                     gen_start = window_start
                     gen_end = min(
                         window_end,
-                        dt_util.as_local(datetime.datetime.now() + FOREVER_DURATION),
+                        dt_util.as_local(
+                            datetime.datetime.now() + self._calendar_duration
+                        ),
                     )
                     current = gen_start
                     while current <= gen_end:
@@ -179,7 +185,7 @@ class KidsChoresCalendarEntity(CalendarEntity):
             if cutoff < window_start:
                 return events
 
-            if recurring == FREQUENCY_DAILY:
+            if recurring == const.FREQUENCY_DAILY:
                 if window_start <= due_dt <= window_end:
                     if is_midnight(due_dt):
                         e = CalendarEvent(
@@ -198,7 +204,7 @@ class KidsChoresCalendarEntity(CalendarEntity):
                     if overlaps(e):
                         events.append(e)
 
-            elif recurring == FREQUENCY_WEEKLY:
+            elif recurring == const.FREQUENCY_WEEKLY:
                 start_event = due_dt - datetime.timedelta(weeks=1)
                 end_event = due_dt
                 if start_event < window_end and end_event > window_start:
@@ -211,7 +217,7 @@ class KidsChoresCalendarEntity(CalendarEntity):
                     if overlaps(e):
                         events.append(e)
 
-            elif recurring == FREQUENCY_BIWEEKLY:
+            elif recurring == const.FREQUENCY_BIWEEKLY:
                 start_event = due_dt - datetime.timedelta(weeks=2)
                 end_event = due_dt
                 if start_event < window_end and end_event > window_start:
@@ -224,7 +230,7 @@ class KidsChoresCalendarEntity(CalendarEntity):
                     if overlaps(e):
                         events.append(e)
 
-            elif recurring == FREQUENCY_MONTHLY:
+            elif recurring == const.FREQUENCY_MONTHLY:
                 first_day = due_dt.replace(day=1)
                 if first_day < window_end and due_dt > window_start:
                     e = CalendarEvent(
@@ -236,14 +242,14 @@ class KidsChoresCalendarEntity(CalendarEntity):
                     if overlaps(e):
                         events.append(e)
 
-            elif recurring == FREQUENCY_CUSTOM:
-                interval = chore.get("custom_interval", 1)
-                unit = chore.get("custom_interval_unit", "days")
-                if unit == "days":
+            elif recurring == const.FREQUENCY_CUSTOM:
+                interval = chore.get(const.DATA_CHORE_CUSTOM_INTERVAL, 1)
+                unit = chore.get(const.DATA_CHORE_CUSTOM_INTERVAL_UNIT, const.CONF_DAYS)
+                if unit == const.CONF_DAYS:
                     start_event = due_dt - datetime.timedelta(days=interval)
-                elif unit == "weeks":
+                elif unit == const.CONF_WEEKS:
                     start_event = due_dt - datetime.timedelta(weeks=interval)
-                elif unit == "months":
+                elif unit == const.CONF_MONTHS:
                     start_event = due_dt - datetime.timedelta(days=30 * interval)
                 else:
                     start_event = due_dt
@@ -262,10 +268,12 @@ class KidsChoresCalendarEntity(CalendarEntity):
 
         # --- Recurring chores without a due_date => next 3 months
         gen_start = window_start
-        future_limit = dt_util.as_local(datetime.datetime.now() + FOREVER_DURATION)
+        future_limit = dt_util.as_local(
+            datetime.datetime.now() + self._calendar_duration
+        )
         cutoff = min(window_end, future_limit)
 
-        if recurring == FREQUENCY_DAILY:
+        if recurring == const.FREQUENCY_DAILY:
             current = gen_start
             while current <= cutoff:
                 if (
@@ -285,15 +293,15 @@ class KidsChoresCalendarEntity(CalendarEntity):
                 current += datetime.timedelta(days=1)
             return events
 
-        if recurring in (FREQUENCY_WEEKLY, FREQUENCY_BIWEEKLY):
-            week_delta = 7 if recurring == FREQUENCY_WEEKLY else 14
+        if recurring in (const.FREQUENCY_WEEKLY, const.FREQUENCY_BIWEEKLY):
+            week_delta = 7 if recurring == const.FREQUENCY_WEEKLY else 14
             current = gen_start
             # align to Monday
             while current.weekday() != 0:
                 current += datetime.timedelta(days=1)
             while current <= cutoff:
                 # multi-day block from Monday..Sunday (or 2 weeks for biweekly)
-                block_days = 6 if recurring == FREQUENCY_WEEKLY else 13
+                block_days = 6 if recurring == const.FREQUENCY_WEEKLY else 13
                 start_block = current
                 end_block = current + datetime.timedelta(days=block_days)
                 e = CalendarEvent(
@@ -307,7 +315,7 @@ class KidsChoresCalendarEntity(CalendarEntity):
                 current += datetime.timedelta(days=week_delta)
             return events
 
-        if recurring == FREQUENCY_MONTHLY:
+        if recurring == const.FREQUENCY_MONTHLY:
             cur = gen_start
             while cur <= cutoff:
                 first_day = cur.replace(day=1)
@@ -326,14 +334,14 @@ class KidsChoresCalendarEntity(CalendarEntity):
                 cur = next_month
             return events
 
-        if recurring == FREQUENCY_CUSTOM:
-            interval = chore.get("custom_interval", 1)
-            unit = chore.get("custom_interval_unit", "days")
-            if unit == "days":
+        if recurring == const.FREQUENCY_CUSTOM:
+            interval = chore.get(const.DATA_CHORE_CUSTOM_INTERVAL, 1)
+            unit = chore.get(const.DATA_CHORE_CUSTOM_INTERVAL_UNIT, const.CONF_DAYS)
+            if unit == const.CONF_DAYS:
                 step = datetime.timedelta(days=interval)
-            elif unit == "weeks":
+            elif unit == const.CONF_WEEKS:
                 step = datetime.timedelta(weeks=interval)
-            elif unit == "months":
+            elif unit == const.CONF_MONTHS:
                 step = datetime.timedelta(days=30 * interval)
             else:
                 step = datetime.timedelta(days=interval)
@@ -372,10 +380,12 @@ class KidsChoresCalendarEntity(CalendarEntity):
         """
         events: list[CalendarEvent] = []
 
-        challenge_name = challenge.get("name", "Unnamed Challenge")
-        description = challenge.get("description", "")
-        start_str = challenge.get("start_date")
-        end_str = challenge.get("end_date")
+        challenge_name = challenge.get(
+            const.DATA_CHALLENGE_NAME, const.UNKNOWN_CHALLENGE
+        )
+        description = challenge.get(const.DATA_CHALLENGE_DESCRIPTION, const.CONF_EMPTY)
+        start_str = challenge.get(const.DATA_CHALLENGE_START_DATE)
+        end_str = challenge.get(const.DATA_CHALLENGE_END_DATE)
         if not start_str or not end_str:
             return events  # no valid date range => skip
 
@@ -396,7 +406,7 @@ class KidsChoresCalendarEntity(CalendarEntity):
 
         # Build an all-day event from local_start.date() to local_end.date() + 1 day
         ev = CalendarEvent(
-            summary=f"Challenge: {challenge_name}",
+            summary=f"{const.TRANS_KEY_LABEL_CHALLENGE}: {challenge_name}",
             start=local_start.date(),
             end=local_end.date() + datetime.timedelta(days=1),
             description=description,
@@ -425,10 +435,7 @@ class KidsChoresCalendarEntity(CalendarEntity):
 
     @property
     def event(self) -> CalendarEvent | None:
-        """
-        Return a single "current" event (chore or challenge) if one is active now (±1h).
-        Otherwise None.
-        """
+        """Return a single "current" event (chore or challenge) if one is active now (±1h)."""
         now = dt_util.as_local(datetime.datetime.utcnow())
         window_start = now - datetime.timedelta(hours=1)
         window_end = now + datetime.timedelta(hours=1)
@@ -457,13 +464,13 @@ class KidsChoresCalendarEntity(CalendarEntity):
         events = []
         # chores
         for chore in self.coordinator.chores_data.values():
-            if self._kid_id in chore.get("assigned_kids", []):
+            if self._kid_id in chore.get(const.DATA_CHORE_ASSIGNED_KIDS, []):
                 events.extend(
                     self._generate_events_for_chore(chore, window_start, window_end)
                 )
         # challenges
         for challenge in self.coordinator.challenges_data.values():
-            if self._kid_id in challenge.get("assigned_kids", []):
+            if self._kid_id in challenge.get(const.DATA_CHALLENGE_ASSIGNED_KIDS, []):
                 events.extend(
                     self._generate_events_for_challenge(
                         challenge, window_start, window_end
@@ -473,4 +480,4 @@ class KidsChoresCalendarEntity(CalendarEntity):
 
     @property
     def extra_state_attributes(self):
-        return {ATTR_KID_NAME: self._kid_name}
+        return {const.ATTR_KID_NAME: self._kid_name}
